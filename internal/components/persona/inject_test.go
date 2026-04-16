@@ -172,8 +172,8 @@ func TestInjectClaudeNeutralWritesFullPersonaWithoutRegionalLanguage(t *testing.
 		t.Fatal("Neutral persona should contain 'Architect'")
 	}
 	// Should NOT have gentleman-specific regional language.
-	if strings.Contains(text, "") {
-		t.Fatal("Neutral persona should not contain  language")
+	if strings.Contains(text, "Venezuelan") || strings.Contains(text, "voseo") {
+		t.Fatal("Neutral persona should not contain regional dialect guidance")
 	}
 }
 
@@ -476,8 +476,8 @@ func TestInjectOpenCodeNeutralPreservesManagedSections(t *testing.T) {
 	if !strings.Contains(text, "Architect") {
 		t.Fatal("AGENTS.md missing neutral persona content")
 	}
-	if strings.Contains(text, "") {
-		t.Fatal("AGENTS.md has  language in neutral persona — should be neutral tone")
+	if strings.Contains(text, "Venezuelan") || strings.Contains(text, "voseo") {
+		t.Fatal("AGENTS.md has regional dialect guidance in neutral persona — should be neutral tone")
 	}
 
 	// Managed sections MUST be preserved
@@ -488,9 +488,8 @@ func TestInjectOpenCodeNeutralPreservesManagedSections(t *testing.T) {
 		t.Fatal("AGENTS.md lost engram protocol section after switching to neutral persona")
 	}
 
-	// Gentleman-specific language should be gone — neutral has the same personality but no regional language
-	if strings.Contains(text, "") {
-		t.Fatal("AGENTS.md still has  language after switching to neutral")
+	if strings.Contains(text, "Venezuelan") || strings.Contains(text, "voseo") {
+		t.Fatal("AGENTS.md still has regional dialect guidance after switching to neutral")
 	}
 }
 
@@ -532,8 +531,8 @@ func TestInjectVSCodeNeutralPreservesManagedSections(t *testing.T) {
 	if !strings.Contains(text, "Architect") {
 		t.Fatal("instructions file missing neutral persona content")
 	}
-	if strings.Contains(text, "") {
-		t.Fatal("instructions file has  language in neutral persona")
+	if strings.Contains(text, "Venezuelan") || strings.Contains(text, "voseo") {
+		t.Fatal("instructions file has regional dialect guidance in neutral persona")
 	}
 	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
 		t.Fatal("instructions file lost SDD section after switching to neutral persona")

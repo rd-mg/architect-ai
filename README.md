@@ -1,6 +1,6 @@
 <div align="center">
 
-<img width="3276" height="1280" alt="image" src="architect-ai.jpg" />
+<img width="3276" height="1280" alt="architect-ai" src="architect-ai.jpg" />
 
 <h1>Architect AI Stack</h1>
 
