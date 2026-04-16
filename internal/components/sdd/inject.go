@@ -49,38 +49,6 @@ type InjectOptions struct {
 	Force bool
 }
 
-// workflowInjector is an optional adapter capability: if an adapter
-// implements this interface, sdd.Inject will copy the embedded workflow
-// assets into the workspace directory provided via InjectOptions.WorkspaceDir.
-// This intentionally does NOT extend agents.Adapter to avoid requiring all
-// adapters to implement no-op stubs.
-type workflowInjector interface {
-	SupportsWorkflows() bool
-	// WorkflowsDir returns the target filesystem directory where workflow files
-	// should be written (e.g. <workspaceDir>/.windsurf/workflows/).
-	WorkflowsDir(workspaceDir string) string
-	// EmbeddedWorkflowsDir returns the path inside the embedded assets FS where
-	// this adapter's workflow sources live (e.g. "windsurf/workflows").
-	// This removes the hardcoded agent name from the injection step, making
-	// the workflowInjector pattern reusable for future agents.
-	EmbeddedWorkflowsDir() string
-}
-
-// subAgentInjector is an optional adapter capability: if an adapter
-// implements this interface, sdd.Inject will copy the embedded sub-agent
-// markdown files into the user's home directory (e.g. ~/.cursor/agents/).
-// This intentionally does NOT extend agents.Adapter to avoid requiring all
-// adapters to implement no-op stubs.
-type subAgentInjector interface {
-	SupportsSubAgents() bool
-	// SubAgentsDir returns the target filesystem directory where sub-agent
-	// files should be written (e.g. <homeDir>/.cursor/agents/).
-	SubAgentsDir(homeDir string) string
-	// EmbeddedSubAgentsDir returns the path inside the embedded assets FS
-	// where this adapter's sub-agent sources live (e.g. "cursor/agents").
-	EmbeddedSubAgentsDir() string
-}
-
 // monorepoRootMarkers identify files/dirs that ONLY exist at the true root
 // of a multi-package workspace. If any of these is found while walking up,
 // we stop immediately — this is the authoritative project root.
@@ -542,7 +510,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 	// invoked from any subdirectory (e.g. repo/internal/foo) and still inject
 	// workflows at the real project root. Skips silently if no root is found
 	// (e.g. running from home dir without a project).
-	if wi, ok := adapter.(workflowInjector); ok && wi.SupportsWorkflows() {
+	if wi, ok := adapter.(agents.WorkflowCapable); ok && wi.SupportsWorkflows() {
 		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
 			workflowsDir := wi.WorkflowsDir(projectRoot)
 			embedDir := wi.EmbeddedWorkflowsDir()
@@ -578,7 +546,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 	// written to the user's home directory (e.g. ~/.cursor/agents/), not to the
 	// workspace, so no project-root detection is needed here.
 	var agentsDir string
-	if sai, ok := adapter.(subAgentInjector); ok && sai.SupportsSubAgents() {
+	if sai, ok := adapter.(agents.SubAgentCapable); ok && sai.SupportsSubAgents() {
 		agentsDir = sai.SubAgentsDir(homeDir)
 		if err := os.MkdirAll(agentsDir, 0o755); err != nil {
 			return InjectionResult{}, fmt.Errorf("create agents dir: %w", err)

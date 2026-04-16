@@ -20,7 +20,8 @@ type skillEntry struct {
 	Trigger      string
 	CompactRules string
 	Path         string
-	Origin       string // "user", "project", "overlay"
+	Origin       string // "user", "project", "overlay", "system", "shared"
+	Kind         string // "System", "User", "Project", "Overlay", "SharedRule"
 }
 
 type conventionEntry struct {
@@ -202,9 +203,13 @@ func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 			info.Path = path
 			info.Origin = "project"
 
-			// Skip internal/reserved names
-			if info.Name == "_shared" || info.Name == "skill-registry" || strings.HasPrefix(info.Name, "sdd-") {
-				return nil
+			// Standard classification
+			if info.Name == "_shared" {
+				info.Kind = "SharedRule"
+			} else if strings.HasPrefix(info.Name, "sdd-") || info.Name == "skill-registry" {
+				info.Kind = "System"
+			} else {
+				info.Kind = "Project"
 			}
 
 			entries = append(entries, info)
@@ -258,10 +263,6 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 			dirs, err := os.ReadDir(overlaySkillDir)
 			if err == nil {
 				for _, entry := range dirs {
-					if !entry.IsDir() || entry.Name() == "_shared" || entry.Name() == "skill-registry" || strings.HasPrefix(entry.Name(), "sdd-") {
-						continue
-					}
-
 					if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(entry.Name(), odooVersions) {
 						continue
 					}
@@ -277,6 +278,15 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 					}
 					info.Path = skillPath
 					info.Origin = "overlay"
+					
+					if entry.Name() == "_shared" {
+						info.Kind = "SharedRule"
+					} else if strings.HasPrefix(entry.Name(), "sdd-") || entry.Name() == "skill-registry" {
+						info.Kind = "System"
+					} else {
+						info.Kind = "Overlay"
+					}
+					
 					skills = append(skills, info)
 				}
 			}
@@ -341,8 +351,15 @@ func scanSkillsDir(dir string, origin string) []skillEntry {
 
 	var entries []skillEntry
 	for _, d := range subdirs {
-		if !d.IsDir() || d.Name() == "_shared" || d.Name() == "skill-registry" || strings.HasPrefix(d.Name(), "sdd-") {
+		if !d.IsDir() {
 			continue
+		}
+
+		kind := "User"
+		if d.Name() == "_shared" {
+			kind = "SharedRule"
+		} else if strings.HasPrefix(d.Name(), "sdd-") || d.Name() == "skill-registry" {
+			kind = "System"
 		}
 
 		skillPath := filepath.Join(dir, d.Name(), "SKILL.md")
@@ -353,6 +370,7 @@ func scanSkillsDir(dir string, origin string) []skillEntry {
 			}
 			info.Path = skillPath
 			info.Origin = origin
+			info.Kind = kind
 			entries = append(entries, info)
 		}
 	}
@@ -478,8 +496,8 @@ func deduplicateSkills(skills []skillEntry) []skillEntry {
 			continue
 		}
 
-		// project > overlay > user
-		priority := map[string]int{"project": 3, "overlay": 2, "user": 1}
+		// project > overlay > user > system > shared
+		priority := map[string]int{"project": 5, "overlay": 4, "user": 3, "system": 2, "shared": 1}
 		if priority[s.Origin] > priority[existing.Origin] {
 			m[s.Name] = s
 		}
@@ -513,22 +531,39 @@ func buildRegistryMarkdown(projectRoot string, skills []skillEntry, conventions 
 	b.WriteString("# Skill Registry\n\n")
 	b.WriteString("**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.\n\n")
 
-	b.WriteString("## User Skills\n\n")
-	b.WriteString("| Trigger | Skill | Path |\n")
-	b.WriteString("|---------|-------|------|\n")
+	// Group skills by Kind
+	kinds := []string{"System", "SharedRule", "Project", "Overlay", "User"}
+	skillsByKind := make(map[string][]skillEntry)
 	for _, s := range skills {
-		relPath := s.Path
-		if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
-			relPath = rel
-		}
-		b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(s.Trigger), s.Name, filepath.ToSlash(relPath)))
+		skillsByKind[s.Kind] = append(skillsByKind[s.Kind], s)
 	}
-	b.WriteString("\n")
+
+	for _, kind := range kinds {
+		entries := skillsByKind[kind]
+		if len(entries) == 0 {
+			continue
+		}
+
+		b.WriteString(fmt.Sprintf("## %s Skills\n\n", kind))
+		b.WriteString("| Trigger | Skill | Path |\n")
+		b.WriteString("|---------|-------|------|\n")
+		for _, s := range entries {
+			relPath := s.Path
+			if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
+				relPath = rel
+			}
+			b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(s.Trigger), s.Name, filepath.ToSlash(relPath)))
+		}
+		b.WriteString("\n")
+	}
 
 	b.WriteString("## Compact Rules\n\n")
 	b.WriteString("Pre-digested rules per skill. Delegators copy matching blocks into sub-agent prompts as `## Project Standards (auto-resolved)`.\n\n")
-	for _, s := range skills {
-		b.WriteString(fmt.Sprintf("### %s\n%s\n\n", s.Name, s.CompactRules))
+	for _, kind := range kinds {
+		entries := skillsByKind[kind]
+		for _, s := range entries {
+			b.WriteString(fmt.Sprintf("### %s\n%s\n\n", s.Name, s.CompactRules))
+		}
 	}
 
 	b.WriteString("## Project Conventions\n\n")
@@ -656,23 +691,13 @@ This file defines the technical mandates for AI agents working in this repositor
 `
 
 // EnsureSDDReady validates that the project is ready for SDD operations.
-// It checks for the existence and non-emptiness of .atl/skill-registry.md.
-// If missing or broken, it attempts a repair via EnsureProjectRegistryReady.
+// It checks for the existence of the CLI bootstrap marker (.atl/state/bootstrap.json).
+// If missing, it fails with an instruction to run sdd-init.
 func EnsureSDDReady(projectRoot string) error {
-	registryPath := filepath.Join(projectRoot, ".atl", "skill-registry.md")
+	bootstrapPath := filepath.Join(projectRoot, ".atl", "state", "bootstrap.json")
 
-	info, err := os.Stat(registryPath)
-	if err != nil || info.Size() == 0 {
-		// Repair attempt
-		if _, err := EnsureProjectRegistryReady(projectRoot); err != nil {
-			return fmt.Errorf("sdd guard: repair failed: %w", err)
-		}
-
-		// Re-validate
-		info, err = os.Stat(registryPath)
-		if err != nil || info.Size() == 0 {
-			return fmt.Errorf("sdd guard: registry missing or empty even after repair at %q", registryPath)
-		}
+	if _, err := os.Stat(bootstrapPath); err != nil {
+		return fmt.Errorf("sdd guard: project not bootstrapped. Please run 'architect-ai sdd-init' first.")
 	}
 
 	return nil

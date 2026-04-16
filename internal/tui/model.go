@@ -464,7 +464,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.AgentBuilder.Generated = msg.Agent
 			m.AgentBuilder.GenerationErr = nil
 			// Check for builtin conflict and set warning before showing preview.
-			if msg.Agent != nil && agentbuilder.HasConflictWithBuiltin(msg.Agent.Name) {
+			if msg.Agent != nil && agentbuilder.HasConflictWithBuiltin(msg.Agent.Name, nil) {
 				m.AgentBuilder.ConflictWarning = fmt.Sprintf(
 					"Warning: '%s' conflicts with a built-in skill. It will be installed as '%s-custom'.",
 					msg.Agent.Name, msg.Agent.Name,
@@ -3361,7 +3361,7 @@ func (m Model) startInstallation() (tea.Model, tea.Cmd) {
 
 		// Resolve agent name, applying conflict suffix if needed.
 		installAgent := agent
-		if agentbuilder.HasConflictWithBuiltin(agent.Name) {
+		if agentbuilder.HasConflictWithBuiltin(agent.Name, nil) {
 			// Shallow copy so we don't mutate the generated agent in state.
 			copy := *agent
 			copy.Name = agent.Name + "-custom"

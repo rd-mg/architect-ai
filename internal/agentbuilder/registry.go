@@ -8,6 +8,9 @@ import (
 	"github.com/rd-mg/architect-ai/internal/catalog"
 )
 
+// RegisterSkillNamespace is the reserved name for system-managed skills.
+const ReservedSkillNamespace = "sdd-"
+
 // builtinSkills returns the current set of built-in skill names derived from
 // the catalog so that conflict detection stays in sync as skills are added.
 func builtinSkills() map[string]struct{} {
@@ -16,6 +19,8 @@ func builtinSkills() map[string]struct{} {
 	for _, s := range skills {
 		m[s.Name] = struct{}{}
 	}
+	// Add other internal tool names that might not be in the catalog yet
+	m["skill-registry"] = struct{}{}
 	return m
 }
 
@@ -74,8 +79,22 @@ func (r *Registry) RemoveByName(name string) bool {
 	return false
 }
 
-// HasConflictWithBuiltin reports whether name collides with a known built-in skill.
-func HasConflictWithBuiltin(name string) bool {
-	_, ok := builtinSkills()[name]
-	return ok
+// HasConflictWithBuiltin reports whether name collides with a known built-in
+// skill or a reserved name in the provided registry (if any).
+func HasConflictWithBuiltin(name string, r *Registry) bool {
+	// 1. Check hardcoded built-ins
+	if _, ok := builtinSkills()[name]; ok {
+		return true
+	}
+
+	// 2. Check registry-level reserved names
+	if r != nil {
+		for _, reserved := range r.ReservedNames {
+			if reserved == name {
+				return true
+			}
+		}
+	}
+
+	return false
 }

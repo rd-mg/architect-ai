@@ -28,6 +28,6 @@ FLAGS
   --help, -h    Show this help
 
 Run 'architect-ai help' for this message.
-Documentation: https://github.com/rd-mg/
-`, version)
+Documentation: %s
+`, version, DocsURL)
 }

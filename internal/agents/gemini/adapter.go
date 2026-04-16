@@ -140,6 +140,20 @@ func (a *Adapter) SupportsMCP() bool {
 	return true
 }
 
+// --- SubAgentCapable ---
+
+func (a *Adapter) SupportsSubAgents() bool {
+	return true
+}
+
+func (a *Adapter) SubAgentsDir(homeDir string) string {
+	return filepath.Join(homeDir, ".gemini", "agents")
+}
+
+func (a *Adapter) EmbeddedSubAgentsDir() string {
+	return "gemini/agents"
+}
+
 func defaultStat(path string) statResult {
 	info, err := os.Stat(path)
 	if err != nil {

@@ -31,7 +31,7 @@ This is NOT an AI agent installer. Most agents are easy to install. This is an *
 |-------|:---:|---|
 | **Claude Code** | Full (Task tool) | Sub-agents, output styles |
 | **OpenCode** | Full (multi-mode overlay) | Per-phase model routing |
-| **Gemini CLI** | Full (experimental) | Custom agents in `~/.gemini/agents/` |
+| **Gemini CLI** | Full | Native agents in `~/.gemini/agents/` |
 | **Cursor** | Full (native subagents) | 9 SDD agents in `~/.cursor/agents/` |
 | **VS Code Copilot** | Full (runSubagent) | Parallel execution |
 | **Codex** | Solo-agent | CLI-native, TOML config |

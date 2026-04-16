@@ -14,9 +14,13 @@ const (
 	CapabilityAutoInstall Capability = "auto-install"
 )
 
-// Adapter is the core abstraction for AI agent integration. Components use
-// adapter methods instead of switch statements on AgentID, making it trivial
-// to add new agents without modifying component code.
+// Adapter is the core abstraction for AI agent integration.
+//
+// Adding a new agent requires:
+// 1. A new adapter implementation.
+// 2. Factory/Registry registration.
+// 3. Catalog registration.
+// 4. Component-specific integrations for optional capabilities (see below).
 type Adapter interface {
 	// Identity
 	Agent() model.AgentID
@@ -43,14 +47,32 @@ type Adapter interface {
 	// MCP path resolution
 	MCPConfigPath(homeDir string, serverName string) string
 
-	// Optional capabilities — agents declare what they support.
+	// Basic capabilities — common across all tiers.
+	SupportsSkills() bool
+	SupportsSystemPrompt() bool
+	SupportsMCP() bool
+
+	// Optional capabilities — agents declare what they support via these methods
+	// or via separate interface type assertions (SubAgentCapable, WorkflowCapable).
 	SupportsOutputStyles() bool
 	OutputStyleDir(homeDir string) string
 
 	SupportsSlashCommands() bool
 	CommandsDir(homeDir string) string
+}
 
-	SupportsSkills() bool
-	SupportsSystemPrompt() bool
-	SupportsMCP() bool
+// SubAgentCapable identifies adapters that support native sub-agent files
+// (e.g., Cursor .cursorrules, Kiro .kiro, Gemini agents/).
+type SubAgentCapable interface {
+	SupportsSubAgents() bool
+	SubAgentsDir(homeDir string) string
+	EmbeddedSubAgentsDir() string
+}
+
+// WorkflowCapable identifies adapters that support native workflow files
+// (e.g., Kiro workflows/).
+type WorkflowCapable interface {
+	SupportsWorkflows() bool
+	WorkflowsDir(workspaceDir string) string
+	EmbeddedWorkflowsDir() string
 }

@@ -151,3 +151,20 @@ func TestConfigPathsCrossPlatform(t *testing.T) {
 		t.Fatalf("SystemPromptFile() = %q, want %q", got, filepath.Join(home, ".gemini", "GEMINI.md"))
 	}
 }
+
+func TestSubAgentCapable(t *testing.T) {
+	a := NewAdapter()
+	home := "/tmp/home"
+
+	if !a.SupportsSubAgents() {
+		t.Error("SupportsSubAgents() = false, want true")
+	}
+
+	if got := a.SubAgentsDir(home); got != filepath.Join(home, ".gemini", "agents") {
+		t.Fatalf("SubAgentsDir() = %q, want %q", got, filepath.Join(home, ".gemini", "agents"))
+	}
+
+	if got := a.EmbeddedSubAgentsDir(); got != "gemini/agents" {
+		t.Fatalf("EmbeddedSubAgentsDir() = %q, want %q", got, "gemini/agents")
+	}
+}

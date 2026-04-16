@@ -161,17 +161,35 @@ func TestRegistry_RemoveByName_NonExistentReturnsFalse(t *testing.T) {
 func TestHasConflictWithBuiltin_TrueForBuiltin(t *testing.T) {
 	builtins := []string{"sdd-init", "sdd-apply", "sdd-verify", "go-testing", "skill-creator", "judgment-day"}
 	for _, name := range builtins {
-		if !HasConflictWithBuiltin(name) {
-			t.Errorf("HasConflictWithBuiltin(%q) = false, want true", name)
+		if !HasConflictWithBuiltin(name, nil) {
+			t.Errorf("HasConflictWithBuiltin(%q, nil) = false, want true", name)
 		}
+	}
+}
+
+func TestHasConflictWithBuiltin_TrueForReservedInRegistry(t *testing.T) {
+	reg := &Registry{
+		ReservedNames: []string{"custom-reserved", "another-one"},
+	}
+
+	if !HasConflictWithBuiltin("custom-reserved", reg) {
+		t.Error("HasConflictWithBuiltin('custom-reserved', reg) = false, want true")
+	}
+
+	if !HasConflictWithBuiltin("sdd-init", reg) {
+		t.Error("HasConflictWithBuiltin('sdd-init', reg) = false, want true (still checked built-in)")
+	}
+
+	if HasConflictWithBuiltin("not-reserved", reg) {
+		t.Error("HasConflictWithBuiltin('not-reserved', reg) = true, want false")
 	}
 }
 
 func TestHasConflictWithBuiltin_FalseForCustom(t *testing.T) {
 	customs := []string{"my-custom-agent", "a11y-reviewer", "db-migrator", "css-linter"}
 	for _, name := range customs {
-		if HasConflictWithBuiltin(name) {
-			t.Errorf("HasConflictWithBuiltin(%q) = true, want false", name)
+		if HasConflictWithBuiltin(name, nil) {
+			t.Errorf("HasConflictWithBuiltin(%q, nil) = true, want false", name)
 		}
 	}
 }

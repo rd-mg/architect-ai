@@ -1,14 +1,18 @@
 package cli
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
 )
+
+var osTimeNow = time.Now
 
 func RunSddInit(args []string, stdout io.Writer) error {
 	projectRoot, err := os.Getwd()
@@ -23,7 +27,7 @@ func RunSddInit(args []string, stdout io.Writer) error {
 	}
 
 	fs := flag.NewFlagSet("sdd-init", flag.ContinueOnError)
-	fs.SetOutput(ioDiscard{})
+	fs.SetOutput(io.Discard)
 	mode := fs.String("mode", "engram", "SDD persistence mode: engram, openspec, or hybrid")
 	contextData := fs.String("context", "", "Initial project context designed by LLM (YAML/JSON)")
 
@@ -55,10 +59,26 @@ func RunSddInit(args []string, stdout io.Writer) error {
 		if err := bootstrapOpenSpec(absProjectRoot); err != nil {
 			return fmt.Errorf("bootstrap openspec: %w", err)
 		}
-		fmt.Println("Bootstrapped openspec/ directory structure.")
+		fmt.Fprintln(stdout, "Bootstrapped openspec/ directory structure.")
 	}
 
-	fmt.Printf("SDD initialized successfully in %s mode.\n", *mode)
+	// 4. Write CLI Bootstrap marker
+	bootstrapPath := filepath.Join(atlDir, "state", "bootstrap.json")
+	if err := os.MkdirAll(filepath.Dir(bootstrapPath), 0o755); err != nil {
+		return fmt.Errorf("create state directory: %w", err)
+	}
+	marker := map[string]any{
+		"version":    "1.0",
+		"mode":       *mode,
+		"bootstrapped_at": osTimeNow().Format(time.RFC3339),
+	}
+	markerBytes, _ := json.MarshalIndent(marker, "", "  ")
+	if _, err := filemerge.WriteFileAtomic(bootstrapPath, markerBytes, 0o644); err != nil {
+		return fmt.Errorf("write bootstrap marker: %w", err)
+	}
+
+	fmt.Fprintf(stdout, "SDD Bootstrap successful in %s mode.\n", *mode)
+	fmt.Fprintln(stdout, "You may now run the 'sdd-init' Phase (AI Analysis) to complete project setup.")
 	return nil
 }
 

@@ -45,8 +45,9 @@ type RegistryEntry struct {
 
 // Registry is the top-level structure persisted to disk.
 type Registry struct {
-	Version int             `json:"version"`
-	Agents  []RegistryEntry `json:"agents"`
+	Version       int             `json:"version"`
+	Agents        []RegistryEntry `json:"agents"`
+	ReservedNames []string        `json:"reserved_names,omitempty"`
 }
 
 // InstallResult captures the outcome of writing one agent's SKILL.md file.
