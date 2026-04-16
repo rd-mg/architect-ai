@@ -38,8 +38,8 @@ func RunSddInit(args []string, stdout io.Writer) error {
 	// 1. Ensure the project registry and .atl folder are ready.
 	// This centralizes .atl creation, overlay discovery, skill indexing,
 	// and core project conventions (AGENTS.md, GEMINI.md).
-	if err := EnsureSDDReady(absProjectRoot); err != nil {
-		return fmt.Errorf("ensure sdd ready: %w", err)
+	if _, err := EnsureProjectRegistryReady(absProjectRoot); err != nil {
+		return fmt.Errorf("ensure registry ready: %w", err)
 	}
 
 	atlDir := filepath.Join(absProjectRoot, ".atl")

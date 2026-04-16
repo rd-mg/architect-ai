@@ -47,9 +47,12 @@
 - [x] Update `README.md`:
     - Normalize links.
 
+## Task Group 1: SDD Initialization Check
+- [x] Run `sdd-init` and confirm bootstrap state
+- [x] Verify `.atl/` directory and core conventions
+
 ## Task Group 6: Verification & Tests
 - [x] Add `internal/agents/parity_test.go` for catalog/registry/factory consistency.
 - [x] Add unit tests for Gemini `SubAgentCapable` methods.
 - [x] Add integration tests for registry layered scanning.
 - [x] Run full test suite and generate `verify-report.md`.
-
