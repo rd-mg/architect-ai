@@ -1,0 +1,22 @@
+{
+  "version": 16,
+  "sheets": [
+    {
+      "id": "sheet1",
+      "name": "Sheet1",
+      "colNumber": 26,
+      "rowNumber": 100,
+      "cells": {},
+      "merges": [],
+      "figures": [],
+      "conditionalFormats": [],
+      "dataValidation": [],
+      "pivots": [],
+      "headers": {}
+    }
+  ],
+  "styles": {},
+  "formats": {},
+  "borders": {},
+  "revisionId": "START_REVISION"
+}

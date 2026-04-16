@@ -1,0 +1,189 @@
+?   	github.com/rd-mg/architect-ai/cmd/architect-ai	[no test files]
+ok  	github.com/rd-mg/architect-ai/internal/agentbuilder	0.039s
+ok  	github.com/rd-mg/architect-ai/internal/agents	0.015s
+ok  	github.com/rd-mg/architect-ai/internal/agents/antigravity	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/claude	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/codex	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/cursor	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/gemini	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/kilocode	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/kiro	0.014s
+ok  	github.com/rd-mg/architect-ai/internal/agents/opencode	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/qwen	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/vscode	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/agents/windsurf	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/app	5.955s
+ok  	github.com/rd-mg/architect-ai/internal/assets	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/backup	0.156s
+ok  	github.com/rd-mg/architect-ai/internal/catalog	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/cli	11.731s
+--- FAIL: TestGoldenPersona_Claude_Architect (0.00s)
+    golden_test.go:424: golden mismatch for persona-claude-architect.golden (first diff at byte 157)
+        
+        expected[77:237]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Install via br
+        
+        actual[77:237]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes blindly.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Think 
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenPersona_Claude_Architect -update
+--- FAIL: TestGoldenPersona_Claude_Neutral (0.00s)
+    golden_test.go:445: golden mismatch for persona-claude-neutral.golden (first diff at byte 985)
+        
+        expected[905:1065]:
+        rm, professional, and direct tone. No slang, no regional expressions.
+        
+        ## Tone
+        
+        Passionate and direct, but from a place of CARING. When someone is wrong: (1) va
+        
+        actual[905:1065]:
+        rm, professional, and direct tone. No slang, no regional expressions.
+        
+        ## Tone
+        
+        Socratic, passionate, direct, and TERSE. From a place of CARING. When someone is
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenPersona_Claude_Neutral -update
+--- FAIL: TestGoldenPersona_OpenCode_Architect (0.00s)
+    golden_test.go:460: golden mismatch for persona-opencode-architect.golden (first diff at byte 1968)
+        
+        expected[1888:2048]:
+         DB hit → slow response. Ask why no prefetch → show `mapped()`."*
+        - Spanish input → LITE-compressed Venezuelan Spanish (castellano venezolano) with high t
+        
+        actual[1888:2048]:
+         DB hit → slow response. Ask why no prefetch → show `mapped()`."*
+        - Spanish replies → LITE-compressed Venezuelan Spanish (castellano venezolano) with high
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenPersona_OpenCode_Architect -update
+--- FAIL: TestGoldenPersona_OpenCode_Neutral (0.00s)
+    golden_test.go:475: golden mismatch for persona-opencode-neutral.golden (first diff at byte 985)
+        
+        expected[905:1065]:
+        rm, professional, and direct tone. No slang, no regional expressions.
+        
+        ## Tone
+        
+        Passionate and direct, but from a place of CARING. When someone is wrong: (1) va
+        
+        actual[905:1065]:
+        rm, professional, and direct tone. No slang, no regional expressions.
+        
+        ## Tone
+        
+        Socratic, passionate, direct, and TERSE. From a place of CARING. When someone is
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenPersona_OpenCode_Neutral -update
+--- FAIL: TestGoldenPersona_Windsurf_Architect (0.00s)
+    golden_test.go:522: golden mismatch for persona-windsurf-architect.golden (first diff at byte 127)
+        
+        expected[47:207]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Install via br
+        
+        actual[47:207]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes blindly.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Think 
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenPersona_Windsurf_Architect -update
+--- FAIL: TestGoldenPersona_Kiro_Architect (0.00s)
+    golden_test.go:541: golden mismatch for persona-kiro-architect.golden (first diff at byte 154)
+        
+        expected[74:234]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Install via br
+        
+        actual[74:234]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes blindly.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Think 
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenPersona_Kiro_Architect -update
+--- FAIL: TestGoldenCombined_Claude (0.00s)
+    golden_test.go:732: golden mismatch for combined-claude-claudemd.golden (first diff at byte 157)
+        
+        expected[77:237]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Install via br
+        
+        actual[77:237]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes blindly.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Think 
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenCombined_Claude -update
+--- FAIL: TestGoldenCombined_Windsurf (0.01s)
+    golden_test.go:758: golden mismatch for combined-windsurf-global-rules.golden (first diff at byte 127)
+        
+        expected[47:207]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Install via br
+        
+        actual[47:207]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes blindly.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Think 
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenCombined_Windsurf -update
+--- FAIL: TestGoldenPersona_Antigravity_Architect (0.00s)
+    golden_test.go:814: golden mismatch for persona-antigravity-architect.golden (first diff at byte 127)
+        
+        expected[47:207]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Install via br
+        
+        actual[47:207]:
+        tribution to commits. Use conventional commits only.
+        - Never build after changes blindly.
+        - Never use cat/grep/find/sed/ls. Use bat/rg/fd/sd/eza instead. Think 
+        
+        Run with -update to regenerate:
+          go test ./internal/components/ -run TestGoldenPersona_Antigravity_Architect -update
+FAIL
+FAIL	github.com/rd-mg/architect-ai/internal/components	1.746s
+ok  	github.com/rd-mg/architect-ai/internal/components/engram	0.075s
+ok  	github.com/rd-mg/architect-ai/internal/components/filemerge	0.009s
+ok  	github.com/rd-mg/architect-ai/internal/components/gga	0.016s
+ok  	github.com/rd-mg/architect-ai/internal/components/mcp	0.007s
+ok  	github.com/rd-mg/architect-ai/internal/components/permissions	0.024s
+ok  	github.com/rd-mg/architect-ai/internal/components/persona	0.032s
+ok  	github.com/rd-mg/architect-ai/internal/components/sdd	7.447s
+ok  	github.com/rd-mg/architect-ai/internal/components/skills	0.027s
+ok  	github.com/rd-mg/architect-ai/internal/components/theme	0.010s
+ok  	github.com/rd-mg/architect-ai/internal/components/uninstall	0.077s
+ok  	github.com/rd-mg/architect-ai/internal/installcmd	0.014s
+ok  	github.com/rd-mg/architect-ai/internal/model	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/opencode	0.021s
+ok  	github.com/rd-mg/architect-ai/internal/pipeline	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/planner	(cached)
+ok  	github.com/rd-mg/architect-ai/internal/state	0.017s
+ok  	github.com/rd-mg/architect-ai/internal/system	0.021s
+ok  	github.com/rd-mg/architect-ai/internal/tui	0.860s
+ok  	github.com/rd-mg/architect-ai/internal/tui/screens	(cached)
+?   	github.com/rd-mg/architect-ai/internal/tui/styles	[no test files]
+--- FAIL: TestRegistryContents (0.00s)
+    check_test.go:669: tool "architect-ai" Owner = "rd-mg", want "rdmachadog"
+FAIL
+FAIL	github.com/rd-mg/architect-ai/internal/update	0.671s
+ok  	github.com/rd-mg/architect-ai/internal/update/upgrade	0.144s
+ok  	github.com/rd-mg/architect-ai/internal/verify	(cached)
+FAIL

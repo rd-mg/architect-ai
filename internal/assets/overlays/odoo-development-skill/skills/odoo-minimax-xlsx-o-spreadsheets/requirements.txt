@@ -1,0 +1,5 @@
+pydantic>=2.0.0
+# pandas is used in xlsx_reader.py
+pandas
+# openpyxl is used for basic xlsx manipulations in some helper scripts
+openpyxl

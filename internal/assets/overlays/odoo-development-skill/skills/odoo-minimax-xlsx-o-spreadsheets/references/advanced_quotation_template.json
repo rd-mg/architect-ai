@@ -1,0 +1,95 @@
+{
+  "version": 19,
+  "sheets": [
+    {
+      "name": "1. Assumptions",
+      "id": "assumptions",
+      "colNumber": 15,
+      "rowNumber": 50,
+      "cells": {
+        "A1": { "content": "Global Assumption Guidelines", "style": 1 },
+        "B3": { "content": "Default Tax Rate (%)" },
+        "C3": { "content": "0.16", "style": 2, "format": 3 },
+        "B4": { "content": "Expected Scrap Rate (%)" },
+        "C4": { "content": "0.03", "style": 2, "format": 3 },
+        "B5": { "content": "Factory Capacity (Hrs/Mo)" },
+        "C5": { "content": "160", "style": 2, "format": 4 },
+        "B6": { "content": "Overtime Rate ($/Hr)" },
+        "C6": { "content": "35.00", "style": 2, "format": 2 },
+        "B7": { "content": "Standard SG&A Allocation (%)" },
+        "C7": { "content": "0.20", "style": 2, "format": 3 }
+      }
+    },
+    {
+      "name": "2. Raw ERP Data (Hidden)",
+      "id": "raw_erp_data",
+      "colNumber": 20,
+      "rowNumber": 1000,
+      "cells": {}
+    },
+    {
+      "name": "3. Advanced Quotation Output",
+      "id": "quotation_model",
+      "colNumber": 26,
+      "rowNumber": 200,
+      "cells": {
+        "A1": { "content": "EXECUTIVE QUOTATION SUMMARY", "style": 1 },
+        "A3": { "content": "Order ID:" },
+        "B3": { "content": "=IFERROR('2. Raw ERP Data (Hidden)'!A2, \"-\")", "style": 3 },
+        "C3": { "content": "Customer:" },
+        "D3": { "content": "=IFERROR(VLOOKUP(B3, '2. Raw ERP Data (Hidden)'!A2:D500, 3, FALSE), \"-\")", "style": 3 },
+        
+        "A5": { "content": "--- SALES & REVENUE ---", "style": 1 },
+        "A6": { "content": "Gross Revenue" },
+        "B6": { "content": "=SUMPRODUCT('2. Raw ERP Data (Hidden)'!E2:E500, '2. Raw ERP Data (Hidden)'!F2:F500)", "style": 4, "format": 2 },
+        "A7": { "content": "Calculated Net Sales" },
+        "B7": { "content": "=B6*(1-'1. Assumptions'!C3)", "style": 4, "format": 2 },
+        
+        "A9": { "content": "--- MANUFACTURING IMPACT ---", "style": 1 },
+        "A10": { "content": "Total Est. Labor Hours" },
+        "B10": { "content": "=SUM('2. Raw ERP Data (Hidden)'!M2:M500)", "style": 4, "format": 4 },
+        "A11": { "content": "Overtime Hours Triggered?" },
+        "B11": { "content": "=IF(B10>'1. Assumptions'!C5, \"YES Alert\", \"No\")", "style": 5 },
+        "A12": { "content": "Calculated COGS (With Scrap)" },
+        "B12": { "content": "=SUM('2. Raw ERP Data (Hidden)'!N2:N500) * (1+'1. Assumptions'!C4)", "style": 4, "format": 2 },
+        
+        "A14": { "content": "--- PROFITABILITY (FINANCIALS) ---", "style": 1 },
+        "A15": { "content": "Gross Profit" },
+        "B15": { "content": "=B7 - B12", "style": 4, "format": 2 },
+        "A16": { "content": "OpEx Deduction" },
+        "B16": { "content": "=B7 * '1. Assumptions'!C7", "style": 4, "format": 2 },
+        "A17": { "content": "NET OPERATING INCOME (NOI)" },
+        "B17": { "content": "=B15 - B16", "style": 1, "format": 2 }
+      }
+    }
+  ],
+  "styles": {
+    "1": {
+      "bold": true,
+      "color": "#000000"
+    },
+    "2": {
+      "color": "#0000FF",
+      "textColor": "#0000FF"
+    },
+    "3": {
+      "color": "#008000",
+      "textColor": "#008000"
+    },
+    "4": {
+      "color": "#000000",
+      "textColor": "#000000"
+    },
+    "5": {
+      "color": "#0000FF",
+      "textColor": "#0000FF",
+      "fillColor": "#FFFF00"
+    }
+  },
+  "formats": {
+    "1": "d/m/yyyy",
+    "2": "$#,##0.00;($#,##0.00);\"-\"",
+    "3": "0.00%",
+    "4": "#,##0;(#,##0);0"
+  }
+}

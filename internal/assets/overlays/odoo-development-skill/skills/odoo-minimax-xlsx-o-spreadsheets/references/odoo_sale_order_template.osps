@@ -1,0 +1,74 @@
+{
+  "version": 19,
+  "sheets": [
+    {
+      "name": "Pivot Analysis",
+      "id": "pivot",
+      "colNumber": 26,
+      "rowNumber": 100,
+      "cells": {
+        "A1": {
+          "content": "=PIVOT(\"1\")"
+        }
+      }
+    },
+    {
+      "name": "Data",
+      "id": "data",
+      "colNumber": 9,
+      "rowNumber": 10001,
+      "cells": {}
+    }
+  ],
+  "formats": {
+    "1": "d/m/yyyy",
+    "2": "[ ]#,##0.00",
+    "3": "0.00%"
+  },
+  "pivotNextId": 2,
+  "pivots": {
+    "1": {
+      "type": "SPREADSHEET",
+      "columns": [
+        {
+          "fieldName": "Stage"
+        }
+      ],
+      "rows": [
+        {
+          "fieldName": "Salesperson",
+          "order": "asc"
+        }
+      ],
+      "measures": [
+        {
+          "id": "Expected Revenue:sum",
+          "fieldName": "Expected Revenue",
+          "aggregator": "sum"
+        },
+        {
+          "id": "Commission",
+          "fieldName": "Commission",
+          "aggregator": "sum",
+          "userDefinedName": "Commission",
+          "computedBy": {
+            "sheetId": "pivot",
+            "formula": "='Expected Revenue:sum'*VLOOKUP(Salesperson,K2:L3,2,0)"
+          }
+        }
+      ],
+      "name": "Quotation Revenue Distribution by Salesperson",
+      "dataSet": {
+        "zone": {
+          "top": 0,
+          "bottom": 10000,
+          "left": 0,
+          "right": 8
+        },
+        "sheetId": "data"
+      },
+      "formulaId": "1"
+    }
+  },
+  "customTableStyles": {}
+}

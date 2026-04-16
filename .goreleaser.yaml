@@ -1,0 +1,65 @@
+version: 2
+
+project_name: architect-ai
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/architect-ai
+    binary: architect-ai
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+
+brews:
+  - repository:
+      owner: Gentleman-Programming
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    name: architect-ai
+    homepage: "https://github.com/rd-mg/"
+    description: "Architect AI Stack — One command to configure any AI coding agent on any OS."
+    license: "MIT"
+    commit_msg_template: "chore: update architect-ai formula to {{ .Tag }}"
+
+scoops:
+  - repository:
+      owner: Gentleman-Programming
+      name: scoop-bucket
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    name: architect-ai
+    homepage: "https://github.com/rd-mg/"
+    description: "Architect AI Stack — One command to configure any AI coding agent on any OS."
+    license: MIT
+    commit_msg_template: "chore: update architect-ai to {{ .Tag }}"
