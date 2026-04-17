@@ -1,0 +1,286 @@
+# SDD Apply — Odoo Context (Cudio-Extended)
+
+This is the Cudio-extended version of `apply-odoo.md`. Replaces the base file
+when the Cudio overlay is active. Includes Cudio-specific manifest checks,
+README generation, and branch/commit enforcement.
+
+When applying changes in a Cudio Odoo project, follow this protocol IN ADDITION to the standard sdd-apply behavior.
+
+## Cudio Naming Enforcement (NEW)
+
+When creating a new module, verify the folder name matches Cudio conventions:
+
+### Client Modules
+Format: `{client_prefix}_{core_app}_{descriptive_name}`
+Example: `acme_sale_custom_approval`
+
+### Internal Modules
+Format: `cudio_{core_app}_{descriptive_name}`
+Example: `cudio_api_connector`
+
+If the proposed folder name does NOT match, reject and ask for a valid name.
+
+## Manifest Auto-Check (MANDATORY — CUDIO EXTENDED)
+
+Before completing any task, verify the manifest:
+
+### Step 1: Read Current State
+```bash
+rg '"version"' __manifest__.py
+rg '"author"' __manifest__.py
+rg '"company"' __manifest__.py
+rg '"website"' __manifest__.py
+rg '"license"' __manifest__.py
+```
+
+### Step 2: Cudio-Specific Field Validation
+
+Verify:
+- `author` = `"Cudio Inc."`
+- `company` = `"Cudio Inc."`
+- `maintainer` = `"Cudio Inc."`
+- `website` = `"https://www.cudio.com"`
+- `license` = `"OPL-1"` (unless otherwise agreed per project)
+- `name` matches `"{Customer} | {Title}"` or `"Cudio | {Title}"`
+- `version` matches `X.Y.Z.W` format
+
+If any field is missing or incorrect, ADD the correction as part of your changes.
+
+### Step 3: Version Bump Decision
+
+Version bump rules (X.Y.Z.W format):
+- X.Y = Odoo major version (stays constant for a given project)
+- Z = incremented for new features, model changes, view changes
+- W = incremented for bug fixes, small improvements
+
+Decision matrix:
+- If ANY `.py`, `.xml`, `.js`, `.csv`, or `.scss` file was modified in this batch
+  → Version MUST be incremented
+- If you added a new model, new view, new controller, new feature → bump Z
+- If you fixed a bug or made a small improvement → bump W
+
+If version not incremented, ADD the version bump to your changes.
+
+### Step 4: Icon Check
+```bash
+test -f static/description/icon.png || \
+  echo "⚠️ icon.png missing from static/description/"
+```
+
+If missing, flag in the apply-progress artifact (icon must be added by human).
+
+## File Order Within a Module
+
+When creating/modifying module files, respect Odoo's import order:
+
+```
+my_module/
+├── __init__.py              # Imports models/, controllers/, wizards/
+├── __manifest__.py          # Declares data files in load order
+├── models/
+│   ├── __init__.py
+│   └── {model_name}.py
+├── controllers/
+│   ├── __init__.py
+│   └── {controller}.py
+├── views/
+│   └── {model_name}_views.xml
+├── security/
+│   ├── ir.model.access.csv  # MUST exist for every new model
+│   └── {group}_security.xml
+├── data/
+│   └── {data_type}_data.xml
+├── demo/
+│   └── {data_type}_demo.xml
+├── static/
+│   └── description/
+│       ├── icon.png         # REQUIRED (Cudio)
+│       └── index.html       # Optional
+├── migrations/
+│   └── {version}/
+│       ├── pre-migrate.py
+│       └── post-migrate.py
+├── tests/
+│   └── test_{feature}.py
+└── README.md                # REQUIRED (Cudio)
+```
+
+## Manifest data[] Load Order
+
+1. Security definitions (groups, categories)
+2. `security/ir.model.access.csv`
+3. Record rules
+4. Base data (required by views)
+5. Views (list, form, kanban, search)
+6. Actions
+7. Menus
+8. Reports
+9. Wizards' views
+10. Cron jobs / scheduled actions
+11. Templates (mail templates, QWeb reports)
+
+## Migration Script Scaffolding
+
+See the full templates in the base `apply-odoo.md`. Cudio-specific:
+
+- Migration scripts MUST be tested on a copy of production data before PR
+- Include rollback notes in the docstring of each migration
+
+Template:
+```python
+# {module}/migrations/{version}/pre-migrate.py
+"""
+Migration: {brief description}
+
+Rationale: {why this migration is needed}
+Rollback: {steps to undo if this migration fails}
+Tested on: {date and database used for testing}
+"""
+from odoo import api, SUPERUSER_ID
+
+def migrate(cr, version):
+    if not version:
+        return
+    # Migration logic
+```
+
+## Security Files
+
+For EVERY new model, create `security/ir.model.access.csv` BEFORE writing the model file.
+
+```csv
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_my_model_user,my.model.user,model_my_model,base.group_user,1,0,0,0
+access_my_model_manager,my.model.manager,model_my_model,base.group_system,1,1,1,1
+```
+
+## Code Patterns to ENFORCE
+
+- `hasclass('o_state_button')` NOT `contains(@class, 'o_state_button')`
+- `super().method()` NOT `super(MyClass, self).method()`
+- `@api.depends('field1', 'field2')` with ALL dependencies explicit
+- `tracking=True` on fields that need audit trail
+- `<list>` NOT `<tree>` in v18+
+- `invisible="state == 'done'"` NOT `attrs="{'invisible': [('state', '=', 'done')]}"` in v17+
+- NO hardcoded values — use `res.config.settings`, `ir.config_parameter`, or module-level Python constants
+
+## README Auto-Generation (CUDIO REQUIRED)
+
+When a module is created or significantly modified, generate/update `README.md`:
+
+```markdown
+# {Module Name}
+
+{description from manifest}
+
+**Author**: Cudio Inc.
+**Website**: https://www.cudio.com
+**License**: OPL-1
+**Odoo Version**: {X.Y}
+
+## Features
+- {bullet per capability from spec}
+
+## Configuration
+- {list ir.config_parameter entries}
+- {list required groups/permissions}
+- {list required external APIs}
+
+## Dependencies
+### Odoo Modules
+{from manifest depends}
+
+### External Python Libraries
+{from manifest external_dependencies.python}
+
+### External Binaries
+{from manifest external_dependencies.bin}
+
+## Changelog
+
+## [{current-version}] - {today's date}
+### Added / Changed / Fixed
+- {description of this change}
+
+## [{previous-version}] - {previous date}
+### Added / Changed / Fixed
+- {description of previous change}
+```
+
+## Changelog Entry (CUDIO)
+
+Every version bump MUST add a changelog entry. Format:
+
+```markdown
+## [{version}] - {YYYY-MM-DD}
+### Added
+- {new features introduced}
+### Changed
+- {behavior changes}
+### Fixed
+- {bug fixes}
+### Deprecated
+- {features marked for removal}
+### Removed
+- {features removed in this version}
+```
+
+Only include sections that have entries. Skip empty sections.
+
+## Test Scaffolding
+
+For each capability in the spec, create at minimum:
+- Unit test in `tests/test_{capability}.py`
+- Test class inherits from `odoo.tests.TransactionCase` (for ORM tests) or `HttpCase` (for HTTP tests)
+
+Cudio-specific: include a test for multi-company behavior if the module touches company-scoped records.
+
+## Branch Creation (CUDIO)
+
+When the SDD flow creates a branch, follow Cudio convention:
+`{feat|fix|refactor|docs|test|chore}/{task-id}-{brief-description}`
+
+Example (for task 12345, adding approval workflow):
+```bash
+git checkout -b feat/12345-add-approval-workflow
+```
+
+## Commit Message (CUDIO)
+
+For the apply phase, generate commit messages in Cudio format:
+```
+[{TAG}][{TASK_ID}] {module_name}: {brief description}
+```
+
+Example:
+```
+[ADD][12345] acme_sale_custom_approval: Add approval state machine to sale.order
+```
+
+Body:
+```
+Implements the approval workflow from spec v18.0.1.0.0.
+
+Changes:
+- New model acme.approval.request
+- Extends sale.order with approval_state field
+- Adds approval state machine with 3 states: draft, approved, rejected
+- Adds mail template for approval notifications
+
+Task: task-12345
+```
+
+## Size Budget
+
+Respect the 400-word progress report limit. Code changes themselves are separate artifacts.
+
+## Boundaries
+
+- Do NOT modify files outside the scope of assigned tasks
+- Do NOT silently skip the manifest version bump
+- Do NOT commit code without `ir.model.access.csv` for new models
+- Do NOT commit code without README.md (Cudio requirement)
+- Do NOT use `attrs=` in v17+
+- Do NOT use `<tree>` in v18+
+- Do NOT add Co-Authored-By trailers to commits
+- Do NOT propose merge strategies other than Squash and Merge

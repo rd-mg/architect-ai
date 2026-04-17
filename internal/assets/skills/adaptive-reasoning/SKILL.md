@@ -1,350 +1,350 @@
 ---
 name: adaptive-reasoning
 description: >
-  First-pass task classification and method routing for Architect-AI.
-  Trigger: When a task needs an explicit choice between direct execution,
-  deterministic validation, adversarial review, or bounded artifact refinement.
+  Single-entry classifier and inline reasoning executor. Classifies a task
+  across four observable dimensions and routes to one of three inline
+  reasoning modes: direct-exec, adversarial-review (two-pass defect discovery),
+  or bounded-synthesis (A/B/AB comparison for pre-implementation refinement).
+  All reasoning executes INLINE — no delegation to sub-agents, no separate
+  skills. This skill does NOT decide code acceptance (deterministic validators
+  do) and does NOT own persistence.
 license: Apache-2.0
 metadata:
   author: rd-mg
-  version: "0.3"
+  version: "1.0"
 ---
 
-## When to Use
+# Adaptive Reasoning v1.0
 
-- User explicitly asks for "adaptive-reasoning", "adaptive-reasoning", or equivalent trigger phrases
+## Why This Skill Exists
 
----
+Previous versions of this framework shipped three separate skills:
+`adaptive-reasoning` (classifier only), `judgment-day` (adversarial two-pass
+review), and `autoreason-lite` (bounded A/B comparison). Using them together
+required the orchestrator to delegate to external sub-agents, losing context
+and consuming ~1500 extra tokens per invocation.
 
-## Purpose
+This v1.0 absorbs all three into a single skill. Classification and execution
+happen inline in the same context. The three "modes" below are what used to
+be three skills.
 
-`adaptive-reasoning` is the classifier, not the finisher.
+## Operating Contract
 
-Its only job is to select one fixed route from the routing vocabulary:
+1. This skill **classifies and executes** reasoning inline.
+2. It never delegates to sub-agents.
+3. It never creates SDD phases.
+4. It never decides code acceptance — deterministic validators (tests, builds,
+   linters, `sdd-verify`) always outrank it for correctness claims.
+5. It never owns persistence — phase skills persist artifacts.
+6. Once classified, execute that mode fully in this same response.
 
-- `native-owner`
-- `deterministic-validators`
-- `judgment-day`
-- `autoreason-lite`
-- `native-sdd-first`
+## Classification: 4 Observable Dimensions
 
-It MUST NOT approve implementation correctness and MUST NOT replace deterministic acceptance.
-
-This skill shapes **how the agent thinks about a task** — it sets the reasoning posture before action,
-regardless of which SDD phase the agent is or is not currently inside. It does not coordinate phases
-at runtime and does not require phase-state awareness to operate.
-
----
-
-## Routing Principles
-
-### Pattern 1: Classify Before You Optimize
-
-Decide what kind of problem this is before choosing a reasoning overlay.
-
-Task classes:
-- implementation task
-- deterministic acceptance task
-- defect-finding review task
-- artifact-refinement task
-
-If the task is already clear and owned by a native skill, keep the native path.
-
-Classification is mandatory and must evaluate all six dimensions.
-
-### Pattern 2: Keep Deterministic Acceptance Sacred
-
-Do NOT route code acceptance to a reasoning overlay.
-
-- tests
-- builds
-- lints
-- structural validators
-- `sdd-verify` acceptance
-
-These always route to `deterministic-validators`. No override exists for this rule.
-
-### Pattern 3: Route to `autoreason-lite` Only When All Five Conditions Are Met
-
-Route to `autoreason-lite` if and only if **all** of the following are true:
-
-1. The task is proposal/spec/design-class work.
-2. There is an incumbent draft `A`.
-3. There is at least one serious competing draft `B`.
-4. The goal is pre-implementation refinement.
-5. Keeping the incumbent unchanged is still an acceptable outcome.
-
-If **any** condition is absent, stay with the owning SDD skill (`native-owner` or `native-sdd-first`
-depending on scope). Do not route to `autoreason-lite` with four of five conditions — treat partial
-satisfaction as a miss, not a partial pass.
-
-### Pattern 4: Use `judgment-day` for Defects, Not Synthesis
-
-Route to `judgment-day` when the goal is discovery — finding bugs, omissions, or regressions in:
-
-- **code artifacts** (PRs, patches, modules) — verification burden is `review-heavy` or `multi-gate`.
-- **architecture artifacts** (design docs, SDDs, ADRs) — but only when looking for _omissions and
-  contradictions_, not when synthesizing a stronger design from competing options.
-
-Do not use `judgment-day` for:
-- Synthesis or comparison of competing proposal drafts → use `autoreason-lite`.
-- Code correctness acceptance → use `deterministic-validators`.
-
-The distinguishing question: _Is the goal to find what is wrong, or to produce something better?_
-Wrong-finding → `judgment-day`. Better-producing → `autoreason-lite`.
-
-### Pattern 5: Use Observable Features, Not Vibes
-
-Classify from observable signals. Score every dimension before choosing a route.
+Score each dimension from strongest observable signal.
 
 | Dimension | Values (weakest → strongest) |
 |-----------|------------------------------|
-| scope size | `atomic` → `bounded` → `multi-step` → `system-level` |
-| ambiguity | `clear` → `partial` → `conflicting` → `unknown` |
-| dependency shape | `standalone` → `sequential` → `branching` → `graph-shaped` |
-| risk level | `low` → `medium` → `high` → `critical` |
-| verification burden | `syntax-only` → `testable` → `review-heavy` → `multi-gate` |
-| cost sensitivity | `low-cost-ok` → `balanced` → `cost-constrained` |
+| `scope` | atomic · bounded · multi-step · system-level |
+| `ambiguity` | clear · partial · conflicting · unknown |
+| `risk` | low · medium · high · critical |
+| `verification` | syntax-only · testable · review-heavy · multi-gate |
 
-Do not route from trigger words alone. Score first.
+Classification is mandatory and must score all four dimensions before routing.
 
----
+## Routing Matrix
 
-## Computed Classification Matrix
+Apply these rules in order. Stop at the first match.
 
-### Step 1: Classify the Task
+| Signal | Mode | Why |
+|--------|------|-----|
+| `verification=testable` or `verification=multi-gate` AND goal is code acceptance | **direct-exec → defer to validators** | Tests/builds/linters decide correctness; no reasoning overlay substitutes |
+| `verification=review-heavy` or `verification=multi-gate` AND goal is DEFECT DISCOVERY | **Mode 2: adversarial-review** | Find what is wrong; two passes expose what one misses |
+| `ambiguity` is `partial` or `conflicting` AND incumbent draft `A` exists AND competing draft `B` exists AND goal is pre-implementation refinement | **Mode 3: bounded-synthesis** | A/B/AB comparison produces the defensible final artifact |
+| `scope=multi-step` or `scope=system-level` AND ambiguity is non-trivial | **native-sdd-first** | Decomposition before narrower reasoning modes |
+| Everything else | **Mode 1: direct-exec** | No extra reasoning layer needed |
 
-Use the strongest matching value in each dimension.
+## Escalation Rules (priority order, stop at first match)
 
-| Dimension | Low side | High side | What to inspect |
-|-----------|----------|-----------|-----------------|
-| Scope size | `atomic` | `system-level` | files, moving parts, or artifacts touched |
-| Ambiguity | `clear` | `unknown` | whether the request defines outcome and constraints |
-| Dependency shape | `standalone` | `graph-shaped` | whether work fans across phases, branches, or subsystems |
-| Risk level | `low` | `critical` | blast radius, rollback pain, policy or user sensitivity |
-| Verification burden | `syntax-only` | `multi-gate` | whether machine checks, review, or multiple validators are needed |
-| Cost sensitivity | `low-cost-ok` | `cost-constrained` | whether heavier reasoning is justified |
-
-### Step 2: Derive the Method Family
-
-| Classification signal | Route | Why |
-|-----------------------|-------|-----|
-| `atomic` + `clear` + `standalone` + `low` | `native-owner` | Direct execution is cheaper and clearer |
-| implementation work with `testable` or `multi-gate` verification | `deterministic-validators` | Machine-checkable acceptance must decide |
-| review-heavy task where defect discovery in code or architecture matters more than synthesis | `judgment-day` | Independent adversarial review is the right tool |
-| proposal/spec/design work with `partial` or `conflicting` ambiguity and at least two plausible drafts | `autoreason-lite` | Bounded synthesis improves planning artifacts without replacing the owner |
-| `multi-step` or `system-level` change with non-trivial ambiguity | `native-sdd-first` | Planning/decomposition must stabilize before choosing a narrower overlay |
-| `bounded` scope with a clear owner and no competing drafts | `native-owner` | No extra routing layer needed |
-
-`bounded` is a valid and common outcome. It resolves to `native-owner` unless another signal overrides.
-
-### Step 3: Apply Escalation Rules
-
-Escalation rules are applied after the base route is derived. When rules conflict, the priority order is:
-
-1. `verification burden = multi-gate` → deterministic validators outrank any judge-style preference.
-2. `risk = critical` → prefer explicit planning or adversarial review over direct execution.
-3. `cost sensitivity = cost-constrained` → prefer the simplest route that still preserves correctness.
-
-Rule 1 beats Rule 2. Rule 2 beats Rule 3. Do not apply all three independently and then pick — apply in
-order and stop at the first match that changes the base route.
+1. `verification=multi-gate` → always defer to deterministic validators
+2. `risk=critical` → prefer Mode 2 or Mode 3 before Mode 1
+3. `cost-constrained` context → prefer the simplest mode that preserves correctness
 
 ---
 
-## Route Specification
+## Mode 1: direct-exec
 
-### `native-owner`
+**When to use**: atomic/bounded scope + clear ambiguity + low/medium risk + syntax-only/testable verification. Single credible approach. No synthesis or review needed.
 
-Direct execution by the owning skill or phase. No extra routing overlay.
+**Action**: Proceed with the owning skill or phase. No extra reasoning overlay.
 
-Use when:
-- The task is a stable implementation request with a clear owner.
-- Scope is `atomic` or `bounded`, ambiguity is `clear`, verification is `syntax-only` or `testable`.
-- Only one credible draft exists and no review or synthesis is needed.
-
-Do not use when deterministic acceptance, defect-finding, or system-level decomposition is required.
-
-### `deterministic-validators`
-
-Machine-checkable evidence decides. This route is the terminal for all code acceptance work.
-
-Use when:
-- Tests, builds, lints, structural validators, or `sdd-verify` acceptance are the acceptance gate.
-- Verification burden is `testable` or `multi-gate`.
-
-No reasoning overlay can substitute for this route on code acceptance. Multi-gate verification burden
-always escalates here, regardless of other signals.
-
-### `judgment-day`
-
-Independent adversarial review. The goal is discovery of defects, omissions, or regressions.
-
-Use when:
-- The task is a PR review, architecture audit, or SDD review where defect-finding is the primary goal.
-- Verification burden is `review-heavy` or higher.
-- The artifact under review is either code or an architecture document (not a proposal being refined).
-
-Do not use when:
-- The goal is to synthesize a stronger artifact from competing drafts.
-- The task is code correctness acceptance.
-
-### `autoreason-lite`
-
-Bounded artifact synthesis with incumbency protection. Refines planning artifacts pre-implementation.
-
-Use when all five Pattern 3 conditions are met (see above).
-
-Do not use when:
-- Only one credible draft exists.
-- The work is implementation (`sdd-apply`) or acceptance (`sdd-verify`).
-- The goal is defect-finding rather than synthesis.
-
-### `native-sdd-first`
-
-Planning and decomposition before method selection. Stabilizes scope before narrower overlays are chosen.
-
-Use when:
-- Scope is `multi-step` or `system-level`.
-- Ambiguity is `partial`, `conflicting`, or `unknown`.
-- The task fans across phases, subsystems, or branches.
-
-After `native-sdd-first` produces a stable decomposition, re-classify each resulting sub-task
-independently. Some may route to `native-owner`, others to `deterministic-validators`, and so on.
-
-Do not use `native-sdd-first` as a catch-all for ambiguous tasks that are actually `bounded` in scope.
-Score the scope dimension first.
+**Boundaries**: Do not use when defect discovery is the goal (use Mode 2). Do not use when two competing drafts exist (use Mode 3).
 
 ---
 
-## Routing Record (Required Output)
+## Mode 2: adversarial-review (inline two-pass)
 
-Every routing decision must emit this compact record:
+**When to use**: Review-heavy task. Goal is defect discovery in:
+- code artifacts (PRs, patches, modules) with verification=review-heavy or multi-gate
+- architecture artifacts (designs, SDDs, ADRs) looking for omissions/contradictions
+- factual/research questions needing adversarial falsification
+
+**Hard boundary**: DO NOT use for synthesis from competing drafts (that's Mode 3). DO NOT use for code correctness acceptance (deterministic validators do that).
+
+### Procedure (execute inline, do not delegate)
+
+**Step 1: Confirm target and scope**
+
+If scope is ambiguous enough to invalidate the review, ask once for clarification. Otherwise proceed with the most defensible interpretation and state your assumption.
+
+**Step 2: Run Pass A**
+
+Build one serious analysis. Capture:
+- Main conclusion
+- Supporting evidence
+- Key assumptions
+- Critical reasoning steps
+- Uncertainty or open gaps
+
+Use the "local correctness lens" for code, "feasibility lens" for specs, "best-supported lens" for research.
+
+**Step 3: Run Pass B (different lens)**
+
+Use a materially different lens. Try to expose:
+- Contradictory evidence
+- Missing assumptions
+- Broken causal links
+- Overconfident claims
+- Alternative explanations
+- Unexamined edge cases
+
+Use "system impact lens" for code, "failure-mode lens" for specs, "adversarial falsification" for research.
+
+Keep passes independent — do NOT let Pass A bias Pass B.
+
+**Step 4: Agreement Trap Check**
+
+If both passes converge quickly, ask:
+- What shared assumption could make both wrong?
+- What evidence would overturn both?
+- Did both inherit the same framing error?
+
+If convergence is on weak basis, reduce confidence.
+
+**Step 5: Synthesis**
+
+Choose the final result by weighing:
+1. Evidence quality
+2. Reasoning quality
+3. Contract/requirement alignment
+4. Realism of failure scenarios
+5. Remaining uncertainty
+
+Options:
+- Select Pass A if clearly stronger
+- Select Pass B if clearly stronger
+- Merge when both contribute complementary valid insight
+- Synthesize a new result when both are incomplete but evidence supports better
+
+Do NOT force symmetry when evidence is asymmetric.
+
+**Step 6: Classify findings**
+
+- **Confirmed** — both passes agree or one has strong evidence the other doesn't refute
+- **Suspect** — raised by one pass only, not yet strongly evidenced
+- **Contradiction** — passes materially disagree
+- **Info** — notable but non-blocking
+
+**Step 7: Apply severity**
+
+- **CRITICAL** — production-breaking, security-relevant, corrupting, fundamentally incorrect
+- **WARNING (real)** — realistic bug under normal use
+- **WARNING (theoretical)** — requires contrived conditions
+- **SUGGESTION** — improvement not required for correctness
+
+Reality test: _Can a normal user, system state, or expected workflow trigger this without contrivance?_ If yes → real. If no → theoretical.
+
+**Step 8: Verdict**
+
+- **APPROVED** — no confirmed CRITICAL or WARNING (real) remain
+- **CONDITIONALLY APPROVED** — only SUGGESTION and/or WARNING (theoretical) remain
+- **NEEDS CHANGES** — confirmed CRITICAL or WARNING (real) remain
+- **UNRESOLVED** — contradiction or missing evidence prevents conclusion
+
+Verdict is ANALYTICAL only. Never present APPROVED as merge permission.
+
+### Mode 2 Output Template
+
+```markdown
+## Adversarial Review — {target}
+
+### Lens selection
+- Pass A: {lens}
+- Pass B: {lens}
+
+### Findings
+
+| Finding | Pass A | Pass B | Severity | Status |
+|---------|--------|--------|----------|--------|
+| {issue} | ✅ | ✅ | CRITICAL | Confirmed |
+| {issue} | ✅ | ❌ | WARNING (real) | Suspect |
+
+**Confirmed**: {count} · **Suspect**: {count} · **Contradictions**: {count}
+
+### Key reasoning
+- {why the strongest confirmed issue matters}
+
+### Confidence
+{high|medium|low} — {why}
+
+### Verdict
+{APPROVED|CONDITIONALLY APPROVED|NEEDS CHANGES|UNRESOLVED}
+```
+
+---
+
+## Mode 3: bounded-synthesis (A/B/AB comparison)
+
+**When to use**: Pre-implementation refinement. ALL FIVE conditions must hold:
+1. Task is proposal/spec/design-class work (not implementation)
+2. Incumbent draft `A` exists
+3. At least one serious competing draft `B` exists
+4. Goal is refinement, not open-ended ideation
+5. Keeping `A` unchanged is still a valid outcome
+
+If any condition fails, fall back to Mode 1.
+
+**Hard boundary**: DO NOT use for implementation work (sdd-apply). DO NOT use for code acceptance. DO NOT use for defect discovery (that's Mode 2).
+
+### Procedure (execute inline, do not delegate)
+
+**Step 1: Confirm applicability**
+
+Check all five conditions above. If any fails, route to Mode 1 and explain why.
+
+**Step 2: Restate target**
+
+State decision target, constraints, and success condition in one paragraph.
+
+**Step 3: Normalize candidates**
+
+- `A`: incumbent state/draft/approach
+- `B`: one serious competing alternative
+- Normalize both to the same comparison frame (same format, same evaluation criteria)
+
+**Step 4: Produce synthesis candidate AB**
+
+Create one synthesis combining the strongest material traits of A and B. Do not create tournaments or multiple synthesis candidates unless the user explicitly requests another round.
+
+**Step 5: Evaluate A, B, AB against rubric**
+
+For code/implementation targets:
+- Correctness against stated behavior
+- Safety of state transitions and side effects
+- Contract compatibility and invariant preservation
+- Blast radius, rollback difficulty, change surface
+- Operability, readability, maintainability
+- Simplicity relative to problem
+- Testability
+
+For non-code artifacts:
+- Completeness against stated goal
+- Clarity and testability of claims
+- Internal consistency
+- Alignment with approved constraints
+- Simplicity relative to problem
+
+Prefer material improvements over stylistic churn.
+
+**Step 6: Apply conservative selection**
+
+- Keep `A` if strongest overall
+- Keep `A` on ties
+- Prefer the option that introduces least unnecessary churn
+- Adopt `B` or `AB` only when gain is substantive
+- If `AB` wins, carry forward only material deltas
+
+**Step 7: Return result**
+
+### Mode 3 Output Template
+
+```markdown
+## Bounded Synthesis — {target}
+
+### Applicability check
+- [ ] Target is proposal/spec/design class
+- [ ] Incumbent `A` exists
+- [ ] Competing draft `B` exists
+- [ ] Goal is pre-implementation refinement
+- [ ] "No change" is acceptable
+
+### Candidates
+- **A (incumbent)**: {summary}
+- **B (competing)**: {summary}
+- **AB (synthesis)**: {summary}
+
+### Comparison
+
+| Criterion | A | B | AB |
+|-----------|---|---|-----|
+| {criterion} | {score/note} | {score/note} | {score/note} |
+
+### Decision
+{Keep A | Adopt B | Adopt AB}
+
+### Minimal delta list
+1. {change 1}
+2. {change 2}
+
+### Unresolved risks or assumptions
+- {risk}
+```
+
+---
+
+## Common Output Record
+
+Every routing decision MUST emit this record:
 
 ```text
-owner: <native owner or capability>
-scope: atomic|bounded|multi-step|system-level
-ambiguity: clear|partial|conflicting|unknown
-dependency_shape: standalone|sequential|branching|graph-shaped
-risk: low|medium|high|critical
-verification_burden: syntax-only|testable|review-heavy|multi-gate
-cost_sensitivity: low-cost-ok|balanced|cost-constrained
-route: native-owner|deterministic-validators|judgment-day|autoreason-lite|native-sdd-first
-confidence: high|medium|low
-escalation_flag: none|risk-override|cost-constrained|multi-gate-override
+mode: direct-exec | adversarial-review | bounded-synthesis | native-sdd-first
+scope: atomic | bounded | multi-step | system-level
+ambiguity: clear | partial | conflicting | unknown
+risk: low | medium | high | critical
+verification: syntax-only | testable | review-heavy | multi-gate
+confidence: high | medium | low
+escalation_flag: none | risk-override | cost-constrained | multi-gate-override
 reason: <1-2 lines>
 ```
 
-`confidence` reflects how cleanly the task matched the classification matrix:
-- `high` — all dimensions scored clearly, route is unambiguous.
-- `medium` — one dimension was uncertain; route is the strongest match.
-- `low` — multiple dimensions conflicted or were unknown; route is provisional and should be reviewed.
-
-`escalation_flag` records whether an escalation rule changed the base route:
-- `none` — base route was kept.
-- `risk-override` — Rule 2 (critical risk) changed the route.
-- `cost-constrained` — Rule 3 constrained the route to a simpler option.
-- `multi-gate-override` — Rule 1 (multi-gate verification) overrode a judge-style preference.
-
-The field names and route values are stable contract surface.
-
 ---
 
-## Route Examples
+## Boundaries Recap
 
-### `judgment-day` positive — code review
+- This skill does NOT create SDD phases.
+- This skill does NOT replace `sdd-propose`, `sdd-spec`, `sdd-design`, or `sdd-verify`.
+- This skill does NOT decide code acceptance (deterministic validators do).
+- This skill does NOT own persistence of the final artifact.
+- Modes 2 and 3 execute INLINE in the same response — never delegate, never spawn sub-agents.
 
-- Input: large PR review where the goal is defect-finding and regression detection.
-- Route: `judgment-day`.
-- Reason: review-heavy verification burden on a code artifact; discovery, not synthesis.
+## Anti-Patterns
 
-### `judgment-day` positive — architecture audit
+- Using Mode 2 (adversarial-review) when the goal is synthesis, not defect discovery
+- Using Mode 3 (bounded-synthesis) when only one credible draft exists
+- Using Mode 3 for implementation or acceptance work
+- Converting analytical uncertainty into false precision
+- Letting both passes in Mode 2 share a hidden premise without checking it
+- Generating many alternatives in Mode 3 just because ambiguity exists
+- Preferring novelty over stability in Mode 3
+- Claiming Mode 2 verdict = merge permission
 
-- Input: reviewing a finalized SDD for contradictions and missing failure modes.
-- Route: `judgment-day`.
-- Reason: architecture artifact under adversarial review for omissions; not a proposal refinement.
+## Compatibility with SDD
 
-### `judgment-day` blocked — competing proposals
+- If `adaptive-reasoning` is invoked before delegation, the skill resolver MAY consume the routing record directly to inform delegation choice.
+- Routing record is stable contract surface. Field names and mode values are not renamed.
 
-- Input: choosing between two competing design proposals.
-- Route: not `judgment-day`.
-- Why blocked: the goal is synthesis/refinement, not defect discovery. Use `autoreason-lite` if both
-  Pattern 3 conditions for incumbency and competition are met.
+## Legacy Note
 
-### `autoreason-lite` positive
-
-- Input: proposal refinement with incumbent draft `A` and serious competing draft `B`.
-  All five Pattern 3 conditions are satisfied.
-- Route: `autoreason-lite`.
-- Reason: bounded artifact synthesis before implementation; incumbency protection applies.
-
-### `autoreason-lite` blocked — single draft
-
-- Input: one proposal draft with no real competitor.
-- Route: not `autoreason-lite`.
-- Why blocked: no bounded comparison target exists. Route to `native-owner`.
-
-### `autoreason-lite` blocked — code work
-
-- Input: `sdd-apply` implementation or `sdd-verify` acceptance.
-- Route: not `autoreason-lite`.
-- Why blocked: code execution and verification must converge through deterministic validators.
-
-### `native-sdd-first` positive
-
-- Input: system-wide refactor touching six subsystems; scope is unclear and dependencies are
-  graph-shaped.
-- Route: `native-sdd-first`.
-- Reason: decomposition required before any narrower overlay can be selected.
-
-### `native-sdd-first` blocked — bounded scope
-
-- Input: single-module change with partial ambiguity around one edge case.
-- Route: not `native-sdd-first`. Score scope as `bounded`, not `system-level`.
-- Why blocked: `native-sdd-first` is for system-level decomposition, not for hedging on
-  bounded tasks with minor uncertainty.
-
-### `bounded` scope resolves to `native-owner`
-
-- Input: update a single config file to add a new environment variable; owner is known; no competing
-  options; verification is syntax-only.
-- Scope: `bounded`. Route: `native-owner`.
-- Reason: bounded scope with a clear owner; no extra layer needed.
-
-### Escalation conflict example
-
-- Input: critical-risk task that is also cost-constrained and requires multi-gate verification.
-- Apply escalation rules in priority order:
-  1. `multi-gate-override` fires first → route to `deterministic-validators`.
-  2. Rules 2 and 3 are not evaluated further.
-- `escalation_flag: multi-gate-override`.
-
----
-
-## Minimal Workflow
-
-1. Identify the owning phase or capability.
-2. Score all six observable dimensions: scope, ambiguity, dependency shape, risk, verification burden,
-   and cost sensitivity.
-3. Determine the task class: implementation, acceptance, defect-finding, or artifact-refinement.
-4. Check whether deterministic evidence must decide (verification burden `testable` or `multi-gate`).
-5. Apply the Step 2 matrix to derive a base route.
-6. Apply escalation rules in priority order (multi-gate → critical risk → cost-constrained). Stop at
-   the first rule that changes the route.
-7. Set `confidence` and `escalation_flag`.
-8. Emit the routing record.
-
----
-
-## Boundaries
-
-- This skill does not create a new SDD phase.
-- This skill does not replace `sdd-propose`, `sdd-spec`, `sdd-design`, or `sdd-verify`.
-- This skill does not decide code acceptance.
-- This skill does not own persistence of the final artifact.
-
----
-
-## Resources
-
-- `internal/assets/skills/autoreason-lite/SKILL.md`
-- `internal/assets/skills/judgment-day/SKILL.md`
+Previous standalone skills `judgment-day` and `autoreason-lite` are archived
+under `internal/assets/skills/_archived/`. Their logic is absorbed here. If
+you see references to them in legacy prompts, treat them as equivalent to
+Mode 2 and Mode 3 of this skill respectively.

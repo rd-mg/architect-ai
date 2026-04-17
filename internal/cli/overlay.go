@@ -133,17 +133,12 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	manifest.Agents = uniqueStrings(manifest.Agents)
 	sort.Strings(manifest.Agents)
 
-	patternFiles, err := copyFSDirFiles(sourceFS, "skills", filepath.Join(overlayRoot, "patterns"), func(assetPath string, _ fs.DirEntry) bool {
-		return strings.EqualFold(filepath.Ext(assetPath), ".md")
-	})
-	if err != nil {
-		return OverlayManifest{}, err
-	}
-	sort.Strings(patternFiles)
-	manifest.Patterns = append(manifest.Patterns, patternFiles...)
-	for _, rel := range patternFiles {
-		manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("patterns", rel)))
-	}
+	// REMOVED in V3: loose-pattern copy bypass version filtering.
+	// All patterns are now inside version-gated bundle directories
+	// (patterns-agnostic/, patterns-18/, patterns-19/, etc.) which are
+	// handled by copyOverlaySkillBundles() and version-filtered by
+	// bridgeOverlaySkills() → matchesOverlaySkillVersion().
+	manifest.Patterns = []string{}
 
 	instructionFiles, err := copyFSTree(sourceFS, "instructions", filepath.Join(overlayRoot, "instructions"), nil)
 	if err != nil {

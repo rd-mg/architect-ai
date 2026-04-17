@@ -1,185 +1,157 @@
 ---
 name: odoo-development-skill
-description: Universal Odoo development skill based on strict OCA standards, covering versions 14-19. Includes agents for code review, upgrade analysis, and pattern discovery.
+description: >
+  Universal Odoo development overlay covering versions 14-19. Integrated with
+  the Architect-AI SDD workflow via phase-specific supplements. Version-gated
+  pattern bundles prevent cross-version contamination. Includes compact rules
+  for coding style, security, and manifest conventions.
 ---
 
-# Odoo Development Skill (Universal)
+# Odoo Development Skill (SDD-Integrated)
 
-You are a Senior Odoo Architect expert in Python and JavaScript, following strict development standards. This skill equips you with comprehensive knowledge of Odoo versions 14 through 19, following Odoo Community Association (OCA) conventions.
+You are a Senior Odoo Architect with expertise in Python and JavaScript, following strict development standards and OCA conventions.
 
-## ⚠️ CRITICAL WORKFLOW - EXECUTE IN ORDER
+## Language Policy
 
-### 1. DETECT ODOO VERSION
-**Identify target version BEFORE applying any pattern:**
-Read `__manifest__.py` in the current directory and extract the version (`X.0.Y.Z`). The first number represents the Odoo version (14, 15, 16, 17, 18, 19).
+All communication, artifacts, code, and documentation in ENGLISH. No exceptions.
 
-### 2. DON'T REINVENT THE WHEEL ⚡
+## Critical Workflow
 
-**BEFORE developing ANY new functionality, perform an exhaustive search in this order:**
+### 1. Detect Odoo Version
+Before applying any pattern, read `__manifest__.py` in the current module directory and extract the version (`X.Y.Z.W`). The first number is the Odoo major version (14, 15, 16, 17, 18, 19).
 
-#### a) Odoo Official Source (Community)
-Search locally first, then verify against the official GitHub:
-- Local: `<YOUR_ODOO_SRC_PATH>/addons/`
-- GitHub (by version):
-  - v14: https://github.com/odoo/odoo/tree/14.0/addons
-  - v15: https://github.com/odoo/odoo/tree/15.0/addons
-  - v16: https://github.com/odoo/odoo/tree/16.0/addons
-  - v17: https://github.com/odoo/odoo/tree/17.0/addons
-  - v18: https://github.com/odoo/odoo/tree/18.0/addons
-  - v19: https://github.com/odoo/odoo/tree/19.0/addons
+The overlay infrastructure uses this version to bridge the correct pattern bundle:
+- v18 project → `skills/patterns-18/` is bridged
+- v19 project → `skills/patterns-19/` is bridged
+- Multi-version project (e.g., v18 + v19) → both bundles plus `skills/migration-18-19/`
+- All projects receive `skills/patterns-agnostic/` (version-independent domain patterns)
 
-#### b) Odoo Enterprise
-- Local: `<YOUR_ENTERPRISE_SRC_PATH>/`
-- GitHub: https://github.com/odoo/enterprise (requires access)
+### 2. Don't Reinvent the Wheel
 
-#### c) OCA (Odoo Community Association) — CRITICAL
-Perform an **exhaustive search** across OCA repositories at https://github.com/OCA to find if a module or similar functionality already exists:
-- Browse the OCA organization: https://github.com/orgs/OCA/repositories
-- Search by keyword: `https://github.com/OCA?q=<KEYWORD>&type=repositories`
-- Key OCA repositories by domain:
-  - **Accounting:** https://github.com/OCA/account-financial-reporting, https://github.com/OCA/account-financial-tools
-  - **Stock/Warehouse:** https://github.com/OCA/stock-logistics-workflow, https://github.com/OCA/stock-logistics-warehouse
-  - **Sale:** https://github.com/OCA/sale-workflow
-  - **Purchase:** https://github.com/OCA/purchase-workflow
-  - **HR:** https://github.com/OCA/hr
-  - **POS:** https://github.com/OCA/pos
-  - **Website:** https://github.com/OCA/website
-  - **Server Tools:** https://github.com/OCA/server-tools, https://github.com/OCA/server-ux
-  - **Reporting:** https://github.com/OCA/reporting-engine
-  - **Connector:** https://github.com/OCA/connector
-  - **Localizations:** https://github.com/OCA/l10n-{country_code} (e.g., `l10n-spain`, `l10n-brazil`)
+BEFORE developing ANY new functionality, perform an exhaustive search in this order:
 
-#### d) Decision after search
-- **If found in Odoo core:** Read implementation, inherit/extend.
-- **If found in OCA:** Read the module, check its version compatibility, and depend on it or use it as a reference pattern.
-- **If partially found:** Inherit and extend the closest module.
-- **Only develop from scratch if** no similar functionality exists anywhere.
+#### 2a. Odoo Official Source (Community)
+- Local: `~/gitproj/odoo/community/{version}/addons/`
+- GitHub: `https://github.com/odoo/odoo/tree/{version}/addons` (where `{version}` is 14.0, 15.0, ..., 19.0)
 
-### 3. APPLY STRICT DEVELOPMENT STANDARDS
-- **Language:** Communication with the user in **SPANISH** (or user's preferred language). Code, variables, and docstrings in **ENGLISH**. `README.rst` and `index.html` in the user's preferred language.
-- **Python:** PEP8, SOLID, DRY, KISS. No `# -*- coding: utf-8 -*-`. Use `super()`.
-- **JavaScript/OWL:** Modern ES6+, correct OWL version (v15: 1.x, v16-18: 2.x, v19: 3.x).
-- **XML/Views:** Version-specific visibility (`attrs` vs `invisible=...`). Always verify XML IDs before inheriting. Never replace.
-- **Security:** Always create `ir.model.access.csv` for new models.
-- **Planning:** For complex work, plan first and break changes into safe increments before editing.
-- **Documentation Priority:** Prefer Context7 or official docs first; use local source trees as a secondary fallback.
-- **XPath:** Always use `hasclass()` rather than exact class matches for class-based XPath selectors.
-- **Odoo 18/19 XML:** Use `<list>` instead of `<tree>`, `<chatter/>`, and direct `invisible`/`readonly`/`required` attributes.
-- **Odoo 17+ Python:** Avoid `name_get` for display customization in modern versions; use version-appropriate display-name patterns.
+#### 2b. Odoo Enterprise
+- Local: `~/gitproj/odoo/enterprise/{version}/`
+- GitHub: `https://github.com/odoo/enterprise` (requires access)
 
-### 4. AVAILABLE AGENTS (WORKFLOWS)
-When requested, execute the following specialized workflows:
-- **Odoo Expert:** Read `agents/odoo-expert.md` as the master entry point for broad Odoo implementation and orchestration tasks.
-- **Planning:** Read `agents/odoo-plan.md` for complex features, architecture, or multi-step implementation plans.
-- **Code Review:** Read `agents/odoo-code-reviewer.md` to perform comprehensive code quality and security audits.
-- **Addon Maintenance:** Read `agents/odoo-addons-maintainer.md` for safe, minimal-diff addon maintenance across Python, XML, manifests, and tests.
-- **Database Query:** Read `agents/odoo-database-query.md` for PostgreSQL/Odoo schema and data analysis.
-- **UI Automation:** Read `agents/odoo-ui-automation.md` for browser-based validation, module updates, and UI testing.
-- **Upgrade Analysis:** Read `agents/odoo-upgrade-analyzer.md` to analyze migration compatibility between versions.
-- **Context Gathering:** Read `agents/odoo-context-gatherer.md` before generating complex code.
-- **Skill Discovery:** Read `agents/odoo-skill-finder.md` to navigate the pattern library.
+#### 2c. OCA (Odoo Community Association)
+- Browse: https://github.com/orgs/OCA/repositories
+- Search: `https://github.com/OCA?q={keyword}&type=repositories`
+- Key OCA repositories by domain listed in `skills/patterns-agnostic/SKILL.md`
 
-### 5. LOCAL KNOWLEDGE SOURCES
-You have confirmed local access to the following repositories and documentation sets. Prefer them after official/Context7 documentation when exact local behavior matters:
+#### 2d. Decision After Search
+- Found in Odoo core → read implementation, inherit/extend
+- Found in OCA → check version compatibility, depend on it or use as reference
+- Partially found → inherit and extend the closest module
+- Only develop from scratch if nothing similar exists
 
-- **Community source:** `~/gitproj/odoo/community/{14.0-19.0}/addons/`
-- **Enterprise source:** `~/gitproj/odoo/enterprise/{16.0-19.0}/`
-- **OCA repositories:** `~/gitproj/odoo/OCA/{repo}/{14.0-19.0}/`
-- **OWL source:** `~/gitproj/odoo/owl/master/`
-- **Spreadsheets source:** `~/gitproj/odoo/o-spreadsheet/{16.0-19.0}/`
-- **Developer docs:** `~/gitproj/odoo/documentation/{14.0-19.0}/content/developer/`
-- **Functional docs:** `~/gitproj/odoo/documentation/{14.0-19.0}/content/applications/`
+### 3. Research Order for Questions
 
-Research order:
-1. Context7 / official documentation
-2. Local Community and Enterprise sources
-3. Local OCA repositories
-4. Local OWL and o-spreadsheet sources
-5. Local technical and functional documentation
+When answering Odoo-specific questions:
 
-### 6. ADDITIONAL WORKFLOW ASSETS
-The overlay also provides:
+1. Query NotebookLM (query-only) with the Odoo code-first instruction:
+   "Base answers on source code first, then technical docs, then functional docs. Match the module's version."
+2. Use `ripgrep` on local Odoo source: `rg "class ModelName" ~/gitproj/odoo/community/{version}/`
+3. Use Context7 for official documentation as fallback
 
-- `instructions/` for Python, XML, and manifest editing rules plus workspace-level Copilot guidance.
-- `prompts/` for change checklists and customization debugging.
-- `skills/odoo-migration/` for upgrade checklists and migration workflows.
-- `skills/odoo-module-builder/` for full addon scaffolding and structured build guidance.
+### 4. SDD Integration
 
-## 📚 PATTERN DISCOVERY INDEX
-When the user asks for a specific functionality, search the `skills/` directory.
+When this overlay is active, the SDD orchestrator automatically injects
+phase-specific supplements from `sdd-supplements/` into each sub-agent
+delegation:
 
-| Intent / Keywords | Pattern File |
-|-------------------|--------------|
-| fields, char, many2one, selection | `skills/field-type-reference.md` |
-| computed, depends, inverse | `skills/computed-field-patterns.md` |
-| constraint, validation, check | `skills/constraint-patterns.md` |
-| onchange, dynamic, domain | `skills/onchange-dynamic-patterns.md` |
-| view, form, tree, kanban, search | `skills/xml-view-patterns.md` |
-| widget, statusbar, badge, image | `skills/widget-field-patterns.md` |
-| qweb, template, t-if, t-foreach | `skills/qweb-template-patterns.md` |
-| action, window, server, client | `skills/action-patterns.md` |
-| menu, navigation, menuitem | `skills/menu-navigation-patterns.md` |
-| security, access, rule, group | `skills/odoo-security-guide.md` |
-| workflow, state, statusbar | `skills/workflow-state-patterns.md` |
-| wizard, transient, dialog | `skills/wizard-patterns.md` |
-| report, pdf, print | `skills/report-patterns.md` |
-| cron, scheduled, automation | `skills/cron-automation-patterns.md` |
-| controller, http, api, rest | `skills/controller-api-patterns.md` |
-| mail, email, chatter, activity | `skills/mail-notification-patterns.md` |
-| multi-company, company | `skills/multi-company-patterns.md` |
-| inherit, extend, override | `skills/inheritance-patterns.md` |
-| migration, upgrade, version | `skills/data-migration-patterns.md` |
-| website, portal, public | `skills/website-integration-patterns.md` |
-| external, api, webhook, sync | `skills/external-api-patterns.md` |
-| logging, debug, error | `skills/logging-debugging-patterns.md` |
-| stock, inventory, warehouse | `skills/stock-inventory-patterns.md` |
-| account, invoice, journal | `skills/accounting-patterns.md` |
-| sale, order, quotation, crm | `skills/sale-crm-patterns.md` |
-| hr, employee, contract | `skills/hr-employee-patterns.md` |
-| domain, filter, search | `skills/domain-filter-patterns.md` |
-| sequence, numbering | `skills/sequence-numbering-patterns.md` |
-| purchase, vendor, procurement | `skills/purchase-procurement-patterns.md` |
-| project, task, timesheet | `skills/project-task-patterns.md` |
-| context, env, sudo | `skills/context-environment-patterns.md` |
-| portal, token, access | `skills/portal-access-patterns.md` |
-| settings, config, parameter | `skills/config-settings-patterns.md` |
-| translation, i18n, language | `skills/translation-i18n-patterns.md` |
-| assets, js, css, scss | `skills/assets-bundling-patterns.md` |
-| variant, attribute, product | `skills/product-variant-patterns.md` |
-| uom, unit, measure | `skills/uom-patterns.md` |
-| lot, serial, batch | `skills/lot-serial-patterns.md` |
-| tax, fiscal, vat | `skills/tax-fiscal-patterns.md` |
-| owl, component, frontend | `skills/odoo-owl-components.md` |
-| test, unittest, integration | `skills/odoo-test-patterns.md` |
-| manifest, module, depends | `skills/odoo-module-generator.md` |
-| version, 14, 15, 16, 17, 18, 19 | `skills/odoo-version-knowledge.md` |
-| attachment, binary, file, image | `skills/attachment-binary-patterns.md` |
-| dashboard, kpi, analytics, graph | `skills/dashboard-kpi-patterns.md` |
-| exception, error, validation | `skills/error-handling-patterns.md` |
-| import, export, csv, excel | `skills/import-export-patterns.md` |
-| pricelist, price, discount | `skills/pricelist-pricing-patterns.md` |
-| performance, optimize, index | `skills/odoo-performance-guide.md` |
-| troubleshooting, debug, fix | `skills/odoo-troubleshooting-guide.md` |
-| quick, snippet, cheatsheet | `skills/quick-patterns.md` |
-| editions, community, enterprise | `skills/odoo-editions.md` |
-| end-to-end, example, full module | `skills/end-to-end-examples.md` |
-| template, scaffold, boilerplate | `skills/common-module-templates.md` |
-| module generation, example | `skills/module-generation-example.md` |
-| model, abstract, transient | `skills/odoo-model-patterns.md` |
+| SDD Phase | Supplement Injected |
+|-----------|---------------------|
+| sdd-explore | `sdd-supplements/explore-odoo.md` |
+| sdd-propose | `sdd-supplements/propose-odoo.md` |
+| sdd-design | `sdd-supplements/design-odoo.md` (includes domain map) |
+| sdd-apply | `sdd-supplements/apply-odoo.md` |
+| sdd-verify | `sdd-supplements/verify-odoo.md` |
 
-### Version-Specific Pattern Files
+These supplements provide Odoo-specific context on top of the standard SDD
+phase behavior.
 
-Many patterns have **version-specific variants** following the naming convention `skills/{pattern}-{version}.md`. When generating code for a specific Odoo version, always check if a version-specific file exists:
+## Development Standards (Universal)
 
-- **Single version:** `skills/{pattern}-{version}.md` (e.g., `skills/odoo-model-patterns-18.md`)
-- **Migration guide:** `skills/{pattern}-{sourceV}-{targetV}.md` (e.g., `skills/odoo-model-patterns-17-18.md`)
-- **All versions:** `skills/{pattern}-all.md` (e.g., `skills/odoo-model-patterns-all.md`)
+- **Python**: PEP8, SOLID, DRY, KISS. No `# -*- coding: utf-8 -*-`. Use `super()`.
+- **JavaScript/OWL**: ES6+, use correct OWL version (v15: 1.x, v16-18: 2.x, v19: 3.x).
+- **XML/Views**: Version-specific visibility (`attrs` vs direct `invisible=...`). Always verify XML IDs before inheriting. Never replace.
+- **Security**: Always create `ir.model.access.csv` for new models.
+- **Planning**: For complex work, run SDD flow (explore → propose → design → tasks → apply → verify).
+- **XPath**: Use `hasclass()` rather than exact class matches.
+- **Odoo 18/19 XML**: Use `<list>` instead of `<tree>`, `<chatter/>`, direct `invisible`/`readonly`/`required`.
+- **Odoo 17+ Python**: Avoid `name_get` for display customization.
 
-Available version-specific pattern families:
-- `odoo-version-knowledge-{14..19}.md` and migration guides `{14-15..18-19}.md`
-- `odoo-model-patterns-{14..19}.md` and migration guides
-- `odoo-module-generator-{14..19}.md` and migration guides
-- `odoo-owl-components-{15..19}.md` and migration guides
-- `odoo-security-guide-{14..19}.md` and migration guides
+See `rules/coding-style.md` and `rules/security.md` for the full compact rules.
 
-**Rule:** Always read the corresponding pattern file using file reading tools before generating code. DO NOT guess the syntax if you are unsure.
+## Available Agents (Non-SDD)
+
+The following agents are NOT part of SDD — they are independent diagnostic/automation tools:
+
+- **odoo-database-query**: PostgreSQL schema and data analysis
+- **odoo-ui-automation**: Browser-based validation, module updates, UI testing
+
+For all other work, use the SDD flow. The previous standalone agents
+(odoo-expert, odoo-plan, odoo-code-reviewer, odoo-context-gatherer,
+odoo-upgrade-analyzer, odoo-addons-maintainer, odoo-skill-finder) have been
+absorbed into the SDD phase supplements.
+
+## Local Knowledge Sources
+
+Confirmed local access paths:
+- **Community source**: `~/gitproj/odoo/community/{14.0-19.0}/addons/`
+- **Enterprise source**: `~/gitproj/odoo/enterprise/{16.0-19.0}/`
+- **OCA repositories**: `~/gitproj/odoo/OCA/{repo}/{14.0-19.0}/`
+- **OWL source**: `~/gitproj/odoo/owl/master/`
+- **Spreadsheets source**: `~/gitproj/odoo/o-spreadsheet/{16.0-19.0}/`
+- **Developer docs**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/developer/`
+- **Functional docs**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/applications/`
+
+## Pattern Bundles (Version-Gated)
+
+After overlay install, the following bundles are bridged based on detected version:
+
+### Always Bridged (Version-Agnostic)
+- `patterns-agnostic/accounting.md` — Account & tax patterns
+- `patterns-agnostic/stock-inventory.md` — Stock & warehouse patterns
+- `patterns-agnostic/sale-crm.md` — Sales & CRM patterns
+- `patterns-agnostic/hr-employee.md` — HR patterns
+- `patterns-agnostic/purchase-procurement.md` — Purchase patterns
+- `patterns-agnostic/website-portal.md` — Website & portal patterns
+- `patterns-agnostic/views-widgets.md` — XML views, widgets, QWeb
+- `patterns-agnostic/models-fields.md` — Model inheritance, fields, constraints, onchange
+- `patterns-agnostic/infrastructure.md` — Controllers, cron, mail, assets, logging, errors, reports
+- `patterns-agnostic/data-operations.md` — Import/export, migrations, sequences, external APIs
+- `patterns-agnostic/quick-patterns.md` — Quick reference for 80% of common tasks
+
+### Version-Specific (Bridged Only If Version Matches)
+- `patterns-{version}/model-patterns.md`
+- `patterns-{version}/module-generator.md`
+- `patterns-{version}/owl-components.md`
+- `patterns-{version}/security-guide.md`
+- `patterns-{version}/version-knowledge.md`
+- `patterns-19/v19-features.md` (consolidated v19-only features)
+
+### Migration Bundles (Bridged Only for Version Pairs)
+- `skills/migration-{from}-{to}/` — Contains model/module/OWL/security migration guides
+
+## Instructions & Rules
+
+Located in `instructions/` and `rules/`:
+- `instructions/odoo-python.instructions.md` — Python-specific rules
+- `instructions/odoo-xml.instructions.md` — XML-specific rules
+- `instructions/odoo-manifest.instructions.md` — Manifest-specific rules
+- `rules/CAUTION_POLICY.md` — Conservative modification policy
+- `rules/coding-style.md` — General coding style
+- `rules/security.md` — Security hardening rules
+
+## Pattern Discovery
+
+When you need a specific pattern, consult `skills/patterns-agnostic/SKILL.md`
+for the discovery index. Version-specific syntax is in `skills/patterns-{version}/`.
+
+Do NOT guess. Always verify against the installed version bundle before writing code.
