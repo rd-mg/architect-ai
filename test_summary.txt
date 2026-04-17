@@ -1,0 +1,14 @@
+?   	github.com/rd-mg/architect-ai/cmd/architect-ai	[no test files]
+ok  	github.com/rd-mg/architect-ai/internal/agentbuilder	0.015s
+ok  	github.com/rd-mg/architect-ai/internal/agents	0.007s
+ok  	github.com/rd-mg/architect-ai/internal/agents/antigravity	0.004s
+ok  	github.com/rd-mg/architect-ai/internal/agents/claude	0.005s
+ok  	github.com/rd-mg/architect-ai/internal/agents/codex	0.007s
+ok  	github.com/rd-mg/architect-ai/internal/agents/cursor	0.004s
+ok  	github.com/rd-mg/architect-ai/internal/agents/gemini	0.006s
+ok  	github.com/rd-mg/architect-ai/internal/agents/kilocode	0.007s
+ok  	github.com/rd-mg/architect-ai/internal/agents/kiro	0.004s
+ok  	github.com/rd-mg/architect-ai/internal/agents/opencode	0.004s
+ok  	github.com/rd-mg/architect-ai/internal/agents/qwen	0.004s
+ok  	github.com/rd-mg/architect-ai/internal/agents/vscode	0.006s
+ok  	github.com/rd-mg/architect-ai/internal/agents/windsurf	0.008s

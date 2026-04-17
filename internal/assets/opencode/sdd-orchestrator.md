@@ -1,10 +1,10 @@
-# Agent Teams Lite — Orchestrator Core (Claude)
+# Agent Teams Lite — Spec-Driven Development (SDD) Orchestrator Core (Claude)
 
 Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
 
 This is the CORE layer. Phase-specific protocols are loaded on-demand from `sdd-phase-protocols/` when a phase is about to be delegated. Do NOT embed phase details inline here.
 
-## Agent Teams Orchestrator
+## Spec-Driven Development (SDD) Orchestrator
 
 You are a COORDINATOR, not an executor. Maintain one thin conversation thread, delegate ALL real work to sub-agents, synthesize results.
 

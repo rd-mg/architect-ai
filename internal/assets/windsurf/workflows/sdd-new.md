@@ -1,218 +1,216 @@
 ---
-description: Inicializa una nueva feature o tarea mediana/grande usando SDD en modo Hybrid-First para Cascade en Windsurf
+description: Initializes a new feature or medium/large task using SDD in Hybrid-First mode for Cascade in Windsurf
 ---
 
 # /sdd-new
 
-Este workflow define el comportamiento obligatorio de **Cascade** al iniciar una nueva feature, cambio de alcance medio/grande o trabajo con incertidumbre suficiente como para requerir planificación formal.
+This workflow defines the mandatory behavior of **Cascade** when starting a new feature, medium/large scope change, or work with enough uncertainty to require formal planning.
 
-## Propósito
+## Purpose
 
-Usar las capacidades nativas de Windsurf de forma **Hybrid-First**:
+Use Windsurf's native capabilities in a **Hybrid-First** way:
 
-- **Plan Mode** para planificar
-- **Memories / MCP (Engram)** para recuperar contexto previo
-- **Artifacts `.sdd/`** solo como contrato formal de planificación
-- **Code Mode** únicamente después de aprobación explícita del usuario
+- **Plan Mode** for planning
+- **Memories / MCP (Engram)** to retrieve previous context
+- **Artifacts `.sdd/`** only as a formal planning contract
+- **Code Mode** only after explicit user approval
 
-## Cuándo usar este workflow
+## When to use this workflow
 
-Activa este workflow cuando ocurra cualquiera de estas condiciones:
+Activate this workflow when any of these conditions occur:
 
-- El usuario inicia una **nueva feature**
-- La tarea afecta **múltiples archivos o módulos**
-- El cambio tiene **riesgo arquitectónico** o incertidumbre
-- El usuario pide explícitamente trabajar con **SDD**
-- La implementación requiere un contrato formal antes de escribir código
+- The user starts a **new feature**
+- The task affects **multiple files or modules**
+- The change has **architectural risk** or uncertainty
+- The user explicitly asks to work with **SDD**
+- The implementation requires a formal contract before writing code
 
-Si la tarea es pequeña, puntual o claramente de mantenimiento menor, este workflow NO es el camino correcto.
-
----
-
-## Reglas operativas obligatorias
-
-### 1. Cambiar inmediatamente a Plan Mode
-
-Al comenzar este workflow, **DEBES entrar en Plan Mode de inmediato**.
-
-Acciones obligatorias:
-
-1. Analizar el pedido del usuario
-2. Formular un plan de alto nivel
-3. Identificar alcance, riesgos, dependencias y archivos probables
-
-Acciones prohibidas en esta etapa:
-
-- NO escribir código de producción
-- NO entrar en Code Mode
-- NO modificar lógica de la aplicación
-- NO ejecutar implementación parcial "para adelantar trabajo"
-- NO asumir aprobación implícita
-
-**Este workflow es de planificación formal, no de ejecución.**
+If the task is small, specific, or clearly minor maintenance, this workflow is NOT the correct path.
 
 ---
 
-### 2. Recuperar contexto antes de proponer nada
+## Mandatory Operating Rules
 
-Antes de redactar cualquier artefacto SDD, **DEBES recuperar contexto arquitectónico y restricciones del proyecto**.
+### 1. Switch immediately to Plan Mode
 
-Orden de preferencia:
+When starting this workflow, **you MUST enter Plan Mode immediately**.
 
-1. Usar **Engram** mediante las herramientas MCP canónicas: `mem_search` para buscar decisiones previas y `mem_context` para recuperar el contexto reciente del proyecto
-2. Si Engram no está disponible o no devuelve contexto suficiente, leer `AGENTS.md`
-3. Si existe contexto adicional del proyecto relacionado con SDD o arquitectura, incorporarlo también
+Mandatory actions:
 
-Debes buscar, como mínimo:
+1. Analyze the user's request
+2. Formulate a high-level plan
+3. Identify scope, risks, dependencies, and likely files
 
-- Decisiones arquitectónicas previas
-- Convenciones del repositorio
-- Restricciones de implementación
-- Reglas de calidad o revisión
-- Patrones ya establecidos para cambios similares
+Prohibited actions at this stage:
 
-Si no encuentras contexto suficiente, debes decirlo explícitamente en el plan. **No inventes convenciones.**
+- DO NOT write production code
+- DO NOT enter Code Mode
+- DO NOT modify application logic
+- DO NOT execute partial implementation "to get ahead"
+- DO NOT assume implicit approval
+
+**This workflow is for formal planning, not execution.**
 
 ---
 
-### 3. Crear el contrato formal inicial en `.sdd/`
+### 2. Retrieve context before proposing anything
 
-Debes crear el directorio `.sdd/` si no existe.
+Before drafting any SDD artifact, **you MUST retrieve architectural context and project constraints**.
 
-Luego debes generar exactamente estos dos archivos iniciales:
+Order of preference:
+
+1. Use **Engram** via canonical MCP tools: `mem_search` to find previous decisions and `mem_context` to retrieve recent project context
+2. If Engram is not available or does not return enough context, read `AGENTS.md`
+3. If additional project context related to SDD or architecture exists, incorporate it as well
+
+You must search, at a minimum, for:
+
+- Previous architectural decisions
+- Repository conventions
+- Implementation constraints
+- Quality or review rules
+- Established patterns for similar changes
+
+If you don't find enough context, you must state it explicitly in the plan. **Do not invent conventions.**
+
+---
+
+### 3. Create the initial formal contract in `.sdd/`
+
+You must create the `.sdd/` directory if it doesn't exist.
+
+Then you must generate exactly these two initial files:
 
 - `.sdd/proposal.md`
 - `.sdd/spec.md`
 
-En esta fase, esos dos archivos son **obligatorios**.
+In this phase, those two files are **mandatory**.
 
-#### Contenido mínimo de `.sdd/proposal.md`
+#### Minimum content of `.sdd/proposal.md`
 
-Debe capturar, como mínimo:
+It must capture, at a minimum:
 
-- Título del cambio
-- Problema a resolver
-- Objetivo
-- Alcance incluido
-- Alcance excluido
-- Enfoque propuesto
-- Riesgos principales
-- Supuestos abiertos
-- Preguntas o decisiones pendientes
+- Change title
+- Problem to solve
+- Objective
+- Included scope
+- Excluded scope
+- Proposed approach
+- Main risks
+- Open assumptions
+- Pending questions or decisions
 
-#### Contenido mínimo de `.sdd/spec.md`
+#### Minimum content of `.sdd/spec.md`
 
-Debe capturar, como mínimo:
+It must capture, at a minimum:
 
-- Requisitos funcionales
-- Requisitos no funcionales si aplican
-- Escenarios de uso
-- Criterios de aceptación
-- Restricciones técnicas relevantes
-- Casos límite conocidos o supuestos importantes
+- Functional requirements
+- Non-functional requirements if applicable
+- Use cases
+- Acceptance criteria
+- Relevant technical constraints
+- Known edge cases or important assumptions
 
-Los artefactos deben ser:
+Artifacts must be:
 
-- Claros
-- Revisables
-- Ejecutables como contrato de implementación
-- Consistentes con el contexto recuperado del proyecto
+- Clear
+- Reviewable
+- Executable as an implementation contract
+- Consistent with retrieved project context
 
 ---
 
-### 4. Presentar resumen de planificación al usuario
+### 4. Present planning summary to the user
 
-Después de crear `.sdd/proposal.md` y `.sdd/spec.md`, debes presentar un resumen breve y claro en chat.
+After creating `.sdd/proposal.md` and `.sdd/spec.md`, you must present a brief and clear summary in chat.
 
-Ese resumen debe incluir:
+That summary must include:
 
-- Objetivo de la feature
-- Alcance propuesto
-- Riesgos o dudas principales
-- Confirmación de que los archivos fueron creados:
+- Feature objective
+- Proposed scope
+- Main risks or doubts
+- Confirmation that the files were created:
   - `.sdd/proposal.md`
   - `.sdd/spec.md`
 
-No muestres una pared de texto innecesaria. Resume lo esencial para revisión.
+Do not show an unnecessary wall of text. Summarize the essentials for review.
 
 ---
 
-### 5. Approval Gate absoluto
+### 5. Absolute Approval Gate
 
-Una vez generados los documentos, debes **detenerte ABSOLUTAMENTE**.
+Once the documents are generated, you must **ABSOLUTELY stop**.
 
-Debes preguntar **exactamente**:
+You must ask **exactly**:
 
-**¿Apruebas este plan de implementación?**
+**Do you approve this implementation plan?**
 
-Luego:
+Then:
 
-- Debes **esperar confirmación explícita**
-- NO puedes continuar a Code Mode sin aprobación
-- NO puedes empezar implementación "mientras tanto"
-- NO puedes interpretar silencio como aprobación
-- NO puedes reemplazar esta pausa con un resumen informal
+- You **must wait for explicit confirmation**
+- You CANNOT proceed to Code Mode without approval
+- You CANNOT start implementation "in the meantime"
+- You CANNOT interpret silence as approval
+- You CANNOT replace this pause with an informal summary
 
-Respuestas válidas para continuar:
+Valid answers to continue:
 
-- "sí"
-- "aprobado"
-- "de acuerdo"
+- "yes"
+- "approved"
+- "agreed"
 - "go ahead"
-- cualquier confirmación explícita equivalente
+- any equivalent explicit confirmation
 
-Si el usuario pide cambios:
+If the user requests changes:
 
-- Debes seguir en Plan Mode
-- Debes ajustar `.sdd/proposal.md` y/o `.sdd/spec.md`
-- Debes volver a presentar el plan
-- Debes volver a preguntar: **¿Apruebas este plan de implementación?**
-
----
-
-## Secuencia estricta de ejecución
-
-Sigue esta secuencia sin saltos:
-
-1. Detectar que el trabajo amerita `/sdd-new`
-2. Entrar en **Plan Mode**
-3. Recuperar contexto con **Engram** o, en su defecto, leer `AGENTS.md`
-4. Sintetizar restricciones, alcance y riesgos
-5. Crear `.sdd/` si no existe
-6. Generar `.sdd/proposal.md`
-7. Generar `.sdd/spec.md`
-8. Presentar un resumen breve al usuario
-9. Preguntar exactamente: **¿Apruebas este plan de implementación?**
-10. **Detenerte y esperar respuesta**
+- You must stay in Plan Mode
+- You must adjust `.sdd/proposal.md` and/or `.sdd/spec.md`
+- You must present the plan again
+- You must ask again: **Do you approve this implementation plan?**
 
 ---
 
-## Prohibiciones explícitas
+## Strict Execution Sequence
 
-Mientras este workflow no haya sido aprobado por el usuario:
+Follow this sequence without skips:
 
-- NO escribir código de producción
-- NO editar archivos de implementación
-- NO ejecutar tareas de aplicación
-- NO cambiar a Code Mode
-- NO crear commits
-- NO correr una implementación parcial
-- NO continuar automáticamente al siguiente paso de SDD
+1. Detect that the work warrants `/sdd-new`
+2. Enter **Plan Mode**
+3. Retrieve context with **Engram** or, failing that, read `AGENTS.md`
+4. Synthesize constraints, scope, and risks
+5. Create `.sdd/` if it doesn't exist
+6. Generate `.sdd/proposal.md`
+7. Generate `.sdd/spec.md`
+8. Present a brief summary to the user
+9. Ask exactly: **Do you approve this implementation plan?**
+10. **Stop and wait for a response**
 
 ---
 
-## Criterio de salida de este workflow
+## Explicit Prohibitions
 
-Este workflow se considera correctamente ejecutado solo si:
+While this workflow has not been approved by the user:
 
-- Cascade usó **Plan Mode**
-- Recuperó contexto con **Engram** o `AGENTS.md`
-- Generó `.sdd/proposal.md`
-- Generó `.sdd/spec.md`
-- Presentó un resumen al usuario
-- Preguntó exactamente: **¿Apruebas este plan de implementación?**
-- Se detuvo a esperar aprobación explícita
+- DO NOT write production code
+- DO NOT edit implementation files
+- DO NOT execute application tasks
+- DO NOT switch to Code Mode
+- DO NOT create commits
+- DO NOT run a partial implementation
+- DO NOT continue automatically to the next SDD step
 
-Si cualquiera de esos puntos no ocurre, el workflow está mal ejecutado.
+---
 
+## Exit Criteria for this workflow
 
+This workflow is considered correctly executed only if:
+
+- Cascade used **Plan Mode**
+- Context was retrieved with **Engram** or `AGENTS.md`
+- Generated `.sdd/proposal.md`
+- Generated `.sdd/spec.md`
+- Presented a summary to the user
+- Asked exactly: **Do you approve this implementation plan?**
+- Stopped to wait for explicit approval
+
+If any of those points do not occur, the workflow is poorly executed.

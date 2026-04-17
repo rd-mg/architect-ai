@@ -372,7 +372,7 @@ func TestGoldenSDD_Kiro(t *testing.T) {
 	expectedSkills := []string{
 		"sdd-init", "sdd-apply", "sdd-archive", "sdd-explore",
 		"sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks", "sdd-verify",
-		"sdd-onboard", "judgment-day",
+		"sdd-onboard", 
 	}
 	for _, name := range expectedSkills {
 		path := filepath.Join(skillsDir, name, "SKILL.md")

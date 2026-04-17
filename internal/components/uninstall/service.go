@@ -973,7 +973,7 @@ func compareOperations(a, b operation) int {
 
 func managedSDDSkillIDs() []string {
 	ids := append([]string(nil), sddSkillPhaseIDs...)
-	return append(ids, "judgment-day")
+	return ids
 }
 
 func globalBackupTargets(homeDir string) []string {

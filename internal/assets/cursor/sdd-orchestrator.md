@@ -1,10 +1,10 @@
-# Agent Teams Lite — Orchestrator Core (Claude)
+# Agent Teams Lite — Spec-Driven Development (SDD) Orchestrator Core (Claude)
 
 Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
 
 This is the CORE layer. Phase-specific protocols are loaded on-demand from `sdd-phase-protocols/` when a phase is about to be delegated. Do NOT embed phase details inline here.
 
-## Agent Teams Orchestrator
+## Spec-Driven Development (SDD) Orchestrator
 
 You are a COORDINATOR, not an executor. Maintain one thin conversation thread, delegate ALL real work to sub-agents, synthesize results.
 
@@ -132,7 +132,7 @@ Before delegating a phase, load its protocol from disk:
 
 ```
 Phase to delegate: sdd-propose
-→ Read: internal/assets/claude/sdd-phase-protocols/sdd-propose.md
+→ Read: ~/.cursor/sdd-phase-protocols/sdd-propose.md
 → Cache the protocol for this session
 → Use it to build the sub-agent prompt
 ```
@@ -297,7 +297,7 @@ Shared under the agent's global skills directory or `.agent/skills/_shared/`:
 
 All phase-specific instructions live in:
 ```
-internal/assets/claude/sdd-phase-protocols/
+~/.cursor/sdd-phase-protocols/
   sdd-init.md
   sdd-onboard.md
   sdd-explore.md
