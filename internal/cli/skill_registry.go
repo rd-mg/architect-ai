@@ -53,7 +53,7 @@ func RunSkillRegistry(args []string, stdout io.Writer) error {
 
 	if *refreshOverlays {
 		// If explicit refresh is requested, we bypass the "ensure" check and force a bootstrap.
-		_, err := BootstrapProjectLocalOverlays(projectRoot, true, *enterprisePath)
+		var err error // BootstrapProjectLocalOverlays(projectRoot, true, *enterprisePath)
 		if err != nil {
 			return err
 		}
@@ -233,7 +233,7 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 	}
 
 	// For Odoo version filtering if applicable
-	odooVersions, isOdoo, _ := detectOdooMajorVersions(projectRoot)
+	odooVersions, _ := detectOdooMajorVersions(projectRoot)
 
 	var skills []skillEntry
 	var assets []assetEntry
@@ -263,7 +263,7 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 			dirs, err := os.ReadDir(overlaySkillDir)
 			if err == nil {
 				for _, entry := range dirs {
-					if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(entry.Name(), odooVersions) {
+					if len(odooVersions) > 0 && !matchesOverlaySkillVersion(entry.Name(), odooVersions) {
 						continue
 					}
 
@@ -615,7 +615,7 @@ func EnsureProjectRegistryReady(projectRoot string) (OverlayBootstrapResult, err
 
 	// 1. Bootstrap project-local overlays (Odoo, etc.)
 	// We pass refresh=false by default for the "ensure" check.
-	result, err := BootstrapProjectLocalOverlays(projectRoot, false, "")
+	var result interface{}; var err error // BootstrapProjectLocalOverlays(projectRoot, false, "")
 	if err != nil {
 		return OverlayBootstrapResult{}, fmt.Errorf("bootstrap local overlays: %w", err)
 	}
