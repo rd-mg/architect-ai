@@ -1,184 +1,182 @@
 ---
 name: mcp-context7-skill
 description: >
-  Live framework and library documentation via Context7 MCP. Resolves the
-  exact library target, fetches only the minimum needed docs, and persists
-  verified findings to Engram for cross-session recall. Treat as a
-  documentation consumer — does NOT install, reconfigure, or duplicate MCP
-  wiring.
+  Tertiary research source. Used for framework and library official
+  documentation (React, Go stdlib, Django, Odoo, etc.) when NotebookLM
+  has no matching notebook AND the local repo does not contain the
+  answer. Defers to NotebookLM first. Never used BEFORE NotebookLM
+  and local search.
 license: Apache-2.0
 metadata:
   author: rd-mg
-  version: "2.0"
+  version: "2.1"
 ---
 
-# Context7 Skill v2.0
+# Context7 v2.1
 
 ## Purpose
 
-Use Context7 as a LIVE documentation skill when stale model memory would
-produce wrong answers. This skill assumes the agent already has access to the
-existing `context7` MCP component and focuses on:
+Context7 is the tertiary research source. It fetches official documentation for frameworks and libraries via MCP. Use it ONLY when:
 
-1. Choosing the right library target
-2. Fetching only the minimum relevant documentation
-3. Turning it into actionable guidance
-4. **Persisting verified findings to Engram** (new in v2.0)
+1. NotebookLM has no matching notebook (verified with `notebooklm_list_notebooks`)
+2. The local repo does not contain the answer (verified with ripgrep)
+3. The question is about a framework/library's public surface
 
-## When to Use
+If steps 1 and 2 haven't been tried, you're using this skill too early.
 
-- User asks for current library or framework documentation
-- User needs API syntax, migration notes, or version-specific behavior
-- User wants examples grounded in upstream docs rather than cached model memory
-- User asks for a documentation-backed answer before writing or changing code
+---
 
-## When NOT to Use
+## Defers to NotebookLM
 
-- The answer is fully contained in the current repository → use `ripgrep`
-- The question is general web research → use web search, not Context7
-- Context7 is unavailable and local docs already answer the question
-- The question is about Odoo modules → use `mcp-notebooklm-orchestrator` instead
+In V3.1, the research routing order is:
 
-## Critical Patterns
+```
+1. NotebookLM   ← PRIMARY
+2. Local code   ← SECONDARY
+3. Context7     ← TERTIARY (you are here)
+4. Internet     ← explicit user request only
+```
 
-- Treat this skill as a CONSUMER of the existing `context7` component. Do not
-  install, reconfigure, or duplicate MCP wiring from this skill.
-- Resolve the exact library, package, or framework first before pulling docs.
-  If the target is ambiguous, ask for the missing identifier instead of
-  guessing.
-- Prefer version-aware requests. When the user gives a version, include it in
-  the lookup. When the version is unknown and materially affects correctness,
-  say so.
-- Pull the minimum relevant documentation needed to answer the task. Do not
-  dump large doc sections when a focused summary plus the decisive API details
-  is enough.
-- Keep documentation facts separate from your own inference. Label inferred
-  migration advice, risk analysis, or implementation guidance clearly.
-- Use Context7 for library and framework documentation only. Do not turn it
-  into a generic search workflow or a replacement for repository inspection.
-- Stay domain-agnostic. This bundled skill must not contain domain-specific,
-  repository-specific, or product-specific defaults.
+Before calling Context7:
 
-## Inputs
+```
+# 1. Is NotebookLM available?
+mem_search(query: "notebooklm/", project: "{project}")
+  → if yes and answer found, STOP — use NotebookLM result
+  → if yes but no match, fall through
+  → if no (unavailable), note in response and fall through
 
-- The package, framework, or library the user is asking about
-- Optional version or ecosystem details that narrow the lookup
-- The question to answer or the code change being planned
-- The live Context7 tool surface exposed by the active host
+# 2. Is the answer in this repo?
+rg "{symbol}" --type {lang}
+  → if yes, STOP — use local
+  → if no, proceed to Context7
+```
 
-## Outputs
+---
 
-- One documentation-backed answer scoped to the user request
-- One short explanation of any uncertainty caused by missing version or target
-- One explicit fallback when Context7 cannot answer or is not available
-- **Persistence to Engram** for verified findings (see Persistence Contract)
+## When Context7 IS the right tool
 
-## Procedure
+- Questions about a framework's public API (React hooks, Django ORM, Odoo decorators)
+- Language stdlib behavior (Go's `context` package, Python's `asyncio`)
+- Version-specific framework behavior (React 18 vs 19, Odoo 17 vs 18)
 
-### Step 1: Confirm Upstream Docs Are Needed
+Example:
+> How does `@api.depends` interact with computed stored fields in Odoo 18?
 
-Ask: does answering this require upstream authoritative docs, or can the
-repository answer it? If repo → use ripgrep, not Context7.
+This is Context7's job. NotebookLM won't have it unless the team specifically curated an Odoo 18 upgrade notebook; local repo doesn't contain framework docs.
 
-### Step 2: Identify the Exact Target
+---
 
-Library name + version. If either is missing and version materially affects
-correctness, ask the user before proceeding.
+## When Context7 is NOT the right tool
 
-### Step 3: Resolve the Target
+- Questions about THIS project's code — use ripgrep
+- Questions about architecture decisions WE made — use NotebookLM
+- Questions about upstream changes in a library we haven't adopted yet — use the internet (with user permission)
 
-Use the active Context7 `resolve` tool surface to confirm the correct
-identifier before requesting documentation excerpts.
+---
 
-### Step 4: Fetch Minimum Relevant Docs
+## Query procedure
 
-Request only the sections needed for the current question. Do not pull entire
-modules when a focused API reference suffices.
+### Step 1 — Resolve the library
 
-### Step 5: Answer with API Facts
+```
+context7_resolve(library: "react")
+  → returns library_id, version list, latest_version
+```
 
-Lead with the relevant API facts, constraints, and version notes. Clearly
-separate retrieved facts from your own inference.
+Pick the version matching the project's actual dependency. Do NOT default to `latest_version` — the user may be on an older version.
 
-### Step 6: Persist Verified Findings (NEW in v2.0)
+### Step 2 — Get docs for a topic
 
-If the documentation lookup produces a VERIFIED finding that:
-- Answers a version-specific behavioral question
-- Clarifies an API contract the project depends on
-- Resolves a migration compatibility question
-- Would need to be re-looked-up in a future session
+```
+context7_get_docs(
+  library_id: "...",
+  version: "18.3.0",       // explicit
+  topic: "useTransition Suspense interaction"
+)
+```
 
-Then persist to Engram:
+### Step 3 — Persist the finding
 
 ```
 mem_save(
   title: "context7/{framework}/{version}/{topic}",
   topic_key: "context7/{framework}/{version}/{topic}",
-  type: "discovery",
+  type: "external-research",
   project: "{project}",
-  content: "Framework: {name} v{version}\nQuery: {question}\nFinding: {concise answer}\nSource: {Context7 doc section reference}\nVerified: {date}"
+  content: "Q: {question}\nA: {docs summary}\nFramework: {name}@{version}\nDate: {iso-date}"
 )
 ```
 
-Example:
+**This persistence is mandatory in V3.1** — new requirement. Next session asking the same question hits Engram, not Context7.
+
+---
+
+## Cache check — ALWAYS before calling
 
 ```
-mem_save(
-  title: "context7/react/19.0/use-hook-signature",
-  topic_key: "context7/react/19.0/use-hook-signature",
-  type: "discovery",
-  project: "my-react-app",
-  content: "Framework: React v19.0\nQuery: What is the signature of the new 'use' hook?\nFinding: use<T>(promise: Promise<T>): T — unwraps promises and context in render.\nSource: React 19 Hooks Reference / use\nVerified: 2026-04-17"
-)
+mem_search(query: "context7/{framework}/{version}/", project: "{project}")
+  → if found AND content covers the question, use it
+  → if found but stale, re-query and replace
+  → if not found, query Context7
 ```
 
-**Do NOT persist**:
-- Inferred guidance (label it separately and don't save)
-- Generic documentation browsing (no specific question answered)
-- Findings with low confidence
-- Version-agnostic facts (those are in the model's training data already)
+Staleness:
+- Frozen versions (React 18.3.0): never stale. Frameworks don't edit published docs post-release.
+- Rolling versions (React canary, Go tip): stale after 7 days.
 
-### Step 7: Fallback
+---
 
-If Context7 is unavailable or the target cannot be resolved safely:
-- Say so explicitly
-- Fall back to repository evidence
-- Or ask the user for clarification
+## Failure modes
 
-## Return Envelope
+- **Context7 MCP not available** → return `{source: "context7", status: "unavailable"}`, orchestrator falls through to internet (only on explicit user request).
+- **Library not in Context7 index** → return `{source: "context7", status: "no-match"}`, orchestrator may ask user permission to search the internet.
+- **Version not indexed** → return `{source: "context7", status: "version-missing", available_versions: [...]}`, orchestrator asks user which to use.
 
-```markdown
-**Status**: success | partial | blocked
-**Summary**: {One-line description of what was answered}
-**Finding**: {Concise API fact or behavior description}
-**Version context**: {e.g., "React 19.0, differs from 18.x"}
-**Inferred guidance**: {Your inference, clearly labeled if present}
-**Source**: {Context7 doc section}
-**Engram topic**: context7/{framework}/{version}/{topic} (if persisted)
-**Next**: {recommended follow-up or "none"}
-**Risks**: {ambiguity or uncertainty flags}
-**Skill Resolution**: injected | fallback-registry | fallback-path | none
+---
+
+## Return envelope (in sub-agent result)
+
+```
+{
+  "source": "context7",
+  "framework": "...",
+  "version": "...",
+  "topic": "...",
+  "answer_summary": "2-3 sentences",
+  "engram_key": "context7/{fw}/{ver}/{topic}",
+  "cached_hit": true|false
+}
 ```
 
-## Guardrails
+---
 
-- Do not invent Context7 tool names or payload fields
-- Do not install or patch MCP config from this skill
-- Do not assume a domain, framework family, or repository-specific default
-- Do not treat stale model memory as equivalent to retrieved documentation
-- Do not answer version-sensitive questions without stating the version basis
-- Do not persist unverified or low-confidence findings to Engram
+## Anti-patterns
 
-## Anti-Patterns
+**❌ Skipping NotebookLM**
+```
+# WRONG — jumping straight to context7
+context7_resolve(library: "odoo")
+```
+NotebookLM might have an Odoo-upgrade notebook with exactly the answer. Check first.
 
-- Querying Context7 for answers already in the repository
-- Dumping large doc sections verbatim when a focused summary suffices
-- Mixing retrieved facts with inference without clear labels
-- Persisting every query to Engram regardless of verification confidence
-- Skipping persistence when the finding is clearly valuable (memory becomes stale)
+**❌ Not persisting findings**
+```
+# WRONG — querying Context7 twice in the same session for the same topic
+```
+Always `mem_save` after the first call. Every future session benefits.
 
-## Resources
+**❌ Using Context7 for our own code**
+```
+# WRONG
+context7_get_docs(library: "our-service", topic: "...")
+```
+Our code is local. Use ripgrep.
 
-- `internal/assets/skills/mcp-notebooklm-orchestrator/SKILL.md` — sibling skill for notebook-based research
-- `docs/components.md` — MCP integration overview
-- `internal/components/mcp/context7.go` — Go adapter (do not modify from this skill)
+---
+
+## See also
+
+- `_shared/research-routing.md` — the 4-step priority
+- `mcp-notebooklm-orchestrator/SKILL.md` — the primary source you defer to
+- `ripgrep/SKILL.md` — the secondary (local) source

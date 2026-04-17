@@ -1,165 +1,323 @@
-<div align="center">
+# Architect-AI
 
-<img width="3276" height="1280" alt="architect-ai" src="architect-ai.jpg" />
+> A multi-agent framework that turns any supported IDE or CLI (Claude Code, Cursor, Gemini CLI, Codex, Antigravity, Kiro, OpenCode, VSCode, Windsurf, and more) into a Spec-Driven Development (SDD) workspace. One orchestrator, many agents, shared persistent memory via Engram, mandatory research routing (NotebookLM → local → Context7 → internet-by-permission).
 
-<h1>Architect AI Stack</h1>
-
-<p><strong>One command. Any agent. Any OS. The Gentleman AI ecosystem -- configured and ready.</strong></p>
-
-<p>
-<a href="https://github.com/rd-mg/architect-ai/releases"><img src="https://img.shields.io/github/v/release/rd-mg/architect-ai" alt="Release"></a>
-<a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-<img src="https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white" alt="Go 1.24+">
-<img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="Platform">
-</p>
-
-</div>
+**Status**: V3.1 (remediation over V3.0)
 
 ---
 
-## What It Does
+## Table of Contents
 
-This is NOT an AI agent installer. Most agents are easy to install. This is an **ecosystem configurator** -- it takes whatever AI coding agent(s) you use and supercharges them with the Gentleman stack: persistent memory, Spec-Driven Development workflow, curated coding skills, MCP servers, an AI provider switcher, a teaching-oriented persona with security-first permissions, and per-phase model assignment so each SDD step can run on a different model.
-
-**Before**: "I installed Claude Code / OpenCode / Cursor, but it's just a chatbot that writes code."
-
-**After**: Your agent now has memory, skills, workflow, MCP tools, and a persona that actually teaches you.
-
-### 9 Supported Agents
-
-| Agent | Delegation Model | Key Feature |
-|-------|:---:|---|
-| **Claude Code** | Full (Task tool) | Sub-agents, output styles |
-| **OpenCode** | Full (multi-mode overlay) | Per-phase model routing |
-| **Gemini CLI** | Full | Native agents in `~/.gemini/agents/` |
-| **Cursor** | Full (native subagents) | 9 SDD agents in `~/.cursor/agents/` |
-| **VS Code Copilot** | Full (runSubagent) | Parallel execution |
-| **Codex** | Solo-agent | CLI-native, TOML config |
-| **Windsurf** | Solo-agent | Plan Mode, Code Mode, native workflows |
-| **Antigravity** | Solo-agent + Mission Control | Built-in Browser/Terminal sub-agents |
-| **Kiro IDE** | Full (native subagents) | Native `~/.kiro/agents/` + steering orchestration |
-
-> **Note**: This project supersedes [Agent Teams Lite](https://github.com/Gentleman-Programming/agent-teams-lite) (now archived). Everything ATL provided is included here with better installation, automatic updates, and persistent memory.
+1. [What it does](#what-it-does)
+2. [Supported agents](#supported-agents)
+3. [Install](#install)
+4. [Quick start](#quick-start)
+5. [SDD commands](#sdd-commands)
+6. [Research routing policy](#research-routing-policy)
+7. [Mandatory skills](#mandatory-skills)
+8. [Session metering](#session-metering)
+9. [Uninstall & purge](#uninstall--purge)
+10. [Repo layout](#repo-layout)
+11. [Version history](#version-history)
+12. [Contributing](#contributing)
 
 ---
 
+## What it does
 
+Architect-AI installs a thin coordination layer on top of whatever coding agent you already use. The orchestrator:
 
-### After install: project-level setup
+- Delegates all real work to sub-agents so the coordinator thread stays cheap
+- Forces a **Spec-Driven Development** cycle (`explore → propose → spec → design → tasks → apply → verify → archive`)
+- Enforces a **cognitive posture** per phase (Socratic, Critical, Systemic, Adversarial, Pragmatic, Forensic — see `docs/cognitive-modes.md`)
+- Compresses its own output via a **dual-mode caveman** style (see `docs/caveman-integration.md`)
+- Persists artifacts to **Engram** (or OpenSpec files, or hybrid, or inline — you choose per session)
+- Routes external research **NotebookLM-first**, then local code, then Context7; never the internet unless you explicitly ask
+- Shows a **token-cache savings banner** on session exit
 
-Once your agents are configured, open your AI agent in a project and run these two commands to register the project context:
+---
 
-| Command | What it does | When to re-run |
-|---------|-------------|----------------|
-| `/sdd-init` | Detects stack, testing capabilities, activates Strict TDD Mode if available | When your project adds/removes test frameworks, or first time in a new project |
-| `skill-registry` | Scans installed skills and project conventions, builds the registry | After installing/removing skills, or first time in a new project |
+## Supported agents
 
-These are **not required** for basic usage. The SDD orchestrator runs `/sdd-init` automatically if it detects no context. But if something changed in your project (new test runner, new dependencies), re-running them manually ensures the agents have up-to-date context.
+Eight SDD-capable agents share the same orchestrator core (`internal/assets/{agent}/sdd-orchestrator.md`):
+
+| Agent | Runtime | Parallel sub-agents | Prompt cache visible |
+|-------|---------|:-:|:-:|
+| Claude Code | CLI / Desktop | ✅ | ✅ |
+| Antigravity | IDE | ⚠️ simulated | ✅ |
+| Codex | CLI | ✅ | ✅ |
+| Cursor | IDE | ✅ | ✅ (provider-dependent) |
+| Gemini CLI | CLI | ✅ | ✅ |
+| Kiro | IDE | ✅ | ✅ |
+| OpenCode | CLI | ✅ | ✅ (per profile) |
+| Generic | template | — | — |
+
+Four additional agents get the install and uninstall pipeline but do NOT use `sdd-orchestrator.md`:
+
+| Agent | Notes |
+|-------|-------|
+| Kilocode | Non-SDD; can opt into session metering if provider exposes usage |
+| Qwen | Non-SDD; metering via OpenAI-compatible shape |
+| VSCode | Non-SDD; no direct usage visibility, metering disabled |
+| Windsurf | Non-SDD; same as VSCode |
+
+See `docs/antigravity-sdd-workaround.md` for notes on Antigravity's single-threaded sub-agent simulation.
 
 ---
 
 ## Install
 
-### Recommended
+```bash
+# Prerequisites
+go version          # 1.24+
+git --version
+rg --version        # ripgrep — mandatory for sub-agent searches
 
-#### Go install (any platform with Go 1.24+)
+# Build from source
+git clone https://github.com/rd-mg/architect-ai.git
+cd architect-ai
+go build -o architect-ai ./cmd/architect-ai
+
+# Or via package manager (when released)
+brew install architect-ai
+```
+
+Run the TUI and pick "Start installation":
 
 ```bash
-go install github.com/rd-mg/architect-ai/cmd/architect-ai@latest
+architect-ai
 ```
 
-**Migrating from PowerShell installer to Scoop?** Remove the old binary first:
-
-```powershell
-Remove-Item "$env:LOCALAPPDATA\architect-ai" -Recurse -Force
-# Then install via Scoop as shown above
-```
-
-#### From releases
-
-Download the binary for your platform from [GitHub Releases](https://github.com/rd-mg/architect-ai/releases).
-
-</details>
+The installer detects which agents you have locally and wires the orchestrator + skills + phase protocols into each.
 
 ---
 
-## Backups
-
-Every install, sync, and upgrade automatically snapshots your config files. Backups are **compressed** (tar.gz), **deduplicated** (identical configs are not re-backed up), and **auto-pruned** (keeps the 5 most recent). Pin important backups via the TUI (`p` key) to protect them from pruning.
-
-See [Backup & Rollback Guide](docs/rollback.md) for details.
-
----
-
-## Key Features You Should Know About
-
-### OpenCode SDD Profiles
-
-Assign different AI models to different SDD phases -- a powerful model for design, a fast one for implementation, a cheap one for exploration. Create multiple profiles and switch between them with Tab in OpenCode.
+## Quick start
 
 ```bash
-# Via CLI
-architect-ai sync --profile cheap:openrouter/qwen/qwen3-30b-a3b:free
-architect-ai sync --profile-phase cheap:sdd-design:anthropic/claude-sonnet-4-20250514
+cd your-project
+architect-ai  # installs, if not already installed
 
-# Or via TUI: architect-ai → "OpenCode SDD Profiles" → Create
+# Open any supported agent and type either:
+#   /sdd-new add-user-export
+# or, as natural language (V3.1):
+#   "usa sdd para agregar exportación de usuarios"
 ```
 
-After creating a profile, open OpenCode and press **Tab** to switch between `sdd-orchestrator` (default) and your custom profiles.
+On the **first SDD command of the session** the orchestrator will ask:
 
-**Full guide**: [OpenCode SDD Profiles](docs/opencode-profiles.md)
+1. **Artifact store?** — `engram` / `openspec` / `hybrid` / `none`
+2. **Execution mode?** — `interactive` (pause between phases) / `auto` (run through)
+3. **Change name?** — short slug (e.g. `add-user-export`)
 
-### Engram (Persistent Memory)
+After that it runs the SDD cycle, asking for confirmation between phases if you chose interactive mode.
 
-Your AI agent automatically remembers decisions, bugs, and context across sessions. You don't need to do anything -- but when you do:
+---
+
+## SDD commands
+
+Slash commands (auto-complete in every agent):
+
+| Command | Effect |
+|---------|--------|
+| `/sdd-init` | Probe project context (usually auto-run) |
+| `/sdd-onboard` | Guided first-time walkthrough |
+| `/sdd-new <name>` | Start a new change — runs the full cycle |
+| `/sdd-continue [name]` | Resume at the next dependency-ready phase |
+| `/sdd-ff <name>` | Fast-forward: proposal → spec → design → tasks |
+| `/sdd-explore <topic>` | Single-phase research (Socratic) |
+| `/sdd-apply [name]` | Implement tasks in batches |
+| `/sdd-verify [name]` | Adversarial validation against specs |
+| `/sdd-archive [name]` | Close out a change; persists final report |
+
+**Natural-language triggers** (V3.1) — the orchestrator also recognizes free-text intent:
+
+- "use sdd" / "usa sdd" → `/sdd-new`
+- "continue" / "continua" → `/sdd-continue`
+- "fast forward" / "ff" → `/sdd-ff`
+- "onboard me" / "guíame" → `/sdd-onboard`
+
+On match, the orchestrator confirms the interpretation before acting.
+
+---
+
+## Research routing policy
+
+External research follows a strict priority (configured per-user; NotebookLM-first is the default as of V3.1):
+
+```
+1. NotebookLM          ← PRIMARY — curated project knowledge
+2. Local code + docs   ← SECONDARY — ripgrep, find, cat, extract-text
+3. Context7            ← TERTIARY — framework / library docs
+4. Internet            ← ONLY on EXPLICIT user request
+                         ("search the web", "look online", "busca en internet")
+```
+
+This is enforced by the orchestrator and by the `sdd-explore` phase protocol. Each sub-agent returns `research_sources_used: [...]` in its envelope so the orchestrator can audit routing compliance.
+
+See `internal/assets/skills/_shared/research-routing.md` for the full decision tree.
+
+---
+
+## Mandatory skills
+
+Two skills are marked `bridge: always` in their frontmatter and injected into **every** sub-agent prompt, regardless of task matcher:
+
+- **`ripgrep`** — all code search must use `rg`, not `grep -r`
+- **`bash-expert`** — strict-mode shell discipline
+
+A third always-injected skill is the research router:
+
+- **`mcp-notebooklm-orchestrator`** — primary research source, query-only
+
+And the context pressure sentinel:
+
+- **`context-guardian`** — auto-invoked at > 50% window usage
+
+See each skill's `SKILL.md` in `internal/assets/skills/` for the compact rules.
+
+---
+
+## Session metering
+
+At session end (exit, ctrl+c, or `/end`), the orchestrator prints a summary banner:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Session summary (claude) — 4m 32s
+  Requests:         12
+  Total tokens:     47,120
+  From cache:       18,450 (39%)
+  Est. savings:     ~$0.06
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Pricing estimates are approximate and use the table in `internal/metering/pricing.go`. Override with `SetPricing()` at startup for contract pricing.
+
+Session stats are also persisted to Engram under `metering/{project}/{session-id}` so `sdd-archive` can include them in the final report.
+
+---
+
+## Uninstall & purge
+
+Two levels of uninstall:
+
+### Managed uninstall
 
 ```bash
-engram projects list          # See all projects with memory counts
-engram projects consolidate   # Fix name drift ("my-app" vs "My-App")
-engram search "auth bug"      # Find a past decision from the terminal
-engram tui                    # Visual memory browser
+architect-ai  # TUI → "Managed uninstall"
+# or
+architect-ai uninstall
 ```
 
-**Full reference**: [Engram Commands](docs/engram.md)
+Removes what the installer placed: agent config files, skill registry, orchestrator prompts, SDD phase protocols.
+
+Keeps: Engram memories, `.atl/` artifacts, `~/.architect-ai/` backups, the binary itself.
+
+### Deep purge (V3.1)
+
+```bash
+architect-ai  # TUI → "Uninstall & Purge All ⚠"
+# or headless
+architect-ai uninstall --purge --purge-scope all --confirm PURGE
+```
+
+Removes managed config PLUS any subset of:
+
+- **Engram project memories** (via `mem_delete_project`)
+- **Workspace `.atl/`** (skill registry, overlay manifests, context packs)
+- **Global `~/.architect-ai/`** (backups, global state)
+- **The binary** (via brew / apt / pacman / snap)
+
+A **pre-purge snapshot** is captured in every case, allowing restore with `architect-ai restore <snapshot-path>`.
+
+The TUI confirmation requires typing the word `PURGE` literally (case-sensitive). The CLI requires `--confirm PURGE`.
 
 ---
 
-## Documentation
+## Repo layout
 
-| Topic | Description |
-|-------|-------------|
-| [Intended Usage](docs/intended-usage.md) | How architect-ai is meant to be used — the mental model |
-| [OpenCode SDD Profiles](docs/opencode-profiles.md) | Create and manage per-phase model profiles for OpenCode |
-| [Engram Commands](docs/engram.md) | CLI commands, MCP tools, project management, team sharing |
-| [Agents](docs/agents.md) | Supported agents, feature matrix, config paths, and per-agent notes |
-| [Components, Skills & Presets](docs/components.md) | All components, GGA behavior, skill catalog, and preset definitions |
-| [Usage](docs/usage.md) | Persona modes, interactive TUI, CLI flags, and dependency management |
-| [Backup & Rollback](docs/rollback.md) | Backup retention, compression, dedup, pinning, and restore |
-| [Kiro IDE](docs/kiro.md) | Kiro-specific setup, config paths, native subagents, and SDD behavior |
-| [Platforms](docs/platforms.md) | Supported platforms, Windows notes, security verification, config paths |
-| [Architecture & Development](docs/architecture.md) | Codebase layout, testing, and relationship to Gentleman.Dots |
+```
+architect-ai/
+├── cmd/architect-ai/               # CLI entry point
+├── docs/                           # User-facing documentation
+│   ├── cognitive-modes.md
+│   ├── caveman-integration.md
+│   ├── adaptive-reasoning-v1.md
+│   └── antigravity-sdd-workaround.md
+├── internal/
+│   ├── agents/                     # Per-agent adapters
+│   │   ├── claude/  antigravity/  codex/  cursor/
+│   │   ├── gemini/  kilocode/  kiro/  opencode/
+│   │   ├── qwen/  vscode/  windsurf/
+│   │   └── interface.go            # shared contracts + MeteringCapable
+│   ├── assets/                     # Prompts, skills, personas, overlays
+│   │   ├── claude/ antigravity/ codex/ cursor/ gemini/ generic/ kiro/ opencode/
+│   │   ├── skills/                 # Cross-cutting skills
+│   │   │   ├── ripgrep/            (V3.1, bridge: always)
+│   │   │   ├── bash-expert/        (V3.1, bridge: always)
+│   │   │   ├── mcp-notebooklm-orchestrator/  (V3.1 primary)
+│   │   │   ├── mcp-context7-skill/ (V3.1 tertiary)
+│   │   │   ├── context-guardian/
+│   │   │   ├── cognitive-mode/
+│   │   │   ├── adaptive-reasoning/
+│   │   │   ├── _shared/
+│   │   │   └── _archived/
+│   │   └── overlays/
+│   │       └── odoo-development-skill/
+│   ├── cli/                        # CLI command implementations
+│   ├── components/
+│   │   ├── skills/                 # Skill resolver (respects bridge: always)
+│   │   ├── sdd/                    # SDD state management
+│   │   ├── gga/  theme/  filemerge/
+│   │   └── uninstall/              # Managed uninstall + DeepPurge (V3.1)
+│   ├── installcmd/
+│   ├── metering/                   # (V3.1) session stats + pricing + hook
+│   ├── model/
+│   └── tui/
+│       ├── model.go  router.go
+│       ├── screens/                # welcome, install, purge*, ...
+│       └── styles/
+├── openspec/                       # (optional) file-based artifacts
+│   └── changes/
+└── README.md
+```
 
 ---
 
-## Contributors
+## Version history
 
-This project exists because of the community. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the full list.
+| Version | Date | Highlights |
+|---------|------|------------|
+| **V3.1** | 2026-04 | Artifact-store question asked explicitly; natural-language intent resolution; TUI deep purge; token-cache banner; ripgrep + bash-expert `bridge: always`; NotebookLM-first research routing |
+| V3.0 | 2026-04 | V2 absorbed into caveman dual-mode; Odoo overlay restructured with version-gated bundles; 6 Odoo sub-agents absorbed into SDD supplements; judgment-day + autoreason-lite folded into adaptive-reasoning v1.0 |
+| V2.x | 2025-Q4 | Multi-agent orchestrator; Engram integration |
+| V1.x | 2025-Q3 | Initial SDD implementation |
 
-<a href="https://github.com/rd-mg/architect-ai/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=rd-mg/architect-ai" />
-</a>
-
----
-
-## Next Steps
-
-- **Just installed?** Read [Intended Usage](docs/intended-usage.md) -- the one page that explains the mental model.
-- **Using OpenCode?** Set up [SDD Profiles](docs/opencode-profiles.md) to assign different models per phase.
-- **Want to share memory across machines?** Learn `engram sync` in the [Engram reference](docs/engram.md).
-- **Ready to contribute?** Check [CONTRIBUTING.md](CONTRIBUTING.md) and the [open issues](https://github.com/rd-mg/architect-ai/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3Aapproved%22).
+See `plans/v3.1-remediation-plan.md` for the full V3.1 change list.
 
 ---
 
-<div align="center">
-<a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-</div>
+## Contributing
+
+- Work only in `internal/assets/` and `internal/metering/` unless the plan explicitly instructs otherwise
+- Phase protocols live in `internal/assets/{agent}/sdd-phase-protocols/` — one file per phase
+- All orchestrators share the canonical Claude version with only the Delegation Syntax paragraph varying per agent; regenerate with `architect-ai sync --component sdd` when the canonical changes
+- Any new skill that should apply everywhere must carry `bridge: always` in its frontmatter — the resolver respects it (V3.1)
+
+Tests:
+
+```bash
+go test ./...                                    # all
+go test ./internal/metering/...                  # session stats
+go test ./internal/components/uninstall/...      # purge
+go test ./internal/tui/...                       # screens
+```
+
+PR template: open against `main`, include a one-paragraph summary of intent and a `## Verification` section with commands and expected output. Green CI is required.
+
+---
+
+## License
+
+Apache 2.0 (see `LICENSE`). Skills under `internal/assets/skills/` carry their own per-skill licenses in their frontmatter.

@@ -1,212 +1,135 @@
-# Cognitive Modes — Architecture Guide
+# Cognitive Modes (6 Postures)
 
-**Status**: Stable | **Introduced in**: V3 | **Related skill**: `internal/assets/skills/cognitive-mode/SKILL.md`
+**Scope**: `internal/assets/skills/cognitive-mode/SKILL.md` defines the mechanism. This doc is the human-readable reference.
 
----
-
-## Why Cognitive Modes Exist
-
-Different tasks need different thinking postures. A debug session requires forensic rigor. A design review needs systemic breadth. An exploration phase needs Socratic questioning. Before V3, architect-ai had a single implicit "thinking mode" — analytical, evaluative — that was applied to every task. The results were mediocre for edge cases.
-
-V3 introduces **six explicit cognitive postures**, each mapped to the SDD phase(s) where it produces the best outcomes. The orchestrator injects the appropriate posture block at the top of each sub-agent's prompt.
-
-## The Six Postures
-
-### 1. +++Socratic (Question-Driven)
-
-**Principle**: Before producing artifacts, reveal what has NOT been said.
-
-**Behavior**:
-- Formulates 3 clarifying questions about unstated assumptions
-- Does NOT answer its own questions
-- Surfaces data sources, user roles, error expectations, performance constraints
-
-**Default phases**: `sdd-explore`, `sdd-onboard`
-
-**Example**: When exploring "add dark mode" without clarification, the Socratic posture asks:
-- Does "dark mode" mean just colors, or also contrast/motion preferences?
-- Is the toggle per-user or global?
-- Should the preference survive a logout?
+The orchestrator injects ONE (or more) posture block at the top of every sub-agent prompt, before `## Project Standards` and before the phase protocol. The posture is NOT a personality — it's a thinking discipline that shapes how the sub-agent approaches the task.
 
 ---
 
-### 2. +++Critical (Evidence-Driven)
+## Why six, not one
 
-**Principle**: Evaluate claims against evidence. Don't accept aesthetic preferences.
+A single "be smart" prompt produces mediocre results across the board. Different SDD phases reward different disciplines: exploration rewards question-asking, verification rewards adversarial skepticism. Forcing the same posture on both gives you unfounded specs and missed bugs.
 
-**Behavior**:
-- For each claim: What evidence supports it? What contradicts it? What's the alternative?
-- Flags unproven assumptions
-- Identifies biases (availability, authority, recency, confirmation)
-
-**Default phases**: `sdd-propose`, `sdd-verify`
-
-**Example**: When proposing "rewrite the auth service", the Critical posture asks:
-- Evidence: what specific failures of the current auth exist?
-- Counter-evidence: have we measured vs guessed?
-- Alternative: would a targeted fix cover 80% of the benefit?
+The six postures are **discrete and non-overlapping**. They're mapped 1:1 (sometimes 1:2) to SDD phases.
 
 ---
 
-### 3. +++Systemic (Second-Order Effects)
+## The six postures
 
-**Principle**: What breaks elsewhere? What becomes harder to change later?
+| # | Posture | Core verb | Default SDD phase |
+|---|---------|-----------|-------------------|
+| 1 | Socratic | *ask* | `sdd-explore`, `sdd-onboard` |
+| 2 | Critical | *evaluate* | `sdd-propose`, `sdd-verify` |
+| 3 | Systemic | *connect* | `sdd-spec`, `sdd-design` |
+| 4 | Adversarial | *attack* | `sdd-verify` |
+| 5 | Pragmatic | *ship* | `sdd-tasks`, `sdd-apply` |
+| 6 | Forensic | *trace* | `context-guardian`, debugging |
 
-**Behavior**:
-- Analyzes 2nd and 3rd order consequences
-- Maps dependency ripples
-- Prefers reversible decisions over optimal-but-irreversible
+### 1. Socratic (+++Socratic)
 
-**Default phases**: `sdd-spec`, `sdd-design` (combined with Critical)
+**Use when**: the task starts from ambiguity. Goal is to reveal what has NOT been said.
 
-**Example**: When designing "move sessions to Redis", Systemic asks:
-- What OTHER subsystems assume local session state?
-- What new operational dependencies are created?
-- Is this reversible? (Can we roll back without data loss?)
+**Behavior**: formulate 3 questions about unstated assumptions; do NOT answer them; surface them to the orchestrator.
 
----
+**Typical prefix**:
+```
++++Socratic
+Before producing artifacts, formulate 3 questions about unstated assumptions
+in the request. Reveal what has NOT been said. Examples: data source, user
+role, error handling expectations, performance constraints, backward
+compatibility. Present the questions; do not assume answers.
+```
 
-### 4. +++Adversarial (Break-It-On-Purpose)
+### 2. Critical (+++Critical)
 
-**Principle**: Nothing is correct until proven. Find what the author missed.
+**Use when**: the task requires rigorous evaluation of claims, feasibility, or tradeoffs.
 
-**Behavior**:
-- Constructs counterexamples that violate stated invariants
-- Surfaces edge cases the happy path ignores
-- Identifies hostile inputs, race conditions, corrupting upgrade paths
+**Behavior**: for each claim — what evidence supports it, what contradicts it, what's a stronger version; reject unfounded statements.
 
-**Default phases**: `sdd-verify`
+### 3. Systemic (+++Systemic)
 
-**Example**: When verifying "payment processing feature", Adversarial tries:
-- Double-submission race: two clicks on the submit button within 100ms
-- Partial failure: payment succeeds but order creation fails
-- Hostile input: negative amount, zero amount, overflow amount
-- Upgrade path: what if an existing payment is in a state this new code doesn't recognize?
+**Use when**: the task crosses modules, bounded contexts, or long-lived interfaces.
 
----
+**Behavior**: draw the boundary lines; identify upstream and downstream effects; call out coupling; prefer explicit contracts over implicit ones.
 
-### 5. +++Pragmatic (Minimum Viable)
+### 4. Adversarial (+++Adversarial)
 
-**Principle**: Ship the smallest correct change. No gold-plating.
+**Use when**: the task is validation — spec compliance, security, edge cases.
 
-**Behavior**:
-- Does exactly what was asked, no scope creep
-- Prefers "good enough now" over "perfect later"
-- Resists speculative additions
+**Behavior**: try to break it. Enumerate failure modes. Assume the implementer was optimistic. Write attacks, not confirmations.
 
-**Default phases**: `sdd-tasks`, `sdd-apply`
+### 5. Pragmatic (+++Pragmatic)
 
-**Example**: When implementing "add a search filter", Pragmatic:
-- Implements only the filter that was specced
-- Does NOT refactor the search service to be "more flexible"
-- Does NOT add a framework for "future filters"
+**Use when**: the task is execution — break work into steps, ship code.
 
----
+**Behavior**: smallest working change; follow existing patterns unless they're wrong; resist re-architecture mid-stream.
 
-### 6. +++Forensic (Evidence Chains)
+### 6. Forensic (+++Forensic)
 
-**Principle**: Every claim needs provenance. Never assume — verify.
+**Use when**: you're assembling evidence chains, reconstructing state, or debugging.
 
-**Behavior**:
-- States the source for every fact (file, command, memory ID)
-- Marks validation state: `[valid]`, `[stale]`, `[unverified]`
-- Distinguishes observed facts from inferred conclusions
-
-**Default phases**: `context-guardian`, explicit debugging
-
-**Example**: When debugging "login is broken for some users", Forensic:
-- `[provenance: logs/2026-04-17 14:30] [valid]` 47 login failures in the last hour
-- `[provenance: logs/2026-04-17 14:30] [valid]` all failures have `x-forwarded-for` set
-- `[provenance: inferred]` reverse proxy may be stripping auth headers
-- Next: verify by inspecting proxy config (not yet confirmed)
+**Behavior**: every claim needs provenance; mark validation state per fact; trace cause → effect explicitly.
 
 ---
 
-## Phase → Posture Mapping
+## Combining postures
 
-| SDD Phase | Primary Posture(s) | Why |
-|-----------|-------------------|-----|
-| sdd-explore | +++Socratic | Reveal assumptions before acting |
-| sdd-propose | +++Critical | Evaluate feasibility with rigor |
-| sdd-spec | +++Systemic | Detect cross-domain dependencies |
-| sdd-design | +++Critical + +++Systemic | Architecture needs rigor AND system view |
-| sdd-tasks | +++Pragmatic | Mechanical breakdown, no over-engineering |
-| sdd-apply | +++Pragmatic | Execute the spec, don't freelance |
-| sdd-verify | +++Adversarial | Assume nothing works, find defects |
-| sdd-archive | (none) | Mechanical close-out |
-| sdd-init | (none) | Detection and configuration |
-| sdd-onboard | +++Socratic | New user needs question-driven flow |
-| context-guardian | +++Forensic | Trace provenance, validate facts |
-
-## Multi-Posture Injection
-
-When a phase maps to multiple postures (e.g., sdd-design = Critical + Systemic), the orchestrator injects BOTH blocks at the top of the sub-agent prompt:
+Some phases use two postures. Example — `sdd-design`:
 
 ```
 +++Critical
-Evaluate objectively based on evidence. For each claim made or implied:
-(1) What evidence supports it? (2) What evidence contradicts it?
-(3) What alternative explanation exists?
+[...critical block...]
 
 +++Systemic
-Analyze 2nd and 3rd order effects. What breaks elsewhere? What new
-dependencies are created? What becomes harder to change later?
-
-## Project Standards (auto-resolved)
-[compact rules]
-
-## Task
-[phase-specific instructions]
+[...systemic block...]
 ```
 
-The sub-agent applies both simultaneously. It does not choose one.
+The sub-agent is asked to evaluate AND connect. Don't combine more than two — three is an incoherent prompt.
 
-## User Override
+---
 
-A user can explicitly request a posture for any task:
+## Phase → posture mapping
+
+Canonical table (sourced from `skills/cognitive-mode/SKILL.md`):
+
+| Phase | Posture(s) |
+|-------|------------|
+| sdd-init | (none) |
+| sdd-onboard | +++Socratic |
+| sdd-explore | +++Socratic |
+| sdd-propose | +++Critical |
+| sdd-spec | +++Systemic |
+| sdd-design | +++Critical + +++Systemic |
+| sdd-tasks | +++Pragmatic |
+| sdd-apply | +++Pragmatic |
+| sdd-verify | +++Adversarial |
+| sdd-archive | (none) |
+
+The orchestrator reads this table and injects the posture automatically — you do not pass it manually.
+
+---
+
+## Overriding per-task
+
+If a task needs a posture other than the phase default, the user can prefix the command:
 
 ```
-User: "Review this PR with forensic rigor."
-→ Orchestrator injects +++Forensic (plus +++Adversarial by phase default)
-
-User: "Brainstorm options for X."
-→ Orchestrator injects +++Socratic
-
-User: "Just implement it, no over-engineering."
-→ Orchestrator injects +++Pragmatic (phase default holds)
+/sdd-apply --posture=Forensic
 ```
 
-## When NOT to Use Postures
+The orchestrator substitutes the posture block for that single delegation. This is rare and usually signals the wrong phase is being used.
 
-- `sdd-archive` and `sdd-init` are mechanical phases; injection adds noise
-- Trivial confirmations ("yes, proceed") need no posture
-- Machine-to-machine handoffs between sub-agents reuse the caller's posture
+---
 
-## Implementation Detail
+## Why NOT five, seven, or nine
 
-The injection happens in the orchestrator prompt before delegation:
+- **5**: Forensic is too different from Critical to merge; they operate on different time axes (Forensic = past evidence; Critical = present claims).
+- **7+**: Every additional posture dilutes the signal. Experiments on V2 showed sub-agents confusing Adversarial with Critical when both were present; we dropped "Skeptical" for that reason.
 
-1. Orchestrator identifies the phase (e.g., `sdd-propose`)
-2. Looks up posture(s) from the Phase → Posture table
-3. Reads the corresponding prefix block from `internal/assets/skills/cognitive-mode/SKILL.md`
-4. Injects at the TOP of the sub-agent's prompt, BEFORE `## Project Standards`
-5. Sub-agent's `sdd-phase-common.md` section A2 reads the posture and applies it
+---
 
-See:
-- Orchestrator: `internal/assets/claude/sdd-orchestrator.md` section "Cognitive Posture Injection"
-- Sub-agent receiver: `internal/assets/skills/_shared/sdd-phase-common.md` section A2
-- Posture reference: `internal/assets/skills/cognitive-mode/SKILL.md`
+## See also
 
-## Anti-Patterns
-
-- Mixing three or more postures in one prompt dilutes the effect
-- Overriding a phase's default posture casually — the defaults are calibrated
-- Using +++Adversarial for synthesis tasks (use +++Critical instead)
-- Using +++Socratic for well-defined execution tasks (use +++Pragmatic)
-- Skipping posture injection because "the sub-agent should know what to do" — it doesn't; posture shapes the behavior
-
-## Related
-
-- `docs/caveman-integration.md` — how output style interacts with postures
-- `docs/adaptive-reasoning-v1.md` — how reasoning modes are routed
-- `internal/assets/skills/cognitive-mode/SKILL.md` — the authoritative reference
+- `internal/assets/skills/cognitive-mode/SKILL.md` — machine-readable definition
+- `caveman-integration.md` — how caveman dual-mode interacts with posture injection
+- `adaptive-reasoning-v1.md` — how the orchestrator chooses reasoning depth independently of posture

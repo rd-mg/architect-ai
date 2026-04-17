@@ -1,118 +1,107 @@
-# Antigravity — SDD Integration Workaround
+# Antigravity SDD Workaround — Single-Threaded Simulation
 
-**Status**: Known Limitation | **Applies to**: Antigravity IDE
+**Scope**: Antigravity's runtime is single-threaded with respect to sub-agent delegation. True parallel sub-agents are simulated. This affects how SDD phases compose and how the user should drive them.
 
 ---
 
-## The Problem
+## What's different about Antigravity
 
-Antigravity IDE is the newest agent surface supported by architect-ai. It provides:
-- Mission Control (a planning panel for tasks)
-- Agent-based code execution
+Claude Code, Cursor, Gemini CLI, and most other agents support **real parallel sub-agents**: the orchestrator launches N sub-agents, they run concurrently, results come back out of order but independently.
 
-However, Antigravity **does not yet support nested sub-agent delegation natively**. When architect-ai's SDD orchestrator launches a sub-agent for a phase (e.g., `sdd-propose`), Antigravity does not spawn a parallel context. Instead, the orchestrator itself switches context and executes the sub-agent's role within the same thread.
+Antigravity does not. Its sub-agent primitive is **simulated**: the orchestrator pushes a "sub-agent" context frame onto its own stack, runs it in-line, pops the frame, then continues. From the model's perspective it *looks* like a sub-agent call, but under the hood it's one thread.
 
-This is called **single-threaded simulation** — the orchestrator plays both the coordinator and the executor roles sequentially.
+This has three consequences for SDD:
 
-## Why This Matters
+1. **Latency is additive**. Two "parallel" sub-agents take roughly 2× the time of one, not 1× as on other agents.
+2. **Context contamination is possible**. If the orchestrator forgets to strip the sub-agent frame after the pop, leftover instructions from the sub-agent can leak into the next phase.
+3. **Long cycles exhaust the context window**. Running `sdd-explore → sdd-propose → sdd-spec → sdd-design → sdd-tasks → sdd-apply → sdd-verify → sdd-archive` in one Antigravity session can hit 180K tokens, leaving no headroom for the orchestrator's own reasoning.
 
-The SDD architecture assumes parallel context isolation between orchestrator and sub-agents:
-- The orchestrator keeps a thin working context (just summaries and decisions)
-- Sub-agents operate in fresh contexts per invocation (no accumulated noise)
-- Results flow back via structured return envelopes
+---
 
-With single-threaded simulation, the orchestrator accumulates ALL sub-agent context inline. Over a 6-phase SDD cycle (explore → propose → spec → design → tasks → apply → verify → archive), the orchestrator's context grows by the sum of all phase artifacts.
+## The workaround — fresh-session per phase boundary
 
-For a moderate change (~4K tokens per phase), this means the orchestrator context can exceed 30K tokens by the end of the cycle. Antigravity's context window can handle this, but responsiveness degrades.
+**Do NOT try to run the full SDD cycle in one Antigravity session.**
 
-## The Workaround
-
-In the Antigravity orchestrator prompt, we include an explicit limitation notice and guidance:
-
-```markdown
-## Antigravity Limitation: Single-Threaded Simulation
-
-This orchestrator runs in Antigravity, which does not yet support native
-nested sub-agent delegation. As a result:
-
-- All SDD phases execute in this same context (no parallel sub-agents)
-- Context accumulates across phases (no reset between delegations)
-- For long SDD cycles, invoke `/sdd-init` then `/sdd-explore` then
-  manually start fresh sessions for subsequent phases to preserve context
-
-When this orchestrator "delegates" a phase, it switches posture:
-1. Read the relevant phase protocol from `sdd-phase-protocols/`
-2. Apply the posture and execute the phase as an inline role switch
-3. Return the phase artifact per the phase's return envelope contract
-4. Resume orchestrator mode for the next decision
-
-If the context grows beyond comfort (e.g., > 50K tokens), invoke
-context-guardian to compact and continue.
-```
-
-## User Experience
-
-For Antigravity users, the workflow is:
-
-1. **Short changes (1-3 phases)**: Run the full SDD cycle in one session
-2. **Medium changes (4-6 phases)**: Run phases 1-3, then start a fresh Antigravity session for phases 4-6 (Engram memory preserves state across sessions)
-3. **Long changes (full cycle + iteration)**: Fresh session per phase, relying on Engram persistence for context
-
-The `sdd-orchestrator.md` for Antigravity includes a reminder after each phase:
+Instead, the orchestrator prints this reminder after each phase:
 
 ```
-Phase {phase} complete. For the next phase ({next}):
-- Option A: continue in this session (simpler, may hit context limits)
-- Option B: start a fresh Antigravity session and run /sdd-continue {change-name}
-  (preferred for moderate+ changes)
+Phase sdd-{phase} complete. For Antigravity:
+  Option A: continue here IF context usage < 50%
+  Option B: start a fresh Antigravity session and run /sdd-continue {change-name}
 ```
 
-## Context Guardian Integration
+Option B re-loads the state from Engram (the `sdd/{change-name}/state` topic-key), so nothing is lost. The fresh session starts clean.
 
-The Antigravity orchestrator auto-triggers `context-guardian` at 50% context usage (the standard threshold). This compresses the accumulated history into a Context Pack persisted to Engram.
+This notice is NOT present in the Claude, Gemini, Cursor, etc. orchestrators — they can handle the full cycle in one session.
 
-When a fresh session resumes via `/sdd-continue`, the orchestrator reads the Context Pack first, establishing continuity without replaying the raw history.
+---
 
-## When Antigravity Adds Native Delegation
+## What the user should do
 
-If/when Antigravity supports native nested sub-agents:
+### Short cycles (≤4 phases): stay in one session
 
-1. Remove the `Single-Threaded Simulation` notice from `internal/assets/antigravity/sdd-orchestrator.md`
-2. Enable the standard delegation syntax (same as Claude, Cursor, Gemini)
-3. No changes to phase protocols are needed — they're agent-agnostic
-4. Update this doc to archive it as historical
+If you're running `sdd-explore → sdd-propose → sdd-spec → sdd-tasks` and the context usage stays under 50%, finish in one session. The workaround is for when the cycle is long enough to hit window pressure.
 
-Track Antigravity release notes for parallel context support.
+### Long cycles (full SDD): session per phase boundary
 
-## Comparison to Other Agents
+Recommended boundaries:
+- Session 1: `/sdd-init`, `/sdd-explore`
+- Session 2: `/sdd-propose`, `/sdd-spec`, `/sdd-design`
+- Session 3: `/sdd-tasks`, `/sdd-apply`
+- Session 4: `/sdd-verify`, `/sdd-archive`
 
-| Agent | Native Delegation | Strategy |
-|-------|------------------|----------|
-| Claude Code | ✅ Yes (Task tool) | Standard multi-agent |
-| Cursor | ✅ Yes (native subagents) | Standard multi-agent |
-| Gemini CLI | ✅ Yes (native agents) | Standard multi-agent |
-| OpenCode | ✅ Yes (multi-mode overlay) | Overlay JSON with mode profiles |
-| Windsurf | ✅ Yes (Plan Mode / Code Mode) | Standard multi-agent |
-| Kiro | ✅ Yes (native subagents + steering) | Standard multi-agent |
-| Codex | ⚠️ Solo agent | Single-threaded simulation (similar to Antigravity) |
-| **Antigravity** | ⚠️ Solo agent (for now) | **Single-threaded simulation + fresh session workaround** |
+Each new session starts with:
+```
+/sdd-continue <change-name>
+```
 
-## User FAQ
+The orchestrator will:
+1. Read `sdd/{change-name}/state` from Engram
+2. Determine the next dependency-ready phase
+3. Run it
 
-**Q: Why does my context fill up so fast?**
-A: Because Antigravity runs SDD phases in the same context. Use fresh sessions for each phase on longer changes.
+### Strict TDD cycles — also session per batch
 
-**Q: Does the workaround lose state?**
-A: No. Engram persists every artifact. `/sdd-continue` reads the state back.
+If you're in strict TDD with multiple apply batches, use a fresh session per batch. Each batch persists `sdd/{change-name}/apply-progress`, and `/sdd-continue` will merge new progress with old.
 
-**Q: Can I run the full SDD flow in one Antigravity session?**
-A: For short changes, yes. For moderate+ changes, expect to restart sessions between phases.
+---
 
-**Q: Will this be fixed?**
-A: When Antigravity ships native delegation, this workaround becomes unnecessary.
+## When the workaround doesn't help
 
-## References
+**Two real problems remain**:
 
-- `internal/assets/antigravity/sdd-orchestrator.md` — orchestrator with limitation notice
-- `internal/assets/skills/context-guardian/SKILL.md` — auto-compaction hook
-- `docs/cognitive-modes.md` — posture management (applies to Antigravity same as other agents)
+1. **Real-time iteration feels slow**. Fresh sessions have a ~5-10s startup cost. For quick experimentation, Antigravity is the wrong tool — use Claude Code or Cursor.
+
+2. **Simulated parallelism is still simulated**. If a phase protocol calls for two sub-agents in parallel (e.g., `sdd-verify` doing deterministic checks AND adversarial checks simultaneously), you're paying the full sequential cost on Antigravity. The orchestrator does NOT try to be clever about this — it just runs them in sequence.
+
+---
+
+## Detection
+
+The orchestrator auto-detects Antigravity via its environment. The detection happens once per session at the top of the orchestrator. If detection is wrong, the user can force it:
+
+```
+I'm on Antigravity. Please apply the single-threaded workaround.
+```
+
+or
+
+```
+I'm not on Antigravity (detection wrong). Please run full cycle without the per-phase reminder.
+```
+
+---
+
+## Engineering notes (for contributors)
+
+- The orchestrator core is identical across agents EXCEPT for `internal/assets/antigravity/sdd-orchestrator.md`, which has a `## Single-Threaded Simulation` notice at the top.
+- The notice is a **block**, not a flag in the orchestrator's own reasoning. It's visible to the user by design — they need to know the workaround exists.
+- When Antigravity gains real parallel sub-agents, remove the notice block from `antigravity/sdd-orchestrator.md` and delete this doc.
+
+---
+
+## See also
+
+- `internal/assets/antigravity/sdd-orchestrator.md` — the notice block
+- `internal/assets/claude/sdd-orchestrator.md` — canonical orchestrator without the notice
+- `plans/master-plan.md` section 3.2 — installation notes
