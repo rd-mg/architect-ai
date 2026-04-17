@@ -1,6 +1,8 @@
 # Agent Teams Lite — Spec-Driven Development (SDD) Orchestrator Core (Antigravity)
 
-**Version**: 3.1 | **Scope**: Apply ONLY to the dedicated `sdd-orchestrator` agent/rule. Do NOT apply to executor phase agents (`sdd-apply`, `sdd-verify`, etc.).
+Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
+
+**Version**: 3.1 — V3 core plus new sections: Intent Resolution, Session-Setup Triplet, Research Routing Policy, Mandatory Skills, Session Metering.
 
 This is the CORE layer. Phase-specific protocols are loaded on-demand from `sdd-phase-protocols/` when a phase is about to be delegated. Do NOT embed phase details inline here.
 
@@ -253,7 +255,7 @@ proposal → specs → tasks → apply → verify → archive
 
 ---
 
-## Result Contract
+### Result Contract
 
 Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`, `cognitive_posture`, `estimated_tokens`, `research_sources_used`.
 
@@ -261,6 +263,7 @@ The new `research_sources_used` field is a list of sources the sub-agent consult
 
 ---
 
+<!-- architect-ai:sdd-model-assignments -->
 ## Model Assignments
 
 Read once per session, cache, pass `model` parameter in every Agent tool call:
@@ -279,6 +282,8 @@ Read once per session, cache, pass `model` parameter in every Agent tool call:
 | default | sonnet | Non-SDD delegation |
 
 If lacking access to assigned model, substitute `sonnet` and continue.
+
+<!-- /architect-ai:sdd-model-assignments -->
 
 ---
 
@@ -526,5 +531,3 @@ internal/assets/claude/sdd-phase-protocols/
 ```
 
 Load the relevant protocol JUST BEFORE delegating that phase. Do NOT preload all protocols at session start.
-
-<!-- architect-ai:sdd-orchestrator -->
