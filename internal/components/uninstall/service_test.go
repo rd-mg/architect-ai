@@ -43,7 +43,7 @@ func TestExecutePlanReportsManualCleanupForNonEmptyDirectory(t *testing.T) {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
-	statePath := filepath.Join(homeDir, ".architect-ai", "state.json")
+	statePath := filepath.Join(homeDir, ".gentle-ai", "state.json")
 	if err := os.MkdirAll(filepath.Dir(statePath), 0o755); err != nil {
 		t.Fatalf("MkdirAll(state dir) error = %v", err)
 	}

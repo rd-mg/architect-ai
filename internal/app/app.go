@@ -156,6 +156,8 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return cli.RunSkillRegistry(args[1:], stdout)
 	case "sdd-init":
 		return cli.RunSddInit(args[1:], stdout)
+	case "cleanup":
+		return cli.RunCleanup(args[1:], stdout)
 	case "restore":
 		return cli.RunRestore(args[1:], stdout)
 	default:

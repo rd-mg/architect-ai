@@ -1,0 +1,234 @@
+# SDD Verify — Odoo Context (Cudio-Extended)
+
+This is the Cudio-extended version of `verify-odoo.md`. Replaces the base
+file when the Cudio overlay is active. Includes the Cudio DoD deterministic
+checklist IN ADDITION to the standard Odoo verification.
+
+When verifying in a Cudio Odoo project, apply these domain-specific checks IN ADDITION to the standard sdd-verify.
+
+## Deterministic Checklist
+
+Apply ALL of these checks. Each is automatable via `ripgrep` or file existence.
+
+### Manifest Checks (CUDIO EXTENDED)
+
+- [ ] `__manifest__.py` exists in module root
+- [ ] `version` field is X.Y.Z.W format
+  ```bash
+  rg '"version"\s*:\s*"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"' __manifest__.py
+  ```
+- [ ] `version` was incremented since last commit on this module
+  ```bash
+  git log --oneline --diff-filter=M -- __manifest__.py | head -5
+  # Compare the version in the working tree vs the previous commit
+  ```
+- [ ] **CUDIO**: `author` = `"Cudio Inc."`
+- [ ] **CUDIO**: `company` = `"Cudio Inc."`
+- [ ] **CUDIO**: `maintainer` = `"Cudio Inc."`
+- [ ] **CUDIO**: `website` = `"https://www.cudio.com"`
+- [ ] **CUDIO**: `license` = `"OPL-1"` (unless otherwise agreed)
+- [ ] **CUDIO**: `name` matches pattern: `"{Customer} | {Title}"` or `"Cudio | {Title}"`
+- [ ] **CUDIO**: Module folder name matches `{client}_{app}_{desc}` or `cudio_{app}_{desc}`
+- [ ] **CUDIO**: `icon.png` exists in `static/description/`
+  ```bash
+  test -f static/description/icon.png && echo "✅ icon present" || echo "❌ icon missing"
+  ```
+- [ ] `depends` list contains all imported modules (cross-check with `_inherit` and Python imports)
+- [ ] `external_dependencies` declared if new Python libraries are used
+- [ ] `data` list is in correct load order (security → data → views → menus)
+
+### Security Checks
+
+- [ ] `security/ir.model.access.csv` exists for EVERY new model
+- [ ] Record rules exist for multi-company fields (`company_id`)
+- [ ] No `sudo()` without documented justification comment
+  ```bash
+  rg "\.sudo\(\)" --files-with-matches
+  # Each match should have a comment like "# sudo: accessing res.users as portal user"
+  ```
+- [ ] No raw SQL without parameterization
+  ```bash
+  rg "cr\.execute\(" -A 2 --files-with-matches
+  # Each should use %s placeholders, not f-strings or string formatting
+  ```
+- [ ] No user-controlled input in XML IDs or domains
+- [ ] No SQL injection vectors (string formatting in SQL statements)
+
+### Code Quality Checks
+
+- [ ] `hasclass()` used in XPath (not `contains(@class, ...)`)
+  ```bash
+  rg "contains\(@class" views/
+  # Expected: no matches
+  ```
+- [ ] No `attrs=` in v17+ code
+- [ ] No `<tree>` in v18+ views
+- [ ] OWL version matches Odoo version (v15: 1.x, v16-18: 2.x, v19: 3.x)
+- [ ] No `@api.model_create_multi` missing on `create` overrides
+- [ ] All computed fields have complete `@api.depends(...)`
+- [ ] No unbounded `search([])` (must have limit, offset, or narrow domain)
+- [ ] No N+1 queries (browsing inside loops over large recordsets)
+- [ ] No hardcoded values that should be configurable (use `res.config.settings`, `ir.config_parameter`, or model-level Python constants)
+
+### Documentation Checks (CUDIO EXTENDED)
+
+- [ ] `README.md` exists in module root
+- [ ] README describes: purpose, features, configuration, dependencies
+- [ ] **CUDIO**: Changelog updated for complex/integration modules (recommended for all)
+- [ ] **CUDIO**: Changelog format:
+  ```
+  ## [{version}] - {YYYY-MM-DD}
+  ### Added / Changed / Fixed
+  - {description of this change}
+  ```
+- [ ] **CUDIO**: External module/library dependencies documented in manifest AND repository `requirements.txt`
+
+### Migration Checks (Conditional)
+
+If schema changes were made in this batch:
+- [ ] Pre-migrate script present in `migrations/{version}/pre-migrate.py`
+- [ ] Post-migrate script present if data transformation needed
+- [ ] New required fields have default values or computed defaults
+- [ ] Field renames/removals have proper migration logic
+- [ ] **CUDIO**: Migration scripts tested on a copy of the production database (reminder)
+
+### Test Checks
+
+- [ ] Test file exists for each new capability in `tests/`
+- [ ] Tests pass: `python odoo-bin -i {module} --test-enable --stop-after-init`
+- [ ] Tests cover happy path AND at least one error case
+- [ ] No `print()` or `import pdb` left in code
+
+### Git & Branch Checks (CUDIO NEW)
+
+- [ ] **CUDIO**: Branch name matches `{feat|fix|refactor|docs|test|chore}/{task-id}-{description}`
+- [ ] **CUDIO**: All commits on branch match `[TAG][TASK_ID] module: Brief description`
+- [ ] **CUDIO**: No Co-Authored-By trailers in commits
+
+## Adversarial Review Focus Areas
+
+Apply adaptive-reasoning Mode 2 (adversarial-review) with these Odoo-specific lenses:
+
+### Pass A: Local correctness lens
+- Does the code do what the spec says?
+- Are all declared fields actually used?
+- Do views reference fields that exist?
+- Do method signatures match their invocations?
+
+### Pass B: System impact lens
+- What OTHER modules inherit from this? Did we break them?
+- What happens during module upgrade from the previous version?
+- What happens if the user installs this module on a database with existing data?
+- What happens if the user uninstalls this module? Are there orphan records?
+- Does this change affect multi-company behavior?
+- Does this change interact with Enterprise features?
+- Does this interact with the studio module (user customizations)?
+
+## Human-Required Checklist (Agent Reminds, Does Not Execute)
+
+Include these reminders in the return envelope — these are Cudio DoD items
+that CANNOT be automated:
+
+### Testing (Developer Responsibility)
+- [ ] Main flows (happy path) tested and working
+- [ ] Relevant edge cases tested
+- [ ] Feature verified on staging with representative client data
+- [ ] Tested with correct user roles/permissions (not only admin)
+- [ ] Multi-company behavior verified (if applicable)
+- [ ] Multi-currency behavior verified (if applicable)
+- [ ] Module installs on clean database without errors
+- [ ] Module upgrades on existing database without errors
+- [ ] No JavaScript console errors in browser
+
+### Task Documentation (Developer + PM)
+- [ ] Configurations and Demos tab filled with:
+  - Configurations required to activate functionality
+  - Settings to be enabled
+  - Fields to be populated
+  - User groups/permissions to assign
+  - External service configuration (API keys, endpoints)
+- [ ] Video demonstration recorded (~15 minutes)
+- [ ] Video covers main use cases from the specification
+- [ ] Video attached to task or linked in Configurations and Demos tab
+- [ ] Functional specification updated (if scope changed) — **PM responsibility**
+
+### Code Review & Git (Developer)
+- [ ] PR created targeting correct branch
+- [ ] GitHub Copilot review requested and all comments resolved
+- [ ] Optional: IDE-based review (PyCharm Copilot) performed
+- [ ] Lead developer (or another team member) added as reviewer
+- [ ] PR merged using Squash and Merge with correctly-formatted commit message
+- [ ] Development branch deleted after successful merge
+
+### Deployment Readiness (Developer + DevOps)
+- [ ] Code pushed to staging branch
+- [ ] Module installed or upgraded successfully on staging
+- [ ] All necessary configurations applied on staging
+- [ ] Feature fully functional on staging
+- [ ] Views, menus, and actions visible and accessible
+
+### Task Handoff (PM Responsibility)
+- [ ] Task assigned to next action user (single person for next step)
+- [ ] Relevant stakeholders tagged in log note
+- [ ] Task stage updated (e.g., moved to Cudio Testing)
+- [ ] If project has a designated tester: task assigned to them
+- [ ] If no tester configured: task assigned to project manager for triage
+
+## Output Format
+
+In your verify-report, include:
+
+```markdown
+## Odoo-Specific Verification (Cudio Extended)
+
+### Deterministic Checks — Manifest
+✅ Manifest version bumped (18.0.1.0.0 → 18.0.1.1.0)
+✅ author/company/maintainer = "Cudio Inc."
+✅ license = "OPL-1"
+❌ icon.png missing in static/description/ — BLOCKER
+⚠️ name field uses "acme | Invoice" — should be "Acme | Invoice" (capitalization)
+
+### Deterministic Checks — Security
+✅ ir.model.access.csv exists for acme.approval.request
+⚠️ sudo() used in models/approval.py:45 without justification comment
+
+### Deterministic Checks — Documentation
+❌ README.md missing in module root — BLOCKER
+⚠️ Changelog entry missing for version 18.0.1.1.0
+
+### Deterministic Checks — Git
+✅ Branch name `feat/12345-approval-workflow` matches convention
+✅ Commits formatted correctly
+✅ No Co-Authored-By trailers
+
+### Adversarial Findings
+- CRITICAL: Uninstall leaves orphan records in acme_approval_log
+- WARNING (real): Multi-company not respected in acme.approval.request.search
+- SUGGESTION: Consider adding tracking=True to state field
+
+### Human Verification Required (Cudio DoD)
+- [ ] Test on clean DB
+- [ ] Test upgrade from 18.0.1.0.0
+- [ ] Test as non-admin user
+- [ ] Multi-company verified
+- [ ] Video demo recorded (~15 min)
+- [ ] Configurations and Demos tab filled
+- [ ] PR: Copilot review + lead developer assigned
+
+### Verdict
+NEEDS CHANGES (README missing, icon missing, CRITICAL uninstall issue)
+
+### Next Steps
+1. Create README.md (template available in apply-odoo.md)
+2. Add icon.png to static/description/
+3. Add uninstall hook to clean up acme_approval_log
+4. Add sudo() justification comment on line 45
+5. Re-run sdd-verify
+```
+
+## Boundaries
+
+- Do NOT mark as APPROVED with any BLOCKER or CRITICAL finding unresolved
+- Do NOT skip deterministic checks because "the code looks fine"
+- Do NOT run tests in production-adjacent environments without user confirmation
+- Do NOT claim human-required items are done — always include them as reminders

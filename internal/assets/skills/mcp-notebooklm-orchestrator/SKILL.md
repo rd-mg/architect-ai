@@ -1,106 +1,170 @@
 ---
 name: mcp-notebooklm-orchestrator
 description: >
-  Orchestrates research-first NotebookLM workflows through the active MCP tool
-  surface while keeping context recovery minimal, notebook selection explicit,
-  and artifact generation confirmation-first. Trigger: When the user asks to
-  investigate, synthesize, or generate a NotebookLM artifact such as audio,
-  video, report, quiz, flashcards, mind map, slide deck, infographic, or data
-  table.
+  PRIMARY research source. NotebookLM holds the project's curated knowledge
+  base. Query-only — never creates notebooks or writes artifacts. For any
+  question that might live in a curated notebook, NotebookLM is the FIRST
+  choice, BEFORE local ripgrep and BEFORE Context7. Internet is never used
+  unless the user explicitly requests it.
 license: Apache-2.0
+bridge: always
+applies-when: "any research question, especially project-specific knowledge"
 metadata:
   author: rd-mg
-  version: "2.0"
+  version: "2.1"
 ---
 
+# NotebookLM Orchestrator v2.1
+
 ## Purpose
-Orchestrate long-context NotebookLM work without smuggling repository-specific
-defaults into the bundled skill. The skill should inspect the available tool
-surface, recover only the context it actually needs, select the right notebook,
-and recommend artifact creation only when it materially helps.
 
-## When to Use
-- User asks to investigate a topic before generating a NotebookLM artifact.
-- User asks for a NotebookLM-generated audio overview, report, quiz,
-  flashcards, mind map, slide deck, infographic, or data table.
-- User asks to compare notebook content, import research, or choose the right
-  notebook before synthesis.
-- User asks to use NotebookLM MCP tooling or notebooklm-mcp-cli for
-  long-context analysis.
-- Do not use when: the user only needs a normal documentation lookup, a plain
-  repository answer, or a wrapper-only integration workflow.
+NotebookLM is the **primary** external research source for this project. It holds curated notebooks hand-selected by the team — architecture decisions, onboarding guides, vendor playbooks, Odoo-upgrade notes, and anything else the team decided deserved a durable home.
 
-## Critical Patterns
-- Start with tool discovery and routing. Use the actual NotebookLM MCP tool
-  surface that exists in the current host instead of assuming tool names.
-- Resolve the notebook target in this order:
-  1. user-provided notebook ID or URL
-  2. a project-specific default notebook recovered from local instructions or
-     memory in the current environment
-  3. notebook inspection across the available notebooks
-- Do not hardcode a notebook URL, notebook ID, or repository-specific default
-  notebook into this skill.
-- Query or inspect first when context is weak. Prefer notebook discovery,
-  notebook description, source inspection, or research workflows before
-  artifact generation.
-- Apply progressive disclosure: recover only the minimum useful local or memory
-  context needed to fill NotebookLM parameters.
-- Artifact creation is recommendation-first. Suggest the right artifact, but do
-  not launch generation until the user explicitly confirms.
-- Treat asynchronous generation as scheduled work, not immediate output. Do not
-  claim an artifact is ready until a later status or download step proves it.
-- Keep wrapper-only details as implementation concerns outside the bundled
-  contract. This skill orchestrates NotebookLM usage; it does not define
-  Open WebUI glue, deployment-specific identity mapping, or project-local
-  wrappers.
-- Stay domain-agnostic. This bundled skill must not contain domain-specific or
-  repository-specific assumptions.
+In V3.1, this skill was promoted from "consulted sometimes" to **primary research authority**. The research priority order is:
 
-## Inputs
-- The user goal: investigate, query, ingest, generate, export, or automate.
-- Optional notebook identifier provided by the user.
-- Optional project-specific notebook hints recovered from the current project.
-- The live NotebookLM MCP tool surface exposed by the current host.
-- The minimum context needed to answer or generate the requested artifact.
+1. **NotebookLM** (this skill) ← you are here
+2. Local code + docs (ripgrep, find, cat)
+3. Context7 (framework docs)
+4. Internet (only on explicit user request)
 
-## Outputs
-- One validated NotebookLM workflow choice.
-- One direct answer for synchronous notebook queries when that is enough.
-- One artifact recommendation when generation would help but has not been
-  confirmed yet.
-- One scheduled generation request only after explicit user confirmation.
-- One concise user-facing status that distinguishes investigation,
-  recommendation, generation, and export phases.
+See `_shared/research-routing.md` for the full routing table.
 
-## Steps
-1. Identify whether the user needs investigation, direct notebook querying,
-   notebook discovery, artifact generation, export, or automation.
-2. Inspect the active NotebookLM tool surface and route to the tools that
-   really exist.
-3. Resolve the notebook target using explicit user input first, then any local
-   project-specific hint, then notebook inspection.
-4. Recover only the minimum local context needed to inform notebook selection
-   or generation parameters.
-5. Prefer synchronous notebook answers for normal information requests.
-6. If context is weak or the correct notebook is unclear, investigate before
-   recommending or creating any artifact.
-7. Recommend one artifact only when it clearly improves the user outcome.
-8. Stop and wait for confirmation before any artifact-generation request.
-9. After confirmation, submit exactly one generation request with supported
-   parameters only.
-10. Report the correct handoff: answer returned, recommendation pending,
-    generation scheduled, status checked, or artifact ready for export.
+---
 
-## Guardrails
-- Do not invent NotebookLM tool names, parameters, or workflow steps.
-- Do not assume a project default notebook unless the current environment
-  explicitly provides one.
-- Do not auto-create artifacts or queue multiple artifacts by default.
-- Do not promise a finished artifact from the same turn that scheduled it.
-- Do not embed domain-specific, repository-specific, or deployment-wrapper
-  logic into the bundled skill contract.
+## What this skill does (query-only)
 
-## Resources
-- `docs/components.md`
-- `docs/intended-usage.md`
-- `internal/assets/skills/mcp-notebooklm-orchestrator/`
+- **Queries** existing notebooks via MCP
+- **Updates notebook tags, descriptions, and instructions** (metadata only)
+- **Persists findings** back to Engram under `notebooklm/{notebook}/{topic}`
+
+## What this skill does NOT do (enforced)
+
+- ❌ Create new notebooks
+- ❌ Upload sources
+- ❌ Generate audio overviews
+- ❌ Create video overviews, mind maps, or Studio content
+- ❌ Write to notebooks
+
+**Any attempt to create artifacts must be redirected** — tell the user to go to the NotebookLM web app. This skill is read-only on content; it may only edit metadata.
+
+---
+
+## Query procedure
+
+### Step 1 — Check cached findings first (saves tokens)
+
+```
+mem_search(query: "notebooklm/{topic-guess}", project: "{project}")
+  → if found, read the observation
+  → if the finding is fresh (< 7 days old for living docs, < 30 days for frozen), use it
+  → if stale or missing, proceed to step 2
+```
+
+### Step 2 — List notebooks to find the right one
+
+```
+notebooklm_list_notebooks()
+  → returns array of {id, title, description, tags}
+  → pick the best match by title/tags/description
+```
+
+If none match the topic, fall through to Step 2 of research routing (local code + docs).
+
+### Step 3 — Query the notebook
+
+```
+notebooklm_query(
+  notebook_id: "{id}",
+  query: "{user question, verbatim or paraphrased}"
+)
+  → returns answer + source citations
+```
+
+### Step 4 — Persist the finding
+
+```
+mem_save(
+  title: "notebooklm/{notebook}/{topic}",
+  topic_key: "notebooklm/{notebook}/{topic}",
+  type: "external-research",
+  project: "{project}",
+  content: "Q: {question}\nA: {answer}\nSources: {citations}\nNotebook: {notebook-id}\nDate: {iso-date}"
+)
+```
+
+Next session asking the same question hits the Engram cache instead of re-querying NotebookLM.
+
+---
+
+## Odoo-specific instruction pattern
+
+When the active overlay is Odoo (detected via `.atl/overlays/odoo-*/`), add a code-first constraint to every NotebookLM query:
+
+```
+Query prefix: "Answer with code-first examples from the Odoo source. Quote model
+names, field names, and decorators verbatim. Cite the file path (addons/x/models/y.py)
+when possible."
+```
+
+This prevents NotebookLM from returning marketing-style prose when the user wants code.
+
+---
+
+## When NotebookLM is NOT the right tool
+
+- **The question is about THIS repo's actual code** — use `ripgrep`, not NotebookLM.
+- **The question is about a framework's public API** (React, Go stdlib, Django) — use Context7 directly.
+- **The notebook is empty or the notebooks list returned nothing** — fall through to local code + docs.
+
+Do NOT pad NotebookLM queries with filler in hopes of getting a hit. If the topic doesn't match, move on.
+
+---
+
+## Caching contract
+
+Every NotebookLM response gets persisted in Engram. The topic-key format is:
+
+```
+notebooklm/{notebook-slug}/{topic-slug}
+```
+
+Before calling NotebookLM, ALWAYS check Engram first with `mem_search`. The orchestrator pays for NotebookLM calls; Engram is free.
+
+Staleness rules:
+- Living docs (team conventions, onboarding): re-query every 7 days
+- Frozen docs (version-locked Odoo upgrade notes): re-query every 30 days
+- Research queries (one-off findings): never re-query — Engram is authoritative
+
+---
+
+## Return envelope (in sub-agent result)
+
+```
+{
+  "source": "notebooklm",
+  "notebook_id": "...",
+  "query": "...",
+  "answer_summary": "2-3 sentences",
+  "citation_count": N,
+  "engram_key": "notebooklm/{nb}/{topic}",
+  "cached_hit": true|false  // was it served from Engram?
+}
+```
+
+The orchestrator uses `cached_hit` to compute the token-savings banner (see Phase E of V3.1 plan).
+
+---
+
+## Failure modes
+
+- **NotebookLM MCP not available** → return `{source: "notebooklm", status: "unavailable"}`, orchestrator falls through to local research.
+- **No matching notebook** → return `{source: "notebooklm", status: "no-match"}`, orchestrator falls through.
+- **Rate limit** → return `{source: "notebooklm", status: "rate-limited", retry_after_s: N}`, orchestrator waits or falls through.
+
+---
+
+## See also
+
+- `_shared/research-routing.md` — the 4-step priority order
+- `mcp-context7-skill/SKILL.md` — tertiary research, defers to this skill
+- `ripgrep/SKILL.md` — secondary (local) research
