@@ -139,6 +139,70 @@ Slash commands (auto-complete in every agent):
 
 On match, the orchestrator confirms the interpretation before acting.
 
+### CLI Utility Commands
+
+**1. Initialization (`sdd-init`)**
+You can manually bootstrap the SDD project conventions (`.atl/` directory, registries, and overlays) before opening an agent by using the CLI.
+
+- **For a general local folder:**
+  ```bash
+  cd your-project
+  architect-ai sdd-init --mode engram
+  ```
+
+- **For an Odoo folder:**
+  If an Odoo environment is detected, the command automatically discovers specialist overlays and sets up the correct Odoo conventions.
+  ```bash
+  cd your-odoo-repo
+  architect-ai sdd-init --mode hybrid
+  ```
+
+**2. Skill Registry (`skill-registry`)**
+Generates or refreshes the `.atl/skill-registry.md` file in your project. This file indexes all available skills and their trigger conditions so the agent knows when to load them.
+```bash
+architect-ai skill-registry
+```
+
+**3. Sync (`sync`)**
+Synchronizes global agent configurations and skills to the latest version. Use this after updating Architect-AI to ensure your agents have the latest system prompts.
+```bash
+architect-ai sync
+```
+
+---
+
+## Using Agents & Skills (Examples)
+
+Architect-AI agents use "skills" (specialized instruction sets) that are automatically loaded when specific keywords or contexts are detected in your prompts.
+
+### General Project Workflow
+
+In a standard project, you trigger SDD phases and general skills:
+
+**1. Starting a new feature**
+> "usa sdd para crear un nuevo endpoint de autenticación"
+*(Triggers `/sdd-new` and loads the `sdd-propose` skill)*
+
+**2. Writing Tests (Go Example)**
+> "escribe tests para auth.go usando teatest"
+*(Detects the context and automatically loads the `go-testing` skill before writing code)*
+
+**3. Code Review / Adversarial Mode**
+> "judgment day para este PR"
+*(Triggers the `judgment-day` skill for a rigorous adversarial review)*
+
+### Odoo Project Workflow
+
+When working in an Odoo repository (detected via `sdd-init`), specialized Odoo skills are available. The agent will automatically use Odoo best practices.
+
+**1. Creating a new model**
+> "crea un modelo de odoo para gestionar reservas de vehículos"
+*(The agent recognizes the Odoo context and loads the `odoo-development-skill` overlay to ensure correct inheritance, security rules, and view definitions)*
+
+**2. Debugging Odoo**
+> "encuentra por qué falla el cálculo de impuestos en las facturas"
+*(The agent uses Odoo-specific debugging strategies, checking `account.move` overrides and server logs)*
+
 ---
 
 ## Research routing policy
