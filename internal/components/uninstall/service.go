@@ -127,7 +127,7 @@ func NewService(homeDir, workspaceDir, appVersion string) (*Service, error) {
 		return nil, fmt.Errorf("create adapter registry: %w", err)
 	}
 
-	backupRoot := filepath.Join(homeDir, ".architect-ai", "backups")
+	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		return nil, fmt.Errorf("create backup root %q: %w", backupRoot, err)
 	}
@@ -268,7 +268,7 @@ func (s *Service) CompleteUninstall() (Result, error) {
 		return result, err
 	}
 
-	result.ManualActions = append(result.ManualActions, "To completely remove architect-ai from your system, delete the executable (e.g., rm -f $(which architect-ai))")
+	result.ManualActions = append(result.ManualActions, "To completely remove gentle-ai from your system, delete the executable (e.g., rm -f $(which gentle-ai))")
 	return result, nil
 }
 
@@ -436,7 +436,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 			}))
 		}
 		if adapter.SupportsOutputStyles() {
-			path := filepath.Join(adapter.OutputStyleDir(homeDir), "architect.md")
+			path := filepath.Join(adapter.OutputStyleDir(homeDir), "gentleman.md")
 			targets = append(targets, path)
 			ops = append(ops, removeFile(path))
 			ops = append(ops, removeDirIfEmpty(adapter.OutputStyleDir(homeDir)))
@@ -445,7 +445,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 			targets = append(targets, path)
 			jsonPaths := []jsonPath{{"outputStyle"}}
 			if adapter.Agent() == model.AgentOpenCode {
-				jsonPaths = append(jsonPaths, jsonPath{"agent", "architect"})
+				jsonPaths = append(jsonPaths, jsonPath{"agent", "gentleman"})
 			}
 			ops = append(ops, rewriteJSONFile(path, jsonPaths...))
 		}
@@ -973,7 +973,7 @@ func compareOperations(a, b operation) int {
 
 func managedSDDSkillIDs() []string {
 	ids := append([]string(nil), sddSkillPhaseIDs...)
-	return ids
+	return append(ids, "judgment-day")
 }
 
 func globalBackupTargets(homeDir string) []string {

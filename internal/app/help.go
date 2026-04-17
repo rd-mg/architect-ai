@@ -18,6 +18,7 @@ COMMANDS
   sync         Sync agent configs and skills to current version
   update       Check for available updates
   upgrade      Apply updates to managed tools
+  cleanup      Deep clean of temporary files and logs
   restore      Restore a config backup
   overlay      Manage specialist project overlays (e.g. Odoo)
   skill-registry Generate or refresh the project's .atl/skill-registry.md
