@@ -1,0 +1,23 @@
+# Tasks: Apply-Progress Continuity
+
+- [x] **Phase 1: Foundation**
+    - [x] Create delta spec `resume.md`
+    - [x] Create design document `design.md`
+- [x] **Phase 2: Orchestrator Updates**
+    - [x] Update `internal/assets/claude/sdd-orchestrator.md`
+    - [x] Update `internal/assets/antigravity/sdd-orchestrator.md`
+    - [x] Update `internal/assets/opencode/sdd-orchestrator.md`
+    - [x] Update `internal/assets/codex/sdd-orchestrator.md`
+    - [x] Update `internal/assets/kiro/sdd-orchestrator.md`
+    - [x] Update `internal/assets/cursor/sdd-orchestrator.md`
+    - [x] Update `internal/assets/gemini/sdd-orchestrator.md`
+    - [x] Update `internal/assets/generic/sdd-orchestrator.md`
+    - [x] Update `internal/assets/windsurf/sdd-orchestrator.md`
+    - [x] Update `internal/assets/qwen/sdd-orchestrator.md`
+- [x] **Phase 3: Skill Updates**
+    - [x] Update `internal/assets/skills/sdd-apply/SKILL.md`
+    - [x] Update `internal/assets/skills/sdd-verify/SKILL.md`
+- [x] **Phase 4: Verification**
+    - [x] Audit all orchestrators for `FILESYSTEM WINS` canary
+    - [x] Verify `sdd-verify` guard logic in SKILL.md
+    - [x] Run full project tests

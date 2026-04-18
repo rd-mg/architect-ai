@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbletea"
 	"github.com/rd-mg/architect-ai/internal/backup"
 	"github.com/rd-mg/architect-ai/internal/cli"
 	componentuninstall "github.com/rd-mg/architect-ai/internal/components/uninstall"
@@ -158,6 +158,8 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return cli.RunSddInit(args[1:], stdout)
 	case "sdd-status":
 		return cli.RunSDDStatus(args[1:], stdout, os.Stderr)
+	case "sdd-archive-preflight":
+		return cli.RunSDDArchivePreflight(args[1:], stdout, os.Stderr)
 	case "cleanup":
 		return cli.RunCleanup(args[1:], stdout)
 	case "restore":

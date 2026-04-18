@@ -58,9 +58,17 @@ Resolve mode:
 └── Cache the resolved mode for the report header
 ```
 
-#### Orchestrator-Injected TDD Mode
+#### Step 2c: Guard - Implementation Status (MANDATORY)
 
-If the orchestrator's launch prompt contains "STRICT TDD MODE IS ACTIVE", treat this as authoritative — do NOT override it with a failed engram search. The orchestrator already verified TDD status. Proceed directly to Strict TDD verification in Step 5a.
+Before proceeding, you MUST verify that implementation is actually ready for verification.
+
+1. **Check sdd-apply status**:
+   - **engram/hybrid**: `mem_search(query: "sdd/{change-name}/state", project: "{project}")` → check `phases.sdd-apply.status`.
+   - **openspec/hybrid**: Read `openspec/changes/{change-name}/state.yaml` → check `phases.sdd-apply.status`.
+2. **Hard Gate**:
+   - If `sdd-apply.status` is `in_progress` or `failed` or `pending` → **STOP**.
+   - Return failure to the orchestrator: "Verification refused. Phase `sdd-apply` is `{status}`. Implementation must be `completed` before verification can start."
+3. **Exception**: If the orchestrator explicitly launched you for "Partial Verification" (check prompt text), you may proceed, but MUST mark the report as "PARTIAL / INFORMATIONAL".
 
 ### Step 3: Check Completeness
 

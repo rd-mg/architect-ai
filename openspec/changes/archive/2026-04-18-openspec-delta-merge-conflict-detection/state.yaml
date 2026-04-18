@@ -1,0 +1,43 @@
+schema_version: 1
+change_name: openspec-delta-merge-conflict-detection
+created_at: 2026-04-18T04:43:00Z
+updated_at: 2026-04-18T04:46:00Z
+artifact_store: hybrid
+
+phases:
+  sdd-explore:
+    status: completed
+    started_at: 2026-04-18T04:42:40Z
+    completed_at: 2026-04-18T04:42:50Z
+  sdd-propose:
+    status: completed
+    started_at: 2026-04-18T04:42:55Z
+    completed_at: 2026-04-18T04:43:10Z
+    artifact: proposal.md
+  sdd-spec:
+    status: completed
+    started_at: 2026-04-18T04:43:15Z
+    completed_at: 2026-04-18T04:44:00Z
+    artifact: specs/platform/delta-merge.md
+  sdd-design:
+    status: completed
+    started_at: 2026-04-18T04:44:05Z
+    completed_at: 2026-04-18T04:44:15Z
+    artifact: design.md
+  sdd-tasks:
+    status: completed
+    started_at: 2026-04-18T04:44:20Z
+    completed_at: 2026-04-18T04:44:30Z
+    artifact: tasks.md
+  sdd-apply:
+    status: completed
+    started_at: 2026-04-18T04:44:35Z
+    completed_at: 2026-04-18T04:45:30Z
+  sdd-verify:
+    status: completed
+    started_at: 2026-04-18T04:46:00Z
+    completed_at: 2026-04-18T04:47:30Z
+    artifact: verify-report.md
+  sdd-archive:
+    status: pending
+    depends_on: [sdd-verify]

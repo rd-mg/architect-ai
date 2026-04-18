@@ -39,33 +39,29 @@ Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
 **IF mode is `none`:** Skip — no artifacts to sync.
 
-**IF mode is `openspec` or `hybrid`:** For each delta spec in `openspec/changes/{change-name}/specs/`:
+**IF mode is `openspec` or `hybrid`:**
 
-#### If Main Spec Exists (`openspec/specs/{domain}/spec.md`)
+#### Step 2a: Preflight conflict check (MANDATORY)
 
-Read the existing main spec and apply the delta:
-
-```
-FOR EACH SECTION in delta spec:
-├── ADDED Requirements → Append to main spec's Requirements section
-├── MODIFIED Requirements → Replace the matching requirement in main spec
-└── REMOVED Requirements → Delete the matching requirement from main spec
-```
-
-**Merge carefully:**
-- Match requirements by name (e.g., "### Requirement: Session Expiration")
-- Preserve all OTHER requirements that aren't in the delta
-- Maintain proper Markdown formatting and heading hierarchy
-
-#### If Main Spec Does NOT Exist
-
-The delta spec IS a full spec (not a delta). Copy it directly:
+Before touching any main spec, run:
 
 ```bash
-# Copy new spec to main specs
-openspec/changes/{change-name}/specs/{domain}/spec.md
-  → openspec/specs/{domain}/spec.md
+architect-ai sdd-archive-preflight {change-name}
 ```
+
+Behavior:
+- **Exit 0**: No conflicts. Proceed to Step 2b.
+- **Exit non-zero**: Conflicts or technical errors. The tool writes `merge-conflict.md` and updates `state.yaml` to `failed`. **STOP**. Surface the report to the user and refer to `docs/openspec-merge-conflict.md`.
+
+#### Step 2b: Merge (only when preflight exits 0)
+
+For each delta spec in `openspec/changes/{change-name}/specs/`:
+
+1. Read the delta spec file.
+2. Strip the YAML front-matter (everything between and including the `---` separators at the top).
+3. If `openspec/specs/{domain}/spec.md` exists, apply the delta body (Requirement by Requirement).
+4. If it does not exist, write the delta body as a new full spec.
+5. Use atomic write patterns (tmp + rename).
 
 ### Step 3: Move to Archive
 

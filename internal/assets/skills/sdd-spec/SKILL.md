@@ -139,6 +139,27 @@ The system {MUST/SHALL/SHOULD} {do something specific}.
 ### Requirement: {Requirement Being Removed}
 
 (Reason: {why this requirement is being deprecated/removed})
+
+#### Delta front-matter (mandatory)
+
+Every delta spec file MUST begin with a YAML front-matter block. Compute `base_sha` as SHA-256 of the current main spec at `openspec/specs/{domain}/spec.md`. If that file does not exist, use the sentinel `"0"`.
+
+Front-matter template (prepend to every `openspec/changes/{change-name}/specs/{domain}/spec.md`):
+
+```yaml
+---
+openspec_delta:
+  base_sha: "<SHA-256 of openspec/specs/{domain}/spec.md, or '0' if new>"
+  base_path: "openspec/specs/{domain}/spec.md"
+  base_captured_at: "<now RFC3339 UTC>"
+  generator: sdd-spec
+  generator_version: 1
+---
+
+# ...delta content below...
+```
+
+Do NOT omit any field. The archive step (`sdd-archive`) refuses to merge deltas without valid front-matter.
 ```
 
 #### For NEW Specs (No Existing Spec)

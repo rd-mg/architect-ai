@@ -266,15 +266,37 @@ When executing `sdd-apply` or `sdd-verify` phases, the orchestrator MUST:
 
 The orchestrator resolves TDD status ONCE per session (at first apply/verify launch) and caches it.
 
-#### Apply-Progress Continuity (MANDATORY)
+#### Apply-Progress Continuity
 
-When executing `sdd-apply` for a continuation batch (not the first batch):
+When launching `sdd-apply`, determine the `artifact_store` mode and follow the matching branch. If multiple branches apply (hybrid), follow both. **FILESYSTEM WINS.**
 
-1. Search for existing apply-progress: `mem_search(query: "sdd/{change-name}/apply-progress", project: "{project}")`
-2. If found, read it first via `mem_search` + `mem_get_observation`, merge your new progress with the existing progress, and save the combined result. Do NOT overwrite — MERGE.
-3. If not found (first batch), no special handling needed.
+### Branch: engram (artifact_store in {engram, hybrid})
 
-This prevents progress loss across batches. Read-merge-write is mandatory for continuation batches.
+1. `mem_search(query: "sdd/{change-name}/apply-progress", project: "{project}")`.
+2. If an observation is found, capture its content as `ENGRAM_PROGRESS`.
+
+### Branch: openspec (artifact_store in {openspec, hybrid})
+
+1. Run `architect-ai sdd-status {change-name}` to confirm which phase is active. (Agents without shell access: read `openspec/changes/{change-name}/state.yaml` directly; see `_shared/openspec-convention.md` for schema).
+2. If `sdd-apply.status != in_progress` AND no `openspec/changes/{change-name}/apply-progress.md` file exists → there is no prior progress; proceed fresh.
+   *   If `sdd-apply.status == in_progress` BUT `apply-progress.md` is absent, treat as fresh-start but DO NOT reset `started_at` in `state.yaml`.
+3. Otherwise, read `openspec/changes/{change-name}/apply-progress.md` in full. Capture its content as `FILE_PROGRESS`.
+
+### Branch: none
+
+If `artifact_store == none` and a prior `sdd-apply` was launched this session, emit this warning to the user exactly once per session: "Your apply progress is NOT persisted in `none` mode. If you need to pause, re-run with `engram` or `openspec` next session."
+
+### Merge instructions injected into sub-agent prompt
+
+- **Only ENGRAM_PROGRESS exists**: "PREVIOUS APPLY-PROGRESS EXISTS in engram under topic key `sdd/{change-name}/apply-progress`. READ via `mem_get_observation`, MERGE with new progress, SAVE combined via `mem_save`. Do NOT overwrite — MERGE."
+- **Only FILE_PROGRESS exists**: "PREVIOUS APPLY-PROGRESS EXISTS at `openspec/changes/{change-name}/apply-progress.md`. READ first, MERGE with new progress, WRITE combined via `apply-progress.md.tmp` + rename. Do NOT overwrite — MERGE."
+- **BOTH exist (hybrid)**: "PREVIOUS APPLY-PROGRESS EXISTS IN BOTH STORES. The filesystem copy at `openspec/changes/{change-name}/apply-progress.md` IS AUTHORITATIVE. Use it as the base for merge. Also `mem_get_observation` the engram copy for cross-reference; if it has entries the file lacks, merge them in. WRITE the combined result to the filesystem first (tmp + rename), THEN update engram with the identical content. If engram update fails, log warning and continue. Do NOT overwrite either store — MERGE."
+
+### State-machine check before launching sdd-verify
+
+Before delegating to `sdd-verify`, check:
+- If `artifact_store in {openspec, hybrid}`: run `architect-ai sdd-status {change-name}`. If `sdd-apply.status in {in_progress, failed}` → REFUSE. Tell the user "Apply is incomplete or failed. Resolve `sdd-apply` before running `sdd-verify`."
+- If `artifact_store == engram`: `mem_search(query: "sdd/{change-name}/apply-progress", project: "{project}")`. If found and its last entry does not say "COMPLETED" → REFUSE with the same message.
 
 ### Non-SDD Tasks
 
