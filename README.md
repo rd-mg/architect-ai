@@ -9,17 +9,18 @@
 ## Table of Contents
 
 1. [What it does](#what-it-does)
-2. [Supported agents](#supported-agents)
-3. [Install](#install)
-4. [Quick start](#quick-start)
-5. [SDD commands](#sdd-commands)
-6. [Research routing policy](#research-routing-policy)
-7. [Mandatory skills](#mandatory-skills)
-8. [Session metering](#session-metering)
-9. [Uninstall & purge](#uninstall--purge)
-10. [Repo layout](#repo-layout)
-11. [Version history](#version-history)
-12. [Contributing](#contributing)
+2. [Architecture](#architecture)
+3. [Supported agents](#supported-agents)
+4. [Install](#install)
+5. [Quick start](#quick-start)
+6. [SDD commands](#sdd-commands)
+7. [Research routing policy](#research-routing-policy)
+8. [Mandatory skills](#mandatory-skills)
+9. [Session metering](#session-metering)
+10. [Uninstall & purge](#uninstall--purge)
+11. [Repo layout](#repo-layout)
+12. [Version history](#version-history)
+13. [Contributing](#contributing)
 
 ---
 
@@ -34,6 +35,98 @@ Architect-AI installs a thin coordination layer on top of whatever coding agent 
 - Persists artifacts to **Engram** (or OpenSpec files, or hybrid, or inline — you choose per session)
 - Routes external research **NotebookLM-first**, then local code, then Context7; never the internet unless you explicitly ask
 - Shows a **token-cache savings banner** on session exit
+
+---
+
+## Architecture
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         USER (in editor / CLI)                              │
+│              /sdd-new, /sdd-ff, "use sdd", "continue"                       │
+└─────────────────────────────┬───────────────────────────────────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       SDD ORCHESTRATOR (per agent)                          │
+│  ┌────────────────────────────────────────────────────────────────────┐    │
+│  │ Intent Resolution → Session-Setup Triplet → Overlay Detection      │    │
+│  │ Research-Routing Policy → Mandatory-Skills List → Model Assignment │    │
+│  └────────────────────────────────────────────────────────────────────┘    │
+│                              │                                              │
+│              ┌───────────────┼───────────────┐                              │
+│              ▼               ▼               ▼                              │
+│        Phase Protocol   Cognitive Posture   Adaptive-Reasoning              │
+│        (on-demand load) (6→8 postures)      (CLASSIFIER — MANDATORY)        │
+│                                              │                              │
+│                                              ▼                              │
+│                                      Mode 1 / 2 / 3                         │
+└─────────────────────────────┬───────────────────────────────────────────────┘
+                              │  Sub-agent launch (Task / runSubagent / inline)
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│   SUB-AGENT (sdd-explore, sdd-propose, sdd-design, sdd-apply, sdd-verify…)  │
+│                                                                             │
+│   ┌───── Prompt Layers (stacked) ─────────────────────────────────────┐   │
+│   │ 1. Cognitive Posture       (+++Socratic / +++Critical / +++Adv.…) │   │
+│   │ 2. Adaptive Classifier     (score 4 dims → Mode 1/2/3 — REQUIRED) │   │
+│   │ 3. Project Standards       (from .atl/skill-registry.md)          │   │
+│   │ 4. Overlay Supplement      (if Odoo: sdd-supplements/{phase}.md)  │   │
+│   │ 5. Research-Routing Policy (NotebookLM → local → Context7 → web)  │   │
+│   │ 6. Available Tools         (from tool-availability probe)         │   │
+│   │ 7. Phase Protocol          (sdd-phase-protocols/{phase}.md)       │   │
+│   │ 8. Task                    (what to do)                           │   │
+│   │ 9. Artifact-Store + Exec-Mode                                     │   │
+│   └────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│   Hooks:  before_model  ← redact PII, enforce research routing              │
+│           after_model   ← persist Context7/NotebookLM results to Engram     │
+└────────────────┬─────────────────────────────┬──────────────────────────────┘
+                 │                             │
+                 ▼                             ▼
+┌────────────────────────────┐   ┌──────────────────────────────────────────┐
+│   ARTIFACT STORE           │   │   PERSISTENT MEMORY (Engram — MCP)       │
+│   • engram (default)       │   │   mem_save / mem_search / mem_context    │
+│   • openspec/changes/…     │   │   topic_key:  sdd/{change}/state         │
+│   • hybrid                 │   │                context-pack/{project}/…  │
+│   • none (inline)          │   │                skill-registry            │
+└────────────────────────────┘   └──────────────────────────────────────────┘
+
+                   ┌──────────────────────────────┐
+                   │  SKILLS (global, always-on)  │
+                   │  • adaptive-reasoning        │◄──── MUST be injected
+                   │  • cognitive-mode (postures) │
+                   │  • context-guardian          │
+                   │  • ripgrep, bash-expert      │
+                   │  • mcp-notebooklm-orchestr.  │
+                   └──────────────────────────────┘
+
+                   ┌──────────────────────────────┐
+                   │  RULES (compact, injected)   │
+                   │  • .atl/skill-registry.md    │◄──── single discovery surface
+                   │    ├─ Project Standards       │
+                   │    ├─ User Skills (triggers)  │
+                   │    └─ Overlay-contributed     │
+                   │       rules (NEW: emit here)  │
+                   └──────────────────────────────┘
+
+                   ┌──────────────────────────────┐
+                   │  OVERLAYS (demand-loaded)    │
+                   │  .atl/overlays/odoo-{v}/     │
+                   │   ├─ manifest.json            │
+                   │   ├─ skills/                  │
+                   │   │   ├─ patterns-agnostic/  │
+                   │   │   ├─ patterns-{v}/       │◄── version-gated by
+                   │   │   └─ migration-{a}-{b}/  │    overlay.go at install
+                   │   ├─ sdd-supplements/        │
+                   │   │   ├─ explore-odoo.md     │◄── auto-injected per phase
+                   │   │   ├─ propose-odoo.md     │
+                   │   │   ├─ design-odoo.md      │
+                   │   │   ├─ apply-odoo.md       │
+                   │   │   ├─ verify-odoo.md      │
+                   │   │   └─ domain-map.md (DDD) │
+                   │   └─ rules/ (cudio-*)        │
+                   └──────────────────────────────┘
+```
 
 ---
 
