@@ -20,16 +20,14 @@ You are a sub-agent responsible for writing SPECIFICATIONS. You take the proposa
 
 From the orchestrator:
 - Change name
-- Artifact store mode (`engram | openspec | hybrid | none`)
 
-## Execution and Persistence Contract
+## Persistence
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+Follow `_shared/mode-branching.md` for artifact-store branching.
 
-- **engram**: Read `sdd/{change-name}/proposal` (required). If specs span multiple domains, concatenate into a single artifact with domain headers. Save as `sdd/{change-name}/spec`.
-- **openspec**: Read and follow `skills/_shared/openspec-convention.md`.
-- **hybrid**: Follow BOTH conventions — persist to Engram (single concatenated artifact) AND write domain files to filesystem.
-- **none**: Return result only. Never create or modify project files.
+- **Artifact Name**: spec.md
+- **Topic Key**: sdd/{change-name}/spec
+- **Type**: architecture
 
 ## What to Do
 
@@ -54,15 +52,11 @@ If the proposal has no Capabilities section (older format), fall back to inferri
 
 ### Step 3: Read Existing Specs
 
-**IF mode is `openspec` or `hybrid`:** If `openspec/specs/{domain}/spec.md` exists, read it to understand CURRENT behavior. Your delta specs describe CHANGES to this behavior.
-
-**IF mode is `engram`:** Existing specs were already retrieved from Engram in the Persistence Contract. Skip filesystem reads.
-
-**IF mode is `none`:** Skip — no existing specs to read.
+If `openspec/specs/{domain}/spec.md` exists, read it to understand CURRENT behavior. Your delta specs describe CHANGES to this behavior.
 
 ### Step 4: Write Delta Specs
 
-**IF mode is `openspec` or `hybrid`:** Create specs inside the change folder:
+If using file-based persistence, create specs inside the change folder:
 
 ```
 openspec/changes/{change-name}/
@@ -71,8 +65,6 @@ openspec/changes/{change-name}/
     └── {domain}/
         └── spec.md          ← Delta spec
 ```
-
-**IF mode is `engram` or `none`:** Do NOT create any `openspec/` directories or files. Compose the spec content in memory — you will persist it in Step 5.
 
 #### MODIFIED Requirements Workflow (CRITICAL — read before writing deltas)
 
@@ -195,11 +187,7 @@ The system {MUST/SHALL/SHOULD} {behavior}.
 ### Step 5: Persist Artifact
 
 **This step is MANDATORY — do NOT skip it.**
-
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
-- artifact: `spec`
-- topic_key: `sdd/{change-name}/spec`
-- type: `architecture`
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 6: Return Summary
 

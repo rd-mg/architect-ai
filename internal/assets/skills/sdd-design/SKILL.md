@@ -20,16 +20,14 @@ You are a sub-agent responsible for TECHNICAL DESIGN. You take the proposal and 
 
 From the orchestrator:
 - Change name
-- Artifact store mode (`engram | openspec | hybrid | none`)
 
-## Execution and Persistence Contract
+## Persistence
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+Follow `_shared/mode-branching.md` for artifact-store branching.
 
-- **engram**: Read `sdd/{change-name}/proposal` (required) and `sdd/{change-name}/spec` (optional — may not exist if running in parallel with sdd-spec). Save as `sdd/{change-name}/design`.
-- **openspec**: Read and follow `skills/_shared/openspec-convention.md`.
-- **hybrid**: Follow BOTH conventions — persist to Engram AND write `design.md` to filesystem. Retrieve dependencies from Engram (primary) with filesystem fallback.
-- **none**: Return result only. Never create or modify project files.
+- **Artifact Name**: design.md
+- **Topic Key**: sdd/{change-name}/design
+- **Type**: architecture
 
 ## What to Do
 
@@ -46,7 +44,7 @@ Before designing, read the actual code that will be affected:
 
 ### Step 3: Write design.md
 
-**IF mode is `openspec` or `hybrid`:** Create the design document:
+If using file-based persistence, create the design document:
 
 ```
 openspec/changes/{change-name}/
@@ -54,8 +52,6 @@ openspec/changes/{change-name}/
 ├── specs/
 └── design.md              ← You create this
 ```
-
-**IF mode is `engram` or `none`:** Do NOT create any `openspec/` directories or files. Compose the design content in memory — you will persist it in Step 4.
 
 #### Design Document Format
 
@@ -125,11 +121,7 @@ If not applicable, state "No migration required."}
 ### Step 4: Persist Artifact
 
 **This step is MANDATORY — do NOT skip it.**
-
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
-- artifact: `design`
-- topic_key: `sdd/{change-name}/design`
-- type: `architecture`
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 5: Return Summary
 
@@ -139,7 +131,7 @@ Return to the orchestrator:
 ## Design Created
 
 **Change**: {change-name}
-**Location**: `openspec/changes/{change-name}/design.md` (openspec/hybrid) | Engram `sdd/{change-name}/design` (engram) | inline (none)
+**Location**: {artifact_path} | {topic_key}
 
 ### Summary
 - **Approach**: {one-line technical approach}

@@ -21,16 +21,16 @@ You are a sub-agent responsible for IMPLEMENTATION. You receive specific tasks f
 From the orchestrator:
 - Change name
 - The specific task(s) to implement (e.g., "Phase 1, tasks 1.1-1.3")
-- Artifact store mode (`engram | openspec | hybrid | none`)
 
-## Execution and Persistence Contract
+## Persistence
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+Follow `_shared/mode-branching.md` for artifact-store branching.
 
-- **engram**: Read `sdd/{change-name}/proposal`, `sdd/{change-name}/spec`, `sdd/{change-name}/design`, `sdd/{change-name}/tasks` (all required — keep tasks ID for updates). Mark tasks complete via `mem_update(id: {tasks-observation-id}, content: "...")`. Save progress as `sdd/{change-name}/apply-progress`.
-- **openspec**: Read and follow `skills/_shared/openspec-convention.md`. Update `tasks.md` with `[x]` marks.
-- **hybrid**: Follow BOTH conventions — persist progress to Engram (`mem_update` for tasks) AND update `tasks.md` with `[x]` marks on filesystem.
-- **none**: Return progress only. Do not update project artifacts.
+- **Artifact Name**: apply-progress.md
+- **Topic Key**: sdd/{change-name}/apply-progress
+- **Type**: architecture
+
+- Update `tasks.md` with `[x]` marks in \`openspec/hybrid\` modes.
 
 ## What to Do
 
@@ -47,20 +47,9 @@ Before writing ANY code:
 
 #### Step 2b: Read Previous Apply-Progress (Symmetric Resumption)
 
-Before starting work, you MUST check for prior progress to avoid task re-execution. Follow the branch matching the `artifact_store` mode:
+Before starting work, you MUST check for prior progress to avoid task re-execution. Follow the retrieval rules in Step 1 of `_shared/mode-branching.md`.
 
-- **Branch: engram**:
-  1. `mem_search(query: "sdd/{change-name}/apply-progress", project: "{project}")`
-  2. If found: `mem_get_observation(id)` → read full content as `ENGRAM_PROGRESS`.
-- **Branch: openspec**:
-  1. Check for `openspec/changes/{change-name}/apply-progress.md`.
-  2. If found: Read full content as `FILE_PROGRESS`.
-- **Branch: hybrid**:
-  1. Follow BOTH branches above.
-  2. **FILESYSTEM WINS**: Use `FILE_PROGRESS` as the authoritative source for task completion status.
-  3. Compare with `ENGRAM_PROGRESS`; if it contains entries the file lacks, merge them in (log a warning about store drift).
-
-**Action**: Parse the combined progress, skip already completed tasks, and start from the first incomplete task. If the orchestrator provided specific progress text in the prompt, use it as an immediate seed but still verify against the store.
+- **Action**: Parse the retrieved progress, skip already completed tasks, and start from the first incomplete task. If the orchestrator provided specific progress text in the prompt, use it as an immediate seed but still verify against the store.
 
 ### Step 3: Read Testing Capabilities and Resolve Mode
 
@@ -125,22 +114,12 @@ Update `tasks.md` — change `- [ ]` to `- [x]` for completed tasks:
 ### Step 6: Persist Progress
 
 **This step is MANDATORY — do NOT skip it.**
-
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
-- artifact: `apply-progress`
-- topic_key: `sdd/{change-name}/apply-progress`
-- type: `architecture`
-- Also update the tasks artifact with `[x]` marks via `mem_update` (engram) or file edit (openspec/hybrid).
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
 #### Merge Protocol (MANDATORY)
-
 When saving `apply-progress`, you MUST merge your new work with all prior history. Do NOT overwrite.
-
 1. **CUMULATIVE ARTIFACT**: Your final `apply-progress` artifact MUST include ALL previously completed tasks (copy their status and evidence) PLUS your new completions. It represents the *current total state* of implementation.
-2. **STORE SYNC**:
-   - **engram**: `mem_save` the cumulative artifact under topic key `sdd/{change-name}/apply-progress`.
-   - **openspec**: Write the cumulative artifact to `openspec/changes/{change-name}/apply-progress.md` (use `.tmp` + rename).
-   - **hybrid**: Write to the filesystem FIRST, then update engram with the identical content. **FILESYSTEM IS THE SOURCE OF TRUTH.**
+2. **STORE SYNC**: Follow the branching rules in `_shared/mode-branching.md`.
 3. **TASK UPDATES**: Ensure `tasks.md` (openspec/hybrid) and the tasks observation (engram/hybrid) are also updated with `[x]` marks for your newly completed tasks.
 
 ### Step 7: Return Summary

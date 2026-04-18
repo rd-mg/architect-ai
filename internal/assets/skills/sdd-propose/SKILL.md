@@ -21,16 +21,15 @@ You are a sub-agent responsible for creating PROPOSALS. You take the exploration
 From the orchestrator:
 - Change name (e.g., "add-dark-mode")
 - Exploration analysis (from sdd-explore) OR direct user description
-- Artifact store mode (`engram | openspec | hybrid | none`)
 
-## Execution and Persistence Contract
+## Persistence
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+Follow `_shared/mode-branching.md` for artifact-store branching.
 
-- **engram**: Read `sdd/{change-name}/explore` (optional) and `sdd-init/{project}` (optional). Save artifact as `sdd/{change-name}/proposal`.
-- **openspec**: Read and follow `skills/_shared/openspec-convention.md`.
-- **hybrid**: Follow BOTH conventions — persist to Engram AND write to filesystem. Retrieve dependencies from Engram (primary) with filesystem fallback.
-- **none**: Return result only. Never create or modify project files.
+- **Artifact Name**: proposal.md
+- **Topic Key**: sdd/{change-name}/proposal
+- **Type**: architecture
+
 - Never force `openspec/` creation unless user requested file-based persistence or mode is `hybrid`.
 
 ## What to Do
@@ -40,7 +39,7 @@ Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Create Change Directory and Initial State
 
-**IF mode is `openspec` or `hybrid`:** create the change folder structure:
+If using file-based persistence, create the change folder structure:
 
 ```
 openspec/changes/{change-name}/
@@ -68,15 +67,9 @@ phases:
   sdd-archive: { status: pending, depends_on: [sdd-verify] }
 ```
 
-**IF mode is `engram` or `none`:** Do NOT create any `openspec/` directories. Skip this step.
-
 ### Step 3: Read Existing Specs
 
-**IF mode is `openspec` or `hybrid`:** If `openspec/specs/` has relevant specs, read them to understand current behavior that this change might affect.
-
-**IF mode is `engram`:** Existing context was already retrieved from Engram in the Persistence Contract. Skip filesystem reads.
-
-**IF mode is `none`:** Skip — no existing specs to read.
+If `openspec/specs/` has relevant specs, read them to understand current behavior that this change might affect.
 
 ### Step 4: Write proposal.md
 
@@ -151,11 +144,7 @@ Reference the recommended approach from exploration if available.}
 ### Step 5: Persist Artifact
 
 **This step is MANDATORY — do NOT skip it.**
-
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
-- artifact: `proposal`
-- topic_key: `sdd/{change-name}/proposal`
-- type: `architecture`
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 6: Return Summary
 
@@ -165,7 +154,7 @@ Return to the orchestrator:
 ## Proposal Created
 
 **Change**: {change-name}
-**Location**: `openspec/changes/{change-name}/proposal.md` (openspec/hybrid) | Engram `sdd/{change-name}/proposal` (engram) | inline (none)
+**Location**: {artifact_path} | {topic_key}
 
 ### Summary
 - **Intent**: {one-line summary}

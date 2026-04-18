@@ -9,6 +9,14 @@ metadata:
   version: "1.0"
 ---
 
+## Persistence
+
+Follow `_shared/mode-branching.md` for artifact-store branching (metadata only). This skill uses a fixed hybrid-style persistence for infrastructure availability.
+
+- **Artifact Name**: .atl/skill-registry.md
+- **Topic Key**: skill-registry
+- **Type**: config
+
 ## Purpose
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
@@ -144,28 +152,9 @@ Read the convention files listed above for project-specific patterns and rules. 
 ### Step 4: Persist the Registry
 
 **This step is MANDATORY — do NOT skip it.**
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
-#### A. Always write the file (guaranteed availability):
-
-Create the `.atl/` directory in the project root if it doesn't exist, then write:
-
-```
-.atl/skill-registry.md
-```
-
-#### B. If engram is available, also save to engram (cross-session bonus):
-
-```
-mem_save(
-  title: "skill-registry",
-  topic_key: "skill-registry",
-  type: "config",
-  project: "{project}",
-  content: "{registry markdown from Step 3}"
-)
-```
-
-`topic_key` ensures upserts — running again updates the same observation.
+Note: This skill defaults to **hybrid** behavior regardless of session mode to ensure the orchestrator can always resolve skills from the filesystem or memory.
 
 ### Step 5: Return Summary
 

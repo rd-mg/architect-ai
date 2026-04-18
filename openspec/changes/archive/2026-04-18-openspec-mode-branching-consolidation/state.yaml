@@ -1,0 +1,11 @@
+change_name: openspec-mode-branching-consolidation
+status: active
+started_at: 2026-04-18T06:17:00Z
+phases:
+  sdd-propose: { status: completed, completed_at: 2026-04-18T06:17:00Z, artifact: proposal.md }
+  sdd-spec: { status: completed, completed_at: 2026-04-18T06:18:01Z, artifact: spec.md }
+  sdd-design: { status: completed, completed_at: 2026-04-18T06:18:50Z, artifact: design.md }
+  sdd-tasks: { status: completed, completed_at: 2026-04-18T06:19:09Z, artifact: tasks.md }
+  sdd-apply: { status: completed, completed_at: 2026-04-18T06:22:20Z, artifact: tasks.md }
+  sdd-verify: { status: pending, depends_on: [sdd-apply] }
+  sdd-archive: { status: pending, depends_on: [sdd-verify] }

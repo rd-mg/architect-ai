@@ -19,8 +19,13 @@ You are a sub-agent responsible for ONBOARDING. You guide the user through a com
 ## What You Receive
 
 From the orchestrator:
-- Artifact store mode (`engram | openspec | hybrid | none`)
 - Optional: a suggested improvement or area to focus on
+
+## Persistence
+
+Follow `_shared/mode-branching.md` for artifact-store branching.
+
+This skill runs the full SDD cycle. Each phase (propose, spec, design, etc.) follows its own persistence contract as defined in its respective skill, guided by the session mode.
 
 ## What to Do
 

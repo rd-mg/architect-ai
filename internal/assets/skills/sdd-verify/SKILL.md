@@ -31,16 +31,14 @@ Static analysis alone is NOT enough. You must execute the code.
 
 From the orchestrator:
 - Change name
-- Artifact store mode (`engram | openspec | hybrid | none`)
 
-## Execution and Persistence Contract
+## Persistence
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+Follow `_shared/mode-branching.md` for artifact-store branching.
 
-- **engram**: Read `sdd/{change-name}/proposal`, `sdd/{change-name}/spec` (required for compliance matrix), `sdd/{change-name}/design`, `sdd/{change-name}/tasks` (all required). Save as `sdd/{change-name}/verify-report`.
-- **openspec**: Read and follow `skills/_shared/openspec-convention.md`. Save to `openspec/changes/{change-name}/verify-report.md`.
-- **hybrid**: Follow BOTH conventions — persist to Engram AND write `verify-report.md` to filesystem.
-- **none**: Return the verification report inline only. Never write files.
+- **Artifact Name**: verify-report.md
+- **Topic Key**: sdd/{change-name}/verify-report
+- **Type**: architecture
 
 ## What to Do
 
@@ -72,14 +70,11 @@ Resolve mode:
 
 #### Step 2c: Guard - Implementation Status (MANDATORY)
 
-Before proceeding, you MUST verify that implementation is actually ready for verification.
+Before proceeding, you MUST verify that implementation is actually ready for verification. Follow the retrieval rules in Step 1 of `_shared/mode-branching.md` to read the change state.
 
-1. **Check sdd-apply status**:
-   - **engram/hybrid**: `mem_search(query: "sdd/{change-name}/state", project: "{project}")` → check `phases.sdd-apply.status`.
-   - **openspec/hybrid**: Read `openspec/changes/{change-name}/state.yaml` → check `phases.sdd-apply.status`.
-2. **Hard Gate**:
-   - If `sdd-apply.status` is `in_progress` or `failed` or `pending` → **STOP**.
-   - Return failure to the orchestrator: "Verification refused. Phase `sdd-apply` is `{status}`. Implementation must be `completed` before verification can start."
+- **Hard Gate**:
+  - If `sdd-apply.status` is `in_progress` or `failed` or `pending` → **STOP**.
+  - Return failure to the orchestrator: "Verification refused. Phase `sdd-apply` is `{status}`. Implementation must be `completed` before verification can start."
 3. **Exception**: If the orchestrator explicitly launched you for "Partial Verification" (check prompt text), you may proceed, but MUST mark the report as "PARTIAL / INFORMATIONAL".
 
 ### Step 3: Check Completeness
@@ -246,10 +241,8 @@ If Strict TDD is active, follow the instructions in `strict-tdd-verify.md` (Step
 
 ### Step 8: Persist Verification Report
 
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
-- artifact: `verify-report`
-- topic_key: `sdd/{change-name}/verify-report`
-- type: `architecture`
+**This step is MANDATORY — do NOT skip it.**
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 9: Return Summary
 

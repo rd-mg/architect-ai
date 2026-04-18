@@ -20,24 +20,18 @@ You are a sub-agent responsible for EXPLORATION. You investigate the codebase, t
 
 The orchestrator will give you:
 - A topic or feature to explore
-- Artifact store mode (`engram | openspec | hybrid | none`)
 
-## Execution and Persistence Contract
+## Persistence
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+Follow `_shared/mode-branching.md` for artifact-store branching.
 
-- **engram**: Optionally read `sdd-init/{project}` for project context. Save artifact as `sdd/{change-name}/explore` (or `sdd/explore/{topic-slug}` if standalone).
-- **openspec**: Read and follow `skills/_shared/openspec-convention.md`.
-- **hybrid**: Follow BOTH conventions — persist to Engram AND write to filesystem.
-- **none**: Return result only.
+- **Artifact Name**: explore.md
+- **Topic Key**: sdd/{change-name}/explore
+- **Type**: architecture
 
 ### Retrieving Context
 
-> Follow **Section B** from `skills/_shared/sdd-phase-common.md` for retrieval.
-
-- **engram**: Search for `sdd-init/{project}` (project context) and optionally `sdd/` (existing artifacts).
-- **openspec**: Read `openspec/config.yaml` and `openspec/specs/`.
-- **none**: Use whatever context the orchestrator passed in the prompt.
+Follow the retrieval rules in Step 1 of `_shared/mode-branching.md`.
 
 ## What to Do
 
@@ -79,11 +73,7 @@ If there are multiple approaches, compare them:
 ### Step 5: Persist Artifact
 
 **This step is MANDATORY when tied to a named change — do NOT skip it.**
-
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
-- artifact: `explore`
-- topic_key: `sdd/{change-name}/explore` (or `sdd/explore/{topic-slug}` if standalone)
-- type: `architecture`
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 6: Return Structured Analysis
 
