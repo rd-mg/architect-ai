@@ -320,7 +320,40 @@ func BootstrapProjectLocalOverlays(projectRoot string, refresh bool, enterpriseP
 		return result, nil
 	}
 
-	// Deploy version-specific overlays for each detected Odoo version
+	// 1. First install the base odoo-development-skill overlay for shared patterns
+	// This contains version-agnostic patterns, rules, and utilities
+	baseOverlayName := defaultOverlayName
+	baseManifestPath := filepath.Join(projectRoot, ".atl", "overlays", baseOverlayName, "manifest.json")
+	baseOverlayExists := overlayManifestExists(baseManifestPath)
+
+	if !baseOverlayExists || refresh {
+		action := "installed"
+		if baseOverlayExists && refresh {
+			_, err = RefreshOverlay(absProjectRoot, baseOverlayName, enterprisePath)
+			action = "refreshed"
+		} else {
+			_, err = InstallOverlay(OverlayInstallOptions{
+				OverlayName:     baseOverlayName,
+				ProjectRoot:     absProjectRoot,
+				VersionIntent:   formatVersionSet(versions),
+				EnterprisePath:  enterprisePath,
+				ExplicitRequest: true,
+			})
+		}
+
+		if err != nil {
+			fmt.Printf("Warning: Base overlay deployment failed for %s: %v\n", baseOverlayName, err)
+		} else {
+			// Read the resulting manifest if needed, for now we just mark success.
+			if m, err := readOverlayManifest(baseManifestPath); err == nil {
+				result.Overlays = append(result.Overlays, m)
+				result.Actions[m.Name] = action
+			}
+		}
+	}
+
+	// 2. Then deploy version-specific overlays for each detected Odoo version.
+	// These will override base symlinks for versioned skills like "odoo" (promoting odoo-19.0 to odoo).
 	for version := range versions {
 		versionedOverlay := fmt.Sprintf("odoo-%d", version)
 		manifestPath := filepath.Join(projectRoot, ".atl", "overlays", versionedOverlay, "manifest.json")
@@ -351,38 +384,6 @@ func BootstrapProjectLocalOverlays(projectRoot string, refresh bool, enterpriseP
 		} else {
 			result.Overlays = append(result.Overlays, manifest)
 			result.Actions[manifest.Name] = action
-		}
-	}
-
-	// Also install the base odoo-development-skill overlay for shared patterns
-	// This contains version-agnostic patterns, rules, and utilities
-	baseOverlayName := defaultOverlayName
-	baseManifestPath := filepath.Join(projectRoot, ".atl", "overlays", baseOverlayName, "manifest.json")
-	baseOverlayExists := overlayManifestExists(baseManifestPath)
-
-	if !baseOverlayExists || refresh {
-		action := "installed"
-		if baseOverlayExists && refresh {
-			_, err = RefreshOverlay(absProjectRoot, baseOverlayName, enterprisePath)
-			action = "refreshed"
-		} else {
-			_, err = InstallOverlay(OverlayInstallOptions{
-				OverlayName:     baseOverlayName,
-				ProjectRoot:     absProjectRoot,
-				VersionIntent:   formatVersionSet(versions),
-				EnterprisePath:  enterprisePath,
-				ExplicitRequest: true,
-			})
-		}
-
-		if err != nil {
-			fmt.Printf("Warning: Base overlay deployment failed for %s: %v\n", baseOverlayName, err)
-		} else {
-			// Read the resulting manifest if needed, for now we just mark success.
-			if m, err := readOverlayManifest(baseManifestPath); err == nil {
-				result.Overlays = append(result.Overlays, m)
-				result.Actions[m.Name] = action
-			}
 		}
 	}
 
@@ -482,6 +483,14 @@ func copyOverlaySkillBundles(sourceFS fs.FS, destRoot string, rootOverlayName st
 		if bundleName == rootOverlayName {
 			continue
 		}
+
+		// SKIP the base odoo-development-skill bundle when installing a versioned Odoo overlay.
+		// These overlays use the base as source, and their root skill (e.g. odoo-19) is
+		// already copied by the caller. Including the base as a bundle is redundant.
+		if strings.HasPrefix(rootOverlayName, "odoo-") && bundleName == defaultOverlayName {
+			continue
+		}
+
 		sourceDir := path.Join("skills", bundleName)
 		files, err := copyFSTree(sourceFS, sourceDir, filepath.Join(destRoot, bundleName), nil)
 		if err != nil {
@@ -546,6 +555,13 @@ func copyFSTree(sourceFS fs.FS, sourceDir string, destDir string, include func(p
 		if d.IsDir() {
 			return nil
 		}
+
+		// EXCLUDE common backup/temp files.
+		ext := strings.ToLower(filepath.Ext(d.Name()))
+		if ext == ".bak" || ext == ".tmp" || ext == ".orig" {
+			return nil
+		}
+
 		if include != nil && !include(assetPath, d) {
 			return nil
 		}
@@ -670,6 +686,15 @@ func matchesOverlaySkillVersion(name string, targetVersions map[int]struct{}) bo
 	if lower == "" {
 		return false
 	}
+
+	// SPECIAL CASE: dtg-base is exclusively v18 (historical reference).
+	// Do not bridge it if v18 is not in the target set.
+	if lower == "dtg-base" {
+		if _, ok := targetVersions[18]; !ok {
+			return false
+		}
+	}
+
 	if strings.HasSuffix(lower, "-all") {
 		return true
 	}
