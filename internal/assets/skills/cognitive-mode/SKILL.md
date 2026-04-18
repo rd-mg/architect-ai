@@ -1,16 +1,15 @@
 ---
 name: cognitive-mode
 description: >
-  Defines six cognitive postures (Socratic, Critical, Systemic, Adversarial,
-  Pragmatic, Forensic) that can be injected as a prompt prefix to shape how
-  an agent approaches a task. Maps each SDD phase to its default posture.
+  Defines eight cognitive postures that can be injected as a prompt prefix to 
+  shape how an agent approaches a task. Maps each SDD phase to its default posture.
   The orchestrator injects the matching posture block before delegating to a
   sub-agent. This is a REFERENCE skill — the injection logic lives in the
   orchestrator, not here.
 license: Apache-2.0
 metadata:
   author: rd-mg
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Cognitive Mode
@@ -19,17 +18,16 @@ metadata:
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
-
 Different tasks require different thinking postures. A debug session needs
 forensic rigor. A design review needs systemic breadth. An exploration needs
 Socratic questioning. Forcing one posture across all tasks produces mediocre
 results on each.
 
-This skill defines six discrete postures. The orchestrator selects the
+This skill defines eight discrete postures. The orchestrator selects the
 appropriate posture per SDD phase (or explicitly for a non-SDD task) and
 injects it as a prefix to the sub-agent's prompt.
 
-## The Six Postures
+## The Eight Postures
 
 ### 1. Socratic (+++Socratic)
 
@@ -169,115 +167,70 @@ as [unverified] and note what evidence would resolve it.
 
 ---
 
-## Phase → Posture Mapping
+### 7. Economic (+++Economic)
 
-The orchestrator uses this table when delegating an SDD phase:
+**Use when**: the task requires tradeoff analysis under resource
+constraints — token budget, latency SLA, dollar cost, developer-hours.
 
-| SDD Phase | Primary Posture | Why |
-|-----------|----------------|-----|
-| sdd-explore | +++Socratic | Reveal assumptions, explore the problem space |
-| sdd-propose | +++Critical | Evaluate feasibility with rigor |
-| sdd-spec | +++Systemic | Detect cross-domain dependencies |
-| sdd-design | +++Critical + +++Systemic | Architecture needs both rigor and system view |
-| sdd-tasks | +++Pragmatic | Mechanical breakdown, no over-engineering |
-| sdd-apply | +++Pragmatic | Execute the spec, don't freelance |
-| sdd-verify | +++Adversarial | Find defects, assume nothing works |
-| sdd-archive | (none) | Mechanical copy and close |
-| sdd-init | (none) | Tool detection, mechanical |
-| sdd-onboard | +++Socratic | First-time user needs question-driven flow |
-| context-guardian | +++Forensic | Trace provenance, validate facts |
+**Behavior**:
+- Quantify cost/value for all options
+- Reject options whose cost exceeds the declared budget
+- Recommend the Pareto-optimal choice
 
-Non-SDD tasks (explicit postures):
-
-| Task Type | Posture |
-|-----------|---------|
-| PR review / code audit | +++Adversarial + +++Forensic |
-| Debugging / incident response | +++Forensic |
-| Architecture decision with competing options | +++Critical + +++Systemic |
-| Quick feature implementation | +++Pragmatic |
-| First interaction with a new codebase | +++Socratic |
-
----
-
-## Multi-Posture Injection
-
-If a phase maps to multiple postures (e.g., sdd-design = Critical + Systemic),
-inject BOTH blocks. Keep them distinct — do not merge them into one paragraph.
-
-Example for sdd-design:
-
+**Example prefix**:
 ```
-+++Critical
-Evaluate objectively based on evidence. For each claim made or implied:
-(1) What evidence supports it? (2) What evidence contradicts it?
-(3) What alternative explanation exists?
-
-+++Systemic
-Analyze 2nd and 3rd order effects. What breaks elsewhere? What new
-dependencies are created? What becomes harder to change later?
++++Economic
+Budget constraints: {tokens|time|cost — state the limit}. Enumerate 2–3
+options. For each: estimate cost in the constrained dimension and value
+delivered. Recommend the Pareto-optimal choice. Reject options that
+exceed budget, stating which constraint they violate.
 ```
 
 ---
 
-## Orchestrator Integration
+### 8. Empirical (+++Empirical)
 
-The orchestrator performs these steps before each sub-agent launch:
+**Use when**: the task requires measurement-first reasoning —
+benchmarks, A/B prototypes, data-driven design decisions,
+performance regression verification.
 
-1. Identify the phase being delegated (e.g., `sdd-propose`)
-2. Look up the posture(s) in the Phase → Posture Mapping table above
-3. Inject the matching prefix block(s) at the top of the sub-agent's prompt
-4. Follow with the standard `## Project Standards (auto-resolved)` block
-5. Follow with the phase-specific task instructions
+**Behavior**:
+- No claim without a measurement plan (metric, method, threshold)
+- Mark numbers without plans as PROVISIONAL
+- Propose the smallest experiment for validation
 
-See `internal/assets/{agent}/sdd-orchestrator.md` for the canonical injection template.
-
----
-
-## Sub-Agent Integration
-
-When a sub-agent receives a prompt with a `+++Posture` block at the top:
-
-1. Read and internalize the posture before reading task instructions
-2. Apply the behavior throughout the work
-3. Reflect the posture in the return envelope — e.g., Socratic mode returns questions, not answers; Adversarial mode returns findings, not proposals
-
----
-
-## User Override
-
-A user can explicitly request a posture for any task:
-
+**Example prefix**:
 ```
-User: "Review this PR with forensic rigor."
-→ Orchestrator injects +++Forensic (plus +++Adversarial by phase default)
-
-User: "Brainstorm options for X."
-→ Orchestrator injects +++Socratic (divergent thinking)
-
-User: "Just implement it — no over-engineering."
-→ Orchestrator injects +++Pragmatic
++++Empirical
+For every design claim, state: (a) the metric, (b) how to collect it,
+(c) the acceptance threshold. If measurement hasn't happened, mark
+the claim PROVISIONAL and propose the smallest experiment to validate
+it. Numbers without a measurement plan are PROVISIONAL by default.
 ```
 
 ---
 
-## When NOT to Use Postures
+## Phase → Posture Mapping (8-posture version)
 
-- `sdd-archive` and `sdd-init` are mechanical phases; no posture is beneficial
-- Trivial confirmations ("yes, ok, proceed") do not need posture injection
-- Machine-to-machine handoffs between sub-agents reuse the original posture; they do not re-inject
+| SDD Phase | Default Posture(s) | Alternative (user override or conditional) |
+|-----------|--------------------|---------------------------------------------|
+| sdd-init | (none) | — |
+| sdd-onboard | +++Socratic | — |
+| sdd-explore | +++Socratic | — |
+| sdd-propose | +++Critical | — |
+| sdd-spec | +++Systemic | — |
+| sdd-design | +++Critical + +++Systemic | +++Critical + +++Empirical (numeric SLAs) |
+| sdd-tasks | +++Pragmatic + +++Economic | — |
+| sdd-apply | +++Pragmatic | — |
+| sdd-verify | +++Adversarial | +++Adversarial + +++Empirical (numeric SLAs) |
+| sdd-archive | (none) | — |
 
----
+## Selection Rule for Empirical
 
-## Anti-Patterns
+Add +++Empirical when the task contains any numeric acceptance
+criterion: latency target, throughput target, memory budget,
+p99 threshold, coverage percentage, error rate ceiling.
 
-- Mixing three or more postures in one prompt — dilutes the effect
-- Overriding a phase posture casually — the defaults are calibrated
-- Using +++Adversarial for synthesis tasks (use +++Critical instead)
-- Using +++Socratic for well-defined execution tasks (use +++Pragmatic)
-- Skipping posture injection because "the sub-agent should know what to do" — they don't; posture shapes the behavior
+## Maximum Postures Per Phase
 
-## Resources
-
-- `internal/assets/skills/adaptive-reasoning/SKILL.md` — references +++Adversarial in Mode 2
-- `internal/assets/skills/context-guardian/SKILL.md` — uses +++Forensic
-- `internal/assets/{agent}/sdd-orchestrator.md` — contains the injection logic
+Hard ceiling: **2**. Three or more produce incoherent prompts.

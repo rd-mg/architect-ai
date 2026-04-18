@@ -9,6 +9,17 @@ metadata:
   version: "2.0"
 ---
 
+## Cognitive Posture
+
+This skill runs with **+++Pragmatic + +++Economic**. The task
+decomposition must ship the smallest working change (Pragmatic)
+while staying within the budget declared for this task (Economic).
+
+If the user did not declare a budget, estimate one based on
+historical metering (see `mem_search(query: "metering/{project}")`).
+Otherwise default to: <= 10 tasks, <= 2000 tokens per task-description.
+Flag any task whose estimated cost exceeds its share of the budget.
+
 ## Purpose
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.

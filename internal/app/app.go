@@ -13,6 +13,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/backup"
 	"github.com/rd-mg/architect-ai/internal/cli"
 	componentuninstall "github.com/rd-mg/architect-ai/internal/components/uninstall"
+	"github.com/rd-mg/architect-ai/internal/components/hooks"
 	"github.com/rd-mg/architect-ai/internal/model"
 	"github.com/rd-mg/architect-ai/internal/pipeline"
 	"github.com/rd-mg/architect-ai/internal/planner"
@@ -36,7 +37,12 @@ var (
 )
 
 func Run() error {
-	return RunArgs(os.Args[1:], os.Stdout)
+	ctx := context.Background()
+	task := strings.Join(os.Args, " ")
+	hooks.FirePreTask(ctx, task)
+	err := RunArgs(os.Args[1:], os.Stdout)
+	hooks.FirePostTask(ctx, task, err)
+	return err
 }
 
 func RunArgs(args []string, stdout io.Writer) error {

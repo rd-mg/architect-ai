@@ -295,16 +295,23 @@ Before each sub-agent launch, look up the phase → posture mapping:
 
 | Phase | Posture |
 |-------|---------|
+| Phase | Posture |
+|-------|---------|
 | sdd-explore | +++Socratic |
 | sdd-propose | +++Critical |
 | sdd-spec | +++Systemic |
 | sdd-design | +++Critical + +++Systemic |
-| sdd-tasks | +++Pragmatic |
+| sdd-tasks | +++Pragmatic + +++Economic |
 | sdd-apply | +++Pragmatic |
 | sdd-verify | +++Adversarial |
 | sdd-archive | (none) |
 | sdd-init | (none) |
 | sdd-onboard | +++Socratic |
+
+Alternative (per-task override):
+- sdd-design may use +++Critical + +++Empirical when acceptance
+  criteria contain numeric SLAs.
+- sdd-verify may use +++Adversarial + +++Empirical for the same reason.
 
 Inject posture block(s) at the TOP of the sub-agent prompt, BEFORE `## Project Standards (auto-resolved)`.
 

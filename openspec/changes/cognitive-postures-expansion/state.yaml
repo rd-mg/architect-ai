@@ -1,0 +1,9 @@
+project: architect-ai
+change_name: cognitive-postures-expansion
+artifact_store: hybrid
+current_phase: archive
+phases:
+  sdd-propose: { status: archived }
+  sdd-spec: { status: archived }
+  sdd-design: { status: archived }
+  sdd-tasks: { status: archived }

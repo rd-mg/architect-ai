@@ -9,6 +9,15 @@ metadata:
   version: "3.0"
 ---
 
+## Cognitive Posture
+
+Default: **+++Adversarial** (enumerate failure modes).
+
+Upgrade to **+++Adversarial + +++Empirical** when the task s acceptance
+criteria contain any numeric threshold: latency, throughput, memory,
+p99, coverage %, error rate. In Empirical mode, every perf claim
+needs a measurement plan or is marked PROVISIONAL.
+
 ## Purpose
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.

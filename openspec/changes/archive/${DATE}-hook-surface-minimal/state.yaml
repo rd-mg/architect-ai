@@ -1,0 +1,9 @@
+project: architect-ai
+change_name: hook-surface-minimal
+artifact_store: hybrid
+current_phase: verify
+phases:
+  sdd-propose: { status: completed }
+  sdd-spec: { status: completed }
+  sdd-design: { status: completed }
+  sdd-tasks: { status: completed }

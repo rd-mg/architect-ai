@@ -1,0 +1,16 @@
+- [x] 1. Add **Economic** posture definition to `internal/assets/skills/cognitive-mode/SKILL.md`.
+  - [ ] Must include behavioral block (Core Verb: Budgeting).
+  - [ ] Must include distinction from Pragmatic.
+- [x] 2. Add **Empirical** posture definition to `internal/assets/skills/cognitive-mode/SKILL.md`.
+  - [ ] Must include behavioral block (Core Verb: Measuring).
+  - [ ] Must include distinction from Adversarial.
+- [x] 3. Update **Phase → Posture Mapping** table in `cognitive-mode/SKILL.md` to the 8-posture version.
+- [x] 4. Update `docs/cognitive-modes.md`.
+  - [ ] Reflect 8-posture repertoire.
+  - [ ] Add **Orthogonality Check** section (why 8 is the ceiling).
+- [x] 5. Synchronize **Posture-Injection Tables** in all 9 orchestrators (`internal/assets/*/sdd-orchestrator.md`).
+  - [ ] Add Economic to `sdd-tasks`.
+  - [ ] Add conditional Empirical notes for `sdd-design` and `sdd-verify`.
+- [x] 6. Inject **Economic** requirement into `internal/assets/skills/sdd-tasks/SKILL.md` opening.
+- [x] 7. Inject **Empirical** conditional requirement into `internal/assets/skills/sdd-verify/SKILL.md`.
+- [x] 8. Add assets test `TestCognitivePosturesEightNotSevenOrNine` in `internal/assets/assets_test.go`.
