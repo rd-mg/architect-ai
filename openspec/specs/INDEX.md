@@ -11,4 +11,5 @@
 | overlay-runtime | Spec Delta: Overlay Runtime Contract | `specs/overlay-runtime/spec.md` |
 | release-metadata | Spec Delta: Release Metadata Contract | `specs/release-metadata/spec.md` |
 | sdd-orchestration | Spec Delta: SDD Orchestration Contract | `specs/sdd-orchestration/spec.md` |
+| sdd-workflow |  | `specs/sdd-workflow/spec.md` |
 | skill-registry | Spec Delta: Skill Registry Contract | `specs/skill-registry/spec.md` |
