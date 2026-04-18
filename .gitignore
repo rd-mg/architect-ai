@@ -29,3 +29,12 @@ dist/
 
 # Agent tooling metadata (generated per-user, not product code)
 .atl/
+
+# OpenSpec
+openspec/changes/
+!openspec/changes/archive/
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
