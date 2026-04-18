@@ -85,7 +85,7 @@ Cache the mode choice for the session — don't ask again unless the user explic
 In **Interactive** mode, between phases:
 1. Show a concise summary of what the phase produced
 2. List what the next phase will do
-3. Ask: "¿Seguimos? / Continue?" — accept YES/continue, NO/stop, or specific feedback to adjust
+3. Ask: "Continue?" (including Spanish equivalent "¿Seguimos?") — accept YES/continue, NO/stop, or specific feedback to adjust <!-- trigger-phrase-allowlist -->
 4. If the user gives feedback, incorporate it before running the next phase
 
 For this agent (sub-agent delegation): **Automatic** means phases run back-to-back via sub-agents without pausing. **Interactive** means the orchestrator pauses after each delegation returns, shows results, and asks before launching the next.

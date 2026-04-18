@@ -37,7 +37,7 @@ Before starting ANY new task or phase, you MUST catch up on state:
 
 ### WHEN TO SEARCH MEMORY
 
-On any variation of "remember", "recall", "what did we do", "how did we solve", "recordar", "qué hicimos", or references to past work:
+On any variation of "remember", "recall", "what did we do", "how did we solve", or references to past work (including Spanish equivalents "recordar" / "qué hicimos"): <!-- trigger-phrase-allowlist -->
 1. Call mem_context — checks recent session history (fast, cheap)
 2. If not found, call mem_search with relevant keywords
 3. If found, use mem_get_observation for full untruncated content
@@ -49,7 +49,7 @@ Also search PROACTIVELY when:
 
 ### SESSION CLOSE PROTOCOL (mandatory)
 
-Before ending a session or saying "done" / "listo" / "that's it", call mem_session_summary:
+Before ending a session or saying "done" / "that's it" (including Spanish equivalent "listo"), call `mem_session_summary`: <!-- trigger-phrase-allowlist -->
 
 ## Goal
 [What we were working on this session]

@@ -71,8 +71,9 @@ func TestWelcomeOptions_WithProfiles_CountOne(t *testing.T) {
 func TestWelcomeOptions_OptionCount_WithoutProfiles(t *testing.T) {
 	opts := screens.WelcomeOptions(nil, true, false, 0, true)
 	// Expected: Start installation, Upgrade tools, Sync configs, Upgrade + Sync,
-	// Configure models, Create your own Agent, Manage backups, Managed uninstall, Quit = 9
-	want := 9
+	// Configure models, Create your own Agent, Manage backups, Managed uninstall,
+	// Uninstall & Purge All ⚠, Quit = 10
+	want := 10
 	if len(opts) != want {
 		t.Errorf("WelcomeOptions(showProfiles=false, hasEngines=true) = %d options, want %d; opts: %v", len(opts), want, opts)
 	}
@@ -83,8 +84,9 @@ func TestWelcomeOptions_OptionCount_WithoutProfiles(t *testing.T) {
 func TestWelcomeOptions_OptionCount_WithProfiles(t *testing.T) {
 	opts := screens.WelcomeOptions(nil, true, true, 2, true)
 	// Expected: Start installation, Upgrade tools, Sync configs, Upgrade + Sync,
-	// Configure models, Create your own Agent, OpenCode SDD Profiles (2), Manage backups, Managed uninstall, Quit = 10
-	want := 10
+	// Configure models, Create your own Agent, OpenCode SDD Profiles (2), Manage backups,
+	// Managed uninstall, Uninstall & Purge All ⚠, Quit = 11
+	want := 11
 	if len(opts) != want {
 		t.Errorf("WelcomeOptions(showProfiles=true, hasEngines=true) = %d options, want %d; opts: %v", len(opts), want, opts)
 	}

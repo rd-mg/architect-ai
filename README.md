@@ -281,7 +281,7 @@ In a standard project, you trigger SDD phases and general skills:
 *(Detects the context and automatically loads the `go-testing` skill before writing code)*
 
 **3. Code Review / Adversarial Mode**
-> "judgment day para este PR"
+> "judgment day for this PR"
 *(Triggers the `judgment-day` skill for a rigorous adversarial review)*
 
 ### Odoo Project Workflow
@@ -478,3 +478,7 @@ PR template: open against `main`, include a one-paragraph summary of intent and 
 ## License
 
 Apache 2.0 (see `LICENSE`). Skills under `internal/assets/skills/` carry their own per-skill licenses in their frontmatter.
+
+## Language
+
+This project is English-only in voice. See [`docs/language-policy.md`](docs/language-policy.md) for the precise rule and the allowlist process for trigger phrases.

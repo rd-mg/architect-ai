@@ -11,26 +11,26 @@
 
 ## 1. Problem Statement
 
-Hoy, OpenCode permite tener UN solo `sdd-orchestrator` con UN solo set de modelos asignados a los sub-agentes SDD. Esto fuerza al usuario a elegir entre:
+Today, OpenCode allows only ONE `sdd-orchestrator` with ONE set of models assigned to SDD sub-agents. This forces the user to choose between:
 
-- **Calidad máxima** (Opus everywhere → caro y lento)
-- **Balance** (Opus orquestador + Sonnet sub-agentes → el default actual)
-- **Economía** (Sonnet/Haiku everywhere → rápido y barato pero menos potente)
+- **Maximum Quality** (Opus everywhere → expensive and slow)
+- **Balance** (Opus orchestrator + Sonnet sub-agents → current default)
+- **Economy** (Sonnet/Haiku everywhere → fast and cheap but less powerful)
 
-El problema: **no podés cambiar entre estas configuraciones sin editar manualmente el `opencode.json`** cada vez que querés pasar de un modo a otro. Y en la práctica, un developer necesita diferentes perfiles para diferentes momentos:
+The problem: **you cannot switch between these configurations without manually editing `opencode.json`** every time you want to change modes. In practice, a developer needs different profiles for different moments:
 
-- **"Voy a hacer algo heavy"** → orquestador Opus, sub-agentes Sonnet
-- **"Es algo simple, no quiero quemar tokens"** → todo Haiku
-- **"Quiero probar un modelo nuevo de Google"** → orquestador Gemini, sub-agentes mixtos
-- **"Estoy revieweando un PR nomas"** → perfil liviano
+- **"I'm doing something heavy"** → Opus orchestrator, Sonnet sub-agents
+- **"Simple task, don't want to burn tokens"** → Haiku everywhere
+- **"Want to test a new Google model"** → Gemini orchestrator, mixed sub-agents
+- **"Just reviewing a PR"** → Lightweight profile
 
-Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
+Currently, this is a manual headache. This feature solves it.
 
 ---
 
 ## 2. Vision
 
-**El usuario crea N perfiles de modelos desde la TUI. Cada perfil genera su propio `sdd-orchestrator-{nombre}` con sus propios sub-agentes en `opencode.json`. En OpenCode, le da Tab y ve todos los orquestadores disponibles — cambia entre perfiles como quien cambia de marcha.**
+**The user creates N model profiles from the TUI. Each profile generates its own `sdd-orchestrator-{name}` with its own sub-agents in `opencode.json`. In OpenCode, the user hits Tab and sees all available orchestrators — switching between profiles like shifting gears.**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -46,7 +46,7 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 │  │  ...                 │   │  ...                        │ │
 │  └──────────────────────┘   └──────────────────────────────┘ │
 │                                                              │
-│  Tab en OpenCode → elegí cuál orquestador usar              │
+│  Tab in OpenCode → choose which orchestrator to use         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -56,30 +56,30 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 
 | User | Pain Point | How Profiles Help |
 |------|-----------|-------------------|
-| **Power user con múltiples providers** | Quiere probar Anthropic vs Google vs OpenAI para SDD sin tocar config | Crea un perfil por provider, cambia con Tab |
-| **Developer cost-conscious** | Quiere un modo "barato" para tareas simples | Perfil "cheap" con Haiku/Flash, perfil "premium" con Opus |
-| **Team lead** | Quiere estandarizar perfiles para el equipo | Los perfiles viven en `opencode.json`, synceables |
-| **Experimentador** | Quiere testear modelos nuevos sin romper su config default | Perfil experimental, el default intacto |
+| **Power user with multiple providers** | Wants to test Anthropic vs Google vs OpenAI for SDD without touching config | Create one profile per provider, switch with Tab |
+| **Cost-conscious developer** | Wants a "cheap" mode for simple tasks | "cheap" profile with Haiku/Flash, "premium" profile with Opus |
+| **Team lead** | Wants to standardize profiles for the team | Profiles live in `opencode.json`, syncable |
+| **Experimenter** | Wants to test new models without breaking default config | Experimental profile, default remains intact |
 
 ---
 
 ## 4. Scope
 
 ### In Scope (v1)
-- Creación de perfiles desde la TUI (nuevo screen)
-- Visualización de perfiles existentes
-- **Edición de perfiles existentes desde la TUI** (seleccionar perfil → modificar modelos → sync)
-- **Eliminación de perfiles desde la TUI** (seleccionar perfil → confirmar → elimina orchestrator + sub-agentes del JSON → sync)
-- Generación de N orchestrators + N×9 sub-agentes en `opencode.json`
-- Actualización de perfiles existentes durante Sync / Update+Sync
-- Prompts compartidos: un archivo por fase, reutilizado por todos los perfiles
-- CLI flag para crear perfiles (`--profile`)
+- Profile creation from the TUI (new screen)
+- List existing profiles
+- **Edit existing profiles from the TUI** (select profile → modify models → sync)
+- **Delete profiles from the TUI** (select profile → confirm → remove orchestrator + sub-agents from JSON → sync)
+- Generation of N orchestrators + N×9 sub-agents in `opencode.json`
+- Update existing profiles during Sync / Update+Sync
+- Shared prompts: one file per phase, reused by all profiles
+- CLI flag to create profiles (`--profile`)
 
 ### Out of Scope (permanently)
-- **Perfiles para Claude Code** — NO APLICA. Claude Code usa un mecanismo completamente diferente (CLAUDE.md + Task tool). La feature de profiles es exclusiva de OpenCode porque depende del sistema de agents/sub-agents de `opencode.json` y la selección por Tab. Esto NO es "futuro" — es una decisión de arquitectura.
+- **Profiles for Claude Code** — DOES NOT APPLY. Claude Code uses a completely different mechanism (CLAUDE.md + Task tool). The profiles feature is exclusive to OpenCode because it depends on the `opencode.json` agent/sub-agent system and Tab selection. This is NOT "future" — it is an architectural decision.
 
 ### Out of Scope (v1, future consideration)
-- Exportar/importar perfiles entre máquinas
+- Export/import profiles between machines
 
 ---
 
@@ -87,11 +87,11 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 
 ### 5.1 TUI: Profile Creation Screen
 
-**R-PROF-01**: El Welcome screen DEBE incluir una nueva opción **"OpenCode SDD Profiles"** debajo de "Configure Models".
+**R-PROF-01**: The Welcome screen MUST include a new option **"OpenCode SDD Profiles"** below "Configure Models".
 
-**R-PROF-02**: Si ya existen perfiles creados, la opción DEBE mostrar el conteo: `"OpenCode SDD Profiles (2)"`.
+**R-PROF-02**: If profiles already exist, the option MUST show the count: `"OpenCode SDD Profiles (2)"`.
 
-**R-PROF-03**: El screen de perfiles DEBE mostrar los perfiles existentes con acciones disponibles:
+**R-PROF-03**: The profiles screen MUST show existing profiles with available actions:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -110,29 +110,29 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 └─────────────────────────────────────────────────────────┘
 ```
 
-**R-PROF-04**: Al seleccionar "Create new profile" (o presionar `n`), el usuario DEBE:
-1. **Ingresar un nombre** para el perfil (texto libre, validado a slug: lowercase, sin espacios, alfanumérico + hyphens)
-2. **Seleccionar el modelo del orchestrator** (reutilizando el ModelPicker existente — provider → model)
-3. **Seleccionar modelos para los sub-agentes** (reutilizando el ModelPicker existente con las 9+1 filas: Set all + 9 fases)
-4. **Confirmar** → se genera el perfil y se ejecuta sync
+**R-PROF-04**: When selecting "Create new profile" (or pressing `n`), the user MUST:
+1. **Enter a profile name** (free text, validated to slug: lowercase, no spaces, alphanumeric + hyphens)
+2. **Select orchestrator model** (reusing existing ModelPicker — provider → model)
+3. **Select models for sub-agents** (reusing existing ModelPicker with 9+1 rows: Set all + 9 phases)
+4. **Confirm** → profile is generated and sync is executed
 
-**R-PROF-05**: El nombre "default" ESTÁ RESERVADO para el orchestrator base (`sdd-orchestrator`). El usuario NO puede crear un perfil llamado "default".
+**R-PROF-05**: The name "default" IS RESERVED for the base orchestrator (`sdd-orchestrator`). The user CANNOT create a profile named "default".
 
-**R-PROF-06**: Si el usuario ingresa un nombre que ya existe, se DEBE preguntar si quiere sobreescribir.
+**R-PROF-06**: If the user enters an existing name, they MUST be asked if they want to overwrite.
 
 ### 5.1b TUI: Profile Editing
 
-**R-PROF-07**: Al presionar `enter` sobre un perfil existente en la lista, el usuario entra en modo edición. El flujo es IDÉNTICO al de creación pero:
-- El nombre NO se puede cambiar (se muestra como header fijo)
-- El modelo del orchestrator viene pre-seleccionado con el valor actual
-- Los modelos de sub-agentes vienen pre-seleccionados con los valores actuales
-- Al confirmar, se sobreescribe el perfil existente y se ejecuta sync
+**R-PROF-07**: Pressing `enter` on an existing profile enters edit mode. The flow is IDENTICAL to creation but:
+- The name CANNOT be changed (shown as fixed header)
+- Orchestrator model is pre-selected with current value
+- Sub-agent models are pre-selected with current values
+- On confirmation, existing profile is overwritten and sync is executed
 
-**R-PROF-07b**: El perfil `default` también se PUEDE editar — es el `sdd-orchestrator` base. Editar el default es equivalente a lo que hoy hace "Configure Models → OpenCode" pero integrado en el flujo de perfiles.
+**R-PROF-07b**: The `default` profile CAN also be edited — it is the base `sdd-orchestrator`. Editing default is equivalent to what "Configure Models → OpenCode" does today but integrated into the profiles flow.
 
 ### 5.1c TUI: Profile Deletion
 
-**R-PROF-08**: Al presionar `d` sobre un perfil existente en la lista, se DEBE mostrar un screen de confirmación:
+**R-PROF-08**: Pressing `d` on an existing profile MUST show a confirmation screen:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -153,29 +153,29 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 └─────────────────────────────────────────────────────────┘
 ```
 
-**R-PROF-08b**: Al confirmar la eliminación:
-1. Se eliminan TODOS los agent keys del perfil del `opencode.json` (`sdd-orchestrator-{name}` + 10 sub-agentes `sdd-{phase}-{name}`)
-2. Se ejecuta un write atómico del JSON actualizado
-3. Se muestra resultado (éxito o error)
-4. Se vuelve a la lista de perfiles (con el perfil eliminado)
+**R-PROF-08b**: On confirmation:
+1. ALL agent keys for the profile are removed from `opencode.json` (`sdd-orchestrator-{name}` + 10 sub-agents `sdd-{phase}-{name}`)
+2. Atomic write of updated JSON
+3. Result is shown (success/error)
+4. Return to profile list
 
-**R-PROF-08c**: El perfil `default` NO se puede eliminar. Presionar `d` sobre el default NO hace nada (el keybinding se ignora). El default es el orchestrator base que siempre debe existir.
+**R-PROF-08c**: The `default` profile CANNOT be deleted. Pressing `d` on default does nothing (keybinding ignored). The default is the base orchestrator that must always exist.
 
-**R-PROF-08d**: La eliminación de un perfil NO elimina los archivos de prompt compartidos (`~/.config/opencode/prompts/sdd/*.md`) — esos son compartidos por todos los perfiles y se mantienen mientras exista al menos un perfil.
+**R-PROF-08d**: Deleting a profile DOES NOT delete shared prompt files (`~/.config/opencode/prompts/sdd/*.md`) — these are shared by all profiles and remain as long as at least one profile exists.
 
 ### 5.2 Naming Convention
 
-**R-PROF-10**: El perfil DEFAULT (sin sufijo) genera los agentes con los nombres actuales:
+**R-PROF-10**: The DEFAULT profile (no suffix) generates agents with current names:
 - `sdd-orchestrator`
 - `sdd-init`, `sdd-explore`, `sdd-propose`, `sdd-spec`, `sdd-design`, `sdd-tasks`, `sdd-apply`, `sdd-verify`, `sdd-archive`
 
-**R-PROF-11**: Un perfil con nombre `cheap` genera agentes con sufijo:
+**R-PROF-11**: A profile named `cheap` generates agents with suffixes:
 - `sdd-orchestrator-cheap`
 - `sdd-init-cheap`, `sdd-explore-cheap`, ..., `sdd-archive-cheap`
 
-**R-PROF-12**: El `sdd-orchestrator-{name}` DEBE tener `"mode": "primary"` para que aparezca como seleccionable con Tab en OpenCode. Los sub-agentes `sdd-{phase}-{name}` DEBEN tener `"mode": "subagent"` y `"hidden": true`.
+**R-PROF-12**: The `sdd-orchestrator-{name}` MUST have `"mode": "primary"` to appear as selectable with Tab in OpenCode. Sub-agents `sdd-{phase}-{name}` MUST have `"mode": "subagent"` and `"hidden": true`.
 
-**R-PROF-13**: Las permissions del orchestrator de un perfil DEBEN scoped a sus propios sub-agentes:
+**R-PROF-13**: Orchestrator permissions for a profile MUST be scoped to its own sub-agents:
 ```json
 {
   "permission": {
@@ -189,7 +189,7 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 
 ### 5.3 Shared Prompt Architecture
 
-**R-PROF-20**: Los prompts de cada fase SDD DEBEN vivir en archivos separados bajo `~/.config/opencode/prompts/sdd/`:
+**R-PROF-20**: Prompts for each SDD phase MUST live in separate files under `~/.config/opencode/prompts/sdd/`:
 ```
 ~/.config/opencode/prompts/sdd/
 ├── orchestrator.md
@@ -205,7 +205,7 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 └── sdd-onboard.md
 ```
 
-**R-PROF-21**: El `prompt` de cada agente en opencode.json DEBE referenciar el archivo compartido usando la sintaxis de OpenCode `{file:path}`:
+**R-PROF-21**: The `prompt` for each agent in opencode.json MUST reference the shared file using OpenCode `{file:path}` syntax:
 ```json
 {
   "sdd-apply": {
@@ -223,62 +223,62 @@ Hoy eso es un dolor de cabeza manual. Esta feature lo resuelve.
 }
 ```
 
-**R-PROF-22**: El contenido de estos archivos de prompt DEBE ser EXACTAMENTE el mismo que hoy se inline en el overlay JSON. El refactor es extracto sin cambio de comportamiento.
+**R-PROF-22**: Content of these prompt files MUST be EXACTLY the same as what is currently inlined in the JSON overlay. The refactor is an extraction without behavioral change.
 
-**R-PROF-23**: El prompt del orchestrator (`orchestrator.md`) DEBE incluir un bloque `<!-- architect-ai:sdd-model-assignments -->` que se inyecta dinámicamente con la tabla de modelos de ESE perfil específico.
+**R-PROF-23**: The orchestrator prompt (`orchestrator.md`) MUST include an `<!-- architect-ai:sdd-model-assignments -->` block that is dynamically injected with that specific profile's model table.
 
-**R-PROF-24**: Para el orchestrator de un perfil, el prompt DEBE referenciar los sub-agentes CON SUFIJO. Esto significa que el `orchestrator.md` compartido necesita un placeholder o que cada orchestrator de perfil tenga su propia copia con los nombres correctos. 
+**R-PROF-24**: For a profile's orchestrator, the prompt MUST reference sub-agents WITH SUFFIX. 
 
-**Decisión arquitectónica**: El orchestrator prompt NO se comparte entre perfiles — cada perfil genera su propia versión con:
-- La tabla de model assignments de ese perfil
-- Las references a `sdd-{phase}-{suffix}` correctas
+**Architectural Decision**: The orchestrator prompt is NOT shared between profiles — each profile generates its own version with:
+- That profile's model assignments table
+- Correct `sdd-{phase}-{suffix}` references
 
-Los sub-agente prompts SÍ se comparten porque son idénticos entre perfiles (solo cambia el modelo, no el prompt).
+Sub-agent prompts ARE shared because they are identical across profiles (only the model changes, not the prompt).
 
 ### 5.4 Sync & Update Behavior
 
-**R-PROF-30**: Durante `Sync` o `Update+Sync`, el sistema DEBE:
-1. Detectar TODOS los perfiles existentes en `opencode.json` (pattern: `sdd-orchestrator-*`)
-2. Actualizar los prompts compartidos en `~/.config/opencode/prompts/sdd/`
-3. Regenerar los orchestrator prompts de cada perfil (para inyectar model assignments actualizados)
-4. NO modificar las asignaciones de modelos de los perfiles — solo los prompts
+**R-PROF-30**: During `Sync` or `Update+Sync`, the system MUST:
+1. Detect ALL existing profiles in `opencode.json` (pattern: `sdd-orchestrator-*`)
+2. Update shared prompt files in `~/.config/opencode/prompts/sdd/`
+3. Regenerate orchestrator prompts for each profile (to inject updated model assignments)
+4. NOT modify model assignments of profiles — only prompts
 
-**R-PROF-31**: Si un perfil tiene un sub-agente que referencia un modelo que ya no existe en el cache de OpenCode, el Sync DEBE:
-- **Warning** al usuario (no error)
-- Preservar la asignación existente (el usuario puede haberlo configurado manualmente)
+**R-PROF-31**: If a profile has a sub-agent referencing a model that no longer exists in OpenCode's cache, Sync MUST:
+- **Warning** to user (not error)
+- Preserve existing assignment (user might have configured it manually)
 
-**R-PROF-32**: Los archivos de prompt compartidos DEBEN estar cubiertos por el backup pre-sync, igual que `opencode.json`.
+**R-PROF-32**: Shared prompt files MUST be covered by pre-sync backup, same as `opencode.json`.
 
-**R-PROF-33**: El Sync DEBE ser idempotente: si los prompts ya están actualizados, `filesChanged` NO debe incrementar.
+**R-PROF-33**: Sync MUST be idempotent: if prompts are already updated, `filesChanged` MUST NOT increment.
 
 ### 5.5 Profile Detection & State
 
-**R-PROF-40**: Los perfiles DEBEN detectarse leyendo el `opencode.json` existente, NO desde un archivo de estado separado. El `opencode.json` ES la fuente de verdad.
+**R-PROF-40**: Profiles MUST be detected by reading existing `opencode.json`, NOT from a separate state file. `opencode.json` IS the source of truth.
 
-**R-PROF-41**: Un perfil se detecta por la presencia de un agent key que matchea `sdd-orchestrator-{name}` con `"mode": "primary"`.
+**R-PROF-41**: A profile is detected by the presence of an agent key matching `sdd-orchestrator-{name}` with `"mode": "primary"`.
 
-**R-PROF-42**: Al detectar perfiles existentes, el sistema DEBE inferir:
-- **Nombre**: el sufijo después de `sdd-orchestrator-`
-- **Modelo del orchestrator**: el campo `"model"` del orchestrator
-- **Modelos de sub-agentes**: los campos `"model"` de `sdd-{phase}-{name}`
+**R-PROF-42**: Upon detecting existing profiles, the system MUST infer:
+- **Name**: suffix after `sdd-orchestrator-`
+- **Orchestrator model**: `"model"` field of the orchestrator
+- **Sub-agent models**: `"model"` fields of `sdd-{phase}-{name}`
 
-**R-PROF-43**: El perfil default (`sdd-orchestrator` sin sufijo) SIEMPRE existe cuando SDD está configurado. Los perfiles adicionales son opcionales.
+**R-PROF-43**: The default profile (`sdd-orchestrator` without suffix) ALWAYS exists when SDD is configured. Additional profiles are optional.
 
 ### 5.6 CLI Support
 
-**R-PROF-50**: El comando `sync` DEBE aceptar un flag `--profile <name>:<orchestrator-model>` que crea/actualiza un perfil durante el sync:
+**R-PROF-50**: `sync` command MUST accept a `--profile <name>:<orchestrator-model>` flag that creates/updates a profile during sync:
 ```bash
 architect-ai sync --profile cheap:anthropic/claude-haiku-3.5-20241022
 ```
 
-**R-PROF-51**: Se DEBEN poder especificar múltiples `--profile` flags:
+**R-PROF-51**: Multiple `--profile` flags MUST be supported:
 ```bash
 architect-ai sync \
   --profile cheap:anthropic/claude-haiku-3.5-20241022 \
   --profile premium:anthropic/claude-opus-4-20250514
 ```
 
-**R-PROF-52**: El formato del flag es `name:provider/model`. Para asignar modelos individuales a sub-agentes vía CLI, se usa la sintaxis extendida:
+**R-PROF-52**: Flag format is `name:provider/model`. To assign individual models to sub-agents via CLI, extended syntax is used:
 ```bash
 architect-ai sync --profile cheap:anthropic/claude-haiku-3.5-20241022 \
   --profile-phase cheap:sdd-apply:anthropic/claude-sonnet-4-20250514
@@ -301,7 +301,7 @@ type Profile struct {
 
 ### 6.2 OpenCode JSON Structure (per profile)
 
-Para un perfil llamado "cheap" con Haiku:
+For a profile named "cheap" with Haiku:
 
 ```json
 {
@@ -365,12 +365,13 @@ Para un perfil llamado "cheap" con Haiku:
 │       └── sdd-onboard.md     (shared)
 ├── skills/                (existing SDD skills)
 ├── commands/              (existing slash commands)
+├── plugins/               (existing plugins)
 └── plugins/               (existing plugins)
 ```
 
-**Key insight**: Los orchestrator prompts NO se comparten como archivos externos porque cada perfil necesita su propia tabla de model assignments y referencias a sub-agentes con sufijo. Se inline en el JSON de cada orchestrator durante la generación.
+**Key insight**: Orchestrator prompts ARE NOT shared as external files because each profile needs its own model assignments table and sub-agent references with suffixes. They are inlined in each orchestrator's JSON during generation.
 
-Los sub-agent prompts SÍ se comparten como archivos `{file:...}` porque son idénticos entre perfiles — solo el campo `"model"` cambia.
+Sub-agent prompts ARE shared as `{file:...}` files because they are identical between profiles — only the `"model"` field changes.
 
 ### 6.4 Affected Files (Implementation Map)
 
@@ -419,18 +420,18 @@ Sync Start
 
 ### 6.6 Migration Path
 
-**Backward compatibility**: Users sin perfiles no ven cambios. El refactor de prompts a archivos es transparente:
+**Backward compatibility**: Users without profiles see no changes. The refactor of prompts to files is transparent:
 
 1. **First sync after update**: 
-   - Crea `~/.config/opencode/prompts/sdd/` directory
-   - Escribe los prompt files
-   - Migra sub-agentes del overlay de inline prompt a `{file:...}` reference
-   - Resultado: comportamiento idéntico, solo cambia dónde vive el prompt
+   - Creates `~/.config/opencode/prompts/sdd/` directory
+   - Writes prompt files
+   - Migrates sub-agents in overlay from inline prompt to `{file:...}` reference
+   - Result: identical behavior, only prompt location changes
 
-2. **Users con multi-mode existente**:
-   - Sus model assignments se preservan
-   - Sus sub-agentes se migran a `{file:...}` automáticamente
-   - Cero disruption
+2. **Users with existing multi-mode**:
+   - Model assignments are preserved
+   - Sub-agents are automatically migrated to `{file:...}`
+   - Zero disruption
 
 ---
 
@@ -596,10 +597,10 @@ Step 4: Confirm + Sync
 
 ### 8.1 OpenCode Model Cache Not Available
 
-Si `~/.cache/opencode/models.json` no existe (OpenCode no se ejecutó nunca), el screen de profile creation DEBE:
-- Mostrar un mensaje explicativo: "Run OpenCode at least once to populate the model cache"
-- Ofrecer solo "Back"
-- NO bloquear el resto de la TUI
+If `~/.cache/opencode/models.json` does not exist (OpenCode has never run), profile creation MUST:
+- Show explanatory message: "Run OpenCode at least once to populate the model cache"
+- Offer only "Back"
+- NOT block the rest of the TUI
 
 ### 8.2 Profile Name Validation
 
@@ -617,24 +618,24 @@ Si `~/.cache/opencode/models.json` no existe (OpenCode no se ejecutó nunca), el
 ### 8.3 Model Inheritance for Sub-agents
 
 When a sub-agent doesn't have an explicit model assignment:
-1. Use the orchestrator model from the same profile
-2. If orchestrator model is not set, use the root `"model"` from opencode.json
+1. Use orchestrator model from the same profile
+2. If orchestrator model is not set, use root `"model"` from `opencode.json`
 3. If nothing is set, OpenCode uses its default
 
 ### 8.4 Deleting a Profile
 
-Deletion is fully supported from the TUI (press `d` on a profile → confirm → agents removed from JSON → sync). The operation:
+Deletion is fully supported from the TUI (press `d` on a profile → confirm → agents removed from JSON → sync). Operation:
 1. Reads `opencode.json`
 2. Removes ALL keys matching `sdd-orchestrator-{name}` and `sdd-{phase}-{name}` (11 keys total)
-3. Writes the updated JSON atomically
+3. Writes updated JSON atomically
 4. Runs sync to ensure consistency
-5. The `default` profile CANNOT be deleted — the keybinding is ignored on it
+5. `default` profile CANNOT be deleted — keybinding ignored
 
 ### 8.5 Orchestrator Prompt — Sub-agent References
 
-El orchestrator prompt del default profile referencia sub-agentes como `sdd-apply`. Un perfil "cheap" necesita que su orchestrator reference `sdd-apply-cheap`. 
+Default profile orchestrator prompt references sub-agents as `sdd-apply`. A "cheap" profile needs its orchestrator to reference `sdd-apply-cheap`. 
 
-**Solution**: Al generar el orchestrator prompt de un perfil, se hace string replacement del pattern `sdd-{phase}` → `sdd-{phase}-{suffix}` SOLO dentro de las secciones que referencian sub-agentes (Model Assignments table, delegation rules). Esto se hace en tiempo de generación, no en el archivo compartido.
+**Solution**: When generating a profile's orchestrator prompt, string replacement of pattern `sdd-{phase}` → `sdd-{phase}-{suffix}` is done ONLY within sections referencing sub-agents (Model Assignments table, delegation rules). This happens at generation time, not in the shared file.
 
 ---
 
@@ -662,7 +663,7 @@ El orchestrator prompt del default profile referencia sub-agentes como `sdd-appl
 ### Phase 2: Profile Data Model & Generation
 - Add `Profile` type to domain model
 - Implement profile agent generation (orchestrator + sub-agents with suffix)
-- Profile detection from existing opencode.json
+- Profile detection from existing `opencode.json`
 - Update `injectModelAssignments` to handle multiple profiles
 
 ### Phase 3: TUI Screens — Create & List
@@ -693,17 +694,17 @@ El orchestrator prompt del default profile referencia sub-agentes como `sdd-appl
 
 ## 11. Open Questions
 
-1. **¿El orchestrator prompt de cada perfil se inline en el JSON o se guarda como archivo?**
-   → Decisión: INLINE en el JSON. El orchestrator prompt es profile-specific (model table + sub-agent references), no se puede compartir como archivo. Los sub-agent prompts SÍ se comparten como archivos.
+1. **Is each profile's orchestrator prompt inlined in the JSON or saved as a file?**
+   → Decision: INLINED in JSON. Orchestrator prompt is profile-specific (model table + sub-agent references), cannot be shared as a file. Sub-agent prompts ARE shared as files.
 
-2. **¿Qué pasa con `sdd-onboard` en perfiles?**
-   → Decisión: `sdd-onboard-{name}` se genera como sub-agente del perfil, igual que los otros 9 sub-agentes.
+2. **What happens to `sdd-onboard` in profiles?**
+   → Decision: `sdd-onboard-{name}` is generated as a sub-agent of the profile, just like the other 9 sub-agents.
 
-3. **¿Los slash commands SDD (`/sdd-new`, `/sdd-ff`, etc.) funcionan con perfiles custom?**
-   → Sí. Los comandos están bound al orchestrator. Cuando el usuario selecciona `sdd-orchestrator-cheap` con Tab, los comandos se ejecutan contra ese orchestrator que delega a `sdd-*-cheap` sub-agentes.
+3. **Do SDD slash commands (`/sdd-new`, `/sdd-ff`, etc.) work with custom profiles?**
+   → Yes. Commands are bound to the orchestrator. When the user selects `sdd-orchestrator-cheap` with Tab, commands run against that orchestrator which delegates to `sdd-*-cheap` sub-agents.
 
-4. **¿Cómo maneja OpenCode el `{file:...}` en prompts? ¿Soporta `~` expansion?**
-   → Validar con OpenCode docs. Si no soporta `~`, usar path absoluto expandido durante la generación.
+4. **How does OpenCode handle `{file:...}` in prompts? Does it support `~` expansion?**
+   → Validate with OpenCode docs. If not supported, use expanded absolute path during generation.
 
-5. **¿El `gentleman` agent (persona) también necesita variantes por perfil?**
-   → No. El `gentleman` agent es la persona general, no parte de SDD. Solo se mirror el modelo del orchestrator default.
+5. **Does the `gentleman` agent (persona) also need per-profile variants?**
+   → No. The `gentleman` agent is the general persona, not part of SDD. It only mirrors the default orchestrator's model.

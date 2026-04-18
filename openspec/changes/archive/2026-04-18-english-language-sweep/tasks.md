@@ -1,0 +1,17 @@
+- [x] **Bootstrap**
+    - [x] Create `docs/language-policy.md`
+    - [x] Create `scripts/language-allowlist.txt` with initial file set
+    - [x] Create `scripts/lint-language.sh` with Judge safety guards
+    - [x] `chmod +x scripts/lint-language.sh`
+- [x] **Integration**
+    - [x] Add `lint-language` target to `Makefile`
+    - [x] Add lint step to `.github/workflows/ci.yml`
+    - [x] Add language policy pointer to top-level `README.md`
+- [x] **The Sweep (Content Removal)**
+    - [x] Refactor `internal/assets/claude/engram-protocol.md` (annotate synonyms)
+    - [x] Refactor 9 orchestrator files (refactor intent resolution tables + annotate)
+    - [x] Update `scripts/language-allowlist.txt` with orchestrator paths
+- [x] **Verification**
+    - [x] Run `make lint-language` (ensure 0 violations)
+    - [x] Manual test: add Spanish voice to a README, ensure lint fails
+    - [x] Run `go test ./...`

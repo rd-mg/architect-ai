@@ -90,7 +90,7 @@ Cache the mode choice for the session — don't ask again unless the user explic
 In **Interactive** mode, between phases:
 1. Show a concise summary of what the phase produced
 2. List what the next phase will do
-3. Ask: "¿Continuamos? / Continue?" — accept YES/continue, NO/stop, or specific feedback to adjust
+3. Ask: "Continue?" (including Spanish equivalent "¿Continuamos?") — accept YES/continue, NO/stop, or specific feedback to adjust <!-- trigger-phrase-allowlist -->
 4. If the user gives feedback, incorporate it before running the next phase
 
 For this agent (solo inline execution): **Interactive** is already the natural behavior — you pause between phases via Windsurf's Approval Gates. **Automatic** means skip the "Approve to proceed?" gates and run all phases sequentially without stopping.
@@ -149,7 +149,7 @@ Use this decision tree BEFORE any SDD phase to determine scope:
 | Single file, bug fix, <50 lines | **Small** | Code Mode directly — no SDD, no approval |
 | Multiple files, 50-300 lines, new component | **Medium** | Plan Mode → Approval → Code Mode |
 | Multi-module, >300 lines, uncertain scope | **Large** | Full SDD with formal artifacts |
-| User says "use SDD" or "hazlo con SDD" | **Large** | Full SDD regardless of size |
+| User says "use SDD" or "do it with SDD" (including Spanish equivalent "hazlo con SDD") | **Large** | Full SDD regardless of size | <!-- trigger-phrase-allowlist -->
 
 **When in doubt**: Ask the user. "This looks medium-sized. Want a quick plan, or full SDD with artifacts?"
 

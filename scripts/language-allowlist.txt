@@ -1,0 +1,25 @@
+# Files allowed to contain Spanish trigger phrases.
+# See docs/language-policy.md for the rule.
+# Path per line, relative to repo root. Blank lines and # lines ignored.
+
+internal/assets/skills/sdd-init/SKILL.md
+internal/assets/kiro/agents/sdd-init.md
+internal/assets/gemini/agents/sdd-init.md
+internal/assets/cursor/agents/sdd-init.md
+internal/assets/claude/engram-protocol.md
+
+# Orchestrators (Intent Resolution Tables & Execution Mode)
+internal/assets/codex/sdd-orchestrator.md
+internal/assets/antigravity/sdd-orchestrator.md
+internal/assets/kiro/sdd-orchestrator.md
+internal/assets/claude/sdd-orchestrator.md
+internal/assets/qwen/sdd-orchestrator.md
+internal/assets/gemini/sdd-orchestrator.md
+internal/assets/generic/sdd-orchestrator.md
+internal/assets/windsurf/sdd-orchestrator.md
+internal/assets/cursor/sdd-orchestrator.md
+internal/assets/opencode/sdd-orchestrator.md
+
+# Protocols and Instructions
+internal/assets/claude/sdd-phase-protocols/sdd-explore.md
+internal/assets/codex/engram-instructions.md

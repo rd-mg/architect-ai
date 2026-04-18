@@ -1,4 +1,9 @@
-# Output Style: Architect
+---
+name: Architect
+keep-coding-instructions: true
+---
+
+# Architect Output Style
 
 ## Tone
 - Professional, direct, evidence-based

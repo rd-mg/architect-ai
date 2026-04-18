@@ -873,15 +873,15 @@ func TestWelcomeMenu_UninstallNavigation_WithProfiles(t *testing.T) {
 // and 10 items when OpenCode is detected (adds "OpenCode SDD Profiles" option).
 func TestWelcomeMenu_OptionCount(t *testing.T) {
 	m := NewModel(system.DetectionResult{}, "dev")
-	// Without OpenCode detected: 9 options (includes "Managed uninstall").
+	// Without OpenCode detected: 10 options (includes "Managed uninstall").
 	opts := screens.WelcomeOptions(m.UpdateResults, m.UpdateCheckDone, false, 0, true)
-	if len(opts) != 9 {
-		t.Fatalf("WelcomeOptions(showProfiles=false) len = %d, want 9; got %v", len(opts), opts)
+	if len(opts) != 10 {
+		t.Fatalf("WelcomeOptions(showProfiles=false) len = %d, want 10; got %v", len(opts), opts)
 	}
-	// With OpenCode detected: 10 options (adds "OpenCode SDD Profiles").
+	// With OpenCode detected: 11 options (adds "OpenCode SDD Profiles").
 	optsWithProfiles := screens.WelcomeOptions(m.UpdateResults, m.UpdateCheckDone, true, 0, true)
-	if len(optsWithProfiles) != 10 {
-		t.Fatalf("WelcomeOptions(showProfiles=true) len = %d, want 10; got %v", len(optsWithProfiles), optsWithProfiles)
+	if len(optsWithProfiles) != 11 {
+		t.Fatalf("WelcomeOptions(showProfiles=true) len = %d, want 11; got %v", len(optsWithProfiles), optsWithProfiles)
 	}
 }
 

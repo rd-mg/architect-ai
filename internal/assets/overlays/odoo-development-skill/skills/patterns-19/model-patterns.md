@@ -469,7 +469,7 @@ self.env.cr.execute(SQL("SELECT id FROM my_model WHERE state = %s", 'draft'))
 ```
 
 ---
-(El contenido anterior sobre `_sql_constraints` sigue disponible para referencia en módulos legacy v18 o anteriores)
+(The previous content about `_sql_constraints` remains available for reference in legacy v18 or older modules)
 
     """Validate date order.
 

@@ -18,7 +18,7 @@ sonnet — reads code structurally; heavier reasoning not required.
 ## When Triggered
 
 - User invokes `/sdd-explore <topic>` explicitly
-- Orchestrator resolves natural-language intent "explore X" / "investiga X"
+- Orchestrator resolves natural-language intent "explore X" (including Spanish equivalent "investiga X") <!-- trigger-phrase-allowlist -->
 - Orchestrator runs as first phase of `/sdd-new`
 
 ---

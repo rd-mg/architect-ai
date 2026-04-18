@@ -52,13 +52,13 @@ Generic delegation syntax: the host application wires this orchestrator to whate
 
 | User phrase (EN + ES) | Resolved command | Needs name? |
 |-----------------------|------------------|-------------|
-| "use sdd", "usa sdd", "let's do sdd", "start sdd", "begin sdd", "vamos con sdd", "apply spec-driven" | `/sdd-new` | YES |
-| "continue", "next phase", "sigue", "continua", "keep going" (in SDD context) | `/sdd-continue` | If no active change |
-| "fast forward", "ff", "rápido", "ff hasta tasks" | `/sdd-ff` | YES |
-| "onboard me", "guíame", "walk me through", "new to this" | `/sdd-onboard` | NO |
-| "explore X", "investiga X", "research X" | `/sdd-explore X` | NO |
-| "verify", "valida", "check compliance", "audit" (in change context) | `/sdd-verify` | If no active change |
-| "archive", "close it out", "cierra el cambio" | `/sdd-archive` | If no active change |
+| "use sdd", "let's do sdd", "start sdd", "begin sdd", "apply spec-driven" (ES: "usa sdd", "vamos con sdd") | `/sdd-new` | YES | <!-- trigger-phrase-allowlist -->
+| "continue", "next phase", "keep going" (in SDD context) (ES: "sigue", "continua") | `/sdd-continue` | If no active change | <!-- trigger-phrase-allowlist -->
+| "fast forward", "ff" (ES: "rápido", "ff hasta tasks") | `/sdd-ff` | YES | <!-- trigger-phrase-allowlist -->
+| "onboard me", "walk me through", "new to this" (ES: "guíame") | `/sdd-onboard` | NO | <!-- trigger-phrase-allowlist -->
+| "explore X", "research X" (ES: "investiga X") | `/sdd-explore X` | NO | <!-- trigger-phrase-allowlist -->
+| "verify", "check compliance", "audit" (in change context) (ES: "valida") | `/sdd-verify` | If no active change | <!-- trigger-phrase-allowlist -->
+| "archive", "close it out" (ES: "cierra el cambio") | `/sdd-archive` | If no active change | <!-- trigger-phrase-allowlist -->
 
 ### On match
 
