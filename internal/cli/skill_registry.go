@@ -18,6 +18,7 @@ import (
 type skillEntry struct {
 	Name         string
 	Trigger      string
+	Bridge       string
 	CompactRules string
 	Path         string
 	Origin       string // "user", "project", "overlay", "system", "shared"
@@ -241,6 +242,8 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 		if !d.IsDir() {
 			continue
 		}
+		// Nota: post BUG-A fix, solo debe existir odoo-development-skill para proyectos Odoo.
+		// El código soporta múltiples overlays por compatibilidad con custom overlays (.atl/overlays/other).
 		overlayName := d.Name()
 		overlayRoot := filepath.Join(overlaysRoot, overlayName)
 
@@ -399,7 +402,7 @@ func parseSkillFile(path string) skillEntry {
 	lineCount := 0
 	for scanner.Scan() {
 		lineCount++
-		if lineCount > 200 { // Safety guard
+		if lineCount > 500 { // Safety guard
 			break
 		}
 		line := scanner.Text()
@@ -428,6 +431,8 @@ func parseSkillFile(path string) skillEntry {
 				entry.Name = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "name:"))
 			} else if strings.HasPrefix(trimmedLine, "Trigger:") {
 				entry.Trigger = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "Trigger:"))
+			} else if strings.HasPrefix(trimmedLine, "bridge:") {
+				entry.Bridge = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "bridge:"))
 			} else if strings.HasPrefix(trimmedLine, "description:") {
 				// Handle multiline description with > operator
 				descValue := strings.TrimSpace(strings.TrimPrefix(trimmedLine, "description:"))
@@ -552,7 +557,20 @@ func buildRegistryMarkdown(projectRoot string, skills []skillEntry, conventions 
 			if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
 				relPath = rel
 			}
-			b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(s.Trigger), s.Name, filepath.ToSlash(relPath)))
+
+			// BUG-8: Use .agent/skills path if the skill is bridged/available there
+			agentSkillPath := filepath.Join(".agent", "skills", s.Name)
+			if _, err := os.Stat(filepath.Join(projectRoot, agentSkillPath)); err == nil {
+				relPath = agentSkillPath
+			}
+
+			trigger := s.Trigger
+			if s.Bridge != "" {
+				// BUG-9: Explicitly mark bridged skills in the trigger column
+				trigger = fmt.Sprintf("bridge: %s", s.Bridge)
+			}
+
+			b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(trigger), s.Name, filepath.ToSlash(relPath)))
 		}
 		b.WriteString("\n")
 	}

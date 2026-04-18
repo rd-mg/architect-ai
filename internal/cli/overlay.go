@@ -108,7 +108,12 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("skills", overlayName, "SKILL.md")))
 	manifest.Skills = append(manifest.Skills, overlayName)
 
-	skillBundleNames, skillBundleAssets, err := copyOverlaySkillBundles(sourceFS, filepath.Join(overlayRoot, "skills"), overlayName)
+	var versionFilter map[int]struct{}
+	if strings.TrimSpace(opts.VersionIntent) != "" {
+		versionFilter = parseVersionIntent(opts.VersionIntent)
+	}
+
+	skillBundleNames, skillBundleAssets, err := copyOverlaySkillBundles(sourceFS, filepath.Join(overlayRoot, "skills"), overlayName, versionFilter)
 	if err != nil {
 		return OverlayManifest{}, err
 	}
@@ -132,6 +137,14 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	}
 	manifest.Agents = uniqueStrings(manifest.Agents)
 	sort.Strings(manifest.Agents)
+
+	sddSuppFiles, err := copyFSTree(sourceFS, "sdd-supplements", filepath.Join(overlayRoot, "sdd-supplements"), nil)
+	if err != nil {
+		return OverlayManifest{}, err
+	}
+	for _, rel := range sddSuppFiles {
+		manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("sdd-supplements", rel)))
+	}
 
 	patternFiles, err := copyFSDirFiles(sourceFS, "skills", filepath.Join(overlayRoot, "patterns"), func(assetPath string, _ fs.DirEntry) bool {
 		return strings.EqualFold(filepath.Ext(assetPath), ".md")
@@ -320,71 +333,39 @@ func BootstrapProjectLocalOverlays(projectRoot string, refresh bool, enterpriseP
 		return result, nil
 	}
 
-	// 1. First install the base odoo-development-skill overlay for shared patterns
-	// This contains version-agnostic patterns, rules, and utilities
+	// Deploy the single odoo-development-skill overlay for the project.
+	// This contains all version-agnostic and version-specific patterns (filtered at runtime/registry build).
 	baseOverlayName := defaultOverlayName
-	baseManifestPath := filepath.Join(projectRoot, ".atl", "overlays", baseOverlayName, "manifest.json")
+	baseManifestPath := filepath.Join(absProjectRoot, ".atl", "overlays", baseOverlayName, "manifest.json")
 	baseOverlayExists := overlayManifestExists(baseManifestPath)
 
-	if !baseOverlayExists || refresh {
-		action := "installed"
-		if baseOverlayExists && refresh {
-			_, err = RefreshOverlay(absProjectRoot, baseOverlayName, enterprisePath)
-			action = "refreshed"
-		} else {
-			_, err = InstallOverlay(OverlayInstallOptions{
-				OverlayName:     baseOverlayName,
-				ProjectRoot:     absProjectRoot,
-				VersionIntent:   formatVersionSet(versions),
-				EnterprisePath:  enterprisePath,
-				ExplicitRequest: true,
-			})
-		}
+	versionIntent := formatVersionSet(versions)
+	action := "reused"
+	var manifest OverlayManifest
+	var err2 error
 
-		if err != nil {
-			fmt.Printf("Warning: Base overlay deployment failed for %s: %v\n", baseOverlayName, err)
-		} else {
-			// Read the resulting manifest if needed, for now we just mark success.
-			if m, err := readOverlayManifest(baseManifestPath); err == nil {
-				result.Overlays = append(result.Overlays, m)
-				result.Actions[m.Name] = action
-			}
-		}
+	switch {
+	case refresh && baseOverlayExists:
+		manifest, err2 = RefreshOverlay(absProjectRoot, baseOverlayName, enterprisePath)
+		action = "refreshed"
+	case !baseOverlayExists:
+		manifest, err2 = InstallOverlay(OverlayInstallOptions{
+			OverlayName:     baseOverlayName,
+			ProjectRoot:     absProjectRoot,
+			EnterprisePath:  enterprisePath,
+			ExplicitRequest: true,
+			VersionIntent:   versionIntent,
+		})
+		action = "installed"
+	default:
+		manifest, err2 = readOverlayManifest(baseManifestPath)
 	}
 
-	// 2. Then deploy version-specific overlays for each detected Odoo version.
-	// These will override base symlinks for versioned skills like "odoo" (promoting odoo-19.0 to odoo).
-	for version := range versions {
-		versionedOverlay := fmt.Sprintf("odoo-%d", version)
-		manifestPath := filepath.Join(projectRoot, ".atl", "overlays", versionedOverlay, "manifest.json")
-		overlayExists := overlayManifestExists(manifestPath)
-
-		var manifest OverlayManifest
-		action := "reused"
-
-		switch {
-		case refresh && overlayExists:
-			manifest, err = RefreshOverlay(absProjectRoot, versionedOverlay, enterprisePath)
-			action = "refreshed"
-		case !overlayExists:
-			manifest, err = InstallOverlay(OverlayInstallOptions{
-				OverlayName:     versionedOverlay,
-				ProjectRoot:     absProjectRoot,
-				EnterprisePath:  enterprisePath,
-				ExplicitRequest: true,
-				VersionIntent:   strconv.Itoa(version),
-			})
-			action = "installed"
-		default:
-			manifest, err = readOverlayManifest(manifestPath)
-		}
-
-		if err != nil {
-			fmt.Printf("Warning: Overlay deployment failed for %s: %v\n", versionedOverlay, err)
-		} else {
-			result.Overlays = append(result.Overlays, manifest)
-			result.Actions[manifest.Name] = action
-		}
+	if err2 != nil {
+		fmt.Printf("Warning: Base overlay deployment failed: %v\n", err2)
+	} else {
+		result.Overlays = append(result.Overlays, manifest)
+		result.Actions[manifest.Name] = action
 	}
 
 	return result, nil
@@ -464,7 +445,7 @@ func isEmbeddedOverlaySource(sourcePath string) bool {
 	return strings.HasPrefix(strings.TrimSpace(sourcePath), embeddedOverlayPrefix)
 }
 
-func copyOverlaySkillBundles(sourceFS fs.FS, destRoot string, rootOverlayName string) ([]string, []string, error) {
+func copyOverlaySkillBundles(sourceFS fs.FS, destRoot string, rootOverlayName string, versionFilter map[int]struct{}) ([]string, []string, error) {
 	entries, err := fs.ReadDir(sourceFS, "skills")
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -488,6 +469,11 @@ func copyOverlaySkillBundles(sourceFS fs.FS, destRoot string, rootOverlayName st
 		// These overlays use the base as source, and their root skill (e.g. odoo-19) is
 		// already copied by the caller. Including the base as a bundle is redundant.
 		if strings.HasPrefix(rootOverlayName, "odoo-") && bundleName == defaultOverlayName {
+			continue
+		}
+
+		// NEW: skip bundles whose version suffix doesn't match
+		if len(versionFilter) > 0 && !matchesOverlaySkillVersion(bundleName, versionFilter) {
 			continue
 		}
 
@@ -829,6 +815,19 @@ func formatVersionSet(versions map[int]struct{}) string {
 		parts = append(parts, strconv.Itoa(v))
 	}
 	return strings.Join(parts, ",")
+}
+
+// parseVersionIntent parses "19" or "18,19" or "18 19" into a set of major versions.
+func parseVersionIntent(intent string) map[int]struct{} {
+	result := make(map[int]struct{})
+	for _, part := range strings.FieldsFunc(intent, func(r rune) bool {
+		return r == ',' || r == ' '
+	}) {
+		if v, err := strconv.Atoi(strings.TrimSpace(part)); err == nil {
+			result[v] = struct{}{}
+		}
+	}
+	return result
 }
 
 func resolveEnterpriseRepoPath(explicitPath string) string {
