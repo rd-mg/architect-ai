@@ -89,11 +89,12 @@ Task: Explore the topic "{topic}" and return:
   4. Next-phase recommendation (propose? more exploration? something else?)
 
 ## Research Procedure
-1. FIRST: mem_search for cached findings. If cache is fresh, use it.
-2. SECOND: NotebookLM. Query + persist under notebooklm/{nb}/{topic}.
-3. THIRD: Local ripgrep. Walk the repo. Persist key snippets.
-4. FOURTH: Context7 ONLY if the question is framework-specific AND 2+3 gave nothing.
-5. NEVER: Internet, unless user message contains an explicit trigger.
+1. FIRST: Compute \`topic_key\` (prefix + len) and \`mem_search\` for cached findings.
+2. If hit and age < 168h: Inject as "Previously Found Knowledge", skip tools. Report \`research_cache_hits: 1\`.
+3. SECOND: NotebookLM. Query + persist under \`research/notebooklm/{slug}-len{N}\`. Report \`research_cache_misses: 1\`.
+4. THIRD: Local ripgrep. Walk the repo. Persist key snippets.
+5. FOURTH: Context7 ONLY if framework-specific AND 2+3 gave nothing.
+6. NEVER: Internet, unless user message contains an explicit trigger.
 
 ## Artifact Store: {mode}
 
@@ -103,13 +104,14 @@ mem_save(
   topic_key: "sdd/{change-name}/explore",
   type: "exploration-artifact",
   project: "{project}",
-  content: "Topic: {topic}\nCurrent state: ...\nUnknowns: ...\nReferences: ...\nSources consulted: [{ordered list — notebooklm, ripgrep, ...}]\nNext-phase recommendation: ..."
+  content: "Topic: {topic}\nCurrent state: ...\nUnknowns: ...\nReferences: ...\nSources consulted: [{ordered list — engram, notebooklm, ripgrep, ...}]\nNext-phase recommendation: ..."
 )
 
 ## Return Envelope per sdd-phase-common.md Section D
-Include NEW field: research_sources_used: [<ordered list>]
-Example: ["notebooklm", "ripgrep"]  (means notebooklm hit, then ripgrep consulted)
-Example: ["context7"]                (means went straight to Context7)
+Include NEW fields:
+- research_sources_used: [<ordered list>]
+- research_cache_hits: int
+- research_cache_misses: int
 ```
 
 ---

@@ -27,7 +27,7 @@ func ExtractUsage(raw []byte) (metering.UsageDelta, error) {
 	return metering.UsageDelta{}, fmt.Errorf("cursor: unknown provider response shape")
 }
 
-func SessionHookEnabled() bool { return true }
+func SessionHookEnabled() bool { return false }
 
 func RecordResponse(raw []byte) {
 	hook := metering.Current()

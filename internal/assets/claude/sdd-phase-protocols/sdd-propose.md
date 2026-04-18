@@ -70,6 +70,7 @@ After every write to `state.yaml`, call `architect-ai sdd-status {change-name}`.
 ## Size Budget: 450 words max. Use bullets and tables over prose.
 
 ## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
 
 ## Result Processing

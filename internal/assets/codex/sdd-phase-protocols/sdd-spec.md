@@ -54,6 +54,7 @@ mem_save(
 ## Size Budget: 1000 words max
 
 ## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
 
 ## Result Processing

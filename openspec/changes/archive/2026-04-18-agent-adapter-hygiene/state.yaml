@@ -1,0 +1,15 @@
+schema_version: 1
+change_name: agent-adapter-hygiene
+created_at: 2026-04-18T05:28:51.230Z
+updated_at: 2026-04-18T05:28:51.230Z
+artifact_store: hybrid
+
+phases:
+  sdd-explore: { status: skipped }
+  sdd-propose: { status: completed, completed_at: 2026-04-18T05:28:51.230Z, artifact: proposal.md }
+  sdd-spec:    { status: completed, completed_at: 2026-04-18T05:29:02.584Z, artifact: specs/agents/spec.md }
+  sdd-design:  { status: completed, completed_at: 2026-04-18T05:29:24.397Z, artifact: design.md }
+  sdd-tasks:   { status: completed, completed_at: 2026-04-18T05:29:33.324Z, artifact: tasks.md }
+  sdd-apply:   { status: pending, depends_on: [sdd-tasks] }
+  sdd-verify:  { status: completed, completed_at: 2026-04-18T05:30:22.052Z, artifact: verify-report.md }
+  sdd-archive: { status: pending, depends_on: [sdd-verify] }

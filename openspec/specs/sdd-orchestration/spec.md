@@ -33,7 +33,40 @@ The orchestrator MUST validate the presence of the mode declaration and re-promp
 - WHEN the orchestrator processes the second response
 - THEN it MUST record a fallback to Mode 1 in Engram and proceed.
 
+
+## Requirement: Research Caching (Engram)
+The orchestrator MUST verify the existence and freshness of research findings in Engram before delegating tasks to research-heavy sub-agents.
+
+#### Scenario: Cache Hit
+- GIVEN a research question with an existing finding in Engram (age < 168h)
+- WHEN the orchestrator plans research
+- THEN it MUST retrieve the finding and inject it into the sub-agent prompt as "Previously Found Knowledge".
+
+#### Scenario: Cache Miss (Stale)
+- GIVEN a research finding in Engram older than 168h
+- WHEN the orchestrator plans research
+- THEN it MUST ignore the stale finding and proceed with fresh research.
+
+## Requirement: Research Class Topic Keys
+The system MUST compute deterministic topic keys for research findings to enable efficient lookups.
+
+#### Scenario: Topic Key Computation
+- GIVEN a query "How does Odoo 19 handle SQL constraints?"
+- WHEN computing the topic key for NotebookLM
+- THEN the result MUST follow the pattern `research/notebooklm/how-does-odoo-19-handle-sql-constraints-len43`.
+
+## Requirement: Research Metrics in Result Contract
+The orchestrator result contract MUST include `research_cache_hits` and `research_cache_misses` fields in addition to standard metrics.
+
+#### Scenario: Metrics Reporting
+- GIVEN a sub-agent execution that used 2 cached findings and performed 1 fresh search
+- WHEN the orchestrator processes the result
+- THEN the result envelope MUST contain `research_cache_hits: 2` and `research_cache_misses: 1`.
+
 ## Verification
+
+- `TestResearchCache_PrefixLenKey` must pass.
+- `TestResearchCache_TTL_168h` must pass.
 - `TestRunSddInit_WritesBootstrapMarker` must pass.
 - `TestSDDAnalysis_WritesAnalysisMarker` must pass.
 - `TestAdaptiveReasoningGateInjected` must pass for all orchestrators.

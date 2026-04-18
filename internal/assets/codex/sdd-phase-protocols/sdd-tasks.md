@@ -57,6 +57,11 @@ into an ordered, numbered checklist of implementable tasks.
 ## Task Format
 Each task: `- [ ] {number} {action verb} {target}. Acceptance: {condition}.`
 
+## Research Procedure
+1. FIRST: Compute \`topic_key\` (prefix + len) and \`mem_search\` for cached findings.
+2. If hit and age < 168h: Inject as "Previously Found Knowledge", skip tools. Report \`research_cache_hits: 1\`.
+3. If miss or stale: Perform fresh research if needed for breakdown. Report \`research_cache_misses: 1\`.
+
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
@@ -71,6 +76,7 @@ mem_save(
 ## Size Budget: 530 words max
 
 ## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
 
 ## Result Processing

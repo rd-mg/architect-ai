@@ -10,32 +10,54 @@ import (
 )
 
 type antigravUsageEnvelope struct {
+	// OpenAI-compatible schema
 	Usage struct {
 		PromptTokens     int64 `json:"prompt_tokens"`
 		CompletionTokens int64 `json:"completion_tokens"`
 		CachedTokens     int64 `json:"cached_tokens"`
 	} `json:"usage"`
+	
+	// Google-native schema
+	UsageMetadata struct {
+		PromptTokenCount     int64 `json:"promptTokenCount"`
+		CandidatesTokenCount int64 `json:"candidatesTokenCount"`
+	} `json:"usageMetadata"`
+
 	Model string `json:"model"`
 }
 
 func ExtractUsage(raw []byte) (metering.UsageDelta, error) {
+	if raw == nil {
+		return metering.UsageDelta{}, nil
+	}
 	var env antigravUsageEnvelope
 	if err := json.Unmarshal(raw, &env); err != nil {
 		return metering.UsageDelta{}, err
 	}
-	return metering.UsageDelta{
-		PromptTokens:     env.Usage.PromptTokens,
-		CompletionTokens: env.Usage.CompletionTokens,
-		CachedTokens:     env.Usage.CachedTokens,
-		Model:            env.Model,
-	}, nil
+	
+	res := metering.UsageDelta{
+		Model: env.Model,
+	}
+
+	// Try OpenAI schema first
+	if env.Usage.PromptTokens > 0 || env.Usage.CompletionTokens > 0 {
+		res.PromptTokens = env.Usage.PromptTokens
+		res.CompletionTokens = env.Usage.CompletionTokens
+		res.CachedTokens = env.Usage.CachedTokens
+	} else {
+		// Fallback to Google-native
+		res.PromptTokens = env.UsageMetadata.PromptTokenCount
+		res.CompletionTokens = env.UsageMetadata.CandidatesTokenCount
+	}
+
+	return res, nil
 }
 
 func SessionHookEnabled() bool { return true }
 
 func RecordResponse(raw []byte) {
 	hook := metering.Current()
-	if hook == nil {
+	if hook == nil || raw == nil {
 		return
 	}
 	delta, err := ExtractUsage(raw)
@@ -44,4 +66,3 @@ func RecordResponse(raw []byte) {
 	}
 	hook.Record(delta)
 }
-

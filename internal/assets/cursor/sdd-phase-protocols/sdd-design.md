@@ -30,6 +30,8 @@ dependencies are created? What becomes harder to change later?
 
 ## Phase: sdd-design
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Produce the architecture design for "{change-name}". Based on proposal
 and spec (if present), produce a design document covering:
 
@@ -60,6 +62,7 @@ mem_save(
 ## Size Budget: 800 words max
 
 ## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
 
 ## Result Processing

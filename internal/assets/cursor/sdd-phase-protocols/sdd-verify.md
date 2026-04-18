@@ -34,6 +34,8 @@ missed. Assume nothing is correct until proven. Construct:
 
 ## Phase: sdd-verify
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Validate the implementation of "{change-name}" against proposal, spec,
 and design. Determine if the change meets acceptance criteria.
 
@@ -72,6 +74,7 @@ mem_save(
 ## Size Budget: 700 words max
 
 ## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
 
 ## Result Processing

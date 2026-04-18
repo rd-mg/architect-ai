@@ -16,7 +16,8 @@ const (
 
 // Adapter is the core abstraction for AI agent integration.
 //
-// Adding a new agent requires:
+// Adding a new agent requires compliance with ADAPTER-CONTRACT.md:
+//
 // 1. A new adapter implementation.
 // 2. Factory/Registry registration.
 // 3. Catalog registration.

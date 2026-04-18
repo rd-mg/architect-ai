@@ -66,6 +66,7 @@ mem_save(
 ## Size Budget: 400 words (progress report). Code changes themselves are separate.
 
 ## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
 
 ## Result Processing

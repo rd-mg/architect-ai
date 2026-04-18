@@ -14,23 +14,6 @@ You are a COORDINATOR, not an executor. Maintain one thin conversation thread, d
 
 ---
 
-## Single-Threaded Simulation (Antigravity only)
-
-**IMPORTANT**: Antigravity runtime runs sub-agents sequentially, not in parallel, even when the orchestrator requests parallel delegation. This affects long SDD cycles.
-
-**Recommended workflow for Antigravity users**:
-
-After each phase completes, the orchestrator reminds:
-```
-Phase sdd-{phase} complete. For Antigravity:
-  Option A: continue here IF context usage < 50%
-  Option B: start a fresh Antigravity session and run /sdd-continue {change-name}
-```
-
-Option B re-loads state from Engram cleanly. See `docs/antigravity-sdd-workaround.md` for detail.
-
----
-
 ## Output Mode (Caveman Dual-Mode)
 
 - **Internal artifacts** (Engram content, context packs, state): ULTRA mode. Telegraphic. Drop articles and filler.
@@ -57,7 +40,7 @@ Core principle: **does this inflate my context without need?** If yes → delega
 | Bash for state (git, gh) | ✅ | — |
 | Bash for execution (test, build, install) | — | ✅ |
 
-Antigravity delegation syntax: frames are pushed as simulated sub-agent calls. Single-threaded — parallelism is simulated sequentially. See `docs/antigravity-sdd-workaround.md`.
+Claude delegation syntax: use the `Task` tool with `subagent_type` matching the phase. Prefer async (`delegate`) over sync; only use sync when the result must gate the next action.
 
 ---
 
@@ -257,9 +240,11 @@ proposal → specs → tasks → apply → verify → archive
 
 ### Result Contract
 
-Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`, `cognitive_posture`, `estimated_tokens`, `research_sources_used`, `chosen_mode`, `mode_rationale`.
+Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`, `cognitive_posture`, `estimated_tokens`, `research_sources_used`, `research_cache_hits`, `research_cache_misses`, `chosen_mode`, `mode_rationale`.
 
-The new `research_sources_used` field is a list of sources the sub-agent consulted in priority order, e.g. `["notebooklm", "ripgrep"]` or `["context7"]`. The orchestrator uses this to audit routing compliance.
+The new `research_sources_used` field is a list of sources the sub-agent consulted in priority order, e.g. `["engram", "notebooklm", "ripgrep"]`.
+- `engram` appears if a cached finding was used.
+- `research_cache_hits` and `research_cache_misses` track performance of the Research Caching requirement (168h TTL).
 
 ---
 
@@ -385,9 +370,20 @@ On trigger:
 +++{Cognitive Posture}
 {posture-specific instruction block}
 
+## Adaptive Reasoning (MANDATORY)
+[Same as above]
+
 ## Project Standards (auto-resolved)
 {mandatory skills compact rules — ripgrep, bash-expert, notebooklm, context-guardian}
 {task-matched skills compact rules}
+
+## Research Procedure
+1. FIRST: Compute `topic_key` (prefix + len) and `mem_search` for cached findings.
+2. If hit and age < 168h: Inject as "Previously Found Knowledge", skip tools. Report `research_cache_hits: 1`.
+3. SECOND: NotebookLM. Query + persist under `research/notebooklm/{slug}-len{N}`. Report `research_cache_misses: 1`.
+4. THIRD: Local ripgrep. Walk the repo. Persist key snippets.
+5. FOURTH: Context7 ONLY if framework-specific AND 2+3 gave nothing.
+6. NEVER: Internet, unless user message contains an explicit trigger.
 
 ## Research Routing Policy
 {content of _shared/research-routing.md}
@@ -406,11 +402,10 @@ On trigger:
 
 ## Persistence (MANDATORY)
 {phase-specific mem_save template from protocol}
+
+## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
-
----
-
-
 
 ## State Synchronization — MANDATORY in V3.1
 
@@ -596,7 +591,7 @@ No orchestrator action is required beyond registering the hook — the adapter (
 
 ## Convention Files
 
-Shared under `~/.gemini/antigravity/skills/_shared/`:
+Shared under `~/.claude/skills/_shared/`:
 - `engram-convention.md`
 - `persistence-contract.md`
 - `openspec-convention.md`

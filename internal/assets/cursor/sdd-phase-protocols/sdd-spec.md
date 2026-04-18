@@ -26,6 +26,8 @@ later? Prefer reversible decisions over optimal-but-irreversible ones.
 
 ## Phase: sdd-spec
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Translate the proposal for "{change-name}" into detailed specifications.
 One spec entry per capability listed in proposal.md's Capabilities section.
 
@@ -52,6 +54,7 @@ mem_save(
 ## Size Budget: 1000 words max
 
 ## Return Envelope per sdd-phase-common.md Section D
+Include: research_cache_hits: int, research_cache_misses: int
 ```
 
 ## Result Processing
