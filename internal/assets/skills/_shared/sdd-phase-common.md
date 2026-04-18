@@ -90,11 +90,22 @@ mem_save(
 
 File was already written during the phase's main step. No additional action needed.
 
+**REQUIRED: state.yaml maintenance**:
+If mode is `openspec` or `hybrid`, you MUST update `openspec/changes/{change-name}/state.yaml` to reflect the new phase status and artifact.
+
+#### Atomic Write Pattern (state.yaml)
+1. Write to `state.yaml.tmp`
+2. Rename to `state.yaml`
+
+#### Validation
+After every write to `state.yaml`, call `architect-ai sdd-status {change-name}`. If it fails, fix the file immediately.
+
 **Reminder for human**: If using `openspec` mode, add a `git add openspec/` reminder in the return envelope so the user knows to commit artifacts.
 
 ### Hybrid mode
 
 Do BOTH: write the file to the filesystem AND call `mem_save` as above.
+Follow the **state.yaml maintenance** rules from the OpenSpec section above.
 
 ### None mode
 

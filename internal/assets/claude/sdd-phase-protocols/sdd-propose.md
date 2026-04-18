@@ -42,6 +42,9 @@ success criteria, capabilities section.
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
+
+If mode is `engram` or `hybrid`, call:
+```
 mem_save(
   title: "sdd/{change-name}/proposal",
   topic_key: "sdd/{change-name}/proposal",
@@ -49,6 +52,18 @@ mem_save(
   project: "{project}",
   content: "{your proposal markdown}"
 )
+```
+
+If mode is `openspec` or `hybrid`:
+- Write `openspec/changes/{change-name}/proposal.md`
+- Write `openspec/changes/{change-name}/state.yaml` (MUST create initial version on new change)
+
+### Atomic Write Pattern (state.yaml)
+1. Write to `state.yaml.tmp`
+2. Rename to `state.yaml`
+
+### Validation
+After every write to `state.yaml`, call `architect-ai sdd-status {change-name}`. If it fails, fix the file immediately.
 
 ## Size Budget: 450 words max. Use bullets and tables over prose.
 

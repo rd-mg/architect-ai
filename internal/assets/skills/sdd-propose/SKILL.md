@@ -35,13 +35,34 @@ From the orchestrator:
 ### Step 1: Load Skills
 Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
-### Step 2: Create Change Directory
+### Step 2: Create Change Directory and Initial State
 
 **IF mode is `openspec` or `hybrid`:** create the change folder structure:
 
 ```
 openspec/changes/{change-name}/
-└── proposal.md
+├── proposal.md
+└── state.yaml       (initial state)
+```
+
+**Write `state.yaml` initial skeleton:**
+Follow the atomic write pattern (tmp + rename).
+```yaml
+schema_version: 1
+change_name: {change-name}
+created_at: {now_rfc3339}
+updated_at: {now_rfc3339}
+artifact_store: {mode}
+
+phases:
+  sdd-explore: { status: skipped }
+  sdd-propose: { status: completed, completed_at: {now_rfc3339}, artifact: proposal.md }
+  sdd-spec:    { status: pending, depends_on: [sdd-propose] }
+  sdd-design:  { status: pending, depends_on: [sdd-spec] }
+  sdd-tasks:   { status: pending, depends_on: [sdd-design] }
+  sdd-apply:   { status: pending, depends_on: [sdd-tasks] }
+  sdd-verify:  { status: pending, depends_on: [sdd-apply] }
+  sdd-archive: { status: pending, depends_on: [sdd-verify] }
 ```
 
 **IF mode is `engram` or `none`:** Do NOT create any `openspec/` directories. Skip this step.
