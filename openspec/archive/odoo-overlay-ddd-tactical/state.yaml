@@ -1,0 +1,15 @@
+schema_version: 1
+change_name: odoo-overlay-ddd-tactical
+created_at: 2026-04-18T06:03:00Z
+updated_at: 2026-04-18T06:03:00Z
+artifact_store: hybrid
+
+phases:
+  sdd-explore: { status: skipped }
+  sdd-propose: { status: completed, completed_at: 2026-04-18T06:03:00Z, artifact: proposal.md }
+  sdd-spec:    { status: completed, completed_at: 2026-04-18T06:03:00Z, artifact: specs/ }
+  sdd-design:  { status: pending, depends_on: [sdd-spec] }
+  sdd-tasks:   { status: pending, depends_on: [sdd-design] }
+  sdd-apply:   { status: pending, depends_on: [sdd-tasks] }
+  sdd-verify:  { status: pending, depends_on: [sdd-apply] }
+  sdd-archive: { status: pending, depends_on: [sdd-verify] }

@@ -143,6 +143,13 @@ From `rules/coding-style.md` and Odoo conventions:
 - `<list>` NOT `<tree>` in v18+
 - `invisible="state == 'done'"` NOT `attrs="{'invisible': [('state', '=', 'done')]}"` in v17+
 
+## DDD Tactical Implementation
+
+Reference `skills/patterns-ddd/SKILL.md` for implementation details of:
+- **Invariants**: Always use `@api.constrains` for rules that must persist regardless of UI.
+- **Service Orchestration**: Use `models.AbstractModel` to group logic that doesn't fit in a single model.
+- **Reusable Filters**: Implement Specifications as `@api.model` methods returning domains.
+
 ## README Auto-Generation
 
 When a module is created or significantly modified, generate/update README.md:

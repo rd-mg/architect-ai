@@ -17,6 +17,14 @@ Every Odoo design MUST explicitly address these layers:
 
 Reference `sdd-supplements/domain-map.md` for the DDD bounded contexts.
 
+## DDD Tactical Patterns
+
+When implementing complex domain logic, use the tactical patterns defined in `skills/patterns-ddd/SKILL.md`:
+1. **Aggregate Roots**: Enforce invariants using `@api.constrains`.
+2. **Value Objects**: Use compute fields + `@api.depends` for domain logic.
+3. **Domain Services**: Use `models.AbstractModel` for orchestration.
+4. **Specifications**: Use `@api.model` returning `Domain` objects (Odoo 19+) or lists.
+
 In your design, state:
 
 ```markdown
