@@ -18,6 +18,9 @@ metadata:
 
 ## Purpose
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
+
 NotebookLM is the **primary** external research source for this project. It holds curated notebooks hand-selected by the team — architecture decisions, onboarding guides, vendor playbooks, Odoo-upgrade notes, and anything else the team decided deserved a durable home.
 
 In V3.1, this skill was promoted from "consulted sometimes" to **primary research authority**. The research priority order is:

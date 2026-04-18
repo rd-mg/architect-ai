@@ -80,6 +80,8 @@ Present the questions; do NOT assume answers.
 
 ## Phase: sdd-explore
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Explore the topic "{topic}" and return:
   1. Current state (3-5 bullet facts about how things work today)
   2. Unknowns (the 3 Socratic questions and their importance)

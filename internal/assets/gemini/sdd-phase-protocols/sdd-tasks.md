@@ -26,6 +26,8 @@ add speculative tasks.
 
 ## Phase: sdd-tasks
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Break down the approved proposal + spec + design for "{change-name}"
 into an ordered, numbered checklist of implementable tasks.
 

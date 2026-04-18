@@ -25,6 +25,8 @@ sonnet — needs to read project structure intelligently
 
 ## Phase: sdd-init
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Detect project context and persist for the session.
 
 ## Detection Procedure

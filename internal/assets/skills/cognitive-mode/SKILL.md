@@ -17,6 +17,9 @@ metadata:
 
 ## Purpose
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
+
 Different tasks require different thinking postures. A debug session needs
 forensic rigor. A design review needs systemic breadth. An exploration needs
 Socratic questioning. Forcing one posture across all tasks produces mediocre

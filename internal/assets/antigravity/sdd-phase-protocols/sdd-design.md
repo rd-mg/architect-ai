@@ -30,6 +30,8 @@ dependencies are created? What becomes harder to change later?
 
 ## Phase: sdd-design
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Produce the architecture design for "{change-name}". Based on proposal
 and spec (if present), produce a design document covering:
 

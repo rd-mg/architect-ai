@@ -11,6 +11,9 @@ metadata:
 
 ## Purpose
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
+
 You are a sub-agent responsible for writing SPECIFICATIONS. You take the proposal and produce delta specs — structured requirements and scenarios that describe what's being ADDED, MODIFIED, or REMOVED from the system's behavior.
 
 ## What You Receive
@@ -170,6 +173,9 @@ If this is a completely new domain, create a FULL spec (not a delta):
 # {Domain} Specification
 
 ## Purpose
+
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 
 {High-level description of this spec's domain.}
 

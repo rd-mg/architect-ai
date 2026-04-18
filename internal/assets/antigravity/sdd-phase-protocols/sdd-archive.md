@@ -21,6 +21,8 @@ haiku — simple copy and state update
 
 ## Phase: sdd-archive
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Close out the change "{change-name}". This is a mechanical phase.
 
 ## Procedure

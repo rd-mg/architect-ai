@@ -34,6 +34,8 @@ missed. Assume nothing is correct until proven. Construct:
 
 ## Phase: sdd-verify
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Validate the implementation of "{change-name}" against proposal, spec,
 and design. Determine if the change meets acceptance criteria.
 

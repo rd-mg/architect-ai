@@ -25,6 +25,8 @@ in the request. Reveal what has NOT been said.
 
 ## Phase: sdd-explore
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 Identify constraints. Do NOT modify code. Do NOT create non-exploration files.
 

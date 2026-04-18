@@ -111,7 +111,7 @@ proposal -> specs --> tasks -> apply -> verify -> archive
 ```
 
 ### Result Contract
-Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`.
+Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`, `chosen_mode`, `mode_rationale`.
 
 ### Sub-Agent Launch Pattern
 
@@ -149,7 +149,47 @@ Sub-agents get a fresh context with NO memory. The orchestrator controls context
 - Read context: orchestrator searches engram (`mem_search`) for relevant prior context and passes it in the sub-agent prompt. Sub-agent does NOT search engram itself.
 - Write context: sub-agent MUST save significant discoveries, decisions, or bug fixes to engram via `mem_save` before returning. Sub-agent has full detail — save before returning, not after.
 - Always add to sub-agent prompt: `"If you make important discoveries, decisions, or fix bugs, save them to engram via mem_save with project: '{project}'."`
-- Skills: orchestrator resolves compact rules from the registry and injects them as `## Project Standards (auto-resolved)` in the sub-agent prompt. Sub-agents do NOT read SKILL.md files or the registry — they receive rules pre-digested.
+- Skills: orchestrator resolves compact rules from the registry and injects them as `<!-- adaptive-reasoning-gate:START -->
+## Adaptive Reasoning (MANDATORY)
+
+Before executing your assigned phase protocol, you MUST classify the reasoning depth required for this task. 
+
+**Response Format**: You MUST state your chosen mode as the very first line of your response (or within the first 5 non-blank lines if a brief preamble is needed). 
+
+**Format**: `Mode: {n}. Why: {short reason}.`
+
+| Mode | Scenario |
+|------|----------|
+| **1: Fast** | Mechanical, low-risk, or repetitive tasks. You already know exactly what to do. |
+| **2: Balanced** | Standard implementation, multi-file changes, or architectural alignment. Requires careful thinking but no deep experimentation. |
+| **3: Deep** | High-risk, ambiguous, or complex refactors. Requires internal chain-of-thought, alternative evaluation, and edge-case analysis. |
+| **deferred** | Only for sdd-orchestrator when waiting for user input. |
+| **sdd-first** | Only for sdd-init or sdd-onboard during bootstrap. |
+
+FAILURE to include this mode declaration will result in an automated re-prompt.
+<!-- adaptive-reasoning-gate:END -->
+
+## Project Standards (auto-resolved)`
+
+<!-- adaptive-reasoning-gate:START -->
+## Adaptive Reasoning (MANDATORY)
+
+Before executing your assigned phase protocol, you MUST classify the reasoning depth required for this task. 
+
+**Response Format**: You MUST state your chosen mode as the very first line of your response (or within the first 5 non-blank lines if a brief preamble is needed). 
+
+**Format**: `Mode: {n}. Why: {short reason}.`
+
+| Mode | Scenario |
+|------|----------|
+| **1: Fast** | Mechanical, low-risk, or repetitive tasks. You already know exactly what to do. |
+| **2: Balanced** | Standard implementation, multi-file changes, or architectural alignment. Requires careful thinking but no deep experimentation. |
+| **3: Deep** | High-risk, ambiguous, or complex refactors. Requires internal chain-of-thought, alternative evaluation, and edge-case analysis. |
+| **deferred** | Only for sdd-orchestrator when waiting for user input. |
+| **sdd-first** | Only for sdd-init or sdd-onboard during bootstrap. |
+
+FAILURE to include this mode declaration will result in an automated re-prompt.
+<!-- adaptive-reasoning-gate:END --> in the sub-agent prompt. Sub-agents do NOT read SKILL.md files or the registry — they receive rules pre-digested.
 
 #### SDD Phases
 
@@ -211,6 +251,32 @@ If `artifact_store == none` and a prior `sdd-apply` was launched this session, e
 Before delegating to `sdd-verify`, check:
 - If `artifact_store in {openspec, hybrid}`: run `architect-ai sdd-status {change-name}`. If `sdd-apply.status in {in_progress, failed}` → REFUSE. Tell the user "Apply is incomplete or failed. Resolve `sdd-apply` before running `sdd-verify`."
 - If `artifact_store == engram`: `mem_search(query: "sdd/{change-name}/apply-progress", project: "{project}")`. If found and its last entry does not say "COMPLETED" → REFUSE with the same message.
+
+
+
+## State Synchronization — MANDATORY in V3.1
+
+The orchestrator is the SOLE authority for the state-machine. You MUST synchronize the active artifact store (Engram, OpenSpec, or Hybrid) after EVERY phase completion, including during `/sdd-ff` or batch execution.
+
+1. **Verify Completion**: Confirm all required artifacts for the current phase are persisted.
+2. **Update state.yaml**: If `artifact_store` is `openspec` or `hybrid`, you MUST update `openspec/changes/{change-name}/state.yaml` immediately.
+   - Set current phase status to `completed`.
+   - Set `completed_at` timestamp.
+   - Update the global `updated_at` timestamp.
+3. **Update Engram DAG**: If `artifact_store` is `engram` or `hybrid`, you MUST update the `sdd/{change-name}/state` topic key.
+4. **No Silent Transitions**: Never proceed to the next phase without confirming the state update was successful.
+
+---
+
+## Sub-Agent Result Validation — NEW in V3.1
+
+Every sub-agent response MUST be validated for the Adaptive Reasoning Mode declaration.
+
+1. **Extraction**: Scan the first 5 non-blank lines for the pattern: `Mode: {n}. Why: {reason}.`
+2. **Missing Field**: If the pattern is missing, RE-PROMPT the sub-agent exactly once:
+   > "RE-PROMPT: Your response is missing the mandatory Adaptive Reasoning Mode declaration. Please state your Mode (1, 2, or 3) and Rationale as the first line of your next message."
+3. **Double Failure**: If the second response also lacks the mode, record `chosen_mode: "1"` (fallback) and `mode_rationale: "Automated fallback after missing declaration"` in Engram and proceed.
+4. **Result Envelope**: Inject the extracted `chosen_mode` and `mode_rationale` into the result contract before synthesizing the summary for the user.
 
 #### Engram Topic Key Format
 

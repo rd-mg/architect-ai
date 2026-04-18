@@ -26,6 +26,8 @@ later? Prefer reversible decisions over optimal-but-irreversible ones.
 
 ## Phase: sdd-spec
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Translate the proposal for "{change-name}" into detailed specifications.
 One spec entry per capability listed in proposal.md's Capabilities section.
 

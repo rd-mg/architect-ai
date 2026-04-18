@@ -67,6 +67,7 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		// Foundation skills
 		"skills/go-testing/SKILL.md",
 		"skills/skill-creator/SKILL.md",
+		"skills/_shared/adaptive-reasoning-gate.md",
 	}
 
 	for _, path := range expectedFiles {
@@ -270,6 +271,61 @@ func TestSDDOrchestratorAssetsScopedToDedicatedAgent(t *testing.T) {
 			}
 			if !strings.Contains(content, "Do NOT apply it to executor phase agents") {
 				t.Fatalf("%q missing executor exclusion note", assetPath)
+			}
+		})
+	}
+}
+
+// TestAdaptiveReasoningGateInjected verifies that all orchestrators have the
+// mandatory adaptive reasoning gate injected exactly as it appears in the
+// shared source file.
+func TestAdaptiveReasoningGateInjected(t *testing.T) {
+	gateContent := MustRead("skills/_shared/adaptive-reasoning-gate.md")
+	if len(gateContent) == 0 {
+		t.Fatal("shared adaptive-reasoning-gate.md is empty")
+	}
+
+	orchestrators := []string{
+		"codex/sdd-orchestrator.md",
+		"antigravity/sdd-orchestrator.md",
+		"kiro/sdd-orchestrator.md",
+		"claude/sdd-orchestrator.md",
+		"qwen/sdd-orchestrator.md",
+		"gemini/sdd-orchestrator.md",
+		"generic/sdd-orchestrator.md",
+		"windsurf/sdd-orchestrator.md",
+		"cursor/sdd-orchestrator.md",
+		"opencode/sdd-orchestrator.md",
+	}
+
+	for _, path := range orchestrators {
+		t.Run(path, func(t *testing.T) {
+			content := MustRead(path)
+			if !strings.Contains(content, gateContent) {
+				t.Errorf("%q does not contain byte-identical gate content", path)
+			}
+
+			// Verify markers are present
+			if !strings.Contains(content, "<!-- adaptive-reasoning-gate:START -->") {
+				t.Errorf("%q missing start marker", path)
+			}
+			if !strings.Contains(content, "<!-- adaptive-reasoning-gate:END -->") {
+				t.Errorf("%q missing end marker", path)
+			}
+
+			// Verify result contract update
+			if !strings.Contains(content, "`chosen_mode`, `mode_rationale`") {
+				t.Errorf("%q missing result contract fields", path)
+			}
+
+			// Verify validation section
+			if !strings.Contains(content, "## Sub-Agent Result Validation") {
+				t.Errorf("%q missing result validation section", path)
+			}
+
+			// Verify state synchronization section
+			if !strings.Contains(content, "## State Synchronization — MANDATORY in V3.1") {
+				t.Errorf("%q missing state synchronization section", path)
 			}
 		})
 	}

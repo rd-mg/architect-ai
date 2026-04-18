@@ -10,6 +10,9 @@ metadata:
 
 ## Purpose
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
+
 This directory stores shared reference documents consumed by real SDD skills
 (for example: `sdd-phase-common.md`, `persistence-contract.md`).
 

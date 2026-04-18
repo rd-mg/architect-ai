@@ -32,6 +32,8 @@ Write failing test → verify red → implement → verify green → refactor.
 
 ## Phase: sdd-apply
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Implement batch {N} of tasks for "{change-name}". Batch size: {size}.
 
 {if apply-progress exists:}

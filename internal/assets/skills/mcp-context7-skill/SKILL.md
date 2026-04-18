@@ -16,6 +16,9 @@ metadata:
 
 ## Purpose
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
+
 Context7 is the tertiary research source. It fetches official documentation for frameworks and libraries via MCP. Use it ONLY when:
 
 1. NotebookLM has no matching notebook (verified with `notebooklm_list_notebooks`)

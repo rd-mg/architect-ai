@@ -27,6 +27,8 @@ as evidence.
 
 ## Phase: sdd-propose
 
+Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+
 Task: Create a change proposal for "{change-name}". Read exploration (if any).
 Produce: proposal.md with scope, approach, affected areas, rollback plan,
 success criteria, capabilities section.
