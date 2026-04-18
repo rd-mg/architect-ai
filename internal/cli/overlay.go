@@ -35,22 +35,29 @@ type OverlayInstallOptions struct {
 	ExplicitRequest bool
 }
 
+type RegistryEntry struct {
+	Skill   string `json:"skill"`
+	Trigger string `json:"trigger"`
+	Path    string `json:"path"`
+}
+
 type OverlayManifest struct {
-	Name            string   `json:"name"`
-	SourcePath      string   `json:"source_path"`
-	EnterprisePath  string   `json:"enterprise_path,omitempty"`
-	InstalledAtUTC  string   `json:"installed_at_utc"`
-	VersionIntent   string   `json:"version_intent,omitempty"`
-	ActivationState string   `json:"activation_state"`
-	Skills          []string `json:"skills"`
-	SkillBundles    []string `json:"skill_bundles,omitempty"`
-	Agents          []string `json:"agents"`
-	Patterns        []string `json:"patterns,omitempty"`
-	Instructions    []string `json:"instructions,omitempty"`
-	Prompts         []string `json:"prompts,omitempty"`
-	Scripts         []string `json:"scripts,omitempty"`
-	StaticAssets    []string `json:"static_assets,omitempty"`
-	Assets          []string `json:"assets"`
+	Name            string          `json:"name"`
+	SourcePath      string          `json:"source_path"`
+	EnterprisePath  string          `json:"enterprise_path,omitempty"`
+	InstalledAtUTC  string          `json:"installed_at_utc"`
+	VersionIntent   string          `json:"version_intent,omitempty"`
+	ActivationState string          `json:"activation_state"`
+	Skills          []string        `json:"skills"`
+	SkillBundles    []string        `json:"skill_bundles,omitempty"`
+	Agents          []string        `json:"agents"`
+	Patterns        []string        `json:"patterns,omitempty"`
+	Instructions    []string        `json:"instructions,omitempty"`
+	Prompts         []string        `json:"prompts,omitempty"`
+	Scripts         []string        `json:"scripts,omitempty"`
+	StaticAssets    []string        `json:"static_assets,omitempty"`
+	Assets          []string        `json:"assets"`
+	RegistryEntries []RegistryEntry `json:"registry_entries,omitempty"`
 }
 
 var odooManifestVersionPattern = regexp.MustCompile(`(?m)["']version["']\s*:\s*["']([0-9]{1,2})\.[^"']*["']`)
@@ -214,6 +221,8 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 			return OverlayManifest{}, err
 		}
 	}
+
+	populateRegistryEntries(&manifest, projectRoot)
 
 	manifestPath := filepath.Join(overlayRoot, "manifest.json")
 	if err := writeOverlayManifest(manifestPath, manifest); err != nil {
@@ -656,14 +665,19 @@ func matchesOdooVersion(path string, targetVersions map[int]struct{}) bool {
 }
 
 func matchesOverlaySkillVersion(name string, targetVersions map[int]struct{}) bool {
-	if len(targetVersions) == 0 {
-		return false
-	}
-
 	lower := strings.ToLower(strings.TrimSpace(name))
 	if lower == "" {
 		return false
 	}
+
+	// No explicit version suffix: treat as agnostic bundle.
+	// We allow these even if targetVersions is empty (Day 0 project).
+	isAgnostic := !overlaySkillRangePattern.MatchString(lower) && !overlaySkillSinglePattern.MatchString(lower)
+
+	if len(targetVersions) == 0 {
+		return isAgnostic
+	}
+
 	if strings.HasSuffix(lower, "-all") {
 		return true
 	}
@@ -1032,7 +1046,7 @@ func RunOverlay(args []string, stdout io.Writer) error {
 		if detectErr == nil && isOdoo && len(versions) > 0 {
 			_, _ = fmt.Fprintf(stdout, "Overlay registry loaded for Odoo versions: %s (agnostic files excluded)\n", formatVersionSet(versions))
 		} else {
-			_, _ = fmt.Fprintln(stdout, "Overlay files installed, but registry remains inactive until an Odoo module with versioned __manifest__.py is detected.")
+			_, _ = fmt.Fprintln(stdout, "Overlay files installed. Agnostic skills registered; version-specific skills remain inactive until a __manifest__.py is detected.")
 		}
 		if manifest.EnterprisePath != "" {
 			_, _ = fmt.Fprintf(stdout, "Enterprise repository context enabled: %s\n", manifest.EnterprisePath)
@@ -1071,5 +1085,36 @@ func RunOverlay(args []string, stdout io.Writer) error {
 		return nil
 	default:
 		return fmt.Errorf("unknown overlay subcommand %q", sub)
+	}
+}
+func populateRegistryEntries(manifest *OverlayManifest, projectRoot string) {
+	overlayRoot := filepath.Join(projectRoot, ".atl", "overlays", manifest.Name)
+	
+	for _, skillName := range manifest.Skills {
+		if skillName == manifest.Name {
+			continue
+		}
+		
+		skillPath := filepath.Join(overlayRoot, "skills", skillName, "SKILL.md")
+		if _, err := os.Stat(skillPath); err != nil {
+			continue
+		}
+		
+		// Use the same logic as collectOverlayContent: prefer .agent/skills/ symlink path
+		agentSkillPath := filepath.Join(projectRoot, ".agent", "skills", skillName, "SKILL.md")
+		if _, err := os.Stat(agentSkillPath); err == nil {
+			skillPath = agentSkillPath
+		}
+		
+		info := parseSkillFile(skillPath)
+		if info.Name == "" {
+			info.Name = skillName
+		}
+		
+		manifest.RegistryEntries = append(manifest.RegistryEntries, RegistryEntry{
+			Skill:   info.Name,
+			Trigger: info.Trigger,
+			Path:    skillPath,
+		})
 	}
 }

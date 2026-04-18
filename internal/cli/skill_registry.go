@@ -123,15 +123,93 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	// Project conventions
 	conventions = collectProjectConventions(projectRoot)
 
-	// 2. Build Markdown
-	markdown := buildRegistryMarkdown(projectRoot, skills, conventions, assets)
+	// 2. Build Markdown sections
+	registryPath := filepath.Join(projectRoot, ".atl", "skill-registry.md")
+	existingContent, _ := os.ReadFile(registryPath)
+	content := string(existingContent)
+	if content == "" {
+		content = "# Skill Registry\n\n**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.\n"
+	}
+
+	// Group skills by Kind
+	skillsByKind := make(map[string][]skillEntry)
+	for _, s := range skills {
+		skillsByKind[s.Kind] = append(skillsByKind[s.Kind], s)
+	}
+
+	kinds := []string{"System", "SharedRule", "Project", "Overlay", "User"}
+	for _, kind := range kinds {
+		sectionID := "registry:" + strings.ToLower(kind)
+		entries := skillsByKind[kind]
+		
+		var b strings.Builder
+		if len(entries) > 0 {
+			b.WriteString(fmt.Sprintf("## %s Skills\n\n", kind))
+			b.WriteString("| Trigger | Skill | Path |\n")
+			b.WriteString("|---------|-------|------|\n")
+			for _, s := range entries {
+				relPath := s.Path
+				if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
+					relPath = rel
+				}
+				b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(s.Trigger), s.Name, filepath.ToSlash(relPath)))
+			}
+		}
+		content = filemerge.InjectMarkdownSection(content, sectionID, b.String())
+	}
+
+	// Compact Rules
+	var rulesBuilder strings.Builder
+	rulesBuilder.WriteString("## Compact Rules\n\nPre-digested rules per skill. Delegators copy matching blocks into sub-agent prompts as `## Project Standards (auto-resolved)`.\n\n")
+	for _, kind := range kinds {
+		entries := skillsByKind[kind]
+		for _, s := range entries {
+			rulesBuilder.WriteString(fmt.Sprintf("### %s\n%s\n\n", s.Name, s.CompactRules))
+		}
+	}
+	content = filemerge.InjectMarkdownSection(content, "registry:compact-rules", rulesBuilder.String())
+
+	// Project Conventions
+	var convBuilder strings.Builder
+	convBuilder.WriteString("## Project Conventions\n\n")
+	convBuilder.WriteString("| File | Path | Notes |\n")
+	convBuilder.WriteString("|------|------|-------|\n")
+	for _, c := range conventions {
+		relPath := c.Path
+		if rel, err := filepath.Rel(projectRoot, c.Path); err == nil && !strings.HasPrefix(rel, "..") {
+			relPath = rel
+		}
+		convBuilder.WriteString(fmt.Sprintf("| %s | %s | |\n", c.File, filepath.ToSlash(relPath)))
+	}
+	content = filemerge.InjectMarkdownSection(content, "registry:conventions", convBuilder.String())
+
+	// Specialist Overlay Resources
+	var assetBuilder strings.Builder
+	if len(assets) > 0 {
+		assetBuilder.WriteString("## Specialist Overlay Resources\n\n")
+		assetBuilder.WriteString("| Name | Type | Overlay | Path |\n")
+		assetBuilder.WriteString("|------|------|---------|------|\n")
+		sort.Slice(assets, func(i, j int) bool {
+			if assets[i].Overlay == assets[j].Overlay {
+				return assets[i].Name < assets[j].Name
+			}
+			return assets[i].Overlay < assets[j].Overlay
+		})
+		for _, a := range assets {
+			relPath := a.Path
+			if rel, err := filepath.Rel(projectRoot, a.Path); err == nil && !strings.HasPrefix(rel, "..") {
+				relPath = rel
+			}
+			assetBuilder.WriteString(fmt.Sprintf("| %s | %s | %s | %s |\n", a.Name, a.Type, a.Overlay, filepath.ToSlash(relPath)))
+		}
+	}
+	content = filemerge.InjectMarkdownSection(content, "registry:specialist-resources", assetBuilder.String())
 
 	// 3. Write to file
-	registryPath := filepath.Join(projectRoot, ".atl", "skill-registry.md")
 	if err := os.MkdirAll(filepath.Dir(registryPath), 0o755); err != nil {
 		return fmt.Errorf("create local registry directory: %w", err)
 	}
-	_, err = filemerge.WriteFileAtomic(registryPath, []byte(markdown), 0o644)
+	_, err = filemerge.WriteFileAtomic(registryPath, []byte(content), 0o644)
 	if err != nil {
 		return fmt.Errorf("write local skill registry: %w", err)
 	}
@@ -258,44 +336,61 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 		}
 
 		// Skills
-		overlaySkillDir := filepath.Join(overlayRoot, "skills")
-		if _, err := os.Stat(overlaySkillDir); err == nil {
-			dirs, err := os.ReadDir(overlaySkillDir)
-			if err == nil {
-				for _, entry := range dirs {
-					if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(entry.Name(), odooVersions) {
-						continue
-					}
+		if len(manifest.RegistryEntries) > 0 {
+			for _, re := range manifest.RegistryEntries {
+				// We still apply version filtering if it's an Odoo project,
+				// though RegistryEntries should already be version-filtered at install time.
+				// This is a safety check for when a project version changes after install.
+				if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(re.Skill, odooVersions) {
+					continue
+				}
 
-					skillPath := filepath.Join(overlaySkillDir, entry.Name(), "SKILL.md")
-					if _, err := os.Stat(skillPath); err != nil {
-						continue
-					}
+				skills = append(skills, skillEntry{
+					Name:    re.Skill,
+					Trigger: re.Trigger,
+					Path:    re.Path,
+					Origin:  "overlay",
+					Kind:    "Overlay",
+				})
+			}
+		} else {
+			overlaySkillDir := filepath.Join(overlayRoot, "skills")
+			if _, err := os.Stat(overlaySkillDir); err == nil {
+				dirs, err := os.ReadDir(overlaySkillDir)
+				if err == nil {
+					for _, entry := range dirs {
+						if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(entry.Name(), odooVersions) {
+							continue
+						}
 
-					// Prefer the .agent/skills/ symlink path when it exists.
-					// That directory is the version-filtered, canonical view of overlay skills
-					// and is the path agents actually use to load skill files.
-					agentSkillPath := filepath.Join(projectRoot, ".agent", "skills", entry.Name(), "SKILL.md")
-					if _, err := os.Stat(agentSkillPath); err == nil {
-						skillPath = agentSkillPath
-					}
+						skillPath := filepath.Join(overlaySkillDir, entry.Name(), "SKILL.md")
+						if _, err := os.Stat(skillPath); err != nil {
+							continue
+						}
 
-					info := parseSkillFile(skillPath)
-					if info.Name == "" {
-						info.Name = entry.Name()
+						// Prefer the .agent/skills/ symlink path when it exists.
+						agentSkillPath := filepath.Join(projectRoot, ".agent", "skills", entry.Name(), "SKILL.md")
+						if _, err := os.Stat(agentSkillPath); err == nil {
+							skillPath = agentSkillPath
+						}
+
+						info := parseSkillFile(skillPath)
+						if info.Name == "" {
+							info.Name = entry.Name()
+						}
+						info.Path = skillPath
+						info.Origin = "overlay"
+
+						if entry.Name() == "_shared" {
+							info.Kind = "SharedRule"
+						} else if strings.HasPrefix(entry.Name(), "sdd-") || entry.Name() == "skill-registry" {
+							info.Kind = "System"
+						} else {
+							info.Kind = "Overlay"
+						}
+
+						skills = append(skills, info)
 					}
-					info.Path = skillPath
-					info.Origin = "overlay"
-					
-					if entry.Name() == "_shared" {
-						info.Kind = "SharedRule"
-					} else if strings.HasPrefix(entry.Name(), "sdd-") || entry.Name() == "skill-registry" {
-						info.Kind = "System"
-					} else {
-						info.Kind = "Overlay"
-					}
-					
-					skills = append(skills, info)
 				}
 			}
 		}
@@ -560,80 +655,6 @@ func collectProjectConventions(projectRoot string) []conventionEntry {
 		}
 	}
 	return entries
-}
-
-func buildRegistryMarkdown(projectRoot string, skills []skillEntry, conventions []conventionEntry, assets []assetEntry) string {
-	var b strings.Builder
-	b.WriteString("# Skill Registry\n\n")
-	b.WriteString("**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.\n\n")
-
-	// Group skills by Kind
-	kinds := []string{"System", "SharedRule", "Project", "Overlay", "User"}
-	skillsByKind := make(map[string][]skillEntry)
-	for _, s := range skills {
-		skillsByKind[s.Kind] = append(skillsByKind[s.Kind], s)
-	}
-
-	for _, kind := range kinds {
-		entries := skillsByKind[kind]
-		if len(entries) == 0 {
-			continue
-		}
-
-		b.WriteString(fmt.Sprintf("## %s Skills\n\n", kind))
-		b.WriteString("| Trigger | Skill | Path |\n")
-		b.WriteString("|---------|-------|------|\n")
-		for _, s := range entries {
-			relPath := s.Path
-			if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
-				relPath = rel
-			}
-			b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(s.Trigger), s.Name, filepath.ToSlash(relPath)))
-		}
-		b.WriteString("\n")
-	}
-
-	b.WriteString("## Compact Rules\n\n")
-	b.WriteString("Pre-digested rules per skill. Delegators copy matching blocks into sub-agent prompts as `## Project Standards (auto-resolved)`.\n\n")
-	for _, kind := range kinds {
-		entries := skillsByKind[kind]
-		for _, s := range entries {
-			b.WriteString(fmt.Sprintf("### %s\n%s\n\n", s.Name, s.CompactRules))
-		}
-	}
-
-	b.WriteString("## Project Conventions\n\n")
-	b.WriteString("| File | Path | Notes |\n")
-	b.WriteString("|------|------|-------|\n")
-	for _, c := range conventions {
-		relPath := c.Path
-		if rel, err := filepath.Rel(projectRoot, c.Path); err == nil && !strings.HasPrefix(rel, "..") {
-			relPath = rel
-		}
-		b.WriteString(fmt.Sprintf("| %s | %s | |\n", c.File, filepath.ToSlash(relPath)))
-	}
-	b.WriteString("\n")
-
-	if len(assets) > 0 {
-		b.WriteString("## Specialist Overlay Resources\n\n")
-		b.WriteString("| Name | Type | Overlay | Path |\n")
-		b.WriteString("|------|------|---------|------|\n")
-		sort.Slice(assets, func(i, j int) bool {
-			if assets[i].Overlay == assets[j].Overlay {
-				return assets[i].Name < assets[j].Name
-			}
-			return assets[i].Overlay < assets[j].Overlay
-		})
-		for _, a := range assets {
-			relPath := a.Path
-			if rel, err := filepath.Rel(projectRoot, a.Path); err == nil && !strings.HasPrefix(rel, "..") {
-				relPath = rel
-			}
-			b.WriteString(fmt.Sprintf("| %s | %s | %s | %s |\n", a.Name, a.Type, a.Overlay, filepath.ToSlash(relPath)))
-		}
-	}
-
-	return b.String()
 }
 
 func escapeTable(s string) string {

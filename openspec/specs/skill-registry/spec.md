@@ -10,6 +10,14 @@
 - Supported types: `System`, `User`, `Project`, `Overlay`, `SharedRule`, `Alias`.
 - The registry markdown must use distinct sections for these types.
 
+## Requirement: Idempotency via Markers
+- The registry MUST use marker-bounded sections (e.g., `<!-- architect-ai:registry:* -->`).
+- Manual content added by users outside of managed sections MUST be preserved during updates.
+
+## Requirement: Manifest-Driven Overlay Emission
+- Overlays MUST provide explicit registry entries via `manifest.json`.
+- Agnostic skills MUST be registered even if no specific stack version (e.g., Odoo 18.0) is detected in the project.
+
 ## Requirement: Compact Rule Resolution
 - The registry remains the primary source for compact-rule injection into sub-agent prompts.
 - Resolution logic must account for `SharedRule` entries that provide conventions without being invocable skills.
