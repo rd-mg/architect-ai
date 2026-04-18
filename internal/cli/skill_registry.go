@@ -18,7 +18,6 @@ import (
 type skillEntry struct {
 	Name         string
 	Trigger      string
-	Bridge       string
 	CompactRules string
 	Path         string
 	Origin       string // "user", "project", "overlay", "system", "shared"
@@ -242,8 +241,6 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 		if !d.IsDir() {
 			continue
 		}
-		// Nota: post BUG-A fix, solo debe existir odoo-development-skill para proyectos Odoo.
-		// El código soporta múltiples overlays por compatibilidad con custom overlays (.atl/overlays/other).
 		overlayName := d.Name()
 		overlayRoot := filepath.Join(overlaysRoot, overlayName)
 
@@ -273,6 +270,14 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 					skillPath := filepath.Join(overlaySkillDir, entry.Name(), "SKILL.md")
 					if _, err := os.Stat(skillPath); err != nil {
 						continue
+					}
+
+					// Prefer the .agent/skills/ symlink path when it exists.
+					// That directory is the version-filtered, canonical view of overlay skills
+					// and is the path agents actually use to load skill files.
+					agentSkillPath := filepath.Join(projectRoot, ".agent", "skills", entry.Name(), "SKILL.md")
+					if _, err := os.Stat(agentSkillPath); err == nil {
+						skillPath = agentSkillPath
 					}
 
 					info := parseSkillFile(skillPath)
@@ -402,7 +407,7 @@ func parseSkillFile(path string) skillEntry {
 	lineCount := 0
 	for scanner.Scan() {
 		lineCount++
-		if lineCount > 500 { // Safety guard
+		if lineCount > 500 { // Safety guard — must be >344 to reach ## Rules in sdd-init
 			break
 		}
 		line := scanner.Text()
@@ -415,11 +420,28 @@ func parseSkillFile(path string) skillEntry {
 			} else if inFrontmatter {
 				inFrontmatter = false
 				frontmatterDone = true
-				// Extract Trigger from description buffer if not found as separate field
+				// Extract Trigger: from description if not found as a standalone field.
+				// Two strategies:
+				// 1. Explicit "Trigger:" prefix embedded in the description text.
+				// 2. Fallback: use the description itself — it already says when to use the skill.
 				if entry.Trigger == "" && descriptionBuffer.Len() > 0 {
-					descText := descriptionBuffer.String()
+					descText := strings.TrimSpace(descriptionBuffer.String())
 					if idx := strings.Index(descText, "Trigger:"); idx != -1 {
-						entry.Trigger = strings.TrimSpace(descText[idx+len("Trigger:"):])
+						// Take only the first line of the trigger sentence
+						raw := strings.TrimSpace(descText[idx+len("Trigger:"):])
+						if nl := strings.IndexAny(raw, "\n\r"); nl != -1 {
+							raw = strings.TrimSpace(raw[:nl])
+						}
+						entry.Trigger = raw
+					} else {
+						// Use description as trigger: first sentence or first 150 chars
+						trigger := descText
+						if dot := strings.IndexAny(trigger, ".。"); dot > 0 && dot < 150 {
+							trigger = strings.TrimSpace(trigger[:dot])
+						} else if len(trigger) > 150 {
+							trigger = strings.TrimSpace(trigger[:150]) + "..."
+						}
+						entry.Trigger = trigger
 					}
 				}
 			}
@@ -431,8 +453,6 @@ func parseSkillFile(path string) skillEntry {
 				entry.Name = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "name:"))
 			} else if strings.HasPrefix(trimmedLine, "Trigger:") {
 				entry.Trigger = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "Trigger:"))
-			} else if strings.HasPrefix(trimmedLine, "bridge:") {
-				entry.Bridge = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "bridge:"))
 			} else if strings.HasPrefix(trimmedLine, "description:") {
 				// Handle multiline description with > operator
 				descValue := strings.TrimSpace(strings.TrimPrefix(trimmedLine, "description:"))
@@ -470,7 +490,18 @@ func parseSkillFile(path string) skillEntry {
 		// Extract compact rules
 		if strings.HasPrefix(trimmedLine, "## ") {
 			lower := strings.ToLower(trimmedLine)
-			if strings.Contains(lower, "rules") || strings.Contains(lower, "patterns") || strings.Contains(lower, "critical") {
+			if strings.Contains(lower, "rules") ||
+				strings.Contains(lower, "patterns") ||
+				strings.Contains(lower, "critical") ||
+				strings.Contains(lower, "core principle") ||
+				strings.Contains(lower, "key constraint") ||
+				strings.Contains(lower, "step-by-step") ||
+				strings.Contains(lower, "workflow") ||
+				strings.Contains(lower, "procedure") ||
+				strings.Contains(lower, "quick reference") ||
+				strings.Contains(lower, "discovery index") ||
+				strings.Contains(lower, "migration sequence") ||
+				strings.Contains(lower, "version-agnostic principle") {
 				inRules = true
 				continue
 			} else {
@@ -557,20 +588,7 @@ func buildRegistryMarkdown(projectRoot string, skills []skillEntry, conventions 
 			if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
 				relPath = rel
 			}
-
-			// BUG-8: Use .agent/skills path if the skill is bridged/available there
-			agentSkillPath := filepath.Join(".agent", "skills", s.Name)
-			if _, err := os.Stat(filepath.Join(projectRoot, agentSkillPath)); err == nil {
-				relPath = agentSkillPath
-			}
-
-			trigger := s.Trigger
-			if s.Bridge != "" {
-				// BUG-9: Explicitly mark bridged skills in the trigger column
-				trigger = fmt.Sprintf("bridge: %s", s.Bridge)
-			}
-
-			b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(trigger), s.Name, filepath.ToSlash(relPath)))
+			b.WriteString(fmt.Sprintf("| %s | %s | %s |\n", escapeTable(s.Trigger), s.Name, filepath.ToSlash(relPath)))
 		}
 		b.WriteString("\n")
 	}

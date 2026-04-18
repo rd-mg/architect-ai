@@ -108,10 +108,9 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("skills", overlayName, "SKILL.md")))
 	manifest.Skills = append(manifest.Skills, overlayName)
 
-	var versionFilter map[int]struct{}
-	if strings.TrimSpace(opts.VersionIntent) != "" {
-		versionFilter = parseVersionIntent(opts.VersionIntent)
-	}
+	// Parse VersionIntent into a filter set so non-matching skill bundles are
+	// skipped at install time (not only at bridge time). Empty intent = no filter.
+	versionFilter := parseVersionIntent(opts.VersionIntent)
 
 	skillBundleNames, skillBundleAssets, err := copyOverlaySkillBundles(sourceFS, filepath.Join(overlayRoot, "skills"), overlayName, versionFilter)
 	if err != nil {
@@ -138,25 +137,12 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	manifest.Agents = uniqueStrings(manifest.Agents)
 	sort.Strings(manifest.Agents)
 
-	sddSuppFiles, err := copyFSTree(sourceFS, "sdd-supplements", filepath.Join(overlayRoot, "sdd-supplements"), nil)
-	if err != nil {
-		return OverlayManifest{}, err
-	}
-	for _, rel := range sddSuppFiles {
-		manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("sdd-supplements", rel)))
-	}
-
-	patternFiles, err := copyFSDirFiles(sourceFS, "skills", filepath.Join(overlayRoot, "patterns"), func(assetPath string, _ fs.DirEntry) bool {
-		return strings.EqualFold(filepath.Ext(assetPath), ".md")
-	})
-	if err != nil {
-		return OverlayManifest{}, err
-	}
-	sort.Strings(patternFiles)
-	manifest.Patterns = append(manifest.Patterns, patternFiles...)
-	for _, rel := range patternFiles {
-		manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("patterns", rel)))
-	}
+	// REMOVED in V3: loose-pattern copy bypass version filtering.
+	// All patterns are now inside version-gated bundle directories
+	// (patterns-agnostic/, patterns-18/, patterns-19/, etc.) which are
+	// handled by copyOverlaySkillBundles() and version-filtered by
+	// bridgeOverlaySkills() → matchesOverlaySkillVersion().
+	manifest.Patterns = []string{}
 
 	instructionFiles, err := copyFSTree(sourceFS, "instructions", filepath.Join(overlayRoot, "instructions"), nil)
 	if err != nil {
@@ -196,6 +182,31 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	manifest.StaticAssets = append(manifest.StaticAssets, staticAssetFiles...)
 	for _, rel := range staticAssetFiles {
 		manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("assets", rel)))
+	}
+
+	// sdd-supplements: phase-specific Odoo context injected by the SDD orchestrator
+	// into each sub-agent delegation. All orchestrator assets reference:
+	//   .atl/overlays/odoo-*/sdd-supplements/{phase}-odoo.md
+	// Without this copy those files never reach disk and agents silently skip them.
+	sddSuppFiles, err := copyFSTree(sourceFS, "sdd-supplements", filepath.Join(overlayRoot, "sdd-supplements"), nil)
+	if err != nil {
+		return OverlayManifest{}, err
+	}
+	sort.Strings(sddSuppFiles)
+	for _, rel := range sddSuppFiles {
+		manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("sdd-supplements", rel)))
+	}
+
+	// rules: coding-style, security and naming rules consumed by the skill-registry
+	// and referenced in the overlay SKILL.md as "compact rules for coding style,
+	// security, and manifest conventions". Without this copy they are unreachable.
+	rulesFiles, err := copyFSTree(sourceFS, "rules", filepath.Join(overlayRoot, "rules"), nil)
+	if err != nil {
+		return OverlayManifest{}, err
+	}
+	sort.Strings(rulesFiles)
+	for _, rel := range rulesFiles {
+		manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("rules", rel)))
 	}
 
 	if manifest.EnterprisePath != "" {
@@ -283,32 +294,11 @@ type OverlayBootstrapResult struct {
 	IsOdooProject bool
 }
 
-func AutoDeployVersionOverlay(projectRoot string, version int, enterprisePath string) (OverlayManifest, OverlayManifest, error) {
-	// 1. Install Agnóstico
-	agnostic, err := InstallOverlay(OverlayInstallOptions{
-		OverlayName:     "odoo-agnostic",
-		ProjectRoot:     projectRoot,
-		ExplicitRequest: true,
-	})
-	if err != nil {
-		return OverlayManifest{}, OverlayManifest{}, fmt.Errorf("agnostic overlay failed: %w", err)
-	}
-
-	// 2. Install Version-specific
-	versioned := fmt.Sprintf("odoo-%d", version)
-	manifest, err := InstallOverlay(OverlayInstallOptions{
-		OverlayName:     versioned,
-		ProjectRoot:     projectRoot,
-		EnterprisePath:  enterprisePath,
-		ExplicitRequest: true,
-	})
-	if err != nil {
-		return OverlayManifest{}, OverlayManifest{}, fmt.Errorf("versioned overlay %s failed: %w", versioned, err)
-	}
-
-	// 3. Finalize registry
-	return agnostic, manifest, WriteLocalSkillRegistry(projectRoot)
-}
+// NOTE: AutoDeployVersionOverlay was removed in the single-overlay refactor.
+// It used to install both an "agnostic" and a version-specific overlay ("odoo-N"),
+// producing byte-identical duplicates. The logic is now folded into
+// BootstrapProjectLocalOverlays, which installs only the base overlay
+// (odoo-development-skill) with the detected versions as VersionIntent.
 
 func BootstrapProjectLocalOverlays(projectRoot string, refresh bool, enterprisePath string) (OverlayBootstrapResult, error) {
 	// 1. Resolve absolute project root for reliable path handling.
@@ -333,23 +323,29 @@ func BootstrapProjectLocalOverlays(projectRoot string, refresh bool, enterpriseP
 		return result, nil
 	}
 
-	// Deploy the single odoo-development-skill overlay for the project.
-	// This contains all version-agnostic and version-specific patterns (filtered at runtime/registry build).
+	// SINGLE OVERLAY MODEL:
+	// There is only ONE embedded source (overlays/odoo-development-skill). Previously
+	// we installed BOTH a versioned overlay (odoo-19) AND the base — both resolving to
+	// the SAME embedded source, producing 100% byte-identical duplicates on disk.
+	//
+	// Now we install only the base overlay `odoo-development-skill`, passing the set of
+	// detected versions as VersionIntent. bridgeOverlaySkills + copyOverlaySkillBundles
+	// then filter by those versions, so disk and .agent/skills/ stay version-correct.
 	baseOverlayName := defaultOverlayName
 	baseManifestPath := filepath.Join(absProjectRoot, ".atl", "overlays", baseOverlayName, "manifest.json")
 	baseOverlayExists := overlayManifestExists(baseManifestPath)
 
 	versionIntent := formatVersionSet(versions)
+
 	action := "reused"
 	var manifest OverlayManifest
-	var err2 error
 
 	switch {
 	case refresh && baseOverlayExists:
-		manifest, err2 = RefreshOverlay(absProjectRoot, baseOverlayName, enterprisePath)
+		manifest, err = RefreshOverlay(absProjectRoot, baseOverlayName, enterprisePath)
 		action = "refreshed"
 	case !baseOverlayExists:
-		manifest, err2 = InstallOverlay(OverlayInstallOptions{
+		manifest, err = InstallOverlay(OverlayInstallOptions{
 			OverlayName:     baseOverlayName,
 			ProjectRoot:     absProjectRoot,
 			EnterprisePath:  enterprisePath,
@@ -358,14 +354,24 @@ func BootstrapProjectLocalOverlays(projectRoot string, refresh bool, enterpriseP
 		})
 		action = "installed"
 	default:
-		manifest, err2 = readOverlayManifest(baseManifestPath)
+		manifest, err = readOverlayManifest(baseManifestPath)
 	}
 
-	if err2 != nil {
-		fmt.Printf("Warning: Base overlay deployment failed: %v\n", err2)
+	if err != nil {
+		fmt.Printf("Warning: Base overlay deployment failed for %s: %v\n", baseOverlayName, err)
 	} else {
 		result.Overlays = append(result.Overlays, manifest)
 		result.Actions[manifest.Name] = action
+	}
+
+	// Clean up any stale versioned overlay directories from previous installs that
+	// used the dual-overlay model. They are identical duplicates of the base and
+	// leaving them around re-introduces the confusion we just fixed.
+	for version := range versions {
+		staleDir := filepath.Join(absProjectRoot, ".atl", "overlays", fmt.Sprintf("odoo-%d", version))
+		if info, err := os.Stat(staleDir); err == nil && info.IsDir() {
+			_ = os.RemoveAll(staleDir)
+		}
 	}
 
 	return result, nil
@@ -464,19 +470,12 @@ func copyOverlaySkillBundles(sourceFS fs.FS, destRoot string, rootOverlayName st
 		if bundleName == rootOverlayName {
 			continue
 		}
-
-		// SKIP the base odoo-development-skill bundle when installing a versioned Odoo overlay.
-		// These overlays use the base as source, and their root skill (e.g. odoo-19) is
-		// already copied by the caller. Including the base as a bundle is redundant.
-		if strings.HasPrefix(rootOverlayName, "odoo-") && bundleName == defaultOverlayName {
-			continue
-		}
-
-		// NEW: skip bundles whose version suffix doesn't match
+		// Single-overlay model: filter at install time so non-matching versions
+		// never touch disk. Prevents the "patterns-14..18 copied for a v19 project"
+		// contamination that existed under the dual-overlay design.
 		if len(versionFilter) > 0 && !matchesOverlaySkillVersion(bundleName, versionFilter) {
 			continue
 		}
-
 		sourceDir := path.Join("skills", bundleName)
 		files, err := copyFSTree(sourceFS, sourceDir, filepath.Join(destRoot, bundleName), nil)
 		if err != nil {
@@ -541,13 +540,6 @@ func copyFSTree(sourceFS fs.FS, sourceDir string, destDir string, include func(p
 		if d.IsDir() {
 			return nil
 		}
-
-		// EXCLUDE common backup/temp files.
-		ext := strings.ToLower(filepath.Ext(d.Name()))
-		if ext == ".bak" || ext == ".tmp" || ext == ".orig" {
-			return nil
-		}
-
 		if include != nil && !include(assetPath, d) {
 			return nil
 		}
@@ -672,15 +664,6 @@ func matchesOverlaySkillVersion(name string, targetVersions map[int]struct{}) bo
 	if lower == "" {
 		return false
 	}
-
-	// SPECIAL CASE: dtg-base is exclusively v18 (historical reference).
-	// Do not bridge it if v18 is not in the target set.
-	if lower == "dtg-base" {
-		if _, ok := targetVersions[18]; !ok {
-			return false
-		}
-	}
-
 	if strings.HasSuffix(lower, "-all") {
 		return true
 	}
@@ -732,21 +715,33 @@ func bridgeOverlaySkills(projectRoot string, manifest OverlayManifest) error {
 			continue
 		}
 
+		// Don't bridge the overlay's own root skill (e.g. "odoo-development-skill").
+		// It's the overlay's meta-identifier, not a consumable skill for agents.
+		if skillName == manifest.Name {
+			continue
+		}
+
 		// Only bridge if it actually has a SKILL.md in the overlay
 		src := filepath.Join(overlayRoot, "skills", skillName)
 		if info, err := os.Stat(src); err != nil || !info.IsDir() {
 			continue
 		}
 
-		// If the skill is a versioned specialist (e.g. odoo-18.0), we bridge it as the generic "odoo"
-		// name if the user requested a specific version overlay (odoo-18).
+		// Promote a version-specific skill bundle to the short "odoo" name when it
+		// matches one of the detected project versions. This lets agents refer to
+		// the Odoo knowledge base as simply "odoo" regardless of target version.
+		//
+		// Single-overlay model: we used to derive version from manifest.Name (e.g.
+		// "odoo-19"). Now manifest.Name is always "odoo-development-skill", so we
+		// use the detected versions from __manifest__.py instead.
 		bridgeName := skillName
-		if isOdoo && strings.HasPrefix(manifest.Name, "odoo-") && strings.HasPrefix(skillName, "odoo-") {
-			// If it matches exactly the desired version (e.g. odoo-18.0 for odoo-18 overlay), promote it to just "odoo"
-			// This allows agents to just use "odoo" as a skill but get version-specific rules.
-			versionStr := strings.TrimPrefix(manifest.Name, "odoo-")
-			if strings.HasPrefix(skillName, "odoo-"+versionStr) {
-				bridgeName = "odoo"
+		if isOdoo && len(odooVersions) > 0 && strings.HasPrefix(skillName, "odoo-") {
+			for v := range odooVersions {
+				vStr := strconv.Itoa(v)
+				if skillName == "odoo-"+vStr || skillName == "odoo-"+vStr+".0" {
+					bridgeName = "odoo"
+					break
+				}
 			}
 		}
 
@@ -817,10 +812,16 @@ func formatVersionSet(versions map[int]struct{}) string {
 	return strings.Join(parts, ",")
 }
 
-// parseVersionIntent parses "19" or "18,19" or "18 19" into a set of major versions.
+// parseVersionIntent is the inverse of formatVersionSet. It accepts
+// "19", "18,19", "18, 19" or "18 19" and returns the set of major versions.
+// Empty input returns an empty (nil-safe) map — callers treat that as "no filter".
 func parseVersionIntent(intent string) map[int]struct{} {
+	trimmed := strings.TrimSpace(intent)
+	if trimmed == "" {
+		return nil
+	}
 	result := make(map[int]struct{})
-	for _, part := range strings.FieldsFunc(intent, func(r rune) bool {
+	for _, part := range strings.FieldsFunc(trimmed, func(r rune) bool {
 		return r == ',' || r == ' '
 	}) {
 		if v, err := strconv.Atoi(strings.TrimSpace(part)); err == nil {
