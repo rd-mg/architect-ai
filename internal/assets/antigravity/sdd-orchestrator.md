@@ -339,17 +339,30 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 
 **Response Format**: You MUST state your chosen mode as the very first line of your response (or within the first 5 non-blank lines if a brief preamble is needed). 
 
-**Format**: `Mode: {n}. Why: {short reason}.`
+**Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
 
-| Mode | Scenario |
-|------|----------|
-| **1: Fast** | Mechanical, low-risk, or repetitive tasks. You already know exactly what to do. |
-| **2: Balanced** | Standard implementation, multi-file changes, or architectural alignment. Requires careful thinking but no deep experimentation. |
-| **3: Deep** | High-risk, ambiguous, or complex refactors. Requires internal chain-of-thought, alternative evaluation, and edge-case analysis. |
-| **deferred** | Only for sdd-orchestrator when waiting for user input. |
-| **sdd-first** | Only for sdd-init or sdd-onboard during bootstrap. |
+### 4 Observable Dimensions (0-3)
 
-FAILURE to include this mode declaration will result in an automated re-prompt.
+| Dimension | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
+|-----------|---------|---------|----------|--------------|
+| **D1: Complexity** | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
+| **D2: Uncertainty** | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
+| **D3: Error Pressure** | Clean Run | Recent Bug | Repeated Failure | Production Down |
+| **D4: Context Pressure** | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
+
+### Routing Matrix
+
+| Condition | Chosen Mode | Posture |
+|-----------|-------------|---------|
+| D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
+| D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
+| D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Caveman |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Autoreason-lite |
+
+### Transition Rules
+- **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
+- **Diagnostic -> Tactical**: Allowed only after D3=0.
 <!-- adaptive-reasoning-gate:END --> BEFORE task-specific instructions
 4. Inject rules TEXT, not paths — sub-agents do NOT read SKILL.md files
 
@@ -385,9 +398,9 @@ On trigger:
 {task-matched skills compact rules}
 
 ## Research Procedure
-1. FIRST: Compute `topic_key` (prefix + len) and `mem_search` for cached findings.
+1. FIRST: Compute `topic_key` siguiendo la `engram-convention` (`knowledge/{domain}/external/{slug}`).
 2. If hit and age < 168h: Inject as "Previously Found Knowledge", skip tools. Report `research_cache_hits: 1`.
-3. SECOND: NotebookLM. Query + persist under `research/notebooklm/{slug}-len{N}`. Report `research_cache_misses: 1`.
+3. SECOND: NotebookLM. Query + persist under `knowledge/{domain}/external/{slug}`. Report `research_cache_misses: 1`.
 4. THIRD: Local ripgrep. Walk the repo. Persist key snippets.
 5. FOURTH: Context7 ONLY if framework-specific AND 2+3 gave nothing.
 6. NEVER: Internet, unless user message contains an explicit trigger.
@@ -432,11 +445,12 @@ The orchestrator is the SOLE authority for the state-machine. You MUST synchroni
 
 Every sub-agent response MUST be validated for the Adaptive Reasoning Mode declaration.
 
-1. **Extraction**: Scan the first 5 non-blank lines for the pattern: `Mode: {n}. Why: {reason}.`
+1. **Extraction**: Scan the first 5 non-blank lines for the pattern: `[MODE N | D1=X, D2=X, D3=X, D4=X]`.
 2. **Missing Field**: If the pattern is missing, RE-PROMPT the sub-agent exactly once:
-   > "RE-PROMPT: Your response is missing the mandatory Adaptive Reasoning Mode declaration. Please state your Mode (1, 2, or 3) and Rationale as the first line of your next message."
+   > "RE-PROMPT: Your response is missing the mandatory Adaptive Reasoning Mode declaration. Please state your Mode (1, 2, or 3) and Dimensions (D1-D4) as the first line of your next message."
 3. **Double Failure**: If the second response also lacks the mode, record `chosen_mode: "1"` (fallback) and `mode_rationale: "Automated fallback after missing declaration"` in Engram and proceed.
-4. **Result Envelope**: Inject the extracted `chosen_mode` and `mode_rationale` into the result contract before synthesizing the summary for the user.
+4. **Transition Enforcement**: The orchestrator MUST check `D3` (Error Pressure). If `D3 >= 2` in the response, the next delegation to this sub-agent MUST be in **Mode 3 (Diagnostic)**.
+5. **Result Envelope**: Inject the extracted `chosen_mode` and `mode_rationale` into the result contract before synthesizing the summary for the user.
 
 ## Engram Topic Keys
 
@@ -445,19 +459,19 @@ Every sub-agent response MUST be validated for the Adaptive Reasoning Mode decla
 | Project context | `sdd-init/{project}` |
 | Session artifact mode | `sdd-session/{project}/artifact-mode` |
 | Session exec mode | `sdd-session/{project}/exec-mode` |
-| Context pack | `context-pack/{project}/{session-id}` |
-| Exploration | `sdd/{change-name}/explore` |
-| Proposal | `sdd/{change-name}/proposal` |
-| Spec | `sdd/{change-name}/spec` |
-| Design | `sdd/{change-name}/design` |
-| Tasks | `sdd/{change-name}/tasks` |
-| Apply progress | `sdd/{change-name}/apply-progress` |
-| Verify report | `sdd/{change-name}/verify-report` |
-| Archive report | `sdd/{change-name}/archive-report` |
-| DAG state | `sdd/{change-name}/state` |
-| Context7 findings | `context7/{framework}/{version}/{topic}` |
-| NotebookLM findings | `notebooklm/{notebook}/{topic}` |
-| Metering session stats | `metering/{project}/{session-id}` |
+| Context pack | `arch/_global/context-pack/{session-id}` |
+| Exploration | `sdd/{change-name}/explore/main` |
+| Proposal | `sdd/{change-name}/proposal/main` |
+| Spec | `sdd/{change-name}/spec/main` |
+| Design | `sdd/{change-name}/design/main` |
+| Tasks | `sdd/{change-name}/tasks/main` |
+| Apply progress | `sdd/{change-name}/apply-progress/main` |
+| Verify report | `sdd/{change-name}/verify-report/main` |
+| Archive report | `sdd/{change-name}/archive-report/main` |
+| DAG state | `sdd/{change-name}/state/main` |
+| Context7 findings | `knowledge/{framework}/external/{topic}` |
+| NotebookLM findings | `knowledge/{notebook}/external/{topic}` |
+| Metering session stats | `arch/_global/metering/{session-id}` |
 
 Retrieve via two-step:
 1. `mem_search(query: "{topic_key}", project: "{project}")` → ID
@@ -541,17 +555,30 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 
 **Response Format**: You MUST state your chosen mode as the very first line of your response (or within the first 5 non-blank lines if a brief preamble is needed). 
 
-**Format**: `Mode: {n}. Why: {short reason}.`
+**Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
 
-| Mode | Scenario |
-|------|----------|
-| **1: Fast** | Mechanical, low-risk, or repetitive tasks. You already know exactly what to do. |
-| **2: Balanced** | Standard implementation, multi-file changes, or architectural alignment. Requires careful thinking but no deep experimentation. |
-| **3: Deep** | High-risk, ambiguous, or complex refactors. Requires internal chain-of-thought, alternative evaluation, and edge-case analysis. |
-| **deferred** | Only for sdd-orchestrator when waiting for user input. |
-| **sdd-first** | Only for sdd-init or sdd-onboard during bootstrap. |
+### 4 Observable Dimensions (0-3)
 
-FAILURE to include this mode declaration will result in an automated re-prompt.
+| Dimension | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
+|-----------|---------|---------|----------|--------------|
+| **D1: Complexity** | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
+| **D2: Uncertainty** | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
+| **D3: Error Pressure** | Clean Run | Recent Bug | Repeated Failure | Production Down |
+| **D4: Context Pressure** | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
+
+### Routing Matrix
+
+| Condition | Chosen Mode | Posture |
+|-----------|-------------|---------|
+| D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
+| D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
+| D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Caveman |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Autoreason-lite |
+
+### Transition Rules
+- **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
+- **Diagnostic -> Tactical**: Allowed only after D3=0.
 <!-- adaptive-reasoning-gate:END -->
 
 ## Project Standards (auto-resolved)

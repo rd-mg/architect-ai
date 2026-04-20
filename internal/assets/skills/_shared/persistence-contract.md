@@ -100,14 +100,14 @@ SDD (with dependencies):
 ```
 Artifact store mode: {engram|openspec|hybrid|none}
 Read these artifacts before starting (search returns truncated previews):
-  mem_search(query: "sdd/{change-name}/{type}", project: "{project}") → get ID
+  mem_search(query: "sdd/{change-name}/{type}/", project: "{project}") → get ID
   mem_get_observation(id: {id}) → full content (REQUIRED)
 
 PERSISTENCE (MANDATORY — do NOT skip):
 After completing your work, you MUST call:
   mem_save(
-    title: "sdd/{change-name}/{artifact-type}",
-    topic_key: "sdd/{change-name}/{artifact-type}",
+    title: "sdd/{change-name}/{artifact-type}/main",
+    topic_key: "sdd/{change-name}/{artifact-type}/main",
     type: "architecture",
     project: "{project}",
     content: "{your full artifact markdown}"
@@ -122,8 +122,8 @@ Artifact store mode: {engram|openspec|hybrid|none}
 PERSISTENCE (MANDATORY — do NOT skip):
 After completing your work, you MUST call:
   mem_save(
-    title: "sdd/{change-name}/{artifact-type}",
-    topic_key: "sdd/{change-name}/{artifact-type}",
+    title: "sdd/{change-name}/{artifact-type}/main",
+    topic_key: "sdd/{change-name}/{artifact-type}/main",
     type: "architecture",
     project: "{project}",
     content: "{your full artifact markdown}"

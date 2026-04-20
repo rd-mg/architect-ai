@@ -1,7 +1,7 @@
 ---
 name: cognitive-mode
 description: >
-  Defines eight cognitive postures that can be injected as a prompt prefix to 
+  Defines ten cognitive postures that can be injected as a prompt prefix to 
   shape how an agent approaches a task. Maps each SDD phase to its default posture.
   The orchestrator injects the matching posture block before delegating to a
   sub-agent. This is a REFERENCE skill — the injection logic lives in the
@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: rd-mg
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Cognitive Mode
@@ -27,7 +27,7 @@ This skill defines eight discrete postures. The orchestrator selects the
 appropriate posture per SDD phase (or explicitly for a non-SDD task) and
 injects it as a prefix to the sub-agent's prompt.
 
-## The Eight Postures
+## The Ten Postures
 
 ### 1. Socratic (+++Socratic)
 
@@ -167,7 +167,48 @@ as [unverified] and note what evidence would resolve it.
 
 ---
 
-### 7. Economic (+++Economic)
+---
+
+### 7. Caveman (+++Caveman)
+
+**Use when**: Context pressure is critical (D4 ≥ 3) or performing high-volume execution tasks. Default for MCP executors.
+
+**Behavior**:
+- Communication MUST be restricted to the 4-field status block
+- PROHIBITED: pleasantries, explanations, decorative markdown, repetition of task
+- REQUIRED: STATUS, ACTION, RESULT, NEXT
+
+**Example output**:
+```
+STATUS: OK
+ACTION: create models/account_bank_statement.py
+RESULT: /addons/bank_reconciliation/models/account_bank_statement.py — 89 lines
+NEXT:   mem_save sdd/bank-reconciliation/state → purge context
+```
+
+---
+
+### 8. Autoreason-lite (+++Autoreason-lite)
+
+**Use when**: Detecting micro-conflicts (Engram collision) or initial execution errors (Error Pressure = 1).
+
+**Behavior**:
+- Execute a single-cycle abductive loop: 3 hypotheses (H1-H3)
+- Act on H1 automatically without user confirmation
+- If H1 fails, try H2 automatically
+- Escalate to Mode 3 only if H1+H2+H3 fail
+
+**Example output**:
+```
+[AUTOREASON-LITE — collision detected]
+H1 (applied): Engram "sdd/_global/decision/no-modify-res-partner" prohibits modifying res.partner directly.
+ACTION: Updated brief — field x_bank_category in inheritance module.
+RESULT: collision resolved.
+```
+
+---
+
+### 9. Economic (+++Economic)
 
 **Use when**: the task requires tradeoff analysis under resource
 constraints — token budget, latency SLA, dollar cost, developer-hours.
@@ -188,7 +229,7 @@ exceed budget, stating which constraint they violate.
 
 ---
 
-### 8. Empirical (+++Empirical)
+### 10. Empirical (+++Empirical)
 
 **Use when**: the task requires measurement-first reasoning —
 benchmarks, A/B prototypes, data-driven design decisions,
@@ -210,7 +251,7 @@ it. Numbers without a measurement plan are PROVISIONAL by default.
 
 ---
 
-## Phase → Posture Mapping (8-posture version)
+## Phase → Posture Mapping (10-posture version)
 
 | SDD Phase | Default Posture(s) | Alternative (user override or conditional) |
 |-----------|--------------------|---------------------------------------------|

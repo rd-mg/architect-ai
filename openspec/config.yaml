@@ -9,6 +9,8 @@ context: |
   Skills catalog: internal/catalog/skills.go — known skill registry
   Build: goreleaser (.goreleaser.yaml), CI: GitHub Actions (ci.yml, pr-check.yml, release.yml)
   Style: gofmt (standard), go vet, no golangci-lint config found
+  Memory: Engram Topic-Key Convention (4-segment: {domain}/{scope}/{type}/{slug})
+  Adaptive Reasoning: 4 Dimensions (Complexity, Uncertainty, Error Pressure, Context Pressure) -> Modes 1/2/3
 
 strict_tdd: true
 
@@ -38,6 +40,19 @@ rules:
     - Compare implementation against every spec scenario
   archive:
     - Warn before merging destructive deltas (large removals)
+    - Ensure archive folder follows YYYY-MM-DD prefix
+    - ALLOWED to modify project source code (merging specs)
+  engram:
+    - ALWAYS use the 4-segment hierarchy: {domain}/{scope}/{type}/{slug}
+    - Domains: sdd, tdd, debug, knowledge, arch
+    - Scopes: {change-slug}, _global, {module-path}
+    - Types: state, brief, decision, error, pattern, api-contract, context-pack, external
+    - Use /main suffix for SDD phase artifacts
+  global:
+    - Non-destructive commands (rg, ls, cat, go test) allowed across all phases
+    - Phases [explore, propose, spec, design, tasks] MUST NOT modify project source code (internal/, cmd/, docs/)
+    - Modification of project source code is EXCLUSIVE to [apply, archive] phases
+    - SDD artifacts (openspec/changes/, openspec/specs/) are manageable by their respective phases
 
 testing:
   strict_tdd: true

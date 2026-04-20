@@ -13,18 +13,17 @@
 
 ## Requirement: Result Contract Extension
 The orchestrator result contract MUST include `chosen_mode` and `mode_rationale` fields.
-(Previously: Result contract only included status, summary, artifacts, etc.)
 
 #### Scenario: Successful result processing
-- GIVEN a sub-agent response with `Mode: 2. Why: High risk.`
+- GIVEN a sub-agent response with `[MODE 2 | D1=1, D2=2, D3=0, D4=0] ...`
 - WHEN the orchestrator processes the result
-- THEN the result envelope MUST contain `chosen_mode: "2"` and `mode_rationale: "High risk."`.
+- THEN the result envelope MUST contain `chosen_mode: "2"` and `mode_rationale: "..."`.
 
 ## Requirement: Mode Field Validation and Re-prompt
 The orchestrator MUST validate the presence of the mode declaration and re-prompt the sub-agent exactly once if missing.
 
 #### Scenario: Missing mode declaration
-- GIVEN a sub-agent response missing the `Mode: {n}` line
+- GIVEN a sub-agent response missing the mode declaration line
 - WHEN the orchestrator validates the result
 - THEN it MUST send a re-prompt message requesting the mode declaration.
 
@@ -48,12 +47,12 @@ The orchestrator MUST verify the existence and freshness of research findings in
 - THEN it MUST ignore the stale finding and proceed with fresh research.
 
 ## Requirement: Research Class Topic Keys
-The system MUST compute deterministic topic keys for research findings to enable efficient lookups.
+The system MUST compute deterministic topic keys for research findings following the global Engram convention.
 
 #### Scenario: Topic Key Computation
 - GIVEN a query "How does Odoo 19 handle SQL constraints?"
-- WHEN computing the topic key for NotebookLM
-- THEN the result MUST follow the pattern `research/notebooklm/how-does-odoo-19-handle-sql-constraints-len43`.
+- WHEN the topic key is computed for NotebookLM
+- THEN the result MUST follow the pattern `knowledge/odoo-v19/external/how-does-odoo-19-handle-sql-constraints`.
 
 ## Requirement: Research Metrics in Result Contract
 The orchestrator result contract MUST include `research_cache_hits` and `research_cache_misses` fields in addition to standard metrics.
@@ -62,6 +61,17 @@ The orchestrator result contract MUST include `research_cache_hits` and `researc
 - GIVEN a sub-agent execution that used 2 cached findings and performed 1 fresh search
 - WHEN the orchestrator processes the result
 - THEN the result envelope MUST contain `research_cache_hits: 2` and `research_cache_misses: 1`.
+
+## Requirement: Mode Transition Enforcement
+The orchestrator MUST validate that mode transitions follow degradation and recovery rules:
+- **Strategic -> Tactical**: Allowed after Brief approval.
+- **Tactical -> Diagnostic**: Forced if D3 >= 2 (Error Pressure) or D4 >= 3 (Context Pressure).
+- **Diagnostic -> Tactical**: Allowed only after error resolution (D3 = 0).
+
+#### Scenario: Mode degradation on error
+- GIVEN a sub-agent in Mode 2 (Tactical) that has failed 2 consecutive attempts
+- WHEN the orchestrator delegates the next attempt
+- THEN the orchestrator MUST forcibly inject the Mode 3 (Diagnostic) protocol.
 
 ## Verification
 

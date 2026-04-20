@@ -335,6 +335,7 @@ func TestCognitivePosturesEightNotSevenOrNine(t *testing.T) {
 	postures := []string{
 		"+++Socratic", "+++Critical", "+++Systemic",
 		"+++Adversarial", "+++Pragmatic", "+++Forensic",
+		"+++Caveman", "+++Autoreason-lite",
 		"+++Economic", "+++Empirical",
 	}
 	body := MustRead("skills/cognitive-mode/SKILL.md")
@@ -360,7 +361,7 @@ func TestCognitivePosturesEightNotSevenOrNine(t *testing.T) {
 		t.Run(rel, func(t *testing.T) {
 			body := MustRead(rel)
 			// Check table rows to ensure they are in the injection table, not just prose.
-			for _, p := range []string{"+++Economic", "+++Empirical"} {
+			for _, p := range []string{"+++Economic", "+++Empirical", "+++Caveman", "+++Autoreason-lite"} {
 				if !strings.Contains(body, p) {
 					t.Errorf("%s missing in %s", p, rel)
 				}
