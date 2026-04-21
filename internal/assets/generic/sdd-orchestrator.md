@@ -197,21 +197,46 @@ Include in every sub-agent prompt:
 
 ---
 
-## Research Routing Policy — NEW in V3.1
 
-When a sub-agent needs to do research, it MUST follow the priority order in `_shared/research-routing.md`:
+## RESEARCH-ROUTING POLICY (Layer 5 — enforce before any external lookup)
 
-```
-1. NotebookLM           ← PRIMARY — curated project knowledge
-2. Local code + docs    ← SECONDARY — ripgrep, find, cat, extract-text
-3. Context7             ← TERTIARY — framework/library official docs
-4. Internet             ← ONLY on EXPLICIT user request
-                          ("search the web", "look online", "google it")
-```
+Use sources in strict priority order. Escalate only when lower-cost source yields no result.
 
-The orchestrator inserts this routing policy into every research-touching sub-agent prompt (explore, propose, verify). The policy overrides the sub-agent's default preferences.
+**STEP 1 — Engram (always first)**
+Call mem_search with the most specific topic_key.
+→ Pattern found: USE IT. Skip steps 2-5.
+→ No relevant result: proceed to step 2.
 
----
+**STEP 2 — ripgrep-odoo (for Odoo core code evidence)**
+Use when: you need to see HOW Odoo implements something (model, OWL, o-spreadsheet).
+Protocol: 2-step mandatory (files-only → targeted extraction).
+Base path: `~/gitproj/odoo/`.
+NEVER skip the 2-step protocol. NEVER search without domain flag.
+→ Pattern found: use it + signal after_model to persist Engram.
+→ 0 results: API may have changed. Proceed to step 3 or 4.
+
+**STEP 3 — Context7 (for project code structure)**
+Use when: you need to understand the project's own module (not Odoo core).
+Never pack `~/gitproj/odoo/` — too large. Only pack project modules.
+→ Max 1500 tokens from context pack.
+
+**STEP 4 — NotebookLM (for updated domain knowledge)**
+Use when: version-specific changes, migration guides, external lib behavior.
+ONLY available in Mode 1 or Mode 2. NOT in Mode 3.
+→ Result persists to Engram via after_model hook.
+
+**STEP 5 — Web search (last resort)**
+Use when: steps 1-4 all yield no result.
+Include `site:` filter when possible (`github.com/odoo`, `github.com/OCA`).
+NOT available in Mode 3. Validate result with ripgrep-odoo if possible.
+
+## Mode-Based Research Restrictions
+| Mode | Engram | ripgrep-odoo | Context7 | NotebookLM | Web |
+|---|---|---|---|---|---|
+| Mode 1 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Mode 2 | ✅ | ✅ | ✅ (limited) | ⚠️ (if tokens) | ❌ |
+| Mode 3-ERR | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Mode 3-CTX | ✅ (save) | ❌ | ❌ | ❌ | ❌ |
 
 ## Mandatory Skills (ALWAYS injected) — NEW in V3.1
 
@@ -227,26 +252,16 @@ Injection order: mandatory skills FIRST, then task-matched skills. Mandatory ski
 
 ---
 
+
 ## Dependency Graph
 
 ```
 proposal → specs → tasks → apply → verify → archive
-            ↑
-            |
-         design
+            ↑                        |
+            |          FAIL (Judgement Day)
+         design ←────────────────────┘
 ```
 
----
-
-### Result Contract
-
-Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`, `cognitive_posture`, `estimated_tokens`, `research_sources_used`, `chosen_mode`, `mode_rationale`.
-
-The new `research_sources_used` field is a list of sources the sub-agent consulted in priority order, e.g. `["notebooklm", "ripgrep"]` or `["context7"]`. The orchestrator uses this to audit routing compliance.
-
----
-
-<!-- architect-ai:sdd-model-assignments -->
 ## Model Assignments
 
 Read once per session, cache, pass `model` parameter in every Agent tool call:
@@ -381,6 +396,49 @@ On trigger:
 4. Use the pack as seed for next delegation; discard raw history above lineage cutoff
 
 ---
+
+
+## before_model Hook (Pre-Delegation)
+
+**BEFORE** delegating to any sub-agent, you MUST perform these checks:
+
+1. **State Injection**:
+   - `mem_search(query: "sdd/{module}/state")`
+   - Inject into Task (Layer 8): "Previous State: phase={phase}, failures={n}".
+
+2. **Collision Check (sdd-explore, sdd-propose, sdd-design only)**:
+   - `mem_search(query: "sdd/{module}")` + `mem_search(query: "arch/_global/decision")`.
+   - If a collision is detected (e.g. task modifies core model against a global decision):
+     - Override Posture to **#8 Autoreason-lite**.
+     - Prepend to Task: "COLLISION DETECTED with Engram {id}: {hint}. Resolve before proceeding."
+
+3. **Error Context (sdd-apply, sdd-verify only)**:
+   - `mem_search(query: "debug/{module}/error")` + `mem_search(query: "debug/_global/error")`.
+   - Inject top 3 results into Task: "Previously resolved errors (avoid repetition): {hints}".
+
+
+## after_model Hook (Post-Delegation)
+
+**AFTER** receiving a sub-agent response, you MUST perform these persistence actions:
+
+1. **Mandatory State Update**:
+   - `mem_save(topic_key: "sdd/{module}/state")` with current phase, sub-agent type, and output preview (80 chars).
+
+2. **Pattern Harvesting**:
+   - If `ripgrep-odoo` found a new pattern: `mem_save(topic_key: "knowledge/odoo-v{v}/pattern/{slug}")`.
+
+3. **Brief Versioning**:
+   - If `sdd-propose` generated a brief: `mem_save(topic_key: "sdd/{module}/brief/v{N}")`.
+
+4. **Research Persistence**:
+   - If NotebookLM or Context7 was used: `mem_save(topic_key: "knowledge/{domain}/external/{topic}")`.
+
+
+## Language Mandate: ENGLISH ONLY
+
+- **ALL internal reasoning, sub-agent communication, and artifact generation MUST be in English.**
+- Do NOT adapt to the user's language even if they speak Spanish or other languages.
+- This is a strict systemic requirement for this project.
 
 ## Sub-Agent Launch Template
 

@@ -1,0 +1,25 @@
+change_name: 05-sdd-hooks-and-judgement-day
+status: archived
+current_phase: sdd-archive
+history:
+  - phase: sdd-propose
+    status: success
+    timestamp: "2026-04-21T00:00:05Z"
+  - phase: sdd-spec
+    status: success
+    timestamp: "2026-04-21T00:00:13Z"
+  - phase: sdd-design
+    status: success
+    timestamp: "2026-04-21T00:00:20Z"
+  - phase: sdd-tasks
+    status: success
+    timestamp: "2026-04-21T00:00:26Z"
+  - phase: sdd-apply
+    status: success
+    timestamp: "2026-04-21T00:00:49Z"
+  - phase: sdd-verify
+    status: success
+    timestamp: "2026-04-21T00:01:27Z"
+  - phase: sdd-archive
+    status: success
+    timestamp: "2026-04-21T00:01:38Z"

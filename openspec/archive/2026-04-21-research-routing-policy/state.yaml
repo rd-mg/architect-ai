@@ -1,0 +1,25 @@
+change_name: 07-research-routing-policy
+status: archived
+current_phase: sdd-archive
+history:
+  - phase: sdd-propose
+    status: success
+    timestamp: "2026-04-21T00:07:20Z"
+  - phase: sdd-spec
+    status: success
+    timestamp: "2026-04-21T00:07:26Z"
+  - phase: sdd-design
+    status: success
+    timestamp: "2026-04-21T00:07:33Z"
+  - phase: sdd-tasks
+    status: success
+    timestamp: "2026-04-21T00:07:33Z"
+  - phase: sdd-apply
+    status: success
+    timestamp: "2026-04-21T00:08:17Z"
+  - phase: sdd-verify
+    status: success
+    timestamp: "2026-04-21T00:08:40Z"
+  - phase: sdd-archive
+    status: success
+    timestamp: "2026-04-21T00:09:02Z"

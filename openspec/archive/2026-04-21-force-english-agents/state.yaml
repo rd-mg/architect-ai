@@ -1,0 +1,25 @@
+change_name: 06-force-english-agents
+status: archived
+current_phase: sdd-archive
+history:
+  - phase: sdd-propose
+    status: success
+    timestamp: "2026-04-21T00:04:27Z"
+  - phase: sdd-spec
+    status: success
+    timestamp: "2026-04-21T00:04:32Z"
+  - phase: sdd-design
+    status: success
+    timestamp: "2026-04-21T00:04:38Z"
+  - phase: sdd-tasks
+    status: success
+    timestamp: "2026-04-21T00:04:38Z"
+  - phase: sdd-apply
+    status: success
+    timestamp: "2026-04-21T00:04:42Z"
+  - phase: sdd-verify
+    status: success
+    timestamp: "2026-04-21T00:05:05Z"
+  - phase: sdd-archive
+    status: success
+    timestamp: "2026-04-21T00:05:14Z"

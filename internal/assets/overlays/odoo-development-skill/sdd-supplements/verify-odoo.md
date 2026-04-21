@@ -145,3 +145,51 @@ NEEDS CHANGES (README missing, CRITICAL uninstall issue, sudo() needs justificat
 - Do NOT mark as APPROVED with any BLOCKER or CRITICAL finding unresolved
 - Do NOT skip deterministic checks because "the code looks fine"
 - Do NOT run tests in production-adjacent environments without user confirmation
+
+## JUDGEMENT DAY GATE (ejecutar antes de marcar verify como COMPLETE)
+
+### Cuándo activar
+- El sub-agente sdd-verify está a punto de reportar "PASS" al Orchestrator
+- Mode 1 activo (razonamiento expansivo disponible — contexto no saturado)
+- Es la PRIMERA verificación completa del módulo (no en re-verificaciones parciales)
+
+### Cuándo NO activar
+- Mode 3 activo (contexto saturado — Judgement Day gastaría demasiado)
+- Re-verificación de un sub-componente ya aprobado
+- Tarea trivial (Complexity = 0-1 en el Classifier)
+
+### Protocolo de ejecución
+
+**INPUT:** El Brief aprobado (mem_context de sdd/{module}/brief/v{N})
+**POSTURE:** +++Critical (obligatorio — Judgement Day sin Critical no tiene sentido)
+**TOKEN BUDGET:** máx 600 tokens (si excede → truncar forzadamente)
+
+**PROMPT BLOCK (inyectar en Capa 8 cuando se activa):**
+
+> [!IMPORTANT]
+> [JUDGEMENT DAY GATE — verificación final del Brief]
+> Antes de cerrar sdd-verify como COMPLETE, audita el Brief activo contra los siguientes 3 criterios críticos para Odoo:
+> 
+> 1. INTEGRIDAD DEL MÓDULO: ¿El módulo puede desinstalarse sin dejar datos huérfanos en tablas del core? ¿Todos los campos relacionales tienen ondelete definido?
+> 2. COLISIÓN CON CORE: ¿El diseño modifica directamente modelos del core (res.partner, account.move, res.users) sin usar herencia? ¿O crea duplicados de funcionalidad que OCA ya provee?
+> 3. ESCALABILIDAD: ¿Hay operaciones N+1 en los computed fields? ¿Los search filters usan índices? ¿El diseño funciona con 1M registros?
+> 
+> Para cada criterio: PASS o FAIL + descripción de 1 oración.
+> Veredicto final: PASS (los 3 OK) o FAIL (cualquier falla grave).
+> 
+> Si FAIL: especifica solo el cambio mínimo requerido. No reescribas el Brief.
+> Si PASS: devuelve "JUDGEMENT DAY: PASS" y continúa con el cierre.
+
+### Resultado y acción post-Judgement Day
+
+- **PASS** → after_model hook guarda:
+  `mem_save("sdd/{module}/brief/v{N}", {brief + "judgement_day": "PASS"})`
+  Orchestrator avanza a la siguiente fase.
+- **FAIL** → Orchestrator re-abre sdd-design con las correcciones como input.
+  Se crea brief/v{N+1} (incrementa versión).
+  Contador de failures NO se incrementa (es una corrección de diseño, no un error).
+
+### Timeout y protección
+Si el sub-agente tarda más de 2 ciclos en Judgement Day → asumir PASS con advertencia:
+"JUDGEMENT DAY: TIMEOUT — Brief aprobado con advertencia. Revisar manualmente criterios 1-3 antes de deploy."
+

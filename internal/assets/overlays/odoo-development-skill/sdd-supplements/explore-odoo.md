@@ -22,13 +22,13 @@ If multiple modules are in scope, note their versions — they might differ.
 
 2. **Search local Odoo source**:
    ```bash
-   rg "class ModelName" ~/gitproj/odoo/community/{version}/addons/
-   rg "_inherit.*'sale.order'" ~/gitproj/odoo/community/{version}/addons/
+   rg "class ModelName" ~/gitproj/odoo/odoo/ -t py
+   rg "_inherit.*'sale.order'" ~/gitproj/odoo/odoo/ -t py
    ```
 
 3. **Search OCA repositories**:
    ```bash
-   rg "class ModelName" ~/gitproj/odoo/OCA/
+   rg "class ModelName" ~/gitproj/odoo/oca/ -t py
    # Or browse: https://github.com/OCA?q={keyword}&type=repositories
    ```
 
@@ -37,9 +37,9 @@ If multiple modules are in scope, note their versions — they might differ.
 ## Don't Reinvent the Wheel
 
 Before proposing new functionality, verify it doesn't already exist:
-- ✅ Odoo core (`~/gitproj/odoo/community/{version}/addons/`)
-- ✅ Odoo Enterprise (`~/gitproj/odoo/enterprise/{version}/`, if path configured)
-- ✅ OCA repositories (`~/gitproj/odoo/OCA/` or https://github.com/OCA)
+- ✅ Odoo core (`~/gitproj/odoo/odoo/`)
+- ✅ Odoo Enterprise (`~/gitproj/odoo/enterprise/`, if path configured)
+- ✅ OCA repositories (`~/gitproj/odoo/oca/` or https://github.com/OCA)
 
 If something similar exists, explore it. Decide: inherit/extend, use as reference, or combine.
 
