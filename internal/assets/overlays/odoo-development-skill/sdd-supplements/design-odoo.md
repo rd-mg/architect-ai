@@ -13,11 +13,11 @@ Every Odoo design MUST explicitly address these layers:
 5. **Integration layer** (mail, cron, external APIs, webhooks)
 6. **Migration layer** (pre/post-migrate scripts if schema changes)
 
-## Global Collision Check (MANDATORY)
+## Global Collision Check (MANDATORY — BEFORE_MODEL HOOK)
 
-Before starting the design, you MUST verify that your approach does not collide with established global decisions or existing patterns for the target models.
+Before starting the design, you MUST verify that your approach does not collide with established global decisions or existing patterns for the target models. This is your `before_model` requirement.
 
-1. **Search Engram**: Call \`mem_search\` with the target model name and "decision" or "pattern" as keywords.
+1. **Search Engram**: Call `mem_search` with the target model name and "decision" or "pattern" as keywords.
 2. **Detect Collision**: If an Engram exists that contradicts your proposed design (e.g., "NEVER modify res.partner directly"), you MUST:
    - Transition to **+++Autoreason-lite** posture.
    - Address the collision in the design rationale.

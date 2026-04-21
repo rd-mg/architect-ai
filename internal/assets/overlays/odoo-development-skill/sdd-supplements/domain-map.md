@@ -132,8 +132,10 @@ The following models are central to Odoo's core integrity. Any modification MUST
 | **res.users** | Permission escalation, session bloat, auth bypass | AUDIT record rules. VERIFY group inheritance. |
 | **account.payment** | Payment reconciliation breakage, orphan payments | CHECK \`payment_state\` transition logic. |
 
-### Mandatory Conflict Protocol
+### Mandatory Conflict Protocol (ALL PHASES)
+The following protocol is NOT optional and must be executed in `sdd-propose`, `sdd-design`, `sdd-apply`, and `sdd-verify`:
+
 1. **Identify** if the change touches any high-risk model.
 2. **Scan** Engram for "archived-decisions" related to these models.
-3. **Audit** for "Anti-Patterns" (direct SQL, missing \`ondelete\`, N+1).
-4. **Pass** Judgement Day Gate explicitly focusing on these models.
+3. **Audit** for "Anti-Patterns" (direct SQL, missing `ondelete`, N+1).
+4. **Pass** Judgement Day Gate explicitly focusing on these models during verification.

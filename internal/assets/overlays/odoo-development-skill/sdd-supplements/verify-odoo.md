@@ -139,7 +139,10 @@ In your verify-report, include:
 
 ### Verdict
 NEEDS CHANGES (README missing, CRITICAL uninstall issue, sudo() needs justification)
-```
+
+> [!IMPORTANT]
+> **JUDGEMENT DAY GATE**: This module cannot be marked as COMPLETE until the Judgement Day Gate (Pass/Fail) is executed and reported below.
+
 
 ## Boundaries
 

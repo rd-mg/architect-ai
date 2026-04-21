@@ -220,8 +220,7 @@ rg "def _import_bank_statement" \
 
 ## Persistencia al Engram (after_model hook)
 
-Cuando ripgrep-odoo encuentra un patrón que resuelve una pregunta de diseño, el resultado
-DEBE persistirse al Engram para evitar buscar lo mismo en la próxima sesión:
+Cuando ripgrep-odoo encuentra un patrón que resuelve una pregunta de diseño, el resultado DEBE persistirse al Engram para evitar buscar lo mismo en la próxima sesión. Además, si el patrón es de alta calidad y generalizable, debe proponerse su inclusión en el skill `patterns-{v}` correspondiente.
 
 ```
 # Formato para mem_save después de una búsqueda exitosa:
@@ -231,12 +230,12 @@ content: {
   "pattern": "el fragmento de código relevante (máx 20 líneas)",
   "source": "ruta relativa desde ~/gitproj/odoo/",
   "odoo_version": "18",  # o la versión confirmada
-  "use_when": "descripción de cuándo usar este patrón"
+  "use_when": "descripción de cuándo usar este patrón",
+  "propose_to_skill": true  # si debe agregarse a patterns-{v}
 }
 ```
 
-Este guardado lo ejecuta el **after_model hook** del Orchestrator (definido en Paso 05),
-no el sub-agente directamente.
+Este guardado lo ejecuta el **after_model hook** del Orchestrator (definido en Paso 05). Si `propose_to_skill` es `true`, el Orchestrator generará un artifact de tipo `task` para que un sub-agente actualice el `SKILL.md` de la versión correspondiente.
 
 ---
 
