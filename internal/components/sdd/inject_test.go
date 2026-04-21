@@ -548,8 +548,8 @@ func TestInjectFileAppendMigratesFullLegacyOrchestratorBlock(t *testing.T) {
 	if strings.Contains(text, "SKILL: Load `{skill-path}` before starting.") {
 		t.Fatal("legacy sub-agent launch content survived after migration")
 	}
-	if strings.Count(text, "### Result Contract") != 1 {
-		t.Fatal("result contract section duplicated after migration")
+	if !strings.Contains(text, "## Sub-Agent Result Validation — NEW in V3.1") {
+		t.Fatal("Sub-Agent Result Validation section missing")
 	}
 	if !strings.Contains(text, "`skill_resolution`") {
 		t.Fatal("result contract was not refreshed to current format")
