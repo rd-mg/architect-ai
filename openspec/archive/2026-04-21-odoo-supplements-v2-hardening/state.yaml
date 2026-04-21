@@ -1,0 +1,25 @@
+change_name: 08-odoo-supplements-v2-hardening
+status: archived
+current_phase: sdd-archive
+history:
+  - phase: sdd-propose
+    status: success
+    timestamp: "2026-04-21T00:10:31Z"
+  - phase: sdd-spec
+    status: success
+    timestamp: "2026-04-21T00:10:37Z"
+  - phase: sdd-design
+    status: success
+    timestamp: "2026-04-21T00:10:42Z"
+  - phase: sdd-tasks
+    status: success
+    timestamp: "2026-04-21T00:10:42Z"
+  - phase: sdd-apply
+    status: success
+    timestamp: "2026-04-21T00:11:01Z"
+  - phase: sdd-verify
+    status: success
+    timestamp: "2026-04-21T00:11:09Z"
+  - phase: sdd-archive
+    status: success
+    timestamp: "2026-04-21T00:12:11Z"

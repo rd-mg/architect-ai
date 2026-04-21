@@ -80,6 +80,7 @@ If schema changes were made in this batch:
 - [ ] Tests pass: `python odoo-bin -i {module} --test-enable --stop-after-init`
 - [ ] Tests cover happy path AND at least one error case
 - [ ] No `print()` or `import pdb` left in code
+- [ ] Judgement Day Gate executed and PASSED (Required for COMPLETE status)
 
 ## Adversarial Review Focus Areas
 

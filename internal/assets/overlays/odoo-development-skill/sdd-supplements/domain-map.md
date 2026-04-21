@@ -119,3 +119,21 @@ Avoid:
 - Direct SQL across domains
 - Cross-domain @api.depends (fragile)
 - Writing to another domain's computed fields
+
+## High-Risk Models & Conflict Checklist
+
+The following models are central to Odoo's core integrity. Any modification MUST be audited with extreme care during `sdd-design` and `sdd-verify`.
+
+| Model | Primary Risks | Mandatory Verification |
+|-------|---------------|------------------------|
+| **res.partner** | Database locking, duplicate data, sync overhead | ALWAYS use \`_inherit\`. NO direct SQL writes. |
+| **account.move** | Fiscal integrity, N+1 queries, tax logic breakage | AUDIT computed fields. VERIFY \`ondelete\` on lines. |
+| **stock.move** | Inventory valuation drift, missing valuation entries | CHECK \`stock_account\` integration. NO manual state set. |
+| **res.users** | Permission escalation, session bloat, auth bypass | AUDIT record rules. VERIFY group inheritance. |
+| **account.payment** | Payment reconciliation breakage, orphan payments | CHECK \`payment_state\` transition logic. |
+
+### Mandatory Conflict Protocol
+1. **Identify** if the change touches any high-risk model.
+2. **Scan** Engram for "archived-decisions" related to these models.
+3. **Audit** for "Anti-Patterns" (direct SQL, missing \`ondelete\`, N+1).
+4. **Pass** Judgement Day Gate explicitly focusing on these models.
