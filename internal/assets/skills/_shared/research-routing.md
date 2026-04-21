@@ -47,7 +47,7 @@ Use when:
 Probe:
 ```
 mem_search(query: "{user-question topic}", project: "{project}")
-  → look for notebooklm/{notebook}/{topic} topic-keys
+  → look for knowledge/{domain}/external/{topic} topic-keys
 ```
 
 If a matching notebook exists, read it and answer. If not, fall through.

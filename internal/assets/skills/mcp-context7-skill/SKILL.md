@@ -9,10 +9,10 @@ description: >
 license: Apache-2.0
 metadata:
   author: rd-mg
-  version: "2.1"
+  version: "2.2"
 ---
 
-# Context7 v2.1
+# Context7 v2.2
 
 ## Purpose
 
@@ -44,7 +44,7 @@ Before calling Context7:
 
 ```
 # 1. Is NotebookLM available?
-mem_search(query: "notebooklm/", project: "{project}")
+mem_search(query: "knowledge/", project: "{project}")
   → if yes and answer found, STOP — use NotebookLM result
   → if yes but no match, fall through
   → if no (unavailable), note in response and fall through
@@ -99,12 +99,12 @@ context7_get_docs(
 )
 ```
 
-### Step 3 — Persist the finding
+### Step 3 — Persist the finding (MANDATORY)
 
 ```
 mem_save(
-  title: "context7/{framework}/{version}/{topic}",
-  topic_key: "context7/{framework}/{version}/{topic}",
+  title: "knowledge/{framework}/external/{topic}",
+  topic_key: "knowledge/{framework}/external/{topic}",
   type: "external-research",
   project: "{project}",
   content: "Q: {question}\nA: {docs summary}\nFramework: {name}@{version}\nDate: {iso-date}"
@@ -118,7 +118,7 @@ mem_save(
 ## Cache check — ALWAYS before calling
 
 ```
-mem_search(query: "context7/{framework}/{version}/", project: "{project}")
+mem_search(query: "knowledge/{framework}/external/", project: "{project}")
   → if found AND content covers the question, use it
   → if found but stale, re-query and replace
   → if not found, query Context7
@@ -147,7 +147,7 @@ Staleness:
   "version": "...",
   "topic": "...",
   "answer_summary": "2-3 sentences",
-  "engram_key": "context7/{fw}/{ver}/{topic}",
+  "engram_key": "knowledge/{fw}/external/{topic}",
   "cached_hit": true|false
 }
 ```

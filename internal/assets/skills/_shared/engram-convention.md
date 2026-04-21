@@ -14,6 +14,19 @@ project:   {detected or current project name}
 scope:     project
 ```
 
+### Knowledge Roots (Global & External)
+
+Artifacts that are NOT tied to a specific change use a hierarchical knowledge root:
+
+| Root | Topic Key Pattern | Description |
+|------|-------------------|-------------|
+| `knowledge/_global/skill/` | `knowledge/_global/skill/{name}` | Global skill definitions and rules |
+| `knowledge/external/` | `knowledge/{domain}/external/{topic}` | External research (NotebookLM, Context7) |
+
+`{domain}` identifies the broad area of knowledge (e.g., `odoo`, `architecture`, `vendor-playbook`). For NotebookLM, this is the sanitized notebook name.
+
+---
+
 ### Artifact Types
 
 | Artifact Type | Produced By | Description |

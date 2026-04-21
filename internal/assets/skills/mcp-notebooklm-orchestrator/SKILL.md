@@ -11,10 +11,10 @@ bridge: always
 applies-when: "any research question, especially project-specific knowledge"
 metadata:
   author: rd-mg
-  version: "2.1"
+  version: "2.2"
 ---
 
-# NotebookLM Orchestrator v2.1
+# NotebookLM Orchestrator v2.2
 
 ## Purpose
 
@@ -38,7 +38,7 @@ See `_shared/research-routing.md` for the full routing table.
 
 - **Queries** existing notebooks via MCP
 - **Updates notebook tags, descriptions, and instructions** (metadata only)
-- **Persists findings** back to Engram under `notebooklm/{notebook}/{topic}`
+- **Persists findings** back to Engram under `knowledge/{domain}/external/{topic}`
 
 ## What this skill does NOT do (enforced)
 
@@ -57,7 +57,7 @@ See `_shared/research-routing.md` for the full routing table.
 ### Step 1 — Check cached findings first (saves tokens)
 
 ```
-mem_search(query: "notebooklm/{topic-guess}", project: "{project}")
+mem_search(query: "knowledge/{domain}/external/{topic-guess}", project: "{project}")
   → if found, read the observation
   → if the finding is fresh (< 7 days old for living docs, < 30 days for frozen), use it
   → if stale or missing, proceed to step 2
@@ -83,12 +83,12 @@ notebooklm_query(
   → returns answer + source citations
 ```
 
-### Step 4 — Persist the finding
+### Step 4 — Persist the finding (MANDATORY)
 
 ```
 mem_save(
-  title: "notebooklm/{notebook}/{topic}",
-  topic_key: "notebooklm/{notebook}/{topic}",
+  title: "knowledge/{domain}/external/{topic}",
+  topic_key: "knowledge/{domain}/external/{topic}",
   type: "external-research",
   project: "{project}",
   content: "Q: {question}\nA: {answer}\nSources: {citations}\nNotebook: {notebook-id}\nDate: {iso-date}"
@@ -99,9 +99,18 @@ Next session asking the same question hits the Engram cache instead of re-queryi
 
 ---
 
+## AFTER QUERY MANDATORY HOOK
+
+After EVERY call to `notebooklm_query`, you MUST execute `mem_save` immediately. Failure to do so is a violation of the knowledge-persistence contract. This ensures that external knowledge is internalized and the project context grows more robust over time.
+
+**Pattern**:
+`mem_save(topic_key: "knowledge/{domain}/external/{topic}", ...)`
+
+---
+
 ## Odoo-specific instruction pattern
 
-When the active overlay is Odoo (detected via `.atl/overlays/odoo-*/`), add a code-first constraint to every NotebookLM query:
+When the active overlay is Odoo (detected via `.atl/overlays/odoo-*//`), add a code-first constraint to every NotebookLM query:
 
 ```
 Query prefix: "Answer with code-first examples from the Odoo source. Quote model
@@ -128,8 +137,10 @@ Do NOT pad NotebookLM queries with filler in hopes of getting a hit. If the topi
 Every NotebookLM response gets persisted in Engram. The topic-key format is:
 
 ```
-notebooklm/{notebook-slug}/{topic-slug}
+knowledge/{domain}/external/{topic-slug}
 ```
+
+`{domain}` is the sanitized name of the notebook (e.g. `odoo-migration`, `architecture`).
 
 Before calling NotebookLM, ALWAYS check Engram first with `mem_search`. The orchestrator pays for NotebookLM calls; Engram is free.
 
@@ -149,8 +160,10 @@ Staleness rules:
   "query": "...",
   "answer_summary": "2-3 sentences",
   "citation_count": N,
-  "engram_key": "notebooklm/{nb}/{topic}",
+  "engram_key": "knowledge/{domain}/external/{topic}",
   "cached_hit": true|false  // was it served from Engram?
+}
+```rue|false  // was it served from Engram?
 }
 ```
 
