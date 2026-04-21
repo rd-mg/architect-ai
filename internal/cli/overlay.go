@@ -42,22 +42,23 @@ type RegistryEntry struct {
 }
 
 type OverlayManifest struct {
-	Name            string          `json:"name"`
-	SourcePath      string          `json:"source_path"`
-	EnterprisePath  string          `json:"enterprise_path,omitempty"`
-	InstalledAtUTC  string          `json:"installed_at_utc"`
-	VersionIntent   string          `json:"version_intent,omitempty"`
-	ActivationState string          `json:"activation_state"`
-	Skills          []string        `json:"skills"`
-	SkillBundles    []string        `json:"skill_bundles,omitempty"`
-	Agents          []string        `json:"agents"`
-	Patterns        []string        `json:"patterns,omitempty"`
-	Instructions    []string        `json:"instructions,omitempty"`
-	Prompts         []string        `json:"prompts,omitempty"`
-	Scripts         []string        `json:"scripts,omitempty"`
-	StaticAssets    []string        `json:"static_assets,omitempty"`
-	Assets          []string        `json:"assets"`
-	RegistryEntries []RegistryEntry `json:"registry_entries,omitempty"`
+	Name             string          `json:"name"`
+	SourcePath       string          `json:"source_path"`
+	EnterprisePath   string          `json:"enterprise_path,omitempty"`
+	InstalledAtUTC   string          `json:"installed_at_utc"`
+	VersionIntent    string          `json:"version_intent,omitempty"`
+	ActivationState  string          `json:"activation_state"`
+	DetectedVersions []int           `json:"detected_versions,omitempty"`
+	Skills           []string        `json:"skills"`
+	OptionalSkills   []string        `json:"optional_skills,omitempty"`
+	Agents           []string        `json:"agents"`
+	Patterns         []string        `json:"patterns,omitempty"`
+	Instructions     []string        `json:"instructions,omitempty"`
+	Prompts          []string        `json:"prompts,omitempty"`
+	Scripts          []string        `json:"scripts,omitempty"`
+	StaticAssets     []string        `json:"static_assets,omitempty"`
+	Assets           []string        `json:"assets"`
+	RegistryEntries  []RegistryEntry `json:"registry_entries,omitempty"`
 }
 
 var odooManifestVersionPattern = regexp.MustCompile(`(?m)["']version["']\s*:\s*["']([0-9]{1,2})\.[^"']*["']`)
@@ -112,23 +113,37 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	if err := copyFSFile(sourceFS, "SKILL.md", skillDest); err != nil {
 		return OverlayManifest{}, err
 	}
+	// Root skill goes into Assets only — it is the overlay meta-identifier, not a
+	// consumable skill for agents. Do NOT add it to manifest.Skills.
 	manifest.Assets = append(manifest.Assets, filepath.ToSlash(filepath.Join("skills", overlayName, "SKILL.md")))
-	manifest.Skills = append(manifest.Skills, overlayName)
 
 	// Parse VersionIntent into a filter set so non-matching skill bundles are
 	// skipped at install time (not only at bridge time). Empty intent = no filter.
 	versionFilter := parseVersionIntent(opts.VersionIntent)
 
+	// Optional skills: heavy or rarely-needed skills are moved to OptionalSkills so they
+	// are not bridged by default. Enable with: atl overlay enable <skill-name>
+	optionalSkillSet := map[string]bool{
+		"odoo-minimax-xlsx-o-spreadsheets": true,
+		"odoo-quote-calculator":            true,
+	}
+
 	skillBundleNames, skillBundleAssets, err := copyOverlaySkillBundles(sourceFS, filepath.Join(overlayRoot, "skills"), overlayName, versionFilter)
 	if err != nil {
 		return OverlayManifest{}, err
 	}
-	manifest.SkillBundles = append(manifest.SkillBundles, skillBundleNames...)
-	manifest.Skills = append(manifest.Skills, skillBundleNames...)
+	for _, name := range skillBundleNames {
+		if optionalSkillSet[name] {
+			manifest.OptionalSkills = append(manifest.OptionalSkills, name)
+		} else {
+			manifest.Skills = append(manifest.Skills, name)
+		}
+	}
 	manifest.Assets = append(manifest.Assets, skillBundleAssets...)
 	manifest.Skills = uniqueStrings(manifest.Skills)
+	manifest.OptionalSkills = uniqueStrings(manifest.OptionalSkills)
 	sort.Strings(manifest.Skills)
-	sort.Strings(manifest.SkillBundles)
+	sort.Strings(manifest.OptionalSkills)
 
 	agentFiles, err := copyFSTree(sourceFS, "agents", filepath.Join(overlayRoot, "agents"), nil)
 	if err != nil {
@@ -223,6 +238,16 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	}
 
 	populateRegistryEntries(&manifest, projectRoot)
+
+	// Cache detected Odoo versions to avoid O(n) walk in bridgeOverlaySkills.
+	if detVersions, isOdoo, _ := detectOdooMajorVersions(projectRoot); isOdoo && len(detVersions) > 0 {
+		vers := make([]int, 0, len(detVersions))
+		for v := range detVersions {
+			vers = append(vers, v)
+		}
+		sort.Ints(vers)
+		manifest.DetectedVersions = vers
+	}
 
 	manifestPath := filepath.Join(overlayRoot, "manifest.json")
 	if err := writeOverlayManifest(manifestPath, manifest); err != nil {
@@ -721,17 +746,27 @@ func bridgeOverlaySkills(projectRoot string, manifest OverlayManifest) error {
 	overlayRoot := filepath.Join(projectRoot, ".atl", "overlays", manifest.Name)
 
 	// For Odoo projects, we only bridge skills matching the detected version(s).
-	odooVersions, isOdoo, _ := detectOdooMajorVersions(projectRoot)
+	// Read from manifest cache (populated at install time) to avoid O(n) walk on
+	// every bridge call. Falls back to live detection if cache is empty.
+	var odooVersions map[int]struct{}
+	isOdoo := len(manifest.DetectedVersions) > 0
+	if isOdoo {
+		odooVersions = make(map[int]struct{}, len(manifest.DetectedVersions))
+		for _, v := range manifest.DetectedVersions {
+			odooVersions[v] = struct{}{}
+		}
+	} else {
+		// Safety net: cache miss → fall back to walk.
+		var detErr error
+		odooVersions, isOdoo, detErr = detectOdooMajorVersions(projectRoot)
+		if detErr != nil {
+			fmt.Printf("Warning: version detection fallback failed: %v\n", detErr)
+		}
+	}
 
 	for _, skillName := range manifest.Skills {
 		// Version filtering for Odoo skills
 		if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(skillName, odooVersions) {
-			continue
-		}
-
-		// Don't bridge the overlay's own root skill (e.g. "odoo-development-skill").
-		// It's the overlay's meta-identifier, not a consumable skill for agents.
-		if skillName == manifest.Name {
 			continue
 		}
 
@@ -851,6 +886,14 @@ func resolveEnterpriseRepoPath(explicitPath string) string {
 			return explicitPath
 		}
 		return ""
+	}
+
+	// Check ODOO_ENTERPRISE_PATH env var before falling back to home-dir heuristics.
+	// This enables portable team setups where each developer sets their own path.
+	if p := strings.TrimSpace(os.Getenv("ODOO_ENTERPRISE_PATH")); p != "" {
+		if info, err := os.Stat(p); err == nil && info.IsDir() {
+			return p
+		}
 	}
 
 	homeDir, err := os.UserHomeDir()

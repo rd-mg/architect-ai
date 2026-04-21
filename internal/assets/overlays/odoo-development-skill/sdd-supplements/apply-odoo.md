@@ -193,3 +193,19 @@ Respect the 400-word progress report limit. Code changes themselves are separate
 - Do NOT commit code without `ir.model.access.csv` for new models
 - Do NOT use `attrs=` in v17+
 - Do NOT use `<tree>` in v18+
+
+## Branch & PR Checklist (Post-Apply)
+
+Before marking a task or batch complete, verify all of the following:
+
+- [ ] Branch name matches convention: `{type}/{ticket-id}-{short-description}`
+      (e.g. `feat/PROJ-123-add-invoice-export`)
+- [ ] `__manifest__.py` version bumped (Z for features, W for fixes)
+- [ ] No direct commits to `main` or `master`
+- [ ] PR description references the SDD change document
+      (`openspec/changes/{change-name}/`)
+- [ ] PR title follows conventional commits: `feat(module): description`
+- [ ] All new models have `ir.model.access.csv` entries
+- [ ] `go vet` / `ruff` / linter passes (per project quality tools)
+
+> Full branch/PR protocol: `sdd-supplements/branch-pr-odoo.md`

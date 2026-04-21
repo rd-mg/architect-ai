@@ -13,31 +13,52 @@ rg '"version"' __manifest__.py
 
 If multiple modules are in scope, note their versions — they might differ.
 
-## Research Order
+## Research Fallback Chain
 
-1. **Query NotebookLM (query-only)**:
-   - Use the `mcp-notebooklm-orchestrator` skill
-   - Inject the Odoo instruction: "Base answers on source code first, then technical docs, then functional docs. Match version {version}."
-   - Formulate specific questions: "What does module X do in Odoo {version}?"
+Priority order — stop at the first successful result. Do NOT skip steps silently.
 
-2. **Search local Odoo source**:
-   ```bash
-   rg "class ModelName" ~/gitproj/odoo/odoo/ -t py
-   rg "_inherit.*'sale.order'" ~/gitproj/odoo/odoo/ -t py
-   ```
+### Step 1 — NotebookLM (MCP)
+- Use the `mcp-notebooklm-orchestrator` skill
+- Inject: "Base answers on source code first, then technical docs. Match version {version}."
+- **If MCP unavailable**: emit `"SKIP: NotebookLM MCP offline"` → proceed to Step 2
 
-3. **Search OCA repositories**:
-   ```bash
-   rg "class ModelName" ~/gitproj/odoo/oca/ -t py
-   # Or browse: https://github.com/OCA?q={keyword}&type=repositories
-   ```
+### Step 2 — rg on community source
+```bash
+test -d "$ODOO_COMMUNITY_PATH" && \
+  rg "class ModelName" "$ODOO_COMMUNITY_PATH/{version}/addons/" -t py || \
+  echo "SKIP: ODOO_COMMUNITY_PATH not set or path not found"
+```
+- **If env unset or path missing**: emit the SKIP message → proceed to Step 3
 
-4. **Use Context7 as fallback** for official Odoo documentation.
+### Step 3 — rg on enterprise source
+```bash
+test -d "$ODOO_ENTERPRISE_PATH" && \
+  rg "class ModelName" "$ODOO_ENTERPRISE_PATH/{version}/" -t py || \
+  echo "SKIP: ODOO_ENTERPRISE_PATH not set or path not found"
+```
+- **If env unset or path missing**: emit the SKIP message → proceed to Step 4
+
+### Step 4 — Context7 MCP
+- Use Context7 for official Odoo documentation and API reference.
+
+### Step 5 — Web search (last resort)
+- Include `site:github.com/odoo` or `site:github.com/OCA` filter when possible.
+
+> ⚠️ If Steps 1–3 are ALL skipped: **declare the limitation explicitly** in your artifact
+> before proceeding with Steps 4–5. Do NOT silently fall through.
+
+### OCA Search
+Before proposing new functionality, also verify OCA:
+```bash
+# Or browse: https://github.com/OCA?q={keyword}&type=repositories
+rg "class ModelName" ~/gitproj/odoo/oca/ -t py
+```
+
 
 ## Don't Reinvent the Wheel
 
 Before proposing new functionality, verify it doesn't already exist:
-- ✅ Odoo core (`~/gitproj/odoo/odoo/`)
+- ✅ Odoo community (`~/gitproj/odoo/community/`)
 - ✅ Odoo Enterprise (`~/gitproj/odoo/enterprise/`, if path configured)
 - ✅ OCA repositories (`~/gitproj/odoo/oca/` or https://github.com/OCA)
 

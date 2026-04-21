@@ -35,7 +35,7 @@ real antes de diseñar o implementar. Usa el binario `rg` directamente.
 ### backend_orm (modelos Python, ORM, lógica de negocio)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/odoo/ \
+rg "{QUERY}" ~/gitproj/odoo/community/ \
   -t py \
   -g "!__manifest__.py" \
   -g "!__init__.py" \
@@ -51,7 +51,7 @@ Excluye: manifests, inits, tests, migrations. Solo lógica de negocio Python.
 ### frontend_owl (componentes OWL, JavaScript, XML de vistas)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/odoo/addons/web/static/src/ \
+rg "{QUERY}" ~/gitproj/odoo/community/addons/web/static/src/ \
   -t js -t xml \
   -g "static/src/**" \
   -g "!*.min.js" \
@@ -77,7 +77,7 @@ rg "{QUERY}" ~/gitproj/odoo/o-spreadsheet/src/ \
 ### views_xml (vistas Odoo, acciones, menús)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/odoo/ \
+rg "{QUERY}" ~/gitproj/odoo/community/ \
   -t xml \
   -g "!static/" \
   -g "!*/i18n/*" \
@@ -89,7 +89,7 @@ rg "{QUERY}" ~/gitproj/odoo/odoo/ \
 ### security (ACLs, reglas de seguridad, grupos)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/odoo/ \
+rg "{QUERY}" ~/gitproj/odoo/community/ \
   -g "security/**" \
   -g "*/ir.model.access.csv" \
   --max-count 5
@@ -98,7 +98,7 @@ rg "{QUERY}" ~/gitproj/odoo/odoo/ \
 ### manifest (dependencias de módulos, version gates)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/odoo/ \
+rg "{QUERY}" ~/gitproj/odoo/community/ \
   -g "__manifest__.py" \
   --max-count 10
 ```
@@ -113,13 +113,13 @@ rg "{QUERY}" ~/gitproj/odoo/odoo/ \
 
 ```bash
 # Primero: ¿en qué archivos está lo que busco?
-rg "{QUERY}" ~/gitproj/odoo/odoo/ \
+rg "{QUERY}" ~/gitproj/odoo/community/ \
   -t py \           # (o el tipo del dominio)
   -l \              # solo nombres de archivos
   --max-count 5
 
 # Ejemplo:
-rg "class AccountMove" ~/gitproj/odoo/odoo/ -t py -l
+rg "class AccountMove" ~/gitproj/odoo/community/ -t py -l
 # Output: 2-3 rutas de archivo (~10 tokens)
 ```
 
@@ -127,13 +127,13 @@ rg "class AccountMove" ~/gitproj/odoo/odoo/ -t py -l
 
 ```bash
 # Solo si el Paso 1 devuelve el archivo correcto:
-rg "{QUERY_ESPECÍFICA}" ~/gitproj/odoo/odoo/addons/account/models/account_move.py \
+rg "{QUERY_ESPECÍFICA}" ~/gitproj/odoo/community/addons/account/models/account_move.py \
   --max-count 2 \
   -C 4
 
 # Ejemplo:
 rg "def _compute_payment_state" \
-  ~/gitproj/odoo/odoo/addons/account/models/account_move.py \
+  ~/gitproj/odoo/community/addons/account/models/account_move.py \
   --max-count 2 -C 4
 # Output: 15-20 líneas de código (~60 tokens)
 ```
@@ -164,10 +164,10 @@ Si el output supera 80 líneas o la búsqueda tarda más de 5 segundos:
 
 ```bash
 # Paso 1:
-rg "class AccountMove" ~/gitproj/odoo/odoo/ -t py -l
+rg "class AccountMove" ~/gitproj/odoo/community/ -t py -l
 
 # Paso 2 (en el archivo encontrado):
-rg "class AccountMove" ~/gitproj/odoo/odoo/addons/account/models/account_move.py -C 1
+rg "class AccountMove" ~/gitproj/odoo/community/addons/account/models/account_move.py -C 1
 # → ve: class AccountMove(models.Model) o class AccountMove(account_move, models.Model)
 ```
 
@@ -175,11 +175,11 @@ rg "class AccountMove" ~/gitproj/odoo/odoo/addons/account/models/account_move.py
 
 ```bash
 # Paso 1:
-rg "useService" ~/gitproj/odoo/odoo/addons/web/static/src/ -t js -l --max-count 3
+rg "useService" ~/gitproj/odoo/community/addons/web/static/src/ -t js -l --max-count 3
 
 # Paso 2:
 rg "const .* = useService" \
-  ~/gitproj/odoo/odoo/addons/web/static/src/core/utils/hooks.js \
+  ~/gitproj/odoo/community/addons/web/static/src/core/utils/hooks.js \
   --max-count 2 -C 2
 ```
 
@@ -187,11 +187,11 @@ rg "const .* = useService" \
 
 ```bash
 # Paso 1:
-rg "registry.category" ~/gitproj/odoo/odoo/addons/spreadsheet/static/src/ -t js -l
+rg "registry.category" ~/gitproj/odoo/community/addons/spreadsheet/static/src/ -t js -l
 
 # Paso 2:
 rg "registry.category\(\"spreadsheet" \
-  ~/gitproj/odoo/odoo/addons/spreadsheet/static/src/ \
+  ~/gitproj/odoo/community/addons/spreadsheet/static/src/ \
   -t js --max-count 2 -C 3
 ```
 
@@ -199,7 +199,7 @@ rg "registry.category\(\"spreadsheet" \
 
 ```bash
 rg "account.bank.statement" \
-  ~/gitproj/odoo/odoo/addons/account/ \
+  ~/gitproj/odoo/community/addons/account/ \
   -g "*/ir.model.access.csv" \
   --max-count 10
 ```
@@ -246,12 +246,12 @@ Este guardado lo ejecuta el **after_model hook** del Orchestrator (definido en P
 rg "account_move" ~/gitproj/odoo/
 
 # ❌ NUNCA — sin --max-count en búsqueda de contenido
-rg "def compute" ~/gitproj/odoo/odoo/ -t py
+rg "def compute" ~/gitproj/odoo/community/ -t py
 
 # ❌ NUNCA — término demasiado genérico sin archivo específico
-rg "def " ~/gitproj/odoo/odoo/addons/account/ -t py
+rg "def " ~/gitproj/odoo/community/addons/account/ -t py
 
 # ✅ SIEMPRE — 2 pasos: files-only primero
-rg "class BankStatementLine" ~/gitproj/odoo/odoo/ -t py -l
+rg "class BankStatementLine" ~/gitproj/odoo/community/ -t py -l
 rg "_compute_amount" {archivo_del_paso_1} --max-count 2 -C 3
 ```
