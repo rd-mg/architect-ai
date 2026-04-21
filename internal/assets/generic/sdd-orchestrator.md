@@ -262,6 +262,7 @@ proposal → specs → tasks → apply → verify → archive
          design ←────────────────────┘
 ```
 
+<!-- architect-ai:sdd-model-assignments -->
 ## Model Assignments
 
 Read once per session, cache, pass `model` parameter in every Agent tool call:
@@ -496,7 +497,7 @@ Every sub-agent response MUST be validated for the Adaptive Reasoning Mode decla
    > "RE-PROMPT: Your response is missing the mandatory Adaptive Reasoning Mode declaration. Please state your Mode (1, 2, or 3) and Dimensions (D1-D4) as the first line of your next message."
 3. **Double Failure**: If the second response also lacks the mode, record `chosen_mode: "1"` (fallback) and `mode_rationale: "Automated fallback after missing declaration"` in Engram and proceed.
 4. **Transition Enforcement**: The orchestrator MUST check `D3` (Error Pressure). If `D3 >= 2` in the response, the next delegation to this sub-agent MUST be in **Mode 3 (Diagnostic)**.
-5. **Result Envelope**: Inject the extracted `chosen_mode` and `mode_rationale` into the result contract before synthesizing the summary for the user.
+5. **Result Envelope**: Inject the extracted `chosen_mode`, `mode_rationale` into the result contract before synthesizing the summary for the user.
 
 ## Engram Topic Keys
 

@@ -22,6 +22,8 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 | D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
 | D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
 | D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Caveman |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Autoreason-lite |
 
 ### Transition Rules
 - **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
