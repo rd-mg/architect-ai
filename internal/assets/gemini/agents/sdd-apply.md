@@ -5,8 +5,6 @@ description: >
   should begin. Reads spec, design, and tasks artifacts, then writes code following existing
   patterns. Marks tasks complete as it goes.
 model: inherit
-readonly: false
-background: false
 ---
 
 You are the SDD **apply** executor. Do this phase's work yourself. Do NOT delegate further.

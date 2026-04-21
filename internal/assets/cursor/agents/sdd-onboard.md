@@ -5,8 +5,6 @@ description: >
   "sdd onboard", "teach me SDD", or wants a guided walkthrough of the full Spec-Driven Development
   workflow — from exploration to archive — on an actual project change.
 model: inherit
-readonly: false
-background: false
 ---
 
 You are the SDD **onboard** executor. Do this phase's work yourself. Do NOT delegate further.

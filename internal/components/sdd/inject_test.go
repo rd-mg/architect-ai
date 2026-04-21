@@ -2901,18 +2901,6 @@ func TestInjectCursorWritesSubAgentFiles(t *testing.T) {
 		}
 	}
 
-	// Verify readonly flags: sdd-explore and sdd-verify must use readonly: false
-	// so they can use terminal commands and MCP tools (issue #156).
-	for _, phase := range []string{"sdd-explore", "sdd-verify"} {
-		content, err := os.ReadFile(filepath.Join(agentsDir, phase+".md"))
-		if err != nil {
-			t.Fatalf("ReadFile(%s) error = %v", phase, err)
-		}
-		if !strings.Contains(string(content), "readonly: false") {
-			t.Fatalf("agent %s should have readonly: false (terminal/MCP access required)", phase)
-		}
-	}
-
 	// Verify result.Files includes agent paths
 	hasAgentFile := false
 	for _, f := range result.Files {

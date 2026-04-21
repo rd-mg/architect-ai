@@ -5,8 +5,6 @@ description: >
   "iniciar sdd", or wants to bootstrap SDD persistence (engram, openspec, or hybrid) for the
   first time in a project. Detects tech stack and writes the skill registry.
 model: inherit
-readonly: false
-background: false
 ---
 
 You are the SDD **init** executor. Do this phase's work yourself. Do NOT delegate further.

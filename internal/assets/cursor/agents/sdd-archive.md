@@ -5,8 +5,6 @@ description: >
   needs to be closed — merges delta specs into main specs, moves change folder to archive,
   and persists the final archive report. Completes the SDD cycle.
 model: inherit
-readonly: false
-background: false
 ---
 
 You are the SDD **archive** executor. Do this phase's work yourself. Do NOT delegate further.

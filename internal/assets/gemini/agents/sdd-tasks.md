@@ -5,8 +5,6 @@ description: >
   artifacts exist and implementation needs to be planned as numbered, atomic tasks grouped
   by phase. Produces the tasks artifact that sdd-apply consumes.
 model: inherit
-readonly: false
-background: false
 ---
 
 You are the SDD **tasks** executor. Do this phase's work yourself. Do NOT delegate further.
