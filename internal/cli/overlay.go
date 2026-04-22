@@ -51,6 +51,7 @@ type OverlayManifest struct {
 	DetectedVersions []int           `json:"detected_versions,omitempty"`
 	Skills           []string        `json:"skills"`
 	OptionalSkills   []string        `json:"optional_skills,omitempty"`
+	EnabledOptionals []string        `json:"enabled_optionals,omitempty"`
 	Agents           []string        `json:"agents"`
 	Patterns         []string        `json:"patterns,omitempty"`
 	Instructions     []string        `json:"instructions,omitempty"`
@@ -1126,9 +1127,68 @@ func RunOverlay(args []string, stdout io.Writer) error {
 		}
 		_, _ = fmt.Fprintf(stdout, "Removed project-local overlay %q\n", overlayName)
 		return nil
+	case "enable":
+		if len(args) != 3 {
+			return errors.New("usage: architect-ai overlay enable <overlay-name> <skill-name>")
+		}
+		overlayName := strings.TrimSpace(args[1])
+		skillName := strings.TrimSpace(args[2])
+		manifest, err := EnableOverlaySkill(projectRoot, overlayName, skillName)
+		if err != nil {
+			return err
+		}
+		_, _ = fmt.Fprintf(stdout, "Enabled optional skill %q in overlay %q\n", skillName, manifest.Name)
+		return nil
 	default:
 		return fmt.Errorf("unknown overlay subcommand %q", sub)
 	}
+}
+
+func EnableOverlaySkill(projectRoot string, overlayName string, skillName string) (OverlayManifest, error) {
+	overlayRoot := filepath.Join(projectRoot, ".atl", "overlays", overlayName)
+	manifestPath := filepath.Join(overlayRoot, "manifest.json")
+	manifest, err := readOverlayManifest(manifestPath)
+	if err != nil {
+		return OverlayManifest{}, err
+	}
+
+	isOptional := false
+	for _, s := range manifest.OptionalSkills {
+		if s == skillName {
+			isOptional = true
+			break
+		}
+	}
+	if !isOptional {
+		return OverlayManifest{}, fmt.Errorf("skill %q is not an optional skill for overlay %q", skillName, overlayName)
+	}
+
+	for _, s := range manifest.EnabledOptionals {
+		if s == skillName {
+			// Already enabled, just re-bridge to be sure
+			_ = bridgeOverlaySkills(projectRoot, manifest)
+			return manifest, nil
+		}
+	}
+
+	manifest.EnabledOptionals = append(manifest.EnabledOptionals, skillName)
+	manifest.Skills = append(manifest.Skills, skillName)
+	manifest.Skills = uniqueStrings(manifest.Skills)
+	sort.Strings(manifest.Skills)
+
+	if err := writeOverlayManifest(manifestPath, manifest); err != nil {
+		return OverlayManifest{}, err
+	}
+
+	if err := WriteLocalSkillRegistry(projectRoot); err != nil {
+		return OverlayManifest{}, err
+	}
+
+	if err := bridgeOverlaySkills(projectRoot, manifest); err != nil {
+		return OverlayManifest{}, fmt.Errorf("bridge optional skill: %w", err)
+	}
+
+	return manifest, nil
 }
 func populateRegistryEntries(manifest *OverlayManifest, projectRoot string) {
 	overlayRoot := filepath.Join(projectRoot, ".atl", "overlays", manifest.Name)

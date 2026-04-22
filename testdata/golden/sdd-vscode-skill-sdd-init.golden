@@ -18,27 +18,19 @@ You are a sub-agent responsible for initializing the Spec-Driven Development (SD
 
 You are an EXECUTOR for this phase, not the orchestrator. Do the initialization work yourself. Do NOT launch sub-agents, do NOT call `delegate` or `task`, and do NOT hand execution back unless you hit a real blocker that must be reported upstream.
 
-## Execution and Persistence Contract
+## Persistence
 
-- If mode is `engram`:
-  Do NOT create `openspec/` directory.
+Follow `_shared/mode-branching.md` for artifact-store branching.
 
-  **Save project context**:
-  ```
-  mem_save(
-    title: "sdd-init/{project-name}",
-    topic_key: "sdd-init/{project-name}",
-    type: "architecture",
-    project: "{project-name}",
-    content: "{detected project context markdown}"
-  )
-  ```
-  `topic_key` enables upserts — re-running init updates the existing context, not duplicates.
+### Artifact 1: Project Context
+- **Artifact Name**: config.yaml (openspec/hybrid)
+- **Topic Key**: sdd-init/{project-name}
+- **Type**: architecture
 
-  (See `skills/_shared/engram-convention.md` for full naming conventions.)
-- If mode is `openspec`: Read and follow `skills/_shared/openspec-convention.md`. Run full bootstrap.
-- If mode is `hybrid`: Read and follow BOTH convention files. Run openspec bootstrap AND persist context to Engram.
-- If mode is `none`: Return detected context without writing project files.
+### Artifact 2: Testing Capabilities
+- **Artifact Name**: config.yaml section (openspec/hybrid)
+- **Topic Key**: sdd/{project-name}/testing-capabilities
+- **Type**: config
 
 ## What to Do
 
@@ -179,15 +171,7 @@ rules:
 Persist detected testing capabilities as a separate Engram observation (or section in config.yaml for openspec). This cache prevents re-detection on every `sdd-apply` and `sdd-verify` run.
 
 If mode is `engram` or `hybrid`:
-```
-mem_save(
-  title: "sdd/{project-name}/testing-capabilities",
-  topic_key: "sdd/{project-name}/testing-capabilities",
-  type: "config",
-  project: "{project-name}",
-  content: "{testing capabilities markdown — see format below}"
-)
-```
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md` using **Artifact 2** metadata.
 
 **Testing Capabilities format**:
 
@@ -236,21 +220,7 @@ See `skills/skill-registry/SKILL.md` for the full registry format and scanning d
 ### Step 8: Persist Project Context
 
 **This step is MANDATORY — do NOT skip it.**
-
-If mode is `engram`:
-```
-mem_save(
-  title: "sdd-init/{project-name}",
-  topic_key: "sdd-init/{project-name}",
-  type: "architecture",
-  project: "{project-name}",
-  content: "{your detected project context from Steps 1-7}"
-)
-```
-
-If mode is `openspec` or `hybrid`: the config was already written in Step 5.
-
-If mode is `hybrid`: also call `mem_save` as above (write to BOTH backends).
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md` using **Artifact 1** metadata.
 
 ### Step 9: Return Summary
 

@@ -198,21 +198,46 @@ Include in every sub-agent prompt:
 
 ---
 
-## Research Routing Policy — NEW in V3.1
 
-When a sub-agent needs to do research, it MUST follow the priority order in `_shared/research-routing.md`:
+## RESEARCH-ROUTING POLICY (Layer 5 — enforce before any external lookup)
 
-```
-1. NotebookLM           ← PRIMARY — curated project knowledge
-2. Local code + docs    ← SECONDARY — ripgrep, find, cat, extract-text
-3. Context7             ← TERTIARY — framework/library official docs
-4. Internet             ← ONLY on EXPLICIT user request
-                          ("search the web", "look online", "google it")
-```
+Use sources in strict priority order. Escalate only when lower-cost source yields no result.
 
-The orchestrator inserts this routing policy into every research-touching sub-agent prompt (explore, propose, verify). The policy overrides the sub-agent's default preferences.
+**STEP 1 — Engram (always first)**
+Call mem_search with the most specific topic_key.
+→ Pattern found: USE IT. Skip steps 2-5.
+→ No relevant result: proceed to step 2.
 
----
+**STEP 2 — ripgrep-odoo (for Odoo core code evidence)**
+Use when: you need to see HOW Odoo implements something (model, OWL, o-spreadsheet).
+Protocol: 2-step mandatory (files-only → targeted extraction).
+Base path: `~/gitproj/odoo/`.
+NEVER skip the 2-step protocol. NEVER search without domain flag.
+→ Pattern found: use it + signal after_model to persist Engram.
+→ 0 results: API may have changed. Proceed to step 3 or 4.
+
+**STEP 3 — Context7 (for project code structure)**
+Use when: you need to understand the project's own module (not Odoo core).
+Never pack `~/gitproj/odoo/` — too large. Only pack project modules.
+→ Max 1500 tokens from context pack.
+
+**STEP 4 — NotebookLM (for updated domain knowledge)**
+Use when: version-specific changes, migration guides, external lib behavior.
+ONLY available in Mode 1 or Mode 2. NOT in Mode 3.
+→ Result persists to Engram via after_model hook.
+
+**STEP 5 — Web search (last resort)**
+Use when: steps 1-4 all yield no result.
+Include `site:` filter when possible (`github.com/odoo`, `github.com/OCA`).
+NOT available in Mode 3. Validate result with ripgrep-odoo if possible.
+
+## Mode-Based Research Restrictions
+| Mode | Engram | ripgrep-odoo | Context7 | NotebookLM | Web |
+|---|---|---|---|---|---|
+| Mode 1 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Mode 2 | ✅ | ✅ | ✅ (limited) | ⚠️ (if tokens) | ❌ |
+| Mode 3-ERR | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Mode 3-CTX | ✅ (save) | ❌ | ❌ | ❌ | ❌ |
 
 ## Mandatory Skills (ALWAYS injected) — NEW in V3.1
 
@@ -228,26 +253,15 @@ Injection order: mandatory skills FIRST, then task-matched skills. Mandatory ski
 
 ---
 
+
 ## Dependency Graph
 
 ```
 proposal → specs → tasks → apply → verify → archive
-            ↑
-            |
-         design
+            ↑                        |
+            |          FAIL (Judgement Day)
+         design ←────────────────────┘
 ```
-
----
-
-### Result Contract
-
-Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`, `cognitive_posture`, `estimated_tokens`, `research_sources_used`, `research_cache_hits`, `research_cache_misses`, `chosen_mode`, `mode_rationale`.
-
-The new `research_sources_used` field is a list of sources the sub-agent consulted in priority order, e.g. `["engram", "notebooklm", "ripgrep"]`.
-- `engram` appears if a cached finding was used.
-- `research_cache_hits` and `research_cache_misses` track performance of the Research Caching requirement (168h TTL).
-
----
 
 <!-- architect-ai:sdd-model-assignments -->
 ## Model Assignments
@@ -340,17 +354,30 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 
 **Response Format**: You MUST state your chosen mode as the very first line of your response (or within the first 5 non-blank lines if a brief preamble is needed). 
 
-**Format**: `Mode: {n}. Why: {short reason}.`
+**Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
 
-| Mode | Scenario |
-|------|----------|
-| **1: Fast** | Mechanical, low-risk, or repetitive tasks. You already know exactly what to do. |
-| **2: Balanced** | Standard implementation, multi-file changes, or architectural alignment. Requires careful thinking but no deep experimentation. |
-| **3: Deep** | High-risk, ambiguous, or complex refactors. Requires internal chain-of-thought, alternative evaluation, and edge-case analysis. |
-| **deferred** | Only for sdd-orchestrator when waiting for user input. |
-| **sdd-first** | Only for sdd-init or sdd-onboard during bootstrap. |
+### 4 Observable Dimensions (0-3)
 
-FAILURE to include this mode declaration will result in an automated re-prompt.
+| Dimension | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
+|-----------|---------|---------|----------|--------------|
+| **D1: Complexity** | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
+| **D2: Uncertainty** | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
+| **D3: Error Pressure** | Clean Run | Recent Bug | Repeated Failure | Production Down |
+| **D4: Context Pressure** | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
+
+### Routing Matrix
+
+| Condition | Chosen Mode | Posture |
+|-----------|-------------|---------|
+| D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
+| D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
+| D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Caveman |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Autoreason-lite |
+
+### Transition Rules
+- **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
+- **Diagnostic -> Tactical**: Allowed only after D3=0.
 <!-- adaptive-reasoning-gate:END --> BEFORE task-specific instructions
 4. Inject rules TEXT, not paths — sub-agents do NOT read SKILL.md files
 
@@ -371,6 +398,49 @@ On trigger:
 4. Use the pack as seed for next delegation; discard raw history above lineage cutoff
 
 ---
+
+
+## before_model Hook (Pre-Delegation)
+
+**BEFORE** delegating to any sub-agent, you MUST perform these checks:
+
+1. **State Injection**:
+   - `mem_search(query: "sdd/{module}/state")`
+   - Inject into Task (Layer 8): "Previous State: phase={phase}, failures={n}".
+
+2. **Collision Check (sdd-explore, sdd-propose, sdd-design only)**:
+   - `mem_search(query: "sdd/{module}")` + `mem_search(query: "arch/_global/decision")`.
+   - If a collision is detected (e.g. task modifies core model against a global decision):
+     - Override Posture to **#8 Autoreason-lite**.
+     - Prepend to Task: "COLLISION DETECTED with Engram {id}: {hint}. Resolve before proceeding."
+
+3. **Error Context (sdd-apply, sdd-verify only)**:
+   - `mem_search(query: "debug/{module}/error")` + `mem_search(query: "debug/_global/error")`.
+   - Inject top 3 results into Task: "Previously resolved errors (avoid repetition): {hints}".
+
+
+## after_model Hook (Post-Delegation)
+
+**AFTER** receiving a sub-agent response, you MUST perform these persistence actions:
+
+1. **Mandatory State Update**:
+   - `mem_save(topic_key: "sdd/{module}/state")` with current phase, sub-agent type, and output preview (80 chars).
+
+2. **Pattern Harvesting**:
+   - If `ripgrep-odoo` found a new pattern: `mem_save(topic_key: "knowledge/odoo-v{v}/pattern/{slug}")`.
+
+3. **Brief Versioning**:
+   - If `sdd-propose` generated a brief: `mem_save(topic_key: "sdd/{module}/brief/v{N}")`.
+
+4. **Research Persistence**:
+   - If NotebookLM or Context7 was used: `mem_save(topic_key: "knowledge/{domain}/external/{topic}")`.
+
+
+## Language Mandate: ENGLISH ONLY
+
+- **ALL internal reasoning, sub-agent communication, and artifact generation MUST be in English.**
+- Do NOT adapt to the user's language even if they speak Spanish or other languages.
+- This is a strict systemic requirement for this project.
 
 ## Sub-Agent Launch Template
 
@@ -433,11 +503,12 @@ The orchestrator is the SOLE authority for the state-machine. You MUST synchroni
 
 Every sub-agent response MUST be validated for the Adaptive Reasoning Mode declaration.
 
-1. **Extraction**: Scan the first 5 non-blank lines for the pattern: `Mode: {n}. Why: {reason}.`
+1. **Extraction**: Scan the first 5 non-blank lines for the pattern: `[MODE N | D1=X, D2=X, D3=X, D4=X]`.
 2. **Missing Field**: If the pattern is missing, RE-PROMPT the sub-agent exactly once:
-   > "RE-PROMPT: Your response is missing the mandatory Adaptive Reasoning Mode declaration. Please state your Mode (1, 2, or 3) and Rationale as the first line of your next message."
+   > "RE-PROMPT: Your response is missing the mandatory Adaptive Reasoning Mode declaration. Please state your Mode (1, 2, or 3) and Dimensions (D1-D4) as the first line of your next message."
 3. **Double Failure**: If the second response also lacks the mode, record `chosen_mode: "1"` (fallback) and `mode_rationale: "Automated fallback after missing declaration"` in Engram and proceed.
-4. **Result Envelope**: Inject the extracted `chosen_mode` and `mode_rationale` into the result contract before synthesizing the summary for the user.
+4. **Transition Enforcement**: The orchestrator MUST check `D3` (Error Pressure). If `D3 >= 2` in the response, the next delegation to this sub-agent MUST be in **Mode 3 (Diagnostic)**.
+5. **Result Envelope**: Inject the extracted `chosen_mode`, `mode_rationale` into the result contract before synthesizing the summary for the user.
 
 ## Engram Topic Keys
 
@@ -542,17 +613,30 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 
 **Response Format**: You MUST state your chosen mode as the very first line of your response (or within the first 5 non-blank lines if a brief preamble is needed). 
 
-**Format**: `Mode: {n}. Why: {short reason}.`
+**Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
 
-| Mode | Scenario |
-|------|----------|
-| **1: Fast** | Mechanical, low-risk, or repetitive tasks. You already know exactly what to do. |
-| **2: Balanced** | Standard implementation, multi-file changes, or architectural alignment. Requires careful thinking but no deep experimentation. |
-| **3: Deep** | High-risk, ambiguous, or complex refactors. Requires internal chain-of-thought, alternative evaluation, and edge-case analysis. |
-| **deferred** | Only for sdd-orchestrator when waiting for user input. |
-| **sdd-first** | Only for sdd-init or sdd-onboard during bootstrap. |
+### 4 Observable Dimensions (0-3)
 
-FAILURE to include this mode declaration will result in an automated re-prompt.
+| Dimension | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
+|-----------|---------|---------|----------|--------------|
+| **D1: Complexity** | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
+| **D2: Uncertainty** | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
+| **D3: Error Pressure** | Clean Run | Recent Bug | Repeated Failure | Production Down |
+| **D4: Context Pressure** | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
+
+### Routing Matrix
+
+| Condition | Chosen Mode | Posture |
+|-----------|-------------|---------|
+| D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
+| D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
+| D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Caveman |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Autoreason-lite |
+
+### Transition Rules
+- **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
+- **Diagnostic -> Tactical**: Allowed only after D3=0.
 <!-- adaptive-reasoning-gate:END -->
 
 ## Project Standards (auto-resolved)
