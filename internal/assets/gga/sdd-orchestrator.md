@@ -370,6 +370,8 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 | D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
 | D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
 | D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Caveman |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Autoreason-lite |
 
 ### Transition Rules
 - **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
@@ -437,6 +439,7 @@ On trigger:
 - **ALL internal reasoning, sub-agent communication, and artifact generation MUST be in English.**
 - Do NOT adapt to the user's language even if they speak Spanish or other languages.
 - This is a strict systemic requirement for this project.
+- **BEFORE writing the `## Task` block for any sub-agent**, translate the user's intent to English. The original user message MAY be quoted as a comment for traceability, but the task description MUST be in English.
 
 ## Sub-Agent Launch Template
 
@@ -446,6 +449,12 @@ On trigger:
 
 ## Adaptive Reasoning (MANDATORY)
 [Same as above]
+
+## Language Mandate
+ALL reasoning, artifact content, code comments, and return envelopes MUST be written in English.
+This applies regardless of the language used by the user.
+Do NOT produce any output in Spanish, Portuguese, French, or any other non-English language.
+Translate user intent to English before executing any task.
 
 ## Project Standards (auto-resolved)
 {mandatory skills compact rules — ripgrep, bash-expert, notebooklm, context-guardian}
@@ -469,7 +478,7 @@ On trigger:
 {instructions from sdd-phase-protocols/{phase}.md}
 
 ## Task
-{what this sub-agent needs to do}
+{what this sub-agent needs to do — MUST be written in English, even if user wrote in another language}
 
 ## Artifact Store: {engram|openspec|hybrid|none}
 ## Execution Mode: {interactive|auto}
@@ -627,6 +636,8 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 | D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
 | D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
 | D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Caveman |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Autoreason-lite |
 
 ### Transition Rules
 - **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.

@@ -440,12 +440,19 @@ On trigger:
 - **ALL internal reasoning, sub-agent communication, and artifact generation MUST be in English.**
 - Do NOT adapt to the user's language even if they speak Spanish or other languages.
 - This is a strict systemic requirement for this project.
+- **BEFORE writing the `## Task` block for any sub-agent**, translate the user's intent to English. The original user message MAY be quoted as a comment for traceability, but the task description MUST be in English.
 
 ## Sub-Agent Launch Template
 
 ```
 +++{Cognitive Posture}
 {posture-specific instruction block}
+
+## Language Mandate
+ALL reasoning, artifact content, code comments, and return envelopes MUST be written in English.
+This applies regardless of the language used by the user.
+Do NOT produce any output in Spanish, Portuguese, French, or any other non-English language.
+Translate user intent to English before executing any task.
 
 ## Project Standards (auto-resolved)
 {mandatory skills compact rules — ripgrep, bash-expert, notebooklm, context-guardian}
@@ -461,7 +468,7 @@ On trigger:
 {instructions from sdd-phase-protocols/{phase}.md}
 
 ## Task
-{what this sub-agent needs to do}
+{what this sub-agent needs to do — MUST be written in English, even if user wrote in another language}
 
 ## Artifact Store: {engram|openspec|hybrid|none}
 ## Execution Mode: {interactive|auto}
