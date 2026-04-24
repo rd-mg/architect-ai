@@ -126,6 +126,7 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 	// are not bridged by default. Enable with: atl overlay enable <skill-name>
 	optionalSkillSet := map[string]bool{
 		"odoo-minimax-xlsx-o-spreadsheets": true,
+		"odoo-module-builder":              true,
 		"odoo-quote-calculator":            true,
 	}
 
@@ -1193,7 +1194,9 @@ func EnableOverlaySkill(projectRoot string, overlayName string, skillName string
 func populateRegistryEntries(manifest *OverlayManifest, projectRoot string) {
 	overlayRoot := filepath.Join(projectRoot, ".atl", "overlays", manifest.Name)
 	
-	for _, skillName := range manifest.Skills {
+	skillNames := uniqueStrings(append(manifest.Skills, manifest.OptionalSkills...))
+	sort.Strings(skillNames)
+	for _, skillName := range skillNames {
 		if skillName == manifest.Name {
 			continue
 		}

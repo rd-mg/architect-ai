@@ -90,15 +90,19 @@ See `rules/coding-style.md` and `rules/security.md` for the full compact rules.
 
 ## Available Agents (Non-SDD)
 
-The following agents are NOT part of SDD — they are independent diagnostic/automation tools:
+The following agents are independent diagnostic/automation tools available for use outside the standard SDD flow:
 
-- **odoo-database-query**: PostgreSQL schema and data analysis
-- **odoo-ui-automation**: Browser-based validation, module updates, UI testing
+- **odoo-expert**: General Odoo architecture and development expertise.
+- **odoo-plan**: Task planning and technical approach analysis.
+- **odoo-code-reviewer**: Rigorous Odoo-specific code review.
+- **odoo-database-query**: PostgreSQL schema and data analysis.
+- **odoo-ui-automation**: Browser-based validation, module updates, UI testing.
+- **odoo-context-gatherer**: Automated gathering of module and environment context.
+- **odoo-upgrade-analyzer**: Analysis for Odoo version migrations.
+- **odoo-addons-maintainer**: Automated maintenance tasks for custom addons.
+- **odoo-skill-finder**: Discovery of relevant patterns and skills.
 
-For all other work, use the SDD flow. The previous standalone agents
-(odoo-expert, odoo-plan, odoo-code-reviewer, odoo-context-gatherer,
-odoo-upgrade-analyzer, odoo-addons-maintainer, odoo-skill-finder) have been
-absorbed into the SDD phase supplements.
+While these standalone agents remain available, the SDD flow (explore → propose → design → tasks → apply → verify) is the preferred workflow for most changes, utilizing phase-specific supplements.
 
 ## Local Knowledge Sources
 
@@ -139,12 +143,21 @@ After overlay install, the following bundles are bridged based on detected versi
 ### Migration Bundles (Bridged Only for Version Pairs)
 - `skills/migration-{from}-{to}/` — Contains model/module/OWL/security migration guides
 
+## Optional Agnostic Skills
+
+These specialized or high-token skills are not bridged by default. Enable them with `atl overlay enable odoo-development-skill <skill-name>`:
+
+- **odoo-minimax-xlsx-o-spreadsheets**: Advanced spreadsheet integration, XLSX generation/editing, and Odoo Dashboard (.osps) support.
+- **odoo-module-builder**: Comprehensive module scaffolding, model/view/security generation, and Odoo-specific reference patterns.
+- **odoo-quote-calculator**: Specialized tool for Odoo 19 Quote Calculators (v19 spreadsheets linked to sale order templates).
+
 ## Instructions & Rules
 
 Located in `instructions/` and `rules/`:
 - `instructions/odoo-python.instructions.md` — Python-specific rules
 - `instructions/odoo-xml.instructions.md` — XML-specific rules
 - `instructions/odoo-manifest.instructions.md` — Manifest-specific rules
+- `instructions/copilot-instructions.md` — GitHub Copilot specific configurations
 - `rules/CAUTION_POLICY.md` — Conservative modification policy
 - `rules/coding-style.md` — General coding style
 - `rules/security.md` — Security hardening rules
