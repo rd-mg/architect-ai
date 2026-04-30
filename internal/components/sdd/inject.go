@@ -1035,8 +1035,7 @@ func transformMarkdownToGeminiTOML(name, mdContent string) (string, error) {
 	}
 
 	var b strings.Builder
-	b.WriteString("[command]\n")
-	b.WriteString(fmt.Sprintf("name = %q\n", name))
+	// Root-level fields required for Gemini CLI v1 command format
 	b.WriteString(fmt.Sprintf("description = %q\n", description))
 	b.WriteString("prompt = \"\"\"\n")
 	b.WriteString(prompt)
