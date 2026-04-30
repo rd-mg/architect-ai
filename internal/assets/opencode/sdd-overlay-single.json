@@ -1,4 +1,7 @@
 {
+  "plugin": [
+    "./plugins/background-agents.ts"
+  ],
   "agent": {
     "sdd-orchestrator": {
       "mode": "primary",

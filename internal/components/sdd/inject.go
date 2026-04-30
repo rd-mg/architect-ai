@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/rd-mg/architect-ai/internal/agents"
@@ -168,48 +169,44 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 	driftCount := 0
 
 	// 1. Inject SDD orchestrator into the global system prompt for agents that
-	// rely on prompt files. OpenCode is handled differently: its orchestrator
-	// instructions must be scoped to the sdd-orchestrator agent only, otherwise
-	// the SDD phase sub-agents inherit coordinator-only delegation rules.
-	if adapter.Agent() != model.AgentOpenCode {
-		switch adapter.SystemPromptStrategy() {
-		case model.StrategyMarkdownSections:
-			result, err := injectMarkdownSections(homeDir, adapter, opts.ClaudeModelAssignments, opts.Force)
-			if err != nil {
-				return InjectionResult{}, err
-			}
-			changed = changed || result.Changed
-			driftCount += result.DriftCount
-			files = append(files, result.Files...)
-
-		case model.StrategyFileReplace, model.StrategyAppendToFile, model.StrategyInstructionsFile:
-			// For FileReplace/AppendToFile agents, the SDD orchestrator is included
-			// in the generic persona asset. However, if the user chose neutral or
-			// custom persona, the SDD content must still be injected. We append the
-			// SDD orchestrator section to the existing system prompt file so it is
-			// always present regardless of persona choice.
-			result, err := injectFileAppend(homeDir, adapter, opts.Force)
-			if err != nil {
-				return InjectionResult{}, err
-			}
-			changed = changed || result.Changed
-			files = append(files, result.Files...)
-
-		case model.StrategySteeringFile:
-			// For agents with dedicated steering files (e.g. Kiro), the
-			// SDD orchestrator is written directly to the steering path.
-			result, err := injectSteeringFile(homeDir, adapter, opts.Force)
-			if err != nil {
-				return InjectionResult{}, err
-			}
-			changed = changed || result.Changed
-			files = append(files, result.Files...)
+	// rely on prompt files.
+	switch adapter.SystemPromptStrategy() {
+	case model.StrategyMarkdownSections:
+		result, err := injectMarkdownSections(homeDir, adapter, opts.ClaudeModelAssignments, opts.Force, opts)
+		if err != nil {
+			return InjectionResult{}, err
 		}
+		changed = changed || result.Changed
+		driftCount += result.DriftCount
+		files = append(files, result.Files...)
+
+	case model.StrategyFileReplace, model.StrategyAppendToFile, model.StrategyInstructionsFile:
+		// For FileReplace/AppendToFile agents, the SDD orchestrator is included
+		// in the generic persona asset. However, if the user chose neutral or
+		// custom persona, the SDD content must still be injected. We append the
+		// SDD orchestrator section to the existing system prompt file so it is
+		// always present regardless of persona choice.
+		result, err := injectFileAppend(homeDir, adapter, opts.Force, opts)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		changed = changed || result.Changed
+		files = append(files, result.Files...)
+
+	case model.StrategySteeringFile:
+		// For agents with dedicated steering files (e.g. Kiro), the
+		// SDD orchestrator is written directly to the steering path.
+		result, err := injectSteeringFile(homeDir, adapter, opts.Force, opts)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		changed = changed || result.Changed
+		files = append(files, result.Files...)
 	}
 
 	// 1b. If StrictTDD is enabled, inject the strict-tdd-mode marker section
 	// into the system prompt file so agents know Strict TDD is active.
-	if opts.StrictTDD && adapter.Agent() != model.AgentOpenCode {
+	if opts.StrictTDD {
 		promptPath := adapter.SystemPromptFile(homeDir)
 		strictTDDContent := "Strict TDD Mode: enabled"
 		existing, readErr := readFileOrEmpty(promptPath)
@@ -251,13 +248,36 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 			}
 
 			for _, entry := range commandEntries {
-				if entry.IsDir() {
+				if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
 					continue
 				}
 
 				content := assets.MustRead("opencode/commands/" + entry.Name())
-				path := filepath.Join(commandsDir, entry.Name())
-				writeResult, err := filemerge.WriteFileAtomicWithOptions(path, []byte(content), filemerge.WriteOptions{
+				var path string
+				var writeContent []byte
+
+				switch adapter.Agent() {
+				case model.AgentGeminiCLI:
+					// Transform Markdown to TOML for Gemini CLI
+					path = filepath.Join(commandsDir, strings.TrimSuffix(entry.Name(), ".md")+".toml")
+					tomlContent, err := transformMarkdownToGeminiTOML(strings.TrimSuffix(entry.Name(), ".md"), content)
+					if err != nil {
+						return InjectionResult{}, fmt.Errorf("transform gemini command %s: %w", entry.Name(), err)
+					}
+					writeContent = []byte(tomlContent)
+
+				case model.AgentClaudeCode:
+					// Markdown is native for Claude Code
+					path = filepath.Join(commandsDir, entry.Name())
+					writeContent = []byte(content)
+
+				default:
+					// Default to direct Markdown (OpenCode, etc.)
+					path = filepath.Join(commandsDir, entry.Name())
+					writeContent = []byte(content)
+				}
+
+				writeResult, err := filemerge.WriteFileAtomicWithOptions(path, writeContent, filemerge.WriteOptions{
 					Perm:  0o644,
 					Force: opts.Force,
 				})
@@ -267,6 +287,16 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 
 				changed = changed || writeResult.Changed
 				files = append(files, path)
+			}
+
+			// Claude Code specific: ensure plugin manifest exists
+			if adapter.Agent() == model.AgentClaudeCode {
+				manifestResult, err := ensureClaudePluginManifest(adapter.GlobalConfigDir(homeDir), opts.Force)
+				if err != nil {
+					return InjectionResult{}, fmt.Errorf("ensure claude plugin manifest: %w", err)
+				}
+				changed = changed || manifestResult.Changed
+				files = append(files, manifestResult.Files...)
 			}
 		}
 	}
@@ -304,7 +334,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 				changed = changed || promptsChanged
 			}
 
-			overlayBytes, err = inlineOpenCodeSDDPrompts(overlayBytes, homeDir)
+			overlayBytes, err = inlineOpenCodeSDDPrompts(overlayBytes, homeDir, opts)
 			if err != nil {
 				return InjectionResult{}, fmt.Errorf("inline OpenCode SDD prompts: %w", err)
 			}
@@ -382,6 +412,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 				"sdd-phase-common.md",
 				"skill-resolver.md",
 				"consensus-evaluation.md",
+				"research-routing.md",
 				"SKILL.md",
 			}
 
@@ -541,12 +572,12 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 		}
 	}
 
-	// 3c. Write native sub-agent files (Cursor, and any future agent that
-	// implements the subAgentInjector optional interface). Sub-agent files are
-	// written to the user's home directory (e.g. ~/.cursor/agents/), not to the
-	// workspace, so no project-root detection is needed here.
+	// 3c. Write native sub-agent files (Cursor, Gemini, and any future agent
+	// that implements the SubAgentCapableAdapter optional interface). Sub-agent
+	// files are written to the user's home directory (e.g. ~/.cursor/agents/),
+	// not to the workspace, so no project-root detection is needed here.
 	var agentsDir string
-	if sai, ok := adapter.(agents.SubAgentCapable); ok && sai.SupportsSubAgents() {
+	if sai, ok := adapter.(agents.SubAgentCapableAdapter); ok && sai.SupportsSubAgents() {
 		agentsDir = sai.SubAgentsDir(homeDir)
 		if err := os.MkdirAll(agentsDir, 0o755); err != nil {
 			return InjectionResult{}, fmt.Errorf("create agents dir: %w", err)
@@ -596,6 +627,23 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 				}
 				content = string(data)
 			}
+
+			// Resolve placeholders in the sub-agent content
+			overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+			ctx := PromptContext{
+				SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+				OverlayActive:   overlayActive,
+				OverlayName:     overlayName,
+				OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+				Phase:           strings.TrimSuffix(entry.Name(), ".md"),
+			}
+			if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+				ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+			}
+			if resolved, err := resolvePromptTemplate(content, ctx); err == nil {
+				content = resolved
+			}
+
 			outPath := filepath.Join(agentsDir, entry.Name())
 			writeResult, err := filemerge.WriteFileAtomicWithOptions(outPath, []byte(content), filemerge.WriteOptions{
 				Perm:  0o644,
@@ -695,7 +743,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 	return InjectionResult{Changed: changed, DriftCount: driftCount, Files: files}, nil
 }
 
-func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir string) ([]byte, error) {
+func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir string, opts InjectOptions) ([]byte, error) {
 	var overlay map[string]any
 	if err := json.Unmarshal(overlayBytes, &overlay); err != nil {
 		return nil, fmt.Errorf("unmarshal OpenCode SDD overlay: %w", err)
@@ -719,7 +767,32 @@ func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir string) ([]byte, erro
 	if !ok {
 		return overlayBytes, nil
 	}
-	orchestratorMap["prompt"] = assets.MustRead("generic/sdd-orchestrator.md")
+
+	// If the orchestrator already uses a file reference (e.g. {file:./AGENTS.md}),
+	// skip inlining. Step 1 now ensures that the file reference correctly
+	// contains both the persona and the SDD instructions.
+	if prompt, ok := orchestratorMap["prompt"].(string); ok && strings.HasPrefix(prompt, "{file:") {
+		// Replace sub-agent prompt placeholders as usual.
+	} else {
+		content := assets.MustRead("generic/sdd-orchestrator.md")
+
+		// Resolve placeholders in the orchestrator content
+		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+		ctx := PromptContext{
+			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+			OverlayActive:   overlayActive,
+			OverlayName:     overlayName,
+			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+			Phase:           "orchestrator",
+		}
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+		}
+		if resolved, err := resolvePromptTemplate(content, ctx); err == nil {
+			content = resolved
+		}
+		orchestratorMap["prompt"] = content
+	}
 
 	// Replace sub-agent prompt placeholders with {file:<absolutePath>} references.
 	// The placeholder format is __PROMPT_FILE_{phase}__ where {phase} is the agent name.
@@ -941,6 +1014,63 @@ func migrateLegacyOpenCodeAgentsKey(baseJSON []byte) ([]byte, error) {
 	return append(encoded, '\n'), nil
 }
 
+// --- Agent-specific slash command helpers ---
+
+var mdDescriptionRegex = regexp.MustCompile(`(?i)description:\s*["']?([^"'\n\r]+)["']?`)
+
+func transformMarkdownToGeminiTOML(name, mdContent string) (string, error) {
+	description := "SDD Phase Command"
+	prompt := mdContent
+
+	// Try to extract description from frontmatter
+	if match := mdDescriptionRegex.FindStringSubmatch(mdContent); len(match) > 1 {
+		description = strings.TrimSpace(match[1])
+	}
+
+	// Strip frontmatter from prompt if present
+	if strings.HasPrefix(mdContent, "---") {
+		if end := strings.Index(mdContent[3:], "---"); end != -1 {
+			prompt = strings.TrimSpace(mdContent[end+6:])
+		}
+	}
+
+	var b strings.Builder
+	b.WriteString("[command]\n")
+	b.WriteString(fmt.Sprintf("name = %q\n", name))
+	b.WriteString(fmt.Sprintf("description = %q\n", description))
+	b.WriteString("prompt = \"\"\"\n")
+	b.WriteString(prompt)
+	b.WriteString("\n\"\"\"\n")
+
+	return b.String(), nil
+}
+
+func ensureClaudePluginManifest(pluginDir string, force bool) (InjectionResult, error) {
+	manifestDir := filepath.Join(pluginDir, ".claude-plugin")
+	if err := os.MkdirAll(manifestDir, 0o755); err != nil {
+		return InjectionResult{}, fmt.Errorf("create manifest dir: %w", err)
+	}
+
+	manifestPath := filepath.Join(manifestDir, "plugin.json")
+	manifest := map[string]any{
+		"name":        "gentleman",
+		"description": "Gentleman persona and SDD orchestrator for Claude Code",
+		"version":     "1.0.0",
+		"commands":    "./commands",
+	}
+
+	content, _ := json.MarshalIndent(manifest, "", "  ")
+	writeResult, err := filemerge.WriteFileAtomicWithOptions(manifestPath, content, filemerge.WriteOptions{
+		Perm:  0o644,
+		Force: force,
+	})
+	if err != nil {
+		return InjectionResult{}, err
+	}
+
+	return InjectionResult{Changed: writeResult.Changed, Files: []string{manifestPath}}, nil
+}
+
 // sddOrchestratorMarkers are used to detect if SDD content was already injected
 // (e.g., via a persona file or a previous SDD injection). Keep legacy and
 // current headings to remain backward compatible across upstream syncs.
@@ -979,7 +1109,36 @@ func sddOrchestratorAsset(agent model.AgentID) string {
 	}
 }
 
-func injectFileAppend(homeDir string, adapter agents.Adapter, force bool) (InjectionResult, error) {
+func detectActiveOverlay(projectRoot string) (name string, active bool) {
+	if projectRoot == "" {
+		return "", false
+	}
+	overlaysDir := filepath.Join(projectRoot, ".atl", "overlays")
+	entries, err := os.ReadDir(overlaysDir)
+	if err != nil {
+		return "", false
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		manifestPath := filepath.Join(overlaysDir, entry.Name(), "manifest.json")
+		data, err := os.ReadFile(manifestPath)
+		if err != nil {
+			continue
+		}
+		var manifest struct {
+			ActivationState string `json:"activation_state"`
+		}
+		if err := json.Unmarshal(data, &manifest); err == nil && manifest.ActivationState == "active" {
+			return entry.Name(), true
+		}
+	}
+	return "", false
+}
+
+func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, options ...InjectOptions) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
 
 	existing, err := readFileOrEmpty(promptPath)
@@ -993,6 +1152,26 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool) (Injec
 
 	// Use agent-specific SDD orchestrator content when available; fall back to generic.
 	content := assets.MustRead(sddOrchestratorAsset(adapter.Agent()))
+
+	// Resolve placeholders in the orchestrator content
+	if len(options) > 0 {
+		opts := options[0]
+		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+		ctx := PromptContext{
+			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+			OverlayActive:   overlayActive,
+			OverlayName:     overlayName,
+			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+			Phase:           "orchestrator",
+		}
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+		}
+		resolved, err := resolvePromptTemplate(content, ctx)
+		if err == nil {
+			content = resolved
+		}
+	}
 
 	// If there is a bare (un-marked) legacy orchestrator block, strip it first
 	// so InjectMarkdownSection can re-inject the current canonical content.
@@ -1184,9 +1363,30 @@ func stripBareOrchestratorSection(content string) string {
 	return result
 }
 
-func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments map[string]model.ClaudeModelAlias, force bool) (InjectionResult, error) {
+func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments map[string]model.ClaudeModelAlias, force bool, options ...InjectOptions) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
 	content := assets.MustRead("claude/sdd-orchestrator.md")
+
+	// Resolve placeholders in the orchestrator content
+	if len(options) > 0 {
+		opts := options[0]
+		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+		ctx := PromptContext{
+			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+			OverlayActive:   overlayActive,
+			OverlayName:     overlayName,
+			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+			Phase:           "orchestrator",
+		}
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+		}
+		resolved, err := resolvePromptTemplate(content, ctx)
+		if err == nil {
+			content = resolved
+		}
+	}
+
 	if len(assignments) > 0 {
 		var err error
 		content, err = injectClaudeModelAssignments(content, assignments)
@@ -1413,9 +1613,29 @@ func readExistingAgentModels(path string) (map[string]bool, error) {
 	return result, nil
 }
 
-func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool) (InjectionResult, error) {
+func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, options ...InjectOptions) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
 	content := assets.MustRead("claude/sdd-orchestrator.md")
+
+	// Resolve placeholders in the orchestrator content
+	if len(options) > 0 {
+		opts := options[0]
+		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+		ctx := PromptContext{
+			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+			OverlayActive:   overlayActive,
+			OverlayName:     overlayName,
+			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+			Phase:           "orchestrator",
+		}
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+		}
+		resolved, err := resolvePromptTemplate(content, ctx)
+		if err == nil {
+			content = resolved
+		}
+	}
 
 	existing, err := readFileOrEmpty(promptPath)
 	if err != nil {
@@ -1446,4 +1666,110 @@ func readFileOrEmpty(path string) (string, error) {
 		return "", fmt.Errorf("read file %q: %w", path, err)
 	}
 	return string(data), nil
+}
+
+// PromptContext provides the necessary context for resolving placeholders in
+// system prompt templates.
+type PromptContext struct {
+	SharedAssetsDir string // Path to internal/assets/skills/_shared/
+	OverlayActive   bool
+	OverlayName     string
+	OverlaySupplDir string // Path to .atl/overlays/{overlay}/sdd-supplements/
+	Phase           string // "sdd-explore", "sdd-propose", etc.
+}
+
+var (
+	contentOfRegex = regexp.MustCompile(`\{content of ([^}]+)\}`)
+	ifOverlayRegex = regexp.MustCompile(`(?s)\{if (\w+) overlay active, add: ([^}]+)\}`)
+)
+
+// resolveAssetPath attempts to locate a relative path within the active overlay's
+// supplement directory or the project's shared assets directory.
+func resolveAssetPath(relPath string, ctx PromptContext) string {
+	// 1. Try active overlay supplement directory
+	if ctx.OverlayActive && ctx.OverlaySupplDir != "" {
+		p := filepath.Join(ctx.OverlaySupplDir, relPath)
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+
+	// 2. Try shared assets directory in project
+	if ctx.SharedAssetsDir != "" {
+		p := filepath.Join(ctx.SharedAssetsDir, relPath)
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+
+	return ""
+}
+
+// resolvePromptTemplate resolves {content of ...} and {if ...} placeholders
+// in the given template content using the provided context.
+func resolvePromptTemplate(content string, ctx PromptContext) (string, error) {
+	// 1. Resolve {content of <path>}
+	var resolveErr error
+	content = contentOfRegex.ReplaceAllStringFunc(content, func(match string) string {
+		if resolveErr != nil {
+			return match
+		}
+		submatches := contentOfRegex.FindStringSubmatch(match)
+		if len(submatches) < 2 {
+			return match
+		}
+		relPath := submatches[1]
+
+		var resolvedContent string
+		if assetPath := resolveAssetPath(relPath, ctx); assetPath != "" {
+			resolvedContent, _ = readFileOrEmpty(assetPath)
+		}
+
+		// Final fallback: embedded assets (if possible)
+		if resolvedContent == "" {
+			embedPath := "skills/_shared/" + relPath
+			if data, err := assets.Read(embedPath); err == nil {
+				resolvedContent = data
+			}
+		}
+
+		if resolvedContent == "" {
+			return match
+		}
+
+		return strings.TrimSpace(resolvedContent)
+	})
+	if resolveErr != nil {
+		return "", resolveErr
+	}
+
+	// 2. Resolve {if <overlay> overlay active, add: <path>}
+	content = ifOverlayRegex.ReplaceAllStringFunc(content, func(match string) string {
+		if resolveErr != nil {
+			return match
+		}
+		submatches := ifOverlayRegex.FindStringSubmatch(match)
+		if len(submatches) < 3 {
+			return match
+		}
+		overlayName := submatches[1]
+		relPath := submatches[2]
+
+		// Phase-specific substitution: replace {phase} with actual phase
+		relPath = strings.ReplaceAll(relPath, "{phase}", ctx.Phase)
+
+		if ctx.OverlayActive && ctx.OverlayName == overlayName {
+			if assetPath := resolveAssetPath(relPath, ctx); assetPath != "" {
+				resolvedContent, _ := readFileOrEmpty(assetPath)
+				if resolvedContent != "" {
+					return strings.TrimSpace(resolvedContent)
+				}
+			}
+		}
+
+		// If overlay not active or file not found, remove the placeholder
+		return ""
+	})
+
+	return content, nil
 }

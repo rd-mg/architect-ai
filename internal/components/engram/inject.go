@@ -318,6 +318,32 @@ var osReadFile = func(path string) ([]byte, error) {
 	return content, nil
 }
 
+// VerifyCodexConfig checks if the Codex configuration file at ~/.codex/config.toml
+// contains the expected engram MCP server entry and instruction file paths.
+func VerifyCodexConfig(homeDir string) error {
+	configPath := homeDir + "/.codex/config.toml"
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("Codex config file not found at %s", configPath)
+		}
+		return fmt.Errorf("read Codex config: %w", err)
+	}
+
+	content := string(data)
+	if !strings.Contains(content, "[mcp_servers.engram]") {
+		return fmt.Errorf("Codex config missing [mcp_servers.engram] section")
+	}
+	if !strings.Contains(content, "model_instructions_file =") {
+		return fmt.Errorf("Codex config missing model_instructions_file setting")
+	}
+	if !strings.Contains(content, "experimental_compact_prompt_file =") {
+		return fmt.Errorf("Codex config missing experimental_compact_prompt_file setting")
+	}
+
+	return nil
+}
+
 func readFileOrEmpty(path string) (string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

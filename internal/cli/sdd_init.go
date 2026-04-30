@@ -78,6 +78,14 @@ func RunSddInit(args []string, stdout io.Writer) error {
 	}
 
 	fmt.Fprintf(stdout, "SDD Bootstrap successful in %s mode.\n", *mode)
+	status, count, _ := probeNotebookLMState()
+	if status == "READY" {
+		fmt.Fprintf(stdout, "NotebookLM: READY (%d notebooks available)\n", count)
+	} else if status == "FOUND" {
+		fmt.Fprintln(stdout, "NotebookLM: FOUND (binary present but no notebooks detected or not configured)")
+	} else {
+		fmt.Fprintln(stdout, "NotebookLM: NOT FOUND (nlm command not on PATH)")
+	}
 	fmt.Fprintln(stdout, "You may now run the 'sdd-init' Phase (AI Analysis) to complete project setup.")
 	return nil
 }

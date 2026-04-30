@@ -39,3 +39,4 @@ openspec/changes/
 tmp/
 *.tmp
 *.bak
+/.atl

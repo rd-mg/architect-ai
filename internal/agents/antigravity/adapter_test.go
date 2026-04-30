@@ -170,8 +170,8 @@ func TestCapabilities(t *testing.T) {
 func TestStrategies(t *testing.T) {
 	a := NewAdapter()
 
-	if got := a.SystemPromptStrategy(); got != model.StrategyAppendToFile {
-		t.Fatalf("SystemPromptStrategy() = %v, want StrategyAppendToFile", got)
+	if got := a.SystemPromptStrategy(); got != model.StrategyMarkdownSections {
+		t.Fatalf("SystemPromptStrategy() = %v, want StrategyMarkdownSections", got)
 	}
 
 	if got := a.MCPStrategy(); got != model.StrategyMCPConfigFile {

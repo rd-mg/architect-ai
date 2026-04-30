@@ -936,9 +936,10 @@ func runPostApplyVerification(homeDir string, selection model.Selection, resolve
 	}
 
 	if hasComponent(resolved.OrderedComponents, model.ComponentEngram) {
-		checks = append(checks, engramHealthChecks()...)
+		checks = append(checks, engramHealthChecks(homeDir, resolved.Agents)...)
 	}
 	checks = append(checks, antigravityCollisionCheck(resolved.Agents)...)
+	checks = append(checks, antigravityInstallCheck(homeDir, resolved.Agents)...)
 
 	return verify.BuildReport(verify.RunChecks(context.Background(), checks))
 }
@@ -952,8 +953,8 @@ func hasComponent(components []model.ComponentID, target model.ComponentID) bool
 	return false
 }
 
-func engramHealthChecks() []verify.Check {
-	return []verify.Check{
+func engramHealthChecks(homeDir string, agents []model.AgentID) []verify.Check {
+	checks := []verify.Check{
 		{
 			ID:          "verify:engram:binary",
 			Description: "engram binary on PATH (restart shell if missing)",
@@ -979,6 +980,27 @@ func engramHealthChecks() []verify.Check {
 			},
 		},
 	}
+
+	hasCodex := false
+	for _, id := range agents {
+		if id == model.AgentCodex {
+			hasCodex = true
+			break
+		}
+	}
+
+	if hasCodex {
+		checks = append(checks, verify.Check{
+			ID:          "verify:engram:codex-config",
+			Description: "Codex engram configuration valid",
+			Soft:        true,
+			Run: func(context.Context) error {
+				return engram.VerifyCodexConfig(homeDir)
+			},
+		})
+	}
+
+	return checks
 }
 
 // antigravityCollisionCheck returns a soft verify check that warns the user
@@ -986,30 +1008,35 @@ func engramHealthChecks() []verify.Check {
 // ~/.gemini/GEMINI.md — content is merged (not overwritten) but the user
 // should be aware.
 func antigravityCollisionCheck(agents []model.AgentID) []verify.Check {
+	// Antigravity uses ~/.gemini/GEMINI.md and Gemini CLI uses ~/.gemini/system.md.
+	// They no longer collide.
+	return nil
+}
+
+// antigravityInstallCheck returns a soft verify check that ensures the
+// Antigravity IDE directory exists when the agent is selected.
+func antigravityInstallCheck(homeDir string, agents []model.AgentID) []verify.Check {
 	hasAntigravity := false
-	hasGemini := false
 	for _, id := range agents {
 		if id == model.AgentAntigravity {
 			hasAntigravity = true
-		}
-		if id == model.AgentGeminiCLI {
-			hasGemini = true
+			break
 		}
 	}
-	if !hasAntigravity || !hasGemini {
+	if !hasAntigravity {
 		return nil
 	}
 	return []verify.Check{
 		{
-			ID:          "verify:antigravity:rules-collision",
-			Description: "Antigravity and Gemini CLI share ~/.gemini/GEMINI.md",
+			ID:          "verify:antigravity:install",
+			Description: "Antigravity IDE configuration directory exists",
 			Soft:        true,
 			Run: func(context.Context) error {
-				return fmt.Errorf(
-					"both Antigravity and Gemini CLI write rules to ~/.gemini/GEMINI.md\n" +
-						"Content is merged, not overwritten — rules from both agents coexist in the same file.\n" +
-						"This is expected behavior. No action required unless you want to separate them manually.",
-				)
+				configDir := filepath.Join(homeDir, ".gemini", "antigravity")
+				if _, err := os.Stat(configDir); err != nil {
+					return fmt.Errorf("Antigravity config directory not found at %s. Please ensure the IDE is installed.", configDir)
+				}
+				return nil
 			},
 		},
 	}

@@ -4,13 +4,14 @@
 
 ---
 
-## The priority
+## The priority (5-Step)
 
 ```
-1. NotebookLM           ← project-curated knowledge (first choice)
-2. Local code + docs    ← repo itself (ripgrep, find, cat, extract-text)
-3. Context7             ← framework/library official docs
-4. Internet             ← LAST, only on EXPLICIT user request
+1. Engram               ← past decisions & previous findings (fastest)
+2. Local ripgrep        ← repo itself (or ripgrep-odoo for Odoo projects)
+3. NotebookLM           ← version-specific curated knowledge
+4. Context7             ← library/framework official documentation
+5. Web Search           ← LAST, only on EXPLICIT user request
 ```
 
 No other order is acceptable. Deviation requires explicit user approval.
@@ -20,112 +21,75 @@ No other order is acceptable. Deviation requires explicit user approval.
 ## Decision tree
 
 ```
-Does the question involve project-specific knowledge
-(our architecture, our decisions, our conventions)?
+Question asked?
   │
-  YES → Step 1: NotebookLM
-  │       mem_search / notebooklm_query for matching notebook
-  │       If hit → use it, STOP
-  │       If miss → fall through to Step 2
+  ├─ Step 1: Engram (mem_search)
+  │    If hit and fresh (<168h) → use it, STOP.
   │
-  NO  → The question is framework/tool-specific (Odoo, React, Go stdlib, etc.)?
-         │
-         YES → Step 3: Context7 directly (skip 1, 2)
-         │
-         NO  → Step 2: Local code + docs (ripgrep)
+  ├─ Step 2: Local Code (ripgrep)
+  │    Is it about THIS repo? → rg local
+  │    Is it about Odoo? → ripgrep-odoo (~/gitproj/odoo/)
+  │    If found → use it, STOP.
+  │
+  ├─ Step 3: NotebookLM (notebooklm_query)
+  │    Is it version-specific or curated external? → Query notebook
+  │    If hit → use it, STOP.
+  │
+  ├─ Step 4: Context7 (context7_resolve)
+  │    Is it framework/library specific? → Query Context7
+  │    If hit → use it, STOP.
+  │
+  └─ Step 5: Web Search
+       ONLY on explicit user trigger ("search web", "google it").
 ```
 
 ---
 
-## Step 1 — NotebookLM (FIRST CHOICE)
+## Step 1 — Engram (ALWAYS FIRST)
+
+Call `mem_search` with the most specific topic_key.
+- Pattern found: USE IT. Skip all other steps.
+- No relevant result: Proceed to Step 2.
+
+---
+
+## Step 2 — Local ripgrep / ripgrep-odoo
 
 Use when:
-- The question is about project-specific context (our repo's architecture, our past decisions, our conventions)
-- The user references "our docs", "the team's guide", "the notebook"
-- The answer might be in a curated notebook — if unsure, TRY NotebookLM FIRST
-
-Probe:
-```
-mem_search(query: "{user-question topic}", project: "{project}")
-  → look for knowledge/{domain}/external/{topic} topic-keys
-```
-
-If a matching notebook exists, read it and answer. If not, fall through.
-
-**NotebookLM is query-only** (enforced in V3). Never attempt to create notebooks or write artifacts.
+- The question is about function signatures, types, or call sites.
+- **For Odoo projects**: Use `ripgrep-odoo` (base path: `~/gitproj/odoo/`) to see HOW Odoo implements something.
+- **For other projects**: Use local `ripgrep` to walk the repo tree.
 
 ---
 
-## Step 2 — Local code + docs
+## Step 3 — NotebookLM
 
 Use when:
-- The question is about THIS repo's actual code (function signatures, types, call sites)
-- The answer is definitely in the tree (e.g., "how does our retry logic work?")
+- Version-specific changes, migration guides, or external library behavior not found in local code.
+- Curated project knowledge is needed.
 
-Tools in preference order:
-1. `ripgrep` — pattern search (ALWAYS preferred over `grep`)
-2. `find -name` — filename search
-3. `cat` / `extract-text` — read specific files
-4. Language toolchain (`gopls`, `tsc --listFiles`, `python -c 'import X; print(X.__file__)'`) for semantic questions
-
-Budget: 2 minutes and ≤10 tool calls. If you can't find it in the local tree in 10 calls, it's probably not there — fall through.
+**NotebookLM is query-only** (enforced in V3). Never attempt to create notebooks or write artifacts during research.
 
 ---
 
-## Step 3 — Context7
+## Step 4 — Context7
 
 Use when:
-- The question is about a framework, library, or language feature (NOT our code)
-- Steps 1 + 2 failed, OR the question is obviously external (e.g., "how does React's `useTransition` behave under Suspense?")
-
-Probe:
-```
-context7_resolve(library: "react")
-context7_get_docs(library_id: "...", topic: "useTransition Suspense")
-```
-
-Persist findings in Engram under `context7/{framework}/{version}/{topic}` so the next session skips the API call.
+- The question is about a framework, library, or language feature (NOT our code).
+- Steps 1-3 failed, OR the question is obviously external (e.g., "how does React's `useTransition` behave under Suspense?").
 
 ---
 
-## Step 4 — Internet (LAST RESORT)
+## Step 5 — Web Search (LAST RESORT)
 
 **Only use when the user explicitly asks.** Trigger phrases:
-- "search the web"
-- "look online"
-- "check the internet"
-- "google it"
-- "what does the web say about..."
+- "search the web", "look online", "check the internet", "google it"
 - "busca en internet", "busca online"
 
-Absent an explicit trigger, do NOT call `web_search` / `web_fetch`. Return what you have from steps 1-3 and tell the user you did not search the web.
-
-When you DO search:
-- Prefer original sources (official docs, vendor blog, RFC, spec) over aggregators
-- Cite URLs in your response
-- Persist findings in a NotebookLM-compatible note if the project has a research notebook
-
----
-
-## Explicit override
-
-The user can ask to skip steps:
-- "use Context7 directly" → skip 1, 2
-- "search the internet" → skip 1, 2, 3
-
-Honor the override, but note in your response what was skipped:
-> Using Context7 directly as requested. Skipped NotebookLM + local search.
+Absent an explicit trigger, do NOT call `web_search` / `web_fetch`.
 
 ---
 
 ## Rationale
 
-NotebookLM-first protects project-specific knowledge from being overwritten by generic external answers. Local-second keeps you fast and grounded. Context7 is expensive (network, tokens, rate limits) and should be a deliberate choice. Internet is the slowest, noisiest, and most prone to hallucinated facts — reserve for when the human explicitly wants it.
-
----
-
-## See also
-
-- `mcp-notebooklm-orchestrator/SKILL.md` — how to query NotebookLM
-- `mcp-context7-skill/SKILL.md` — how to query Context7; includes "defers to NotebookLM" section
-- `ripgrep/SKILL.md` — local search
+Engram-first ensures we don't repeat work. Local-second keeps us grounded in the actual codebase. NotebookLM provides high-quality curated knowledge. Context7 provides official reference. Web search is a safety valve for things not yet indexed elsewhere.

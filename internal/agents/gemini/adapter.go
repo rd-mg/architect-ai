@@ -83,7 +83,7 @@ func (a *Adapter) SystemPromptDir(homeDir string) string {
 }
 
 func (a *Adapter) SystemPromptFile(homeDir string) string {
-	return filepath.Join(homeDir, ".gemini", "GEMINI.md")
+	return filepath.Join(homeDir, ".gemini", "system.md")
 }
 
 func (a *Adapter) SkillsDir(homeDir string) string {
@@ -121,11 +121,11 @@ func (a *Adapter) OutputStyleDir(_ string) string {
 }
 
 func (a *Adapter) SupportsSlashCommands() bool {
-	return false
+	return true
 }
 
-func (a *Adapter) CommandsDir(_ string) string {
-	return ""
+func (a *Adapter) CommandsDir(homeDir string) string {
+	return filepath.Join(homeDir, ".gemini", "commands", "sdd")
 }
 
 func (a *Adapter) SupportsSkills() bool {

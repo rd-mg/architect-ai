@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -205,6 +206,17 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	}
 	content = filemerge.InjectMarkdownSection(content, "registry:specialist-resources", assetBuilder.String())
 
+	// Research Status (NotebookLM)
+	var rb strings.Builder
+	rb.WriteString("## Research Status\n\n")
+	status, count, _ := probeNotebookLMState()
+	rb.WriteString(fmt.Sprintf("- **NotebookLM**: %s", status))
+	if count > 0 {
+		rb.WriteString(fmt.Sprintf(" (%d notebooks found)", count))
+	}
+	rb.WriteString("\n")
+	content = filemerge.InjectMarkdownSection(content, "registry:research-status", rb.String())
+
 	// 3. Write to file
 	if err := os.MkdirAll(filepath.Dir(registryPath), 0o755); err != nil {
 		return fmt.Errorf("create local registry directory: %w", err)
@@ -284,7 +296,7 @@ func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 			// Standard classification
 			if info.Name == "_shared" {
 				info.Kind = "SharedRule"
-			} else if strings.HasPrefix(info.Name, "sdd-") || info.Name == "skill-registry" {
+			} else if strings.HasPrefix(info.Name, "sdd-") || info.Name == "skill-registry" || info.Name == "cognitive-mode" || info.Name == "adaptive-reasoning" {
 				info.Kind = "System"
 			} else {
 				info.Kind = "Project"
@@ -383,7 +395,7 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 
 						if entry.Name() == "_shared" {
 							info.Kind = "SharedRule"
-						} else if strings.HasPrefix(entry.Name(), "sdd-") || entry.Name() == "skill-registry" {
+						} else if strings.HasPrefix(entry.Name(), "sdd-") || entry.Name() == "skill-registry" || entry.Name() == "cognitive-mode" || entry.Name() == "adaptive-reasoning" {
 							info.Kind = "System"
 						} else {
 							info.Kind = "Overlay"
@@ -461,7 +473,7 @@ func scanSkillsDir(dir string, origin string) []skillEntry {
 		kind := "User"
 		if d.Name() == "_shared" {
 			kind = "SharedRule"
-		} else if strings.HasPrefix(d.Name(), "sdd-") || d.Name() == "skill-registry" {
+		} else if strings.HasPrefix(d.Name(), "sdd-") || d.Name() == "skill-registry" || d.Name() == "cognitive-mode" || d.Name() == "adaptive-reasoning" {
 			kind = "System"
 		}
 
@@ -515,53 +527,28 @@ func parseSkillFile(path string) skillEntry {
 			} else if inFrontmatter {
 				inFrontmatter = false
 				frontmatterDone = true
-				// Extract Trigger: from description if not found as a standalone field.
-				// Two strategies:
-				// 1. Explicit "Trigger:" prefix embedded in the description text.
-				// 2. Fallback: use the description itself — it already says when to use the skill.
-				if entry.Trigger == "" && descriptionBuffer.Len() > 0 {
-					descText := strings.TrimSpace(descriptionBuffer.String())
-					if idx := strings.Index(descText, "Trigger:"); idx != -1 {
-						// Take only the first line of the trigger sentence
-						raw := strings.TrimSpace(descText[idx+len("Trigger:"):])
-						if nl := strings.IndexAny(raw, "\n\r"); nl != -1 {
-							raw = strings.TrimSpace(raw[:nl])
-						}
-						entry.Trigger = raw
-					} else {
-						// Use description as trigger: first sentence or first 150 chars
-						trigger := descText
-						if dot := strings.IndexAny(trigger, ".。"); dot > 0 && dot < 150 {
-							trigger = strings.TrimSpace(trigger[:dot])
-						} else if len(trigger) > 150 {
-							trigger = strings.TrimSpace(trigger[:150]) + "..."
-						}
-						entry.Trigger = trigger
-					}
-				}
 			}
 			continue
 		}
 
 		if inFrontmatter {
-			if strings.HasPrefix(trimmedLine, "name:") {
-				entry.Name = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "name:"))
-			} else if strings.HasPrefix(trimmedLine, "Trigger:") {
-				entry.Trigger = strings.TrimSpace(strings.TrimPrefix(trimmedLine, "Trigger:"))
-			} else if strings.HasPrefix(trimmedLine, "description:") {
+			if _, val, ok := parseYAMLField(trimmedLine, "name"); ok {
+				entry.Name = val
+			} else if _, val, ok := parseYAMLField(trimmedLine, "trigger"); ok {
+				entry.Trigger = val
+			} else if _, val, ok := parseYAMLField(trimmedLine, "description"); ok {
 				// Handle multiline description with > operator
-				descValue := strings.TrimSpace(strings.TrimPrefix(trimmedLine, "description:"))
-				if strings.HasPrefix(descValue, ">") {
+				if strings.HasPrefix(val, ">") {
 					inDescription = true
 					// Check if there's text after > on the same line
-					remaining := strings.TrimSpace(strings.TrimPrefix(descValue, ">"))
+					remaining := strings.TrimSpace(strings.TrimPrefix(val, ">"))
 					if remaining != "" {
 						descriptionBuffer.WriteString(remaining)
 						descriptionBuffer.WriteString(" ")
 					}
 				} else {
 					// Single-line description
-					descriptionBuffer.WriteString(descValue)
+					descriptionBuffer.WriteString(val)
 					descriptionBuffer.WriteString(" ")
 				}
 			} else if inDescription {
@@ -589,6 +576,7 @@ func parseSkillFile(path string) skillEntry {
 				strings.Contains(lower, "patterns") ||
 				strings.Contains(lower, "critical") ||
 				strings.Contains(lower, "core principle") ||
+				strings.Contains(lower, "key principle") ||
 				strings.Contains(lower, "key constraint") ||
 				strings.Contains(lower, "step-by-step") ||
 				strings.Contains(lower, "workflow") ||
@@ -596,7 +584,13 @@ func parseSkillFile(path string) skillEntry {
 				strings.Contains(lower, "quick reference") ||
 				strings.Contains(lower, "discovery index") ||
 				strings.Contains(lower, "migration sequence") ||
-				strings.Contains(lower, "version-agnostic principle") {
+				strings.Contains(lower, "version-agnostic principle") ||
+				strings.Contains(lower, "how to use") ||
+				strings.Contains(lower, "core behavior") ||
+				strings.Contains(lower, "execution step") ||
+				strings.Contains(lower, "agent instruction") ||
+				strings.Contains(lower, "required action") ||
+				strings.Contains(lower, "usage") {
 				inRules = true
 				continue
 			} else {
@@ -604,10 +598,36 @@ func parseSkillFile(path string) skillEntry {
 			}
 		}
 
-		if inRules && len(rulesLines) < 15 {
+		if inRules && len(rulesLines) < 40 {
 			if trimmedLine != "" {
 				rulesLines = append(rulesLines, line)
 			}
+		}
+	}
+
+	// Post-processing for triggers if missing from frontmatter
+	if entry.Trigger == "" && descriptionBuffer.Len() > 0 {
+		descText := strings.TrimSpace(descriptionBuffer.String())
+		if idx := strings.Index(descText, "Trigger:"); idx != -1 {
+			// Take only the first line of the trigger sentence
+			raw := strings.TrimSpace(descText[idx+len("Trigger:"):])
+			if nl := strings.IndexAny(raw, "\n\r"); nl != -1 {
+				raw = strings.TrimSpace(raw[:nl])
+			}
+			entry.Trigger = raw
+		} else {
+			// Use description as trigger: first sentence or first 300 chars
+			trigger := descText
+			if dot := strings.IndexAny(trigger, ".。"); dot > 0 && dot < 300 {
+				trigger = strings.TrimSpace(trigger[:dot])
+			} else if len(trigger) > 300 {
+				// Word-boundary truncation
+				trigger = trigger[:300]
+				if lastSpace := strings.LastIndexAny(trigger, " \t\n\r"); lastSpace > 250 {
+					trigger = strings.TrimSpace(trigger[:lastSpace])
+				}
+			}
+			entry.Trigger = trigger
 		}
 	}
 
@@ -630,6 +650,9 @@ func deduplicateSkills(skills []skillEntry) []skillEntry {
 		// project > overlay > user > system > shared
 		priority := map[string]int{"project": 5, "overlay": 4, "user": 3, "system": 2, "shared": 1}
 		if priority[s.Origin] > priority[existing.Origin] {
+			if s.Origin == "project" && existing.Origin == "overlay" {
+				fmt.Fprintf(os.Stderr, "Warning: project skill %q overrides overlay skill at %s\n", s.Name, existing.Path)
+			}
 			m[s.Name] = s
 		}
 	}
@@ -659,6 +682,46 @@ func collectProjectConventions(projectRoot string) []conventionEntry {
 
 func escapeTable(s string) string {
 	return strings.ReplaceAll(s, "|", "\\|")
+}
+
+// probeNotebookLMState checks the status of the NotebookLM MCP server.
+// Returns one of: "NOT FOUND", "FOUND", "READY".
+func probeNotebookLMState() (status string, count int, err error) {
+	// First check if 'nlm' is on path
+	p, err := exec.LookPath("nlm")
+	if err != nil {
+		return "NOT FOUND", 0, nil
+	}
+
+	// Check if any notebooks are found
+	out, err := exec.Command(p, "list", "--json").CombinedOutput()
+	if err != nil {
+		// Found the binary but it might not be configured or fails
+		return "FOUND", 0, nil
+	}
+
+	var notebooks []struct {
+		ID    string `json:"id"`
+		Title string `json:"title"`
+	}
+	if err := json.Unmarshal(out, &notebooks); err != nil {
+		return "FOUND", 0, nil
+	}
+
+	if len(notebooks) > 0 {
+		return "READY", len(notebooks), nil
+	}
+
+	return "FOUND", 0, nil
+}
+
+func parseYAMLField(line, fieldName string) (key, value string, ok bool) {
+	lower := strings.ToLower(line)
+	prefix := fieldName + ":"
+	if !strings.HasPrefix(lower, prefix) {
+		return "", "", false
+	}
+	return fieldName, strings.TrimSpace(line[len(prefix):]), true
 }
 
 // EnsureProjectRegistryReady performs the base initialization of a project for ATL/SDD.

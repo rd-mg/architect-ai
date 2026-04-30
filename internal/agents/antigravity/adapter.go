@@ -87,7 +87,7 @@ func (a *Adapter) SettingsPath(homeDir string) string {
 // --- Config strategies ---
 
 func (a *Adapter) SystemPromptStrategy() model.SystemPromptStrategy {
-	return model.StrategyAppendToFile
+	return model.StrategyMarkdownSections
 }
 
 func (a *Adapter) MCPStrategy() model.MCPStrategy {

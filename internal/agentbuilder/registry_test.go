@@ -159,7 +159,7 @@ func TestRegistry_RemoveByName_NonExistentReturnsFalse(t *testing.T) {
 }
 
 func TestHasConflictWithBuiltin_TrueForBuiltin(t *testing.T) {
-	builtins := []string{"sdd-init", "sdd-apply", "sdd-verify", "go-testing", "skill-creator", "judgment-day"}
+	builtins := []string{"sdd-init", "sdd-apply", "sdd-verify", "go-testing", "skill-creator"}
 	for _, name := range builtins {
 		if !HasConflictWithBuiltin(name, nil) {
 			t.Errorf("HasConflictWithBuiltin(%q, nil) = false, want true", name)

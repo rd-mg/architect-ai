@@ -62,9 +62,10 @@ type Adapter interface {
 	CommandsDir(homeDir string) string
 }
 
-// SubAgentCapable identifies adapters that support native sub-agent files
-// (e.g., Cursor .cursorrules, Kiro .kiro, Gemini agents/).
-type SubAgentCapable interface {
+// SubAgentCapableAdapter identifies adapters that support native sub-agent files
+// (e.g., Cursor agents/, Gemini agents/).
+type SubAgentCapableAdapter interface {
+	Adapter
 	SupportsSubAgents() bool
 	SubAgentsDir(homeDir string) string
 	EmbeddedSubAgentsDir() string

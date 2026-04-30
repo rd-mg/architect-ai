@@ -24,7 +24,14 @@ Resolution order:
 
 ### Step 2: Match Relevant Skills
 
-Match skills on TWO dimensions:
+**Mandatory Skills (ALWAYS injected)** — NEW in V3.1
+Regardless of task matcher, these skills are ALWAYS injected into every sub-agent prompt:
+- `ripgrep` — pattern search (replaces grep)
+- `bash-expert` — safe shell scripting
+- `mcp-notebooklm-orchestrator` — primary research source
+- `context-guardian` — context pressure detection
+
+Match additional skills on TWO dimensions:
 
 **A. Code Context** — what files will the sub-agent touch or review?
 

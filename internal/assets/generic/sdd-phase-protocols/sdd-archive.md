@@ -33,6 +33,7 @@ Task: Close out the change "{change-name}". This is a mechanical phase.
    - Outcome summary (what shipped)
    - Tasks completed count
    - Verification verdict
+   - Research audit (NotebookLM status)
    - Any open follow-ups
 4. If OpenSpec mode: move change directory to archive/ folder
 5. Update DAG state to "archived"

@@ -46,7 +46,7 @@ mem_save(
   topic_key: "sdd-init/{project}",
   type: "project-context",
   project: "{project}",
-  content: "Project: {name}\nLanguage: {lang}\nFramework: {framework}\nTest runner: {cmd}\nArtifact mode: {mode}\nStrict TDD: {true|false}\nActive overlays: {list}\nInit date: {date}"
+  content: "Project: {name}\nLanguage: {lang}\nFramework: {framework}\nTest runner: {cmd}\nArtifact mode: {mode}\nStrict TDD: {true|false}\nActive overlays: {list}\nNotebookLM status: {status}\nInit date: {date}"
 )
 
 ## Return Envelope per sdd-phase-common.md Section D

@@ -104,6 +104,10 @@ func normalizeComponents(values []string, preset model.PresetID) ([]model.Compon
 	return unique(components), nil
 }
 
+var deprecatedSkills = map[model.SkillID]string{
+	"judgment-day": "Judgment Day has been absorbed into adaptive-reasoning v1.0 as Mode 2 (adversarial-review).",
+}
+
 func normalizeSkills(values []string) ([]model.SkillID, error) {
 	if len(values) == 0 {
 		return nil, nil
@@ -117,6 +121,9 @@ func normalizeSkills(values []string) ([]model.SkillID, error) {
 	skills := []model.SkillID{}
 	for _, raw := range values {
 		skill := model.SkillID(raw)
+		if reason, ok := deprecatedSkills[skill]; ok {
+			return nil, fmt.Errorf("skill %q is deprecated: %s", raw, reason)
+		}
 		if _, ok := allowed[skill]; !ok {
 			return nil, fmt.Errorf("unsupported skill %q", raw)
 		}

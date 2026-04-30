@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -371,6 +372,17 @@ func BootstrapProjectLocalOverlays(projectRoot string, refresh bool, enterpriseP
 	baseManifestPath := filepath.Join(absProjectRoot, ".atl", "overlays", baseOverlayName, "manifest.json")
 	baseOverlayExists := overlayManifestExists(baseManifestPath)
 
+	// If Odoo project detected but no version found in __manifest__.py,
+	// install only version-agnostic skills and log a warning.
+	if isOdooProject && len(versions) == 0 {
+		fmt.Fprintf(os.Stderr, "Warning: Odoo project detected but no version found in __manifest__.py. "+
+			"Only version-agnostic skills will be installed. "+
+			"Specify version with: architect-ai overlay install odoo-development-skill --ref=19\n")
+		// Set a sentinel so versionFilter is not nil (prevents all-bundles install)
+		versions = map[int]struct{}{-1: {}}
+		result.Versions = versions
+	}
+
 	versionIntent := formatVersionSet(versions)
 
 	action := "reused"
@@ -705,6 +717,11 @@ func matchesOverlaySkillVersion(name string, targetVersions map[int]struct{}) bo
 		return isAgnostic
 	}
 
+	// Sentinel -1 means Odoo detected but version unknown: only agnostic content allowed.
+	if _, ok := targetVersions[-1]; ok {
+		return isAgnostic
+	}
+
 	if strings.HasSuffix(lower, "-all") {
 		return true
 	}
@@ -781,13 +798,12 @@ func bridgeOverlaySkills(projectRoot string, manifest OverlayManifest) error {
 		// Promote a version-specific skill bundle to the short "odoo" name when it
 		// matches one of the detected project versions. This lets agents refer to
 		// the Odoo knowledge base as simply "odoo" regardless of target version.
-		//
-		// Single-overlay model: we used to derive version from manifest.Name (e.g.
-		// "odoo-19"). Now manifest.Name is always "odoo-development-skill", so we
-		// use the detected versions from __manifest__.py instead.
 		bridgeName := skillName
 		if isOdoo && len(odooVersions) > 0 && strings.HasPrefix(skillName, "odoo-") {
 			for v := range odooVersions {
+				if v == -1 {
+					continue
+				}
 				vStr := strconv.Itoa(v)
 				if skillName == "odoo-"+vStr || skillName == "odoo-"+vStr+".0" {
 					bridgeName = "odoo"
@@ -804,6 +820,14 @@ func bridgeOverlaySkills(projectRoot string, manifest OverlayManifest) error {
 		if err != nil {
 			if _, err := copyFSTree(os.DirFS(src), ".", dst, nil); err != nil {
 				return fmt.Errorf("copy overlay skill %q: %w", skillName, err)
+			}
+			continue
+		}
+
+		// On Windows, symlinking requires Developer Mode or Admin. Fall back to copy.
+		if runtime.GOOS == "windows" {
+			if _, err := copyFSTree(os.DirFS(src), ".", dst, nil); err != nil {
+				return fmt.Errorf("copy overlay skill %q (windows): %w", skillName, err)
 			}
 			continue
 		}

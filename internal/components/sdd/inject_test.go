@@ -42,7 +42,7 @@ func TestInjectClaudeWritesSectionMarkers(t *testing.T) {
 		t.Fatalf("Inject() first changed = false")
 	}
 
-	path := filepath.Join(home, ".claude", "CLAUDE.md")
+	path := filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md")
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
@@ -51,28 +51,28 @@ func TestInjectClaudeWritesSectionMarkers(t *testing.T) {
 	text := string(content)
 
 	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
-		t.Fatal("CLAUDE.md missing open marker for sdd-orchestrator")
+		t.Fatal("instructions.md missing open marker for sdd-orchestrator")
 	}
 	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
-		t.Fatal("CLAUDE.md missing close marker for sdd-orchestrator")
+		t.Fatal("instructions.md missing close marker for sdd-orchestrator")
 	}
 	if !strings.Contains(text, "sub-agent") {
-		t.Fatal("CLAUDE.md missing real SDD orchestrator content (expected 'sub-agent')")
+		t.Fatal("instructions.md missing real SDD orchestrator content (expected 'sub-agent')")
 	}
 	if !strings.Contains(text, "dependency") {
-		t.Fatal("CLAUDE.md missing real SDD orchestrator content (expected 'dependency')")
+		t.Fatal("instructions.md missing real SDD orchestrator content (expected 'dependency')")
 	}
 }
 
 func TestInjectClaudePreservesExistingSections(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeAdapter().GlobalConfigDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	existing := "# My Config\n\nSome user content.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "CLAUDE.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -81,7 +81,7 @@ func TestInjectClaudePreservesExistingSections(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, err := os.ReadFile(filepath.Join(claudeDir, "CLAUDE.md"))
+	content, err := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
@@ -132,9 +132,9 @@ func TestInjectClaudeCustomModelAssignments(t *testing.T) {
 		t.Fatal("Inject(claude, custom assignments) changed = false")
 	}
 
-	content, err := os.ReadFile(filepath.Join(home, ".claude", "CLAUDE.md"))
+	content, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
 	if err != nil {
-		t.Fatalf("ReadFile(CLAUDE.md) error = %v", err)
+		t.Fatalf("ReadFile(instructions.md) error = %v", err)
 	}
 
 	text := string(content)
@@ -144,15 +144,15 @@ func TestInjectClaudeCustomModelAssignments(t *testing.T) {
 		"| default | haiku | Non-SDD general delegation |",
 	} {
 		if !strings.Contains(text, want) {
-			t.Fatalf("CLAUDE.md missing custom table row %q", want)
+			t.Fatalf("instructions.md missing custom table row %q", want)
 		}
 	}
 
 	if !strings.Contains(text, "<!-- architect-ai:sdd-model-assignments -->") {
-		t.Fatal("CLAUDE.md missing model assignment open marker")
+		t.Fatal("instructions.md missing model assignment open marker")
 	}
 	if !strings.Contains(text, "<!-- /architect-ai:sdd-model-assignments -->") {
-		t.Fatal("CLAUDE.md missing model assignment close marker")
+		t.Fatal("instructions.md missing model assignment close marker")
 	}
 }
 
@@ -368,7 +368,7 @@ func TestInjectGeminiWritesSDDOrchestratorAndSkills(t *testing.T) {
 	}
 
 	// Verify SDD orchestrator was injected into GEMINI.md.
-	promptPath := filepath.Join(home, ".gemini", "GEMINI.md")
+	promptPath := filepath.Join(home, ".gemini", "system.md")
 	content, readErr := os.ReadFile(promptPath)
 	if readErr != nil {
 		t.Fatalf("ReadFile(%q) error = %v", promptPath, readErr)
@@ -927,18 +927,18 @@ func TestInjectClaudeIgnoresSDDMode(t *testing.T) {
 		t.Fatal("first injection should be changed=true")
 	}
 
-	// Read and compare the CLAUDE.md files — content should be identical.
-	multiContent, err := os.ReadFile(filepath.Join(home, ".claude", "CLAUDE.md"))
+	// Read and compare the instructions.md files — content should be identical.
+	multiContent, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
 	if err != nil {
 		t.Fatalf("ReadFile(multi) error = %v", err)
 	}
-	singleContent, err := os.ReadFile(filepath.Join(homeBaseline, ".claude", "CLAUDE.md"))
+	singleContent, err := os.ReadFile(filepath.Join(homeBaseline, ".claude", "plugins", "gentleman", "instructions.md"))
 	if err != nil {
 		t.Fatalf("ReadFile(single) error = %v", err)
 	}
 
 	if string(multiContent) != string(singleContent) {
-		t.Fatal("Claude CLAUDE.md differs between multi and single sddMode — non-OpenCode agents should ignore sddMode")
+		t.Fatal("Claude instructions.md differs between multi and single sddMode — non-OpenCode agents should ignore sddMode")
 	}
 }
 
@@ -1033,14 +1033,14 @@ func TestInjectFileAppendSkipsAgentTeamsHeading(t *testing.T) {
 
 func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeAdapter().GlobalConfigDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Pre-existing file with a BARE (no HTML markers) Agent Teams Orchestrator section.
 	existing := "# My Rules\n\n## Rules\n\nBe excellent.\n\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n\n### Delegation Rules\n\nSome old rules.\n\n## Other Section\n\nOther content.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "CLAUDE.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1052,7 +1052,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 		t.Fatal("Inject() returned no files")
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "CLAUDE.md"))
+	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1091,14 +1091,14 @@ func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 
 func TestInjectClaudeDeduplicatesBareOrchestratorAtEndOfFile(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeAdapter().GlobalConfigDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Bare orchestrator section at the END of file (no following ## heading).
 	existing := "# My Rules\n\n## Rules\n\nBe excellent.\n\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR, not an executor.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "CLAUDE.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1107,7 +1107,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtEndOfFile(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "CLAUDE.md"))
+	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1718,7 +1718,7 @@ func TestStripBareOrchestratorSection_DoesNotStripIfMarkersPresent(t *testing.T)
 // ---------------------------------------------------------------------------
 
 // TestInjectStrictTDDEnabledInjectsMarkerIntoClaude verifies that when
-// InjectOptions.StrictTDD = true, the injected content in CLAUDE.md contains
+// InjectOptions.StrictTDD = true, the injected content in instructions.md contains
 // the <!-- architect-ai:strict-tdd-mode --> marker with its content.
 func TestInjectStrictTDDEnabledInjectsMarkerIntoClaude(t *testing.T) {
 	home := t.TempDir()
@@ -1732,20 +1732,20 @@ func TestInjectStrictTDDEnabledInjectsMarkerIntoClaude(t *testing.T) {
 		t.Fatal("Inject() changed = false")
 	}
 
-	content, err := os.ReadFile(filepath.Join(home, ".claude", "CLAUDE.md"))
+	content, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
 	if err != nil {
-		t.Fatalf("ReadFile(CLAUDE.md) error = %v", err)
+		t.Fatalf("ReadFile(instructions.md) error = %v", err)
 	}
 
 	text := string(content)
 	if !strings.Contains(text, "<!-- architect-ai:strict-tdd-mode -->") {
-		t.Fatal("CLAUDE.md missing <!-- architect-ai:strict-tdd-mode --> open marker")
+		t.Fatal("instructions.md missing <!-- architect-ai:strict-tdd-mode --> open marker")
 	}
 	if !strings.Contains(text, "<!-- /architect-ai:strict-tdd-mode -->") {
-		t.Fatal("CLAUDE.md missing <!-- /architect-ai:strict-tdd-mode --> close marker")
+		t.Fatal("instructions.md missing <!-- /architect-ai:strict-tdd-mode --> close marker")
 	}
 	if !strings.Contains(text, "Strict TDD Mode: enabled") {
-		t.Fatal("CLAUDE.md missing 'Strict TDD Mode: enabled' content")
+		t.Fatal("instructions.md missing 'Strict TDD Mode: enabled' content")
 	}
 }
 
@@ -1760,14 +1760,14 @@ func TestInjectStrictTDDDisabledDoesNotInjectMarker(t *testing.T) {
 		t.Fatalf("Inject(claude, default) error = %v", err)
 	}
 
-	content, err := os.ReadFile(filepath.Join(home, ".claude", "CLAUDE.md"))
+	content, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
 	if err != nil {
-		t.Fatalf("ReadFile(CLAUDE.md) error = %v", err)
+		t.Fatalf("ReadFile(instructions.md) error = %v", err)
 	}
 
 	text := string(content)
 	if strings.Contains(text, "<!-- architect-ai:strict-tdd-mode -->") {
-		t.Fatal("CLAUDE.md should NOT contain strict-tdd-mode marker when StrictTDD=false")
+		t.Fatal("instructions.md should NOT contain strict-tdd-mode marker when StrictTDD=false")
 	}
 }
 
@@ -1868,17 +1868,17 @@ func TestInjectCopiesAllFilesReportedInResult(t *testing.T) {
 }
 
 // TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning verifies that a bare
-// orchestrator section at the very START of CLAUDE.md is handled correctly.
+// orchestrator section at the very START of instructions.md is handled correctly.
 func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeAdapter().GlobalConfigDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Bare orchestrator at the very start, followed by other content.
 	existing := "## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n\n## Other Rules\n\nBe excellent.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "CLAUDE.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1887,7 +1887,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "CLAUDE.md"))
+	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1908,11 +1908,11 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 }
 
 // TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator verifies that a
-// CLAUDE.md containing ONLY the bare orchestrator (no other sections) is
+// instructions.md containing ONLY the bare orchestrator (no other sections) is
 // correctly replaced with the marker-based version.
 func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeAdapter().GlobalConfigDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
@@ -1920,7 +1920,7 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 	// Use a unique phrase that does NOT appear in the canonical orchestrator
 	// asset so we can confirm the bare version was stripped.
 	existing := "## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n\n### Delegation Rules\n\nLEGACY-RULE-MARKER-XYZ\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "CLAUDE.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1929,7 +1929,7 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "CLAUDE.md"))
+	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1957,14 +1957,14 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 // section produces exactly one orchestrator section (no accumulation).
 func TestInjectClaudeDeduplicatesBareOrchestratorIsIdempotent(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeAdapter().GlobalConfigDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Start from bare state.
 	existing := "# My Rules\n\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "CLAUDE.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1982,7 +1982,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorIsIdempotent(t *testing.T) {
 		t.Fatal("second Inject() changed = true — idempotency broken after dedup migration")
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "CLAUDE.md"))
+	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1994,12 +1994,12 @@ func TestInjectClaudeDeduplicatesBareOrchestratorIsIdempotent(t *testing.T) {
 }
 
 // TestInjectClaudeDoesNotStripMarkedSection verifies that an existing
-// CLAUDE.md with a properly-marked orchestrator section is NOT stripped and
+// instructions.md with a properly-marked orchestrator section is NOT stripped and
 // re-written as bare content (the migration guard must only fire when markers
 // are absent).
 func TestInjectClaudeDoesNotStripMarkedSection(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeAdapter().GlobalConfigDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
@@ -2010,7 +2010,7 @@ func TestInjectClaudeDoesNotStripMarkedSection(t *testing.T) {
 	}
 
 	// Read and verify markers.
-	after1, err := os.ReadFile(filepath.Join(claudeDir, "CLAUDE.md"))
+	after1, err := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
@@ -2459,7 +2459,7 @@ func TestInjectGeminiUsesAgentSpecificAsset(t *testing.T) {
 		t.Fatal("Inject(gemini) changed = false")
 	}
 
-	promptPath := filepath.Join(home, ".gemini", "GEMINI.md")
+	promptPath := filepath.Join(home, ".gemini", "system.md")
 	content, readErr := os.ReadFile(promptPath)
 	if readErr != nil {
 		t.Fatalf("ReadFile(%q) error = %v", promptPath, readErr)
@@ -3369,5 +3369,83 @@ func TestInjectOpenCodeWithTwoProfiles_BothOrchestratorsPresent(t *testing.T) {
 	}
 	if !strings.Contains(text, `"sdd-orchestrator-premium"`) {
 		t.Error("opencode.json missing sdd-orchestrator-premium")
+	}
+}
+
+func TestInjectOpenCode_Alignment(t *testing.T) {
+	home := t.TempDir()
+	adapter := opencodeAdapter()
+	mockNoPackageManager(t)
+
+	// 1. Initial state: AGENTS.md with Persona
+	agentsPath := filepath.Join(home, ".config", "opencode", "AGENTS.md")
+	if err := os.MkdirAll(filepath.Dir(agentsPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(agentsPath, []byte("# Persona\nI am Gentleman."), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// 2. Inject SDD (single mode)
+	result, err := Inject(home, adapter, "single")
+	if err != nil {
+		t.Fatalf("Inject() error = %v", err)
+	}
+	if !result.Changed {
+		t.Fatal("Inject() changed = false")
+	}
+
+	// 3. Verify AGENTS.md contains BOTH Persona and SDD Orchestrator
+	agentsContent, err := os.ReadFile(agentsPath)
+	if err != nil {
+		t.Fatalf("ReadFile(AGENTS.md) error = %v", err)
+	}
+	text := string(agentsContent)
+	if !strings.Contains(text, "I am Gentleman.") {
+		t.Error("AGENTS.md missing Persona")
+	}
+	// OpenCode uses the generic orchestrator instructions
+	if !strings.Contains(text, "# Agent Teams Lite — Spec-Driven Development (SDD) Orchestrator Core (Generic)") {
+		t.Error("AGENTS.md missing SDD Orchestrator Instructions (Generic)")
+	}
+
+	// 4. Verify opencode.json preserves {file:./AGENTS.md} and registers plugin
+	settingsPath := filepath.Join(home, ".config", "opencode", "opencode.json")
+	settingsData, err := os.ReadFile(settingsPath)
+	if err != nil {
+		t.Fatalf("ReadFile(opencode.json) error = %v", err)
+	}
+
+	root := map[string]any{}
+	if err := json.Unmarshal(settingsData, &root); err != nil {
+		t.Fatalf("Unmarshal(opencode.json) error = %v", err)
+	}
+
+	// Verify plugin
+	pluginRaw, ok := root["plugin"]
+	if !ok {
+		t.Fatal("opencode.json missing plugin key")
+	}
+	plugins, ok := pluginRaw.([]any)
+	if !ok {
+		t.Fatalf("plugin key has unexpected type: %T", pluginRaw)
+	}
+	foundPlugin := false
+	for _, p := range plugins {
+		if p == "./plugins/background-agents.ts" {
+			foundPlugin = true
+			break
+		}
+	}
+	if !foundPlugin {
+		t.Error("opencode.json missing background-agents.ts in plugin array")
+	}
+
+	// Verify orchestrator prompt preservation
+	agentMap, _ := root["agent"].(map[string]any)
+	orchestrator, _ := agentMap["sdd-orchestrator"].(map[string]any)
+	prompt, _ := orchestrator["prompt"].(string)
+	if prompt != "{file:./AGENTS.md}" {
+		t.Errorf("sdd-orchestrator prompt = %q, want {file:./AGENTS.md} (preserved)", prompt)
 	}
 }
