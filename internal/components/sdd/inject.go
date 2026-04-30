@@ -168,6 +168,13 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 	changed := false
 	driftCount := 0
 
+	// 0. Resolve project root and propagate to WorkspaceAware adapters.
+	if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+		if wa, ok := adapter.(agents.WorkspaceAware); ok {
+			wa.SetWorkspaceRoot(projectRoot)
+		}
+	}
+
 	// 1. Inject SDD orchestrator into the global system prompt for agents that
 	// rely on prompt files.
 	switch adapter.SystemPromptStrategy() {

@@ -71,6 +71,12 @@ type SubAgentCapableAdapter interface {
 	EmbeddedSubAgentsDir() string
 }
 
+// WorkspaceAware identifies adapters that can react to the project's root path
+// (e.g., to adjust configuration or skill directories for local-first use).
+type WorkspaceAware interface {
+	SetWorkspaceRoot(root string)
+}
+
 // WorkflowCapable identifies adapters that support native workflow files
 // (e.g., Kiro workflows/).
 type WorkflowCapable interface {

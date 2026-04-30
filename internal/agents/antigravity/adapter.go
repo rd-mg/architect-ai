@@ -15,13 +15,20 @@ type statResult struct {
 }
 
 type Adapter struct {
-	statPath func(string) statResult
+	statPath      func(string) statResult
+	workspaceRoot string
 }
 
 func NewAdapter() *Adapter {
 	return &Adapter{
 		statPath: defaultStat,
 	}
+}
+
+// --- WorkspaceAware ---
+
+func (a *Adapter) SetWorkspaceRoot(root string) {
+	a.workspaceRoot = root
 }
 
 // --- Identity ---
@@ -65,22 +72,37 @@ func (a *Adapter) InstallCommand(_ system.PlatformProfile) ([][]string, error) {
 // --- Config paths ---
 
 func (a *Adapter) GlobalConfigDir(homeDir string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent")
+	}
 	return filepath.Join(homeDir, ".gemini", "antigravity")
 }
 
 func (a *Adapter) SystemPromptDir(homeDir string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent")
+	}
 	return filepath.Join(homeDir, ".gemini")
 }
 
 func (a *Adapter) SystemPromptFile(homeDir string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent", "GEMINI.md")
+	}
 	return filepath.Join(homeDir, ".gemini", "GEMINI.md")
 }
 
 func (a *Adapter) SkillsDir(homeDir string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent", "skills")
+	}
 	return filepath.Join(homeDir, ".gemini", "antigravity", "skills")
 }
 
 func (a *Adapter) SettingsPath(homeDir string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent", "settings.json")
+	}
 	return filepath.Join(homeDir, ".gemini", "antigravity", "settings.json")
 }
 
@@ -97,6 +119,9 @@ func (a *Adapter) MCPStrategy() model.MCPStrategy {
 // --- MCP ---
 
 func (a *Adapter) MCPConfigPath(homeDir string, _ string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent", "mcp_config.json")
+	}
 	return filepath.Join(homeDir, ".gemini", "antigravity", "mcp_config.json")
 }
 
@@ -111,10 +136,13 @@ func (a *Adapter) OutputStyleDir(_ string) string {
 }
 
 func (a *Adapter) SupportsSlashCommands() bool {
-	return false
+	return true
 }
 
-func (a *Adapter) CommandsDir(_ string) string {
+func (a *Adapter) CommandsDir(homeDir string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent", "workflows")
+	}
 	return ""
 }
 
@@ -128,6 +156,23 @@ func (a *Adapter) SupportsSystemPrompt() bool {
 
 func (a *Adapter) SupportsMCP() bool {
 	return true
+}
+
+// --- WorkflowCapable ---
+
+func (a *Adapter) SupportsWorkflows() bool {
+	return true
+}
+
+func (a *Adapter) WorkflowsDir(_ string) string {
+	if a.workspaceRoot != "" {
+		return filepath.Join(a.workspaceRoot, ".agent", "workflows")
+	}
+	return ""
+}
+
+func (a *Adapter) EmbeddedWorkflowsDir() string {
+	return "antigravity/workflows"
 }
 
 // AgentNotInstallableError is returned when InstallCommand is called on a desktop-only agent.

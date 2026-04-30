@@ -12,13 +12,20 @@ import (
 )
 
 type Adapter struct {
-	lookPath func(string) (string, error)
+	lookPath      func(string) (string, error)
+	workspaceRoot string
 }
 
 func NewAdapter() *Adapter {
 	return &Adapter{
 		lookPath: exec.LookPath,
 	}
+}
+
+// --- WorkspaceAware ---
+
+func (a *Adapter) SetWorkspaceRoot(root string) {
+	a.workspaceRoot = root
 }
 
 // --- Identity ---

@@ -154,8 +154,8 @@ func TestCapabilities(t *testing.T) {
 		t.Fatal("SupportsOutputStyles() = true, want false")
 	}
 
-	if a.SupportsSlashCommands() {
-		t.Fatal("SupportsSlashCommands() = true, want false")
+	if !a.SupportsSlashCommands() {
+		t.Fatal("SupportsSlashCommands() = false, want true")
 	}
 
 	if got := a.OutputStyleDir("/tmp/home"); got != "" {
@@ -163,7 +163,12 @@ func TestCapabilities(t *testing.T) {
 	}
 
 	if got := a.CommandsDir("/tmp/home"); got != "" {
-		t.Fatalf("CommandsDir() = %q, want empty string", got)
+		t.Fatalf("CommandsDir() = %q, want empty string when no workspace root set", got)
+	}
+
+	a.SetWorkspaceRoot("/tmp/project")
+	if got := a.CommandsDir("/tmp/home"); got != "/tmp/project/.agent/workflows" {
+		t.Fatalf("CommandsDir() = %q, want /tmp/project/.agent/workflows", got)
 	}
 }
 
