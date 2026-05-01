@@ -14,6 +14,7 @@ import (
 
 	"github.com/rd-mg/architect-ai/internal/agents"
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
+	"github.com/rd-mg/architect-ai/internal/scope"
 )
 
 type skillEntry struct {
@@ -255,30 +256,13 @@ func collectUserSkills(homeDir string) ([]skillEntry, error) {
 func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 	var entries []skillEntry
 
-	// standard exclusions
-	excluded := map[string]bool{
-		".git":         true,
-		"node_modules": true,
-		"vendor":       true,
-		".terraform":   true,
-		".venv":        true,
-		"__pycache__":  true,
-		"dist":         true,
-		"build":        true,
-		".tmp":         true,
-		".atl":         true, // Skip .atl to avoid self-referencing registry or redundant overlay scans
-		"testdata":     true,
-		"tests":        true,
-		"e2e":          true,
-	}
-
 	err := filepath.WalkDir(projectRoot, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return nil // soft skip
 		}
 
 		if d.IsDir() {
-			if excluded[d.Name()] {
+			if scope.ShouldSkipRefactorPath(path) {
 				return filepath.SkipDir
 			}
 			return nil

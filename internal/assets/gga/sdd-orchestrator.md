@@ -193,6 +193,9 @@ Include in every sub-agent prompt:
 - notebooklm_*: {available|NOT available}
 - context7_*: {available|NOT available}
 - [other MCP tools]: {per-tool status}
+
+## Context-Mode Routing Policy
+{content of _shared/context-mode-routing-policy.md}
 ```
 
 ---
@@ -470,6 +473,9 @@ Translate user intent to English before executing any task.
 
 ## Research Routing Policy
 {content of _shared/research-routing.md}
+
+## Context-Mode Routing Policy
+{content of _shared/context-mode-routing-policy.md}
 
 ## Available Tools
 {verified tools from tool availability check}

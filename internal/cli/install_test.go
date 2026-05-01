@@ -264,3 +264,16 @@ func TestDefaultAgentsFromDetection_AllAgentsMappedCorrectly(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeInstallFlagsMinimalExcludesNotebookLM(t *testing.T) {
+	input, err := NormalizeInstallFlags(InstallFlags{Preset: "minimal"}, system.DetectionResult{})
+	if err != nil {
+		t.Fatalf("NormalizeInstallFlags() error = %v", err)
+	}
+
+	for _, component := range input.Selection.Components {
+		if component == model.ComponentNotebookLM {
+			t.Errorf("minimal preset should not include notebooklm-mcp component, got %v", input.Selection.Components)
+		}
+	}
+}

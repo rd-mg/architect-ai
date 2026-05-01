@@ -457,6 +457,16 @@ func (s componentSyncStep) Run() error {
 		}
 		return nil
 
+	case model.ComponentNotebookLM:
+		for _, adapter := range adapters {
+			res, err := mcp.InjectNotebookLM(s.homeDir, adapter)
+			if err != nil {
+				return fmt.Errorf("sync notebooklm for %q: %w", adapter.Agent(), err)
+			}
+			s.countChanged(boolToInt(res.Changed))
+		}
+		return nil
+
 	case model.ComponentSDD:
 		// Resolve profiles for injection:
 		// - When profiles are explicitly provided (TUI/CLI), use them directly.

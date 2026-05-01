@@ -30,7 +30,7 @@ func ClassifyRefactorPath(path string) PathClass {
 		if part == "." || part == "" {
 			continue
 		}
-		if strings.HasPrefix(part, ".") {
+		if strings.HasPrefix(part, ".") && part != ".agent" {
 			return PathGeneratedDotdir
 		}
 	}
@@ -38,7 +38,7 @@ func ClassifyRefactorPath(path string) PathClass {
 	// Reject dist, build, coverage, vendor, tmp, .tmp, node_modules
 	for _, part := range parts {
 		switch part {
-		case "node_modules", "dist", "build", "coverage", "vendor", "tmp":
+		case "node_modules", "dist", "build", "coverage", "vendor", ".tmp":
 			return PathBuildArtifact
 		}
 	}
@@ -69,4 +69,9 @@ func ClassifyRefactorPath(path string) PathClass {
 
 func ShouldRefactorPath(path string) bool {
 	return ClassifyRefactorPath(path) == PathSourceRefactor
+}
+
+func ShouldSkipRefactorPath(path string) bool {
+	class := ClassifyRefactorPath(path)
+	return class == PathGeneratedDotdir || class == PathBuildArtifact
 }

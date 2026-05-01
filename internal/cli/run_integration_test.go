@@ -1726,9 +1726,13 @@ func TestOpenCodePersonaBeforeSDDPreservesAllSections(t *testing.T) {
 		t.Errorf("AGENTS.md contains %d occurrences of %q, want exactly 1 (no duplicates)", count, marker)
 	}
 
-	// AGENTS.md must NOT have sdd-orchestrator markers — OpenCode uses opencode.json overlay
-	if strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
-		t.Error("AGENTS.md should NOT have sdd-orchestrator marker — OpenCode uses opencode.json agent overlay")
+	// AGENTS.md MUST have sdd-orchestrator markers because OpenCode's sdd-orchestrator
+	// agent (configured in opencode.json) uses {file:./AGENTS.md} for its prompt.
+	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+		t.Error("AGENTS.md missing sdd-orchestrator open marker (required for OpenCode file-referenced prompt)")
+	}
+	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
+		t.Error("AGENTS.md missing sdd-orchestrator close marker")
 	}
 
 	// SDD orchestrator for OpenCode lives in opencode.json agent overlay

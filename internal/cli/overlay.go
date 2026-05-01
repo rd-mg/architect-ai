@@ -18,6 +18,7 @@ import (
 	"time"
 
 	embeddedassets "github.com/rd-mg/architect-ai/internal/assets"
+	"github.com/rd-mg/architect-ai/internal/scope"
 )
 
 const (
@@ -620,8 +621,7 @@ func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error)
 			return nil
 		}
 		if d.IsDir() {
-			base := d.Name()
-			if base == ".git" || base == ".atl" || base == "node_modules" || base == ".venv" {
+			if scope.ShouldSkipRefactorPath(path) {
 				return filepath.SkipDir
 			}
 			return nil

@@ -521,6 +521,13 @@ func (s componentApplyStep) Run() error {
 			}
 		}
 		return nil
+	case model.ComponentNotebookLM:
+		for _, adapter := range adapters {
+			if _, err := mcp.InjectNotebookLM(s.homeDir, adapter); err != nil {
+				return fmt.Errorf("inject notebooklm for %q: %w", adapter.Agent(), err)
+			}
+		}
+		return nil
 	case model.ComponentPersona:
 		for _, adapter := range adapters {
 			if _, err := persona.Inject(s.homeDir, adapter, s.selection.Persona); err != nil {
@@ -883,6 +890,20 @@ func componentPaths(homeDir string, selection model.Selection, adapters []agents
 				// Codex uses TOML for Engram but Context7 is not injected via TOML.
 				// No path to report — Context7 injection is skipped for TOML agents.
 			}
+		case model.ComponentNotebookLM:
+			switch adapter.MCPStrategy() {
+			case model.StrategySeparateMCPFiles:
+				paths = append(paths, adapter.MCPConfigPath(homeDir, "notebooklm-mcp"))
+			case model.StrategyMergeIntoSettings:
+				if p := adapter.SettingsPath(homeDir); p != "" {
+					paths = append(paths, p)
+				}
+			case model.StrategyMCPConfigFile:
+				if p := adapter.MCPConfigPath(homeDir, "notebooklm-mcp"); p != "" {
+					paths = append(paths, p)
+				}
+			case model.StrategyTOMLFile:
+			}
 		case model.ComponentPersona:
 			if selection.Persona == model.PersonaCustom {
 				break
@@ -937,6 +958,9 @@ func runPostApplyVerification(homeDir string, selection model.Selection, resolve
 
 	if hasComponent(resolved.OrderedComponents, model.ComponentEngram) {
 		checks = append(checks, engramHealthChecks(homeDir, resolved.Agents)...)
+	}
+	if hasComponent(resolved.OrderedComponents, model.ComponentNotebookLM) {
+		checks = append(checks, notebookLMHealthChecks()...)
 	}
 	checks = append(checks, antigravityCollisionCheck(resolved.Agents)...)
 	checks = append(checks, antigravityInstallCheck(homeDir, resolved.Agents)...)
@@ -1113,4 +1137,35 @@ func modelAssignmentsToState(m map[string]model.ModelAssignment) map[string]stat
 		out[k] = state.ModelAssignmentState{ProviderID: v.ProviderID, ModelID: v.ModelID}
 	}
 	return out
+}
+func notebookLMHealthChecks() []verify.Check {
+	return []verify.Check{
+		{
+			ID:          "verify:notebooklm:binary",
+			Description: "notebooklm-mcp binary on PATH",
+			Soft:        true,
+			Run: func(context.Context) error {
+				if _, err := exec.LookPath("notebooklm-mcp"); err != nil {
+					return fmt.Errorf("notebooklm-mcp not found in PATH: %w\nInstall it via npm or npx", err)
+				}
+				return nil
+			},
+		},
+		{
+			ID:          "verify:notebooklm:help",
+			Description: "notebooklm-mcp returns valid output",
+			Soft:        true,
+			Run: func(context.Context) error {
+				if _, err := exec.LookPath("notebooklm-mcp"); err != nil {
+					return nil // Binary missing
+				}
+				cmd := exec.Command("notebooklm-mcp", "--help")
+				out, err := cmd.CombinedOutput()
+				if err != nil {
+					return fmt.Errorf("notebooklm-mcp --help failed: %w\n%s", err, string(out))
+				}
+				return nil
+			},
+		},
+	}
 }

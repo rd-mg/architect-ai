@@ -34,6 +34,7 @@ const (
 	ComponentSDD        ComponentID = "sdd"
 	ComponentSkills     ComponentID = "skills"
 	ComponentContext7   ComponentID = "context7"
+	ComponentNotebookLM ComponentID = "notebooklm"
 	ComponentPersona    ComponentID = "persona"
 	ComponentPermission ComponentID = "permissions"
 	ComponentGGA        ComponentID = "gga"

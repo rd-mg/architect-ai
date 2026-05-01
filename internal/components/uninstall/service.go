@@ -502,6 +502,9 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 	case model.ComponentContext7:
 		targets = append(targets, context7Targets(adapter, homeDir)...)
 		ops = append(ops, context7Operations(adapter, homeDir)...)
+	case model.ComponentNotebookLM:
+		targets = append(targets, notebookLMTargets(adapter, homeDir)...)
+		ops = append(ops, notebookLMOperations(adapter, homeDir)...)
 	case model.ComponentEngram:
 		if s.engramUninstallScope == model.EngramUninstallScopeProject {
 			projectDataPath := filepath.Join(s.workspaceDir, ".engram")
@@ -700,12 +703,45 @@ func context7Operations(adapter agents.Adapter, homeDir string) []operation {
 	case model.StrategyMCPConfigFile:
 		path := adapter.MCPConfigPath(homeDir, "context7")
 		switch adapter.Agent() {
-		case model.AgentVSCodeCopilot:
+		case model.AgentVSCodeCopilot, model.AgentCursor:
 			return []operation{rewriteJSONFile(path, jsonPath{"servers", "context7"})}
-		case model.AgentAntigravity:
-			return []operation{rewriteJSONFile(path, jsonPath{"mcpServers", "context7"})}
 		default:
 			return []operation{rewriteJSONFile(path, jsonPath{"mcpServers", "context7"})}
+		}
+	default:
+		return nil
+	}
+}
+
+func notebookLMTargets(adapter agents.Adapter, homeDir string) []string {
+	switch adapter.MCPStrategy() {
+	case model.StrategySeparateMCPFiles:
+		return []string{adapter.MCPConfigPath(homeDir, "notebooklm-mcp")}
+	case model.StrategyMergeIntoSettings, model.StrategyMCPConfigFile:
+		return []string{adapter.MCPConfigPath(homeDir, "notebooklm-mcp")}
+	default:
+		return nil
+	}
+}
+
+func notebookLMOperations(adapter agents.Adapter, homeDir string) []operation {
+	switch adapter.MCPStrategy() {
+	case model.StrategySeparateMCPFiles:
+		path := adapter.MCPConfigPath(homeDir, "notebooklm-mcp")
+		return []operation{removeFile(path), removeDirIfEmpty(filepath.Dir(path))}
+	case model.StrategyMergeIntoSettings:
+		path := adapter.SettingsPath(homeDir)
+		if adapter.Agent() == model.AgentOpenCode || adapter.Agent() == model.AgentKilocode {
+			return []operation{rewriteJSONFile(path, jsonPath{"mcp", "notebooklm-mcp"})}
+		}
+		return []operation{rewriteJSONFile(path, jsonPath{"mcpServers", "notebooklm-mcp"})}
+	case model.StrategyMCPConfigFile:
+		path := adapter.MCPConfigPath(homeDir, "notebooklm-mcp")
+		switch adapter.Agent() {
+		case model.AgentVSCodeCopilot, model.AgentCursor:
+			return []operation{rewriteJSONFile(path, jsonPath{"servers", "notebooklm-mcp"})}
+		default:
+			return []operation{rewriteJSONFile(path, jsonPath{"mcpServers", "notebooklm-mcp"})}
 		}
 	default:
 		return nil
