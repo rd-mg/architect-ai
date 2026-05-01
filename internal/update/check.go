@@ -2,11 +2,17 @@ package update
 
 import (
 	"context"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/rd-mg/architect-ai/internal/system"
+)
+
+var (
+	lookPath    = exec.LookPath
+	execCommand = exec.Command
 )
 
 // CheckAll runs update checks for all registered tools concurrently.

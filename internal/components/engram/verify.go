@@ -7,11 +7,12 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/rd-mg/architect-ai/internal/process"
 )
 
 var (
-	lookPath    = exec.LookPath
-	execCommand = exec.Command
+	lookPath = exec.LookPath
 )
 
 func VerifyInstalled() error {
@@ -24,14 +25,13 @@ func VerifyInstalled() error {
 
 // VerifyVersion runs "engram version" and returns the trimmed output.
 // Returns an error if the command fails or produces no output.
-func VerifyVersion() (string, error) {
-	cmd := execCommand("engram", "version")
-	out, err := cmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("engram version command failed: %w", err)
+func VerifyVersion(ctx context.Context) (string, error) {
+	res, _ := process.Run(ctx, "engram", []string{"version"}, process.OptionsFor(process.FastCheck))
+	if res.Error != nil {
+		return "", fmt.Errorf("engram version command failed: %w", res.Error)
 	}
 
-	version := strings.TrimSpace(string(out))
+	version := strings.TrimSpace(string(res.Stdout))
 	if version == "" {
 		return "", fmt.Errorf("engram version returned empty output")
 	}

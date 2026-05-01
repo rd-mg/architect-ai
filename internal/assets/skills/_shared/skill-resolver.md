@@ -28,7 +28,7 @@ Resolution order:
 Regardless of task matcher, these skills are ALWAYS injected into every sub-agent prompt:
 - `ripgrep` — pattern search (replaces grep)
 - `bash-expert` — safe shell scripting
-- `mcp-notebooklm-orchestrator` — primary research source
+- `mcp-notebooklm-orchestrator` — optional research source
 - `context-guardian` — context pressure detection
 
 Match additional skills on TWO dimensions:

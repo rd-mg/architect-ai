@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/rd-mg/architect-ai/internal/process"
 	"github.com/rd-mg/architect-ai/internal/system"
 	"github.com/rd-mg/architect-ai/internal/update"
 )
@@ -15,15 +16,15 @@ import (
 // --- TestRunStrategy_BrewUpgrade ---
 
 func TestRunStrategy_BrewUpgrade(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	var gotName string
 	var gotArgs []string
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		gotName = name
 		gotArgs = args
-		return exec.Command("echo", "Upgraded engram")
+		return process.Result{Stdout: []byte("Upgraded engram")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -51,15 +52,15 @@ func TestRunStrategy_BrewUpgrade(t *testing.T) {
 // --- TestRunStrategy_GoInstallUpgrade ---
 
 func TestRunStrategy_GoInstallUpgrade(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	var gotName string
 	var gotArgs []string
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		gotName = name
 		gotArgs = args
-		return exec.Command("echo", "go install ok")
+		return process.Result{Stdout: []byte("go install ok")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -128,11 +129,11 @@ func TestRunStrategy_UnsupportedMethodManualFallback(t *testing.T) {
 // --- TestRunStrategy_BrewUpgradeFailure ---
 
 func TestRunStrategy_BrewUpgradeFailure(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("false") // always fails
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Error: errors.New("exit status 1"), ExitCode: 1}, errors.New("exit status 1")
 	}
 
 	r := update.UpdateResult{
@@ -153,11 +154,11 @@ func TestRunStrategy_BrewUpgradeFailure(t *testing.T) {
 // --- TestRunStrategy_GoInstallFailure ---
 
 func TestRunStrategy_GoInstallFailure(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("false")
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Error: errors.New("exit status 1"), ExitCode: 1}, errors.New("exit status 1")
 	}
 
 	r := update.UpdateResult{
@@ -182,13 +183,13 @@ func TestRunStrategy_GoInstallFailure(t *testing.T) {
 // self-replace for architect-ai is NOT attempted in Phase 1 — it must return a
 // manual hint error, not execute.
 func TestRunStrategy_BinaryWindowsSelfUpdateSkipped(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	execCalled := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		execCalled = true
-		return exec.Command("echo", "should not run")
+		return process.Result{Stdout: []byte("should not run")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -318,15 +319,15 @@ func containsAny(s string, subs ...string) bool {
 // TestBrewUpgrade_RunsUpdateBeforeUpgrade verifies that brewUpgrade calls
 // `brew update` BEFORE `brew upgrade <toolName>`, and that the order is correct.
 func TestBrewUpgrade_RunsUpdateBeforeUpgrade(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	var callOrder []string
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		if name == "brew" && len(args) > 0 {
 			callOrder = append(callOrder, args[0]) // "update" or "upgrade"
 		}
-		return exec.Command("echo", "ok")
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 
 	err := brewUpgrade(context.Background(), "architect-ai")
@@ -351,20 +352,20 @@ func TestBrewUpgrade_RunsUpdateBeforeUpgrade(t *testing.T) {
 // TestBrewUpgrade_UpdateFailureIsNonFatal verifies that when `brew update` fails
 // but `brew upgrade` succeeds, the overall result is success (non-fatal update failure).
 func TestBrewUpgrade_UpdateFailureIsNonFatal(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	var callArgs []string
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		if name == "brew" && len(args) > 0 {
 			callArgs = append(callArgs, args[0])
 			if args[0] == "update" {
 				// brew update fails (e.g. no network).
-				return exec.Command("false")
+				return process.Result{Error: errors.New("exit status 1"), ExitCode: 1}, errors.New("exit status 1")
 			}
 		}
 		// brew upgrade succeeds.
-		return exec.Command("echo", "Upgraded architect-ai")
+		return process.Result{Stdout: []byte("Upgraded architect-ai")}, nil
 	}
 
 	err := brewUpgrade(context.Background(), "architect-ai")
@@ -387,11 +388,11 @@ func TestBrewUpgrade_UpdateFailureIsNonFatal(t *testing.T) {
 
 // --- verify exec.Cmd.Run() failure is correctly wrapped ---
 func TestRunStrategy_ExecErrorWrapped(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("false")
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Error: errors.New("exit status 1"), ExitCode: 1}, errors.New("exit status 1")
 	}
 
 	r := update.UpdateResult{
@@ -423,11 +424,11 @@ func TestRunStrategy_ExecErrorWrapped(t *testing.T) {
 // --- TestRunStrategy_ScriptUpgradeSuccess ---
 
 func TestRunStrategy_ScriptUpgradeSuccess(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origHTTPClient := scriptHTTPClient
 	origInstallScriptURL := installScriptURLFn
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		scriptHTTPClient = origHTTPClient
 		installScriptURLFn = origInstallScriptURL
 	})
@@ -448,12 +449,12 @@ func TestRunStrategy_ScriptUpgradeSuccess(t *testing.T) {
 	}
 
 	var gotScriptContent string
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		// Capture the script content passed via bash -c.
 		if name == "bash" && len(args) >= 2 && args[0] == "-c" {
 			gotScriptContent = args[1]
 		}
-		return exec.Command("echo", "ok")
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -517,13 +518,13 @@ func TestRunStrategy_ScriptUpgradeDownloadFailure(t *testing.T) {
 // --- TestRunStrategy_ScriptUpgradeWindowsManualFallback ---
 
 func TestRunStrategy_ScriptUpgradeWindowsManualFallback(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	execCalled := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		execCalled = true
-		return exec.Command("echo", "should not run")
+		return process.Result{Stdout: []byte("should not run")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -554,10 +555,10 @@ func TestRunStrategy_ScriptUpgradeWindowsManualFallback(t *testing.T) {
 // 2. Then calls `bash /tmp/gentleman-guardian-angel/install.sh`
 // — not `bash -c <script-content>` like the generic scriptUpgrade.
 func TestGGAScriptUpgradeUsesGitClone(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origDetectOS := detectOS
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		detectOS = origDetectOS
 	})
 	detectOS = func() string { return "linux" }
@@ -568,9 +569,9 @@ func TestGGAScriptUpgradeUsesGitClone(t *testing.T) {
 	}
 	var calls []call
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		calls = append(calls, call{name: name, args: args})
-		return exec.Command("echo", "ok")
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -635,13 +636,13 @@ func TestGGAScriptUpgradeUsesGitClone(t *testing.T) {
 // TestGGAScriptUpgradeWindowsManualFallback verifies that on Windows,
 // ggaScriptUpgrade returns a ManualFallbackError without calling exec.
 func TestGGAScriptUpgradeWindowsManualFallback(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	execCalled := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		execCalled = true
-		return exec.Command("echo", "should not run")
+		return process.Result{Stdout: []byte("should not run")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -673,10 +674,10 @@ func TestGGAScriptUpgradeWindowsManualFallback(t *testing.T) {
 // a GGA tool (InstallScript), it routes to ggaScriptUpgrade (git clone approach)
 // rather than the generic scriptUpgrade (bash -c <content>).
 func TestRunStrategy_GGAUsesGitClone(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origDetectOS := detectOS
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		detectOS = origDetectOS
 	})
 	detectOS = func() string { return "linux" }
@@ -687,9 +688,9 @@ func TestRunStrategy_GGAUsesGitClone(t *testing.T) {
 	}
 	var calls []call
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		calls = append(calls, call{name: name, args: args})
-		return exec.Command("echo", "ok")
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 
 	r := update.UpdateResult{
@@ -732,17 +733,17 @@ func TestInstallScriptURL(t *testing.T) {
 // engram upgrade calls the binary download function, NOT go install.
 // This is the regression test for issue #160.
 func TestEngramUpgradeUsesDownloadNotGoInstall(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origEngramDownloadFn := engramDownloadFn
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		engramDownloadFn = origEngramDownloadFn
 	})
 
 	execCalled := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		execCalled = true
-		return exec.Command("echo", "should not be called")
+		return process.Result{Stdout: []byte("should not be called")}, nil
 	}
 
 	downloadCalled := false
@@ -781,17 +782,17 @@ func TestEngramUpgradeUsesDownloadNotGoInstall(t *testing.T) {
 // TestEngramUpgradeLinuxUsesDownload verifies that on Linux (non-brew),
 // engram upgrade uses the binary download function, not go install.
 func TestEngramUpgradeLinuxUsesDownload(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origEngramDownloadFn := engramDownloadFn
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		engramDownloadFn = origEngramDownloadFn
 	})
 
 	execCalled := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		execCalled = true
-		return exec.Command("echo", "should not be called")
+		return process.Result{Stdout: []byte("should not be called")}, nil
 	}
 
 	downloadCalled := false
@@ -827,11 +828,11 @@ func TestEngramUpgradeLinuxUsesDownload(t *testing.T) {
 // --- TestRunStrategy_ScriptUpgradeExecFailure ---
 
 func TestRunStrategy_ScriptUpgradeExecFailure(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origHTTPClient := scriptHTTPClient
 	origInstallScriptURL := installScriptURLFn
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		scriptHTTPClient = origHTTPClient
 		installScriptURLFn = origInstallScriptURL
 	})
@@ -846,8 +847,8 @@ func TestRunStrategy_ScriptUpgradeExecFailure(t *testing.T) {
 		return server.URL + "/install.sh"
 	}
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("false")
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Error: errors.New("exit status 1"), ExitCode: 1}, errors.New("exit status 1")
 	}
 
 	r := update.UpdateResult{

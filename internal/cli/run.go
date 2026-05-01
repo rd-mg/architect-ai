@@ -994,12 +994,12 @@ func engramHealthChecks(homeDir string, agents []model.AgentID) []verify.Check {
 			ID:          "verify:engram:version",
 			Description: "engram version returns valid output",
 			Soft:        true,
-			Run: func(context.Context) error {
+			Run: func(ctx context.Context) error {
 				if err := engram.VerifyInstalled(); err != nil {
 					// Binary not on PATH — skip version check gracefully.
 					return nil
 				}
-				_, err := engram.VerifyVersion()
+				_, err := engram.VerifyVersion(ctx)
 				return err
 			},
 		},

@@ -399,6 +399,35 @@ func RenderUninstallResult(result componentuninstall.Result, err error, mode mod
 			b.WriteString("\n")
 			b.WriteString(styles.UnselectedStyle.Render("Updated state.json: " + strings.Join(uninstallAgentLabels(result.AgentsRemovedFromState), ", ")))
 		}
+
+		// Show skipped or drifted files
+		var skippedDrifted []string
+		var fileErrors []string
+		for _, r := range result.Report {
+			if r.Status == componentuninstall.StatusSkippedDrifted {
+				skippedDrifted = append(skippedDrifted, r.Path)
+			} else if r.Status == componentuninstall.StatusError {
+				fileErrors = append(fileErrors, fmt.Sprintf("%s: %s", r.Path, r.Error))
+			}
+		}
+
+		if len(skippedDrifted) > 0 {
+			b.WriteString("\n\n")
+			b.WriteString(styles.WarningStyle.Render(fmt.Sprintf("Skipped %d files (content drifted):", len(skippedDrifted))))
+			for _, p := range skippedDrifted {
+				b.WriteString("\n")
+				b.WriteString(styles.SubtextStyle.Render("  • " + p))
+			}
+		}
+
+		if len(fileErrors) > 0 {
+			b.WriteString("\n\n")
+			b.WriteString(styles.ErrorStyle.Render(fmt.Sprintf("Errors during removal (%d):", len(fileErrors))))
+			for _, e := range fileErrors {
+				b.WriteString("\n")
+				b.WriteString(styles.SubtextStyle.Render("  • " + e))
+			}
+		}
 		if len(result.ManualActions) > 0 {
 			b.WriteString("\n\n")
 			b.WriteString(styles.WarningStyle.Render("Manual cleanup required:"))

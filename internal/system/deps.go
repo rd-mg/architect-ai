@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/rd-mg/architect-ai/internal/process"
 )
 
 // Dependency represents a system prerequisite with detection and install metadata.
@@ -141,15 +143,14 @@ func detectSingleDep(ctx context.Context, dep Dependency) Dependency {
 
 	dep.Installed = true
 
-	// Run version command to extract version string.
-	cmd := exec.CommandContext(ctx, dep.DetectCmd[0], dep.DetectCmd[1:]...)
-	out, err := cmd.Output()
-	if err != nil {
+	// Run version command to extract version string using bounded process runner.
+	res, _ := process.Run(ctx, dep.DetectCmd[0], dep.DetectCmd[1:], process.OptionsFor(process.FastCheck))
+	if res.Error != nil {
 		// Binary exists but version command failed — still mark as installed.
 		return dep
 	}
 
-	dep.Version = parseVersion(dep.Name, string(out))
+	dep.Version = parseVersion(dep.Name, string(res.Stdout))
 
 	// Check minimum version if specified.
 	if dep.MinVersion != "" && dep.Version != "" {

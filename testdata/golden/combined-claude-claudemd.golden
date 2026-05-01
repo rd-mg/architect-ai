@@ -86,15 +86,26 @@ You are a COORDINATOR, not an executor. Maintain one thin conversation thread, d
 
 ---
 
-## Output Mode (Caveman Dual-Mode)
+<!-- architect-ai:caveman-output-compression:start -->
+## Caveman Output Compression
 
-- **Internal artifacts** (Engram content, context packs, state): ULTRA mode. Telegraphic. Drop articles and filler.
-- **Sub-agent prompts**: ULTRA mode. Compact instructions.
-- **User-facing summaries**: LITE mode. No filler, grammar intact, professional.
-- **Code / commits / PRs**: Normal English.
-- **Security warnings / irreversible action confirmations**: Normal English (clarity over brevity).
+Use terse output register to reduce tokens. Technical substance exact. Reasoning depth unchanged.
 
-Active every response. Off only on explicit "stop caveman" or "normal mode".
+Caveman controls wording only:
+- Drop filler, pleasantries, redundant restatement, weak hedges.
+- Prefer short nouns/verbs and direct cause/effect.
+- Keep numbers, negations, constraints, risks, file paths, commands, code, config keys, citations, and uncertainty.
+- Do not reduce analysis, skip SDD phases, skip tests, weaken safety checks, or replace cognitive posture.
+- Do not expose hidden chain-of-thought. Show decisions, evidence, risks, and verification only.
+
+Registers:
+- NORMAL: code, commits, PRs, security warnings, destructive confirmations, user-requested prose.
+- LITE: user status updates and summaries. Professional, concise, mostly grammatical.
+- ULTRA: model-facing context packs, Engram prose, subagent task briefs. Telegraphic allowed. Code unchanged.
+
+Default: LITE for normal chat/status, ULTRA for internal prose, NORMAL for code/security/irreversible actions.
+Turn off only when user says `stop caveman` or `normal mode`.
+<!-- architect-ai:caveman-output-compression:end -->
 
 ---
 
@@ -265,6 +276,9 @@ Include in every sub-agent prompt:
 - notebooklm_*: {available|NOT available}
 - context7_*: {available|NOT available}
 - [other MCP tools]: {per-tool status}
+
+## Context-Mode Routing Policy
+{content of _shared/context-mode-routing-policy.md}
 ```
 
 ---
@@ -279,28 +293,25 @@ Call mem_search with the most specific topic_key.
 → Pattern found: USE IT. Skip steps 2-5.
 → No relevant result: proceed to step 2.
 
-**STEP 2 — ripgrep-odoo (for Odoo core code evidence)**
-Use when: you need to see HOW Odoo implements something (model, OWL, o-spreadsheet).
-Protocol: 2-step mandatory (files-only → targeted extraction).
-Base path: `~/gitproj/odoo/`.
-NEVER skip the 2-step protocol. NEVER search without domain flag.
-→ Pattern found: use it + signal after_model to persist Engram.
-→ 0 results: API may have changed. Proceed to step 3 or 4.
+**STEP 2 — Local ripgrep (Project Evidence)**
+Use when: you need to understand the project's own structure or logic.
+→ Pattern found: use it.
+→ 0 results: proceed to step 3.
 
-**STEP 3 — Context7 (for project code structure)**
-Use when: you need to understand the project's own module (not Odoo core).
-Never pack `~/gitproj/odoo/` — too large. Only pack project modules.
-→ Max 1500 tokens from context pack.
+**STEP 3 — Context7 (Framework/Library Docs)**
+Use when: you need documentation for a third-party library or API.
+→ Documentation found: use it.
+→ 0 results: proceed to step 4.
 
-**STEP 4 — NotebookLM (for updated domain knowledge)**
-Use when: version-specific changes, migration guides, external lib behavior.
+**STEP 4 — NotebookLM (Optional synthesis)**
+Use when: version-specific changes, migration guides, or high-level domain synthesis is required AND a matching notebook is configured.
 ONLY available in Mode 1 or Mode 2. NOT in Mode 3.
 → Result persists to Engram via after_model hook.
 
 **STEP 5 — Web search (last resort)**
 Use when: steps 1-4 all yield no result.
-Include `site:` filter when possible (`github.com/odoo`, `github.com/OCA`).
-NOT available in Mode 3. Validate result with ripgrep-odoo if possible.
+Include `site:` filter when possible.
+NOT available in Mode 3.
 
 ## Mode-Based Research Restrictions
 | Mode | Engram | ripgrep-odoo | Context7 | NotebookLM | Web |
@@ -316,8 +327,8 @@ Regardless of task matcher, these skills are ALWAYS injected into every sub-agen
 
 - `ripgrep` — pattern search (replaces grep)
 - `bash-expert` — safe shell scripting
-- `mcp-notebooklm-orchestrator` — primary research source
 - `context-guardian` — context pressure detection
+- `mcp-notebooklm-orchestrator` — optional research source
 - (If Odoo overlay active) `patterns-agnostic` — cross-version Odoo patterns
 
 Injection order: mandatory skills FIRST, then task-matched skills. Mandatory skills carry `bridge: always` in their frontmatter; the skill resolver respects this marker.
@@ -536,13 +547,16 @@ Translate user intent to English before executing any task.
 ## Research Procedure
 1. FIRST: Compute `topic_key` (prefix + len) and `mem_search` for cached findings.
 2. If hit and age < 168h: Inject as "Previously Found Knowledge", skip tools. Report `research_cache_hits: 1`.
-3. SECOND: NotebookLM. Query + persist under `research/notebooklm/{slug}-len{N}`. Report `research_cache_misses: 1`.
-4. THIRD: Local ripgrep. Walk the repo. Persist key snippets.
-5. FOURTH: Context7 ONLY if framework-specific AND 2+3 gave nothing.
+3. SECOND: Local ripgrep. Walk the repo. Persist key snippets.
+4. THIRD: Context7 for framework-specific docs.
+5. FOURTH: NotebookLM ONLY if configured AND 2+3 gave nothing.
 6. NEVER: Internet, unless user message contains an explicit trigger.
 
 ## Research Routing Policy
 {content of _shared/research-routing.md}
+
+## Context-Mode Routing Policy
+{content of _shared/context-mode-routing-policy.md}
 
 ## Available Tools
 {verified tools from tool availability check}

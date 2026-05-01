@@ -1,8 +1,8 @@
 # Architect-AI
 
-> A multi-agent framework that turns any supported IDE or CLI (Claude Code, Cursor, Gemini CLI, Codex, Antigravity, Kiro, OpenCode, VSCode, Windsurf, and more) into a Spec-Driven Development (SDD) workspace. One orchestrator, many agents, shared persistent memory via Engram, mandatory research routing (NotebookLM → local → Context7 → internet-by-permission).
+> A multi-agent framework that turns any supported IDE or CLI (Claude Code, Cursor, Gemini CLI, Codex, Antigravity, Kiro, OpenCode, VSCode, Windsurf, and more) into a Spec-Driven Development (SDD) workspace. One orchestrator, many agents, shared persistent memory via Engram, and curated research routing (ripgrep → local → Context7 → internet-by-permission).
 
-**Status**: V3.1 (remediation over V3.0)
+**Status**: V3.2 (remediation over V3.1)
 
 ---
 
@@ -28,13 +28,17 @@
 
 Architect-AI installs a thin coordination layer on top of whatever coding agent you already use. The orchestrator:
 
-- Delegates all real work to sub-agents so the coordinator thread stays cheap
-- Forces a **Spec-Driven Development** cycle (`explore → propose → spec → design → tasks → apply → verify → archive`)
-- Enforces a **cognitive posture** per phase (Socratic, Critical, Systemic, Adversarial, Pragmatic, Forensic — see `docs/cognitive-modes.md`)
-- Compresses its own output via a **dual-mode caveman** style (see `docs/caveman-integration.md`)
-- Persists artifacts to **Engram** (or OpenSpec files, or hybrid, or inline — you choose per session)
-- Routes external research **NotebookLM-first**, then local code, then Context7; never the internet unless you explicitly ask
-- Shows a **token-cache savings banner** on session exit
+- Coordinates SDD phases: explore, propose, spec, design, tasks, apply, verify, archive.
+- Injects adaptive reasoning and phase-specific cognitive posture before delegation.
+- Applies Caveman as output compression only; it does not change reasoning depth.
+- Uses Engram as curated working memory with progressive disclosure.
+- Uses OpenSpec files when team-readable audit trail is required.
+- Uses ripgrep/local evidence before external documentation calls.
+- Uses Context7 or official docs for current library/API documentation.
+- Supports NotebookLM MCP as an optional tool when configured.
+- Detects context-mode as an external companion runtime and routes around it safely.
+- Manages installed files through ownership manifests for safe sync/uninstall/purge.
+- Runs hooks and CLI subprocesses through bounded execution for runtime stability.
 
 ---
 
@@ -71,7 +75,7 @@ Architect-AI installs a thin coordination layer on top of whatever coding agent 
 │   │ 2. Adaptive Classifier     (score 4 dims → Mode 1/2/3 — REQUIRED) │   │
 │   │ 3. Project Standards       (from .atl/skill-registry.md)          │   │
 │   │ 4. Overlay Supplement      (if Odoo: sdd-supplements/{phase}.md)  │   │
-│   │ 5. Research-Routing Policy (NotebookLM → local → Context7 → web)  │   │
+│   │ 5. Research-Routing Policy (local → Context7 → NotebookLM → web)  │   │
 │   │ 6. Available Tools         (from tool-availability probe)         │   │
 │   │ 7. Phase Protocol          (sdd-phase-protocols/{phase}.md)       │   │
 │   │ 8. Task                    (what to do)                           │   │
@@ -300,19 +304,27 @@ When working in an Odoo repository (detected via `sdd-init`), specialized Odoo s
 
 ## Research routing policy
 
-External research follows a strict priority (configured per-user; NotebookLM-first is the default as of V3.1):
+External research follows a strict priority (ripgrep/local-first by default in V3.2):
 
 ```
-1. NotebookLM          ← PRIMARY — curated project knowledge
-2. Local code + docs   ← SECONDARY — ripgrep, find, cat, extract-text
-3. Context7            ← TERTIARY — framework / library docs
+1. Local code + docs   ← PRIMARY — ripgrep, find, cat, extract-text
+2. Context7            ← SECONDARY — framework / library docs
+3. NotebookLM          ← OPTIONAL — curated project knowledge (if configured)
 4. Internet            ← ONLY on EXPLICIT user request
                          ("search the web", "look online", "busca en internet")
 ```
 
 This is enforced by the orchestrator and by the `sdd-explore` phase protocol. Each sub-agent returns `research_sources_used: [...]` in its envelope so the orchestrator can audit routing compliance.
 
-See `internal/assets/skills/_shared/research-routing.md` for the full decision tree.
+### Caveman output compression
+
+Caveman is an output style, not a thinking mode. It shortens wording and removes filler where safe. It does not replace adaptive reasoning, SDD phase posture, code review, security checks, or deterministic verification.
+
+Use normal explicit English for destructive actions, security warnings, commands that could delete data, and user confirmations.
+
+### context-mode
+
+context-mode MCP can be installed and configured outside Architect-AI. By default, Architect-AI detects it and adds routing awareness, not vendor it or overwrite its generated configuration.
 
 ---
 
@@ -322,14 +334,8 @@ Two skills are marked `bridge: always` in their frontmatter and injected into **
 
 - **`ripgrep`** — all code search must use `rg`, not `grep -r`
 - **`bash-expert`** — strict-mode shell discipline
-
-A third always-injected skill is the research router:
-
-- **`mcp-notebooklm-orchestrator`** — primary research source, query-only
-
-And the context pressure sentinel:
-
 - **`context-guardian`** — auto-invoked at > 50% window usage
+- **`mcp-notebooklm-orchestrator`** — optional research source (query-only)
 
 See each skill's `SKILL.md` in `internal/assets/skills/` for the compact rules.
 
@@ -362,33 +368,24 @@ Two levels of uninstall:
 ### Managed uninstall
 
 ```bash
-architect-ai  # TUI → "Managed uninstall"
-# or
 architect-ai uninstall
 ```
 
-Removes what the installer placed: agent config files, skill registry, orchestrator prompts, SDD phase protocols.
+Removes files that Architect-AI owns based on the managed manifest: agent config files, skill registry, orchestrator prompts, SDD phase protocols.
 
-Keeps: Engram memories, `.atl/` artifacts, `~/.architect-ai/` backups, the binary itself.
+Keeps: User-owned configuration, Engram memories, `.atl/` artifacts, `~/.architect-ai/` backups, the binary itself.
 
-### Deep purge (V3.1)
+### Deep purge
 
 ```bash
-architect-ai  # TUI → "Uninstall & Purge All ⚠"
-# or headless
 architect-ai uninstall --purge --purge-scope all --confirm PURGE
 ```
 
-Removes managed config PLUS any subset of:
+Removes managed config PLUS any subset of project/global data. A **pre-purge snapshot** is captured in every case, allowing restore with `architect-ai restore <snapshot-path>`.
 
-- **Engram project memories** (via `mem_delete_project`)
-- **Workspace `.atl/`** (skill registry, overlay manifests, context packs)
-- **Global `~/.architect-ai/`** (backups, global state)
-- **The binary** (via brew / apt / pacman / snap)
+### Refactoring scope and generated directories
 
-A **pre-purge snapshot** is captured in every case, allowing restore with `architect-ai restore <snapshot-path>`.
-
-The TUI confirmation requires typing the word `PURGE` literally (case-sensitive). The CLI requires `--confirm PURGE`.
+Root hidden directories such as `.agent/`, `.agents/`, `.atl/`, `.claude/`, `.gemini/`, `.cursor/`, `.vscode/`, `.github/`, `.opencode/`, `.engram/`, and `.context-mode/` are generated/runtime/config outputs. Do not treat them as source refactoring targets.
 
 ---
 
@@ -413,7 +410,7 @@ architect-ai/
 │   │   ├── skills/                 # Cross-cutting skills
 │   │   │   ├── ripgrep/            (V3.1, bridge: always)
 │   │   │   ├── bash-expert/        (V3.1, bridge: always)
-│   │   │   ├── mcp-notebooklm-orchestrator/  (V3.1 primary)
+│   │   │   ├── mcp-notebooklm-orchestrator/  (V3.1 optional)
 │   │   │   ├── mcp-context7-skill/ (V3.1 tertiary)
 │   │   │   ├── context-guardian/
 │   │   │   ├── cognitive-mode/
@@ -446,7 +443,8 @@ architect-ai/
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| **V3.1** | 2026-04 | Artifact-store question asked explicitly; natural-language intent resolution; TUI deep purge; token-cache banner; ripgrep + bash-expert `bridge: always`; NotebookLM-first research routing |
+| **V3.2** | 2026-05 | Manifest-first purge, bounded subprocess runner, Caveman output-only clarification, Engram tool routing, context-mode external companion policy, dot-directory scope guard, optional NotebookLM policy. |
+| V3.1 | 2026-04 | Artifact-store question asked explicitly; natural-language intent resolution; TUI deep purge; token-cache banner; ripgrep + bash-expert `bridge: always`; NotebookLM-first research routing |
 | V3.0 | 2026-04 | V2 absorbed into caveman dual-mode; Odoo overlay restructured with version-gated bundles; 6 Odoo sub-agents absorbed into SDD supplements; judgment-day + autoreason-lite folded into adaptive-reasoning v1.0 |
 | V2.x | 2025-Q4 | Multi-agent orchestrator; Engram integration |
 | V1.x | 2025-Q3 | Initial SDD implementation |

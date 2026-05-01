@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rd-mg/architect-ai/internal/components/engram"
+	"github.com/rd-mg/architect-ai/internal/process"
 	"github.com/rd-mg/architect-ai/internal/system"
 	"github.com/rd-mg/architect-ai/internal/update"
 )
@@ -81,14 +82,12 @@ func runStrategy(ctx context.Context, r update.UpdateResult, profile system.Plat
 func brewUpgrade(ctx context.Context, toolName string) error {
 	// Update Homebrew formula cache before upgrading.
 	// Non-fatal: if update fails (e.g. no network), attempt upgrade with existing cache.
-	updateCmd := execCommand("brew", "update")
-	updateCmd.Stdin = nil
-	_ = updateCmd.Run() // ignore error intentionally
+	_, _ = runProcess(ctx, "brew", []string{"update"}, process.OptionsFor(process.FastCheck))
 
-	upgradeCmd := execCommand("brew", "upgrade", toolName)
-	upgradeCmd.Stdin = nil
-	if out, err := upgradeCmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("brew upgrade %s: %w (output: %s)", toolName, err, string(out))
+	res, _ := runProcess(ctx, "brew", []string{"upgrade", toolName}, process.OptionsFor(process.Install))
+	if res.Error != nil {
+		output := string(res.Stdout) + string(res.Stderr)
+		return fmt.Errorf("brew upgrade %s: %w (output: %s)", toolName, res.Error, output)
 	}
 	return nil
 }
@@ -101,10 +100,10 @@ func goInstallUpgrade(ctx context.Context, tool update.ToolInfo, latestVersion s
 
 	// Pin to the exact release version.
 	target := fmt.Sprintf("%s@v%s", tool.GoImportPath, latestVersion)
-	cmd := execCommand("go", "install", target)
-	cmd.Stdin = nil
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("go install %s: %w (output: %s)", target, err, string(out))
+	res, _ := runProcess(ctx, "go", []string{"install", target}, process.OptionsFor(process.Install))
+	if res.Error != nil {
+		output := string(res.Stdout) + string(res.Stderr)
+		return fmt.Errorf("go install %s: %w (output: %s)", target, res.Error, output)
 	}
 	return nil
 }
@@ -219,12 +218,10 @@ func scriptUpgrade(ctx context.Context, r update.UpdateResult, profile system.Pl
 	}
 
 	// Execute install.sh with bash. Stdin is nil to ensure non-interactive mode.
-	cmd := execCommand("bash", "-c", string(scriptBody))
-	cmd.Stdin = nil
-	if out, err := cmd.CombinedOutput(); err != nil {
-		// Provide a helpful hint if the script fails.
-		output := strings.TrimSpace(string(out))
-		return fmt.Errorf("install.sh failed for %q: %w\nOutput: %s", r.Tool.Name, err, output)
+	res, _ := runProcess(ctx, "bash", []string{"-c", string(scriptBody)}, process.OptionsFor(process.Install))
+	if res.Error != nil {
+		output := strings.TrimSpace(string(res.Stdout) + string(res.Stderr))
+		return fmt.Errorf("install.sh failed for %q: %w\nOutput: %s", r.Tool.Name, res.Error, output)
 	}
 
 	return nil
@@ -276,18 +273,18 @@ func ggaScriptUpgradeForOS(ctx context.Context, r update.UpdateResult, osName st
 
 	// Clone the full repository — install.sh needs the entire repo context.
 	repoURL := fmt.Sprintf("https://github.com/%s/%s.git", r.Tool.Owner, r.Tool.Repo)
-	cloneCmd := execCommand("git", "clone", repoURL, tmpDir)
-	cloneCmd.Stdin = nil
-	if out, err := cloneCmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("git clone %s: %w (output: %s)", r.Tool.Repo, err, strings.TrimSpace(string(out)))
+	cloneRes, _ := runProcess(ctx, "git", []string{"clone", repoURL, tmpDir}, process.OptionsFor(process.Install))
+	if cloneRes.Error != nil {
+		output := strings.TrimSpace(string(cloneRes.Stdout) + string(cloneRes.Stderr))
+		return fmt.Errorf("git clone %s: %w (output: %s)", r.Tool.Repo, cloneRes.Error, output)
 	}
 
 	// Execute install.sh from within the cloned repo (non-interactive).
 	installScript := filepath.Join(tmpDir, "install.sh")
-	installCmd := execCommand("bash", installScript)
-	installCmd.Stdin = nil
-	if out, err := installCmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("install.sh failed for %q: %w\nOutput: %s", r.Tool.Name, err, strings.TrimSpace(string(out)))
+	installRes, _ := runProcess(ctx, "bash", []string{installScript}, process.OptionsFor(process.Install))
+	if installRes.Error != nil {
+		output := strings.TrimSpace(string(installRes.Stdout) + string(installRes.Stderr))
+		return fmt.Errorf("install.sh failed for %q: %w\nOutput: %s", r.Tool.Name, installRes.Error, output)
 	}
 
 	return nil

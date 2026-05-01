@@ -42,7 +42,7 @@ func TestInjectClaudeWritesSectionMarkers(t *testing.T) {
 		t.Fatalf("Inject() first changed = false")
 	}
 
-	path := filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md")
+	path := claudeAdapter().SystemPromptFile(home)
 	content, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
@@ -132,7 +132,7 @@ func TestInjectClaudeCustomModelAssignments(t *testing.T) {
 		t.Fatal("Inject(claude, custom assignments) changed = false")
 	}
 
-	content, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
+	content, err := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if err != nil {
 		t.Fatalf("ReadFile(instructions.md) error = %v", err)
 	}
@@ -368,7 +368,7 @@ func TestInjectGeminiWritesSDDOrchestratorAndSkills(t *testing.T) {
 	}
 
 	// Verify SDD orchestrator was injected into GEMINI.md.
-	promptPath := filepath.Join(home, ".gemini", "system.md")
+	promptPath := geminiAdapter.SystemPromptFile(home)
 	content, readErr := os.ReadFile(promptPath)
 	if readErr != nil {
 		t.Fatalf("ReadFile(%q) error = %v", promptPath, readErr)
@@ -928,11 +928,11 @@ func TestInjectClaudeIgnoresSDDMode(t *testing.T) {
 	}
 
 	// Read and compare the instructions.md files — content should be identical.
-	multiContent, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
+	multiContent, err := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if err != nil {
 		t.Fatalf("ReadFile(multi) error = %v", err)
 	}
-	singleContent, err := os.ReadFile(filepath.Join(homeBaseline, ".claude", "plugins", "gentleman", "instructions.md"))
+	singleContent, err := os.ReadFile(claudeAdapter().SystemPromptFile(homeBaseline))
 	if err != nil {
 		t.Fatalf("ReadFile(single) error = %v", err)
 	}
@@ -1732,7 +1732,7 @@ func TestInjectStrictTDDEnabledInjectsMarkerIntoClaude(t *testing.T) {
 		t.Fatal("Inject() changed = false")
 	}
 
-	content, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
+	content, err := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if err != nil {
 		t.Fatalf("ReadFile(instructions.md) error = %v", err)
 	}
@@ -1760,7 +1760,7 @@ func TestInjectStrictTDDDisabledDoesNotInjectMarker(t *testing.T) {
 		t.Fatalf("Inject(claude, default) error = %v", err)
 	}
 
-	content, err := os.ReadFile(filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md"))
+	content, err := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if err != nil {
 		t.Fatalf("ReadFile(instructions.md) error = %v", err)
 	}
@@ -2459,7 +2459,7 @@ func TestInjectGeminiUsesAgentSpecificAsset(t *testing.T) {
 		t.Fatal("Inject(gemini) changed = false")
 	}
 
-	promptPath := filepath.Join(home, ".gemini", "system.md")
+	promptPath := geminiAdapter.SystemPromptFile(home)
 	content, readErr := os.ReadFile(promptPath)
 	if readErr != nil {
 		t.Fatalf("ReadFile(%q) error = %v", promptPath, readErr)

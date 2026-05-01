@@ -574,14 +574,18 @@ func (s *Service) executePlan(p plan, agentsToRemove []model.AgentID) (Result, e
 			}
 		}
 
-		if status == StatusRemoved {
+		if status == StatusRemoved || status == StatusChanged {
 			switch op.typeID {
 			case opRewriteFile:
 				result.ChangedFiles = append(result.ChangedFiles, op.path)
 			case opRemoveFile:
-				result.RemovedFiles = append(result.RemovedFiles, op.path)
+				if status == StatusRemoved {
+					result.RemovedFiles = append(result.RemovedFiles, op.path)
+				}
 			case opRemoveTree, opRemoveIfEmpty:
-				result.RemovedDirectories = append(result.RemovedDirectories, op.path)
+				if status == StatusRemoved {
+					result.RemovedDirectories = append(result.RemovedDirectories, op.path)
+				}
 			}
 		}
 	}

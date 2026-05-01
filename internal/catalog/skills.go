@@ -22,6 +22,7 @@ var mvpSkills = []Skill{
 	{ID: model.SkillSDDTasks, Name: "sdd-tasks", Category: "sdd", Priority: "p0"},
 	{ID: model.SkillSDDArchive, Name: "sdd-archive", Category: "sdd", Priority: "p0"},
 	{ID: model.SkillSDDOnboard, Name: "sdd-onboard", Category: "sdd", Priority: "p0"},
+	{ID: model.SkillJudgmentDay, Name: "judgment-day", Category: "sdd", Priority: "p0"},
 	// Foundation skills
 	{ID: model.SkillGoTesting, Name: "go-testing", Category: "testing", Priority: "p0"},
 	{ID: model.SkillCreator, Name: "skill-creator", Category: "workflow", Priority: "p0"},

@@ -91,7 +91,7 @@ func (a *Adapter) SystemPromptDir(homeDir string) string {
 }
 
 func (a *Adapter) SystemPromptFile(homeDir string) string {
-	return filepath.Join(a.PluginDir(homeDir), "instructions.md")
+	return filepath.Join(homeDir, ".claude", "CLAUDE.md")
 }
 
 func (a *Adapter) SkillsDir(homeDir string) string {

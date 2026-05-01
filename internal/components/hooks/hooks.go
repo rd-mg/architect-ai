@@ -2,11 +2,14 @@ package hooks
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
+	"time"
 )
 
-type PreTaskHook func(ctx context.Context, task string)
-type PostTaskHook func(ctx context.Context, task string, err error)
+type PreTaskHook func(ctx context.Context, task string) error
+type PostTaskHook func(ctx context.Context, task string, err error) error
 
 var (
 	preTaskHooks  []PreTaskHook
@@ -28,53 +31,99 @@ func RegisterPostTask(fn PostTaskHook) {
 	postTaskHooks = append(postTaskHooks, fn)
 }
 
-// FirePreTask executes all registered pre-task hooks safely.
-func FirePreTask(ctx context.Context, task string) {
+type OutcomeStatus string
+
+const (
+	HookSuccess OutcomeStatus = "success"
+	HookError   OutcomeStatus = "error"
+	HookPanic   OutcomeStatus = "panic"
+	HookTimeout OutcomeStatus = "timeout"
+)
+
+type Outcome struct {
+	Name     string
+	Stage    string
+	Status   OutcomeStatus
+	Duration time.Duration
+	Error    string
+}
+
+// FirePreTask executes all registered pre-task hooks safely and returns outcomes.
+func FirePreTask(ctx context.Context, task string) []Outcome {
 	mu.RLock()
 	hooks := make([]PreTaskHook, len(preTaskHooks))
 	copy(hooks, preTaskHooks)
 	mu.RUnlock()
 
-	for _, fn := range hooks {
-		safeRun(func() { fn(ctx, task) })
+	outcomes := make([]Outcome, 0, len(hooks))
+	for i, fn := range hooks {
+		name := fmt.Sprintf("pre-task-%d", i)
+		outcomes = append(outcomes, runHook(ctx, name, "pre", func(ctx context.Context) error {
+			return fn(ctx, task)
+		}))
 	}
+	return outcomes
 }
 
-// FirePostTask executes all registered post-task hooks safely.
-func FirePostTask(ctx context.Context, task string, err error) {
+// FirePostTask executes all registered post-task hooks safely and returns outcomes.
+func FirePostTask(ctx context.Context, task string, err error) []Outcome {
 	mu.RLock()
 	hooks := make([]PostTaskHook, len(postTaskHooks))
 	copy(hooks, postTaskHooks)
 	mu.RUnlock()
 
-	for _, fn := range hooks {
-		safeRun(func() { fn(ctx, task, err) })
+	outcomes := make([]Outcome, 0, len(hooks))
+	for i, fn := range hooks {
+		name := fmt.Sprintf("post-task-%d", i)
+		outcomes = append(outcomes, runHook(ctx, name, "post", func(ctx context.Context) error {
+			return fn(ctx, task, err)
+		}))
 	}
+	return outcomes
 }
 
-type Outcome string
+func runHook(ctx context.Context, name, stage string, fn func(context.Context) error) Outcome {
+	outcome := Outcome{
+		Name:  name,
+		Stage: stage,
+	}
 
-const (
-	OutcomeSuccess Outcome = "success"
-	OutcomeError   Outcome = "error"
-	OutcomePanic   Outcome = "panic"
-	OutcomeTimeout Outcome = "timeout"
-)
+	timeout := 2 * time.Second
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
-type HookResult struct {
-	Outcome Outcome
-	Error   error
-}
+	start := time.Now()
+	done := make(chan error, 1)
 
-func safeRun(fn func()) HookResult {
-	res := HookResult{Outcome: OutcomeSuccess}
-	defer func() {
-		if r := recover(); r != nil {
-			res.Outcome = OutcomePanic
-		}
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				done <- fmt.Errorf("panic: %v", r)
+			}
+		}()
+		done <- fn(ctx)
 	}()
-	fn()
-	return res
+
+	select {
+	case err := <-done:
+		outcome.Duration = time.Since(start)
+		if err != nil {
+			if strings.HasPrefix(err.Error(), "panic:") {
+				outcome.Status = HookPanic
+			} else {
+				outcome.Status = HookError
+			}
+			outcome.Error = err.Error()
+		} else {
+			outcome.Status = HookSuccess
+		}
+	case <-ctx.Done():
+		outcome.Duration = time.Since(start)
+		outcome.Status = HookTimeout
+		outcome.Error = "hook timed out"
+	}
+
+	return outcome
 }
 
 // Reset clears all registered hooks (primarily for tests).

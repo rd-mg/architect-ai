@@ -1,7 +1,7 @@
 ---
 name: mcp-notebooklm-orchestrator
 description: >
-  PRIMARY research source. NotebookLM holds the project's curated knowledge
+  OPTIONAL research source. NotebookLM holds the project's curated knowledge
   base. Query-only — never creates notebooks or writes artifacts. For any
   question that might live in a curated notebook, NotebookLM is the FIRST
   choice, BEFORE local ripgrep and BEFORE Context7. Internet is never used

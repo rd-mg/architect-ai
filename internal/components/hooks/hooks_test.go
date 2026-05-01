@@ -13,17 +13,19 @@ func TestHooks(t *testing.T) {
 	var preCalled, postCalled bool
 	var capturedErr error
 
-	RegisterPreTask(func(ctx context.Context, task string) {
+	RegisterPreTask(func(ctx context.Context, task string) error {
 		if task == "test-task" {
 			preCalled = true
 		}
+		return nil
 	})
 
-	RegisterPostTask(func(ctx context.Context, task string, err error) {
+	RegisterPostTask(func(ctx context.Context, task string, err error) error {
 		if task == "test-task" {
 			postCalled = true
 			capturedErr = err
 		}
+		return nil
 	})
 
 	ctx := context.Background()
@@ -47,7 +49,7 @@ func TestHookPanicRecovery(t *testing.T) {
 	Reset()
 	defer Reset()
 
-	RegisterPreTask(func(ctx context.Context, task string) {
+	RegisterPreTask(func(ctx context.Context, task string) error {
 		panic("at the disco")
 	})
 

@@ -52,7 +52,10 @@ func OptionsFor(category Category) Options {
 	}
 }
 
-func Run(ctx context.Context, cmdName string, args []string, opts Options) (Result, error) {
+// Run executes a command with the provided options. It is mockable via package-level variable.
+var Run = runInternal
+
+func runInternal(ctx context.Context, cmdName string, args []string, opts Options) (Result, error) {
 	if opts.Timeout == 0 {
 		opts.Timeout = 30 * time.Second
 	}

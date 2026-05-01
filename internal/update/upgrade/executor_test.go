@@ -5,12 +5,12 @@ import (
 	"context"
 	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/rd-mg/architect-ai/internal/backup"
+	"github.com/rd-mg/architect-ai/internal/process"
 	"github.com/rd-mg/architect-ai/internal/system"
 	"github.com/rd-mg/architect-ai/internal/update"
 )
@@ -73,13 +73,13 @@ func TestExecute_NoopWhenNothingIsExecutable(t *testing.T) {
 // (nothing to execute), no backup snapshot is created. Backup is only needed before
 // actual binary execution, not for skip-only reports.
 func TestExecute_DevBuildOnlyNoBackupCreated(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	execCalled := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		execCalled = true
-		return exec.Command("echo", "should not be called")
+		return process.Result{Stdout: []byte("should not be called")}, nil
 	}
 
 	results := []update.UpdateResult{
@@ -157,15 +157,15 @@ func TestRenderUpgradeReport_DryRunManualHintNotCountedAsPending(t *testing.T) {
 // a backup snapshot is created BEFORE any upgrade execution begins.
 // We verify this by ensuring BackupID is non-empty when upgrades are available.
 func TestExecute_BackupBeforeExecution(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	// Capture exec calls to verify ordering.
 	var calls []string
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		calls = append(calls, name)
 		// Return a real passing command (echo) so exec succeeds.
-		return exec.Command("echo", "ok")
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 
 	results := []update.UpdateResult{
@@ -191,13 +191,13 @@ func TestExecute_BackupBeforeExecution(t *testing.T) {
 // TestExecute_DryRunNeverExecs verifies that when dryRun=true, no exec is called
 // but the report is still populated.
 func TestExecute_DryRunNeverExecs(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	called := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		called = true
-		return exec.Command("echo", "should not run")
+		return process.Result{Stdout: []byte("should not run")}, nil
 	}
 
 	results := []update.UpdateResult{
@@ -229,17 +229,17 @@ func TestExecute_DryRunNeverExecs(t *testing.T) {
 // TestExecute_PerToolSuccessAndFailure verifies that Execute reports success for one
 // tool and failure for another in a mixed scenario.
 func TestExecute_PerToolSuccessAndFailure(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		// engram go install succeeds, gga curl/download attempt fails — we simulate
 		// the failure by having execCommand return false for "gga" detection.
 		if name == "go" {
-			return exec.Command("echo", "go install ok")
+			return process.Result{Stdout: []byte("go install ok")}, nil
 		}
 		// Any other exec attempt fails.
-		return exec.Command("false")
+		return process.Result{Error: errors.New("exit status 1"), ExitCode: 1}, errors.New("exit status 1")
 	}
 
 	results := []update.UpdateResult{
@@ -266,10 +266,10 @@ func TestExecute_PerToolSuccessAndFailure(t *testing.T) {
 // with a non-empty ManualHint explaining it is a source/dev build.
 // DevBuild tools must NOT be auto-executed, and engram/gga remain eligible.
 func TestExecute_DevBuildIsSkipped(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("echo", "ok")
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 
 	results := []update.UpdateResult{
@@ -318,12 +318,12 @@ func TestExecute_DevBuildIsSkipped(t *testing.T) {
 // TestExecute_FailureDoesNotImplyConfigLoss verifies that when a tool upgrade fails,
 // we can still retrieve the BackupID — confirming config was snapshotted first.
 func TestExecute_FailureDoesNotImplyConfigLoss(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	// Force all exec to fail.
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("false")
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Error: errors.New("exit status 1"), ExitCode: 1}, errors.New("exit status 1")
 	}
 
 	results := []update.UpdateResult{
@@ -362,10 +362,10 @@ func TestExecute_FailureDoesNotImplyConfigLoss(t *testing.T) {
 // with Status=UpgradeSkipped and a non-empty ManualHint explaining it is a dev/source build.
 // Previously, DevBuild tools were silently omitted from Results entirely.
 func TestExecute_DevBuildSurfacedAsSkipped(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("echo", "ok")
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 
 	results := []update.UpdateResult{
@@ -419,13 +419,13 @@ func TestExecute_DevBuildSurfacedAsSkipped(t *testing.T) {
 // the ToolUpgradeResult must be UpgradeSkipped (not UpgradeFailed) and ManualHint
 // must be populated from the error message so RenderUpgradeReport can display it.
 func TestExecute_ManualFallbackSurfacedAsSkippedNotFailed(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
 	execCalled := false
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		execCalled = true
-		return exec.Command("echo", "should not be called")
+		return process.Result{Stdout: []byte("should not be called")}, nil
 	}
 
 	// Windows profile → binaryUpgrade returns a manual fallback error.
@@ -490,11 +490,11 @@ func TestExecute_ConfigNotMutatedDuringUpgrade(t *testing.T) {
 		}
 	}
 
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
-	execCommand = func(name string, args ...string) *exec.Cmd {
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
 		// Simulate a successful upgrade (no-op shell command).
-		return exec.Command("echo", "upgrade ok")
+		return process.Result{Stdout: []byte("upgrade ok")}, nil
 	}
 
 	results := []update.UpdateResult{
@@ -613,16 +613,16 @@ func TestConfigPathsForBackup_HandlesEmptyDirs(t *testing.T) {
 // or relied on OS permission tricks. This test injects the failure directly via
 // the snapshotCreator package-level var (same testability pattern as execCommand).
 func TestExecute_ForcedSnapshotFailureSurfacesWarningEndToEnd(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origSnapshotCreator := snapshotCreator
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		snapshotCreator = origSnapshotCreator
 	})
 
 	// Stub exec so the upgrade itself succeeds (we're only testing the backup path).
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("echo", "upgrade ok")
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Stdout: []byte("upgrade ok")}, nil
 	}
 
 	// Force snapshot creation to fail.
@@ -678,14 +678,14 @@ func TestExecute_ForcedSnapshotFailureSurfacesWarningEndToEnd(t *testing.T) {
 // This closes the verify gap: "no runtime test proves upgrade manifests are
 // emitted with metadata". This test reads the manifest from disk directly.
 func TestExecute_UpgradeBackupManifestHasUpgradeMetadata(t *testing.T) {
-	origExecCommand := execCommand
+	origRunProcess := runProcess
 	origAppVersion := AppVersion
 	t.Cleanup(func() {
-		execCommand = origExecCommand
+		runProcess = origRunProcess
 		AppVersion = origAppVersion
 	})
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("echo", "ok")
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 	AppVersion = "3.0.0"
 
@@ -741,10 +741,10 @@ func TestExecute_UpgradeBackupManifestHasUpgradeMetadata(t *testing.T) {
 // TestExecute_SuccessfulSnapshotHasNoWarning verifies the happy path: when the
 // snapshot succeeds, BackupWarning is empty (no false positive warning).
 func TestExecute_SuccessfulSnapshotHasNoWarning(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("echo", "ok")
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Stdout: []byte("ok")}, nil
 	}
 	// snapshotCreator is intentionally left at its real default.
 
@@ -1050,11 +1050,11 @@ func TestConfigPathsForBackup_ExcludesRuntimeDirs(t *testing.T) {
 // RED: This test must fail before the fix because the executor calls Finish(false)
 // for any non-success result, which renders ✗ for skipped/manual outcomes.
 func TestExecute_SkippedUpgradeDoesNotRenderFailureMarker(t *testing.T) {
-	origExecCommand := execCommand
-	t.Cleanup(func() { execCommand = origExecCommand })
+	origRunProcess := runProcess
+	t.Cleanup(func() { runProcess = origRunProcess })
 
-	execCommand = func(name string, args ...string) *exec.Cmd {
-		return exec.Command("echo", "should not run")
+	runProcess = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		return process.Result{Stdout: []byte("should not run")}, nil
 	}
 
 	// Windows profile → binary self-update returns manual fallback → UpgradeSkipped.

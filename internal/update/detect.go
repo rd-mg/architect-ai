@@ -2,16 +2,10 @@ package update
 
 import (
 	"context"
-	"os/exec"
 	"regexp"
 	"strings"
-	"time"
-)
 
-// Package-level vars for testability (swap in tests via t.Cleanup).
-var (
-	execCommand = exec.Command
-	lookPath    = exec.LookPath
+	"github.com/rd-mg/architect-ai/internal/process"
 )
 
 // versionRegexp extracts a semver-like version from command output.
@@ -34,38 +28,13 @@ func detectInstalledVersion(ctx context.Context, tool ToolInfo, currentBuildVers
 		return ""
 	}
 
-	binary := tool.DetectCmd[0]
-	if _, err := lookPath(binary); err != nil {
-		return "" // binary not found
-	}
-
-	// Apply a bounded timeout so a hanging binary (e.g. engram stuck on DB
-	// lock) cannot block update/upgrade flows forever.
-	detectCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	cmd := execCommand(tool.DetectCmd[0], tool.DetectCmd[1:]...)
-
-	// Kill the subprocess when the context fires. We use a goroutine because
-	// the testable execCommand var returns a plain *exec.Cmd (not CommandContext).
-	done := make(chan struct{})
-	go func() {
-		select {
-		case <-detectCtx.Done():
-			if cmd.Process != nil {
-				_ = cmd.Process.Kill()
-			}
-		case <-done:
-		}
-	}()
-
-	out, err := cmd.Output()
-	close(done)
-	if err != nil {
+	// Run version command using bounded process runner.
+	res, _ := process.Run(ctx, tool.DetectCmd[0], tool.DetectCmd[1:], process.OptionsFor(process.FastCheck))
+	if res.Error != nil {
 		return "" // command failed or timed out — binary exists but version unknown
 	}
 
-	return parseVersionFromOutput(strings.TrimSpace(string(out)))
+	return parseVersionFromOutput(strings.TrimSpace(string(res.Stdout)))
 }
 
 // parseVersionFromOutput extracts the first semver-like pattern from raw output.

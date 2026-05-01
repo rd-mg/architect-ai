@@ -14,7 +14,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -22,14 +21,12 @@ import (
 	"github.com/rd-mg/architect-ai/internal/agents"
 	"github.com/rd-mg/architect-ai/internal/backup"
 	"github.com/rd-mg/architect-ai/internal/components/gga"
+	"github.com/rd-mg/architect-ai/internal/process"
 	"github.com/rd-mg/architect-ai/internal/system"
 	"github.com/rd-mg/architect-ai/internal/update"
 )
 
 // Package-level vars for testability — same pattern as internal/update/detect.go.
-// execCommand is used as: execCommand(name, args...) — identical signature to exec.Command.
-// Swapping this var in tests controls which commands are actually run.
-var execCommand = exec.Command
 
 // snapshotCreator is the function used to create a backup snapshot before
 // upgrade execution. Swapping this var in tests allows forcing snapshot
@@ -37,6 +34,10 @@ var execCommand = exec.Command
 var snapshotCreator = func(snapshotDir string, paths []string) (backup.Manifest, error) {
 	return backup.NewSnapshotter().Create(snapshotDir, paths)
 }
+
+// runProcess is the function used to execute shell commands during upgrade.
+// Swapping this var in tests allows mocking command execution (e.g., brew upgrade).
+var runProcess = process.Run
 
 // AppVersion is the architect-ai version written into backup manifests created by
 // the upgrade executor. Set by app.go before calling Execute so that upgrade

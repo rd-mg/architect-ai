@@ -1,6 +1,7 @@
 package update
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,8 +10,31 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/rd-mg/architect-ai/internal/process"
 	"github.com/rd-mg/architect-ai/internal/system"
 )
+
+// --- Helpers ---
+
+func setupMockProcess(t *testing.T) {
+	origRun := process.Run
+	t.Cleanup(func() { process.Run = origRun })
+	process.Run = func(ctx context.Context, name string, args []string, opts process.Options) (process.Result, error) {
+		if _, err := lookPath(name); err != nil {
+			return process.Result{Error: err}, err
+		}
+		cmd := execCommand(name, args...)
+		var stdout, stderr bytes.Buffer
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err := cmd.Run()
+		return process.Result{
+			Stdout: stdout.Bytes(),
+			Stderr: stderr.Bytes(),
+			Error:  err,
+		}, err
+	}
+}
 
 // --- TestDetectInstalledVersion ---
 
@@ -96,6 +120,7 @@ func TestDetectInstalledVersion(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			setupMockProcess(t)
 			origLookPath := lookPath
 			origExecCommand := execCommand
 			t.Cleanup(func() {
@@ -291,6 +316,7 @@ func TestResolveGitHubToken_EmptyWhenNoEnvAndNoGh(t *testing.T) {
 // --- TestCheckAll ---
 
 func TestCheckAll(t *testing.T) {
+	setupMockProcess(t)
 	// Set up fake GitHub API that returns different versions per repo.
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -407,6 +433,7 @@ func TestCheckAll_NetworkError(t *testing.T) {
 }
 
 func TestCheckFiltered_FetchErrorPreservesCheckFailedForMissingTool(t *testing.T) {
+	setupMockProcess(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hj, ok := w.(http.Hijacker)
 		if ok {
@@ -737,6 +764,7 @@ func TestCheckAll_DevVersion(t *testing.T) {
 // TestCheckFiltered verifies that CheckFiltered restricts results to the named tools
 // and that the dev-build sentinel causes architect-ai to be reported as DevBuild.
 func TestCheckFiltered_SubsetOfTools(t *testing.T) {
+	setupMockProcess(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -782,6 +810,7 @@ func TestCheckFiltered_SubsetOfTools(t *testing.T) {
 
 // TestCheckFiltered_EmptyFilter verifies that an empty filter returns all tools (same as CheckAll).
 func TestCheckFiltered_EmptyFilter(t *testing.T) {
+	setupMockProcess(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -815,6 +844,7 @@ func TestCheckFiltered_EmptyFilter(t *testing.T) {
 // TestCheckFiltered_UnknownToolIgnored verifies that requesting an unknown tool name is
 // silently skipped without panicking or returning garbage results.
 func TestCheckFiltered_UnknownToolIgnored(t *testing.T) {
+	setupMockProcess(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -852,6 +882,7 @@ func TestCheckFiltered_UnknownToolIgnored(t *testing.T) {
 //   - Dev build MUST be reported as development-build semantic
 //   - architect-ai self-upgrade is skipped while engram/gga remain eligible
 func TestCheckFiltered_DevBuildSemanticsForGentleAI(t *testing.T) {
+	setupMockProcess(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -897,6 +928,7 @@ func TestCheckFiltered_DevBuildSemanticsForGentleAI(t *testing.T) {
 // TestCheckFiltered_DevBuildSkipNotEligible verifies that in a mixed run,
 // architect-ai with "dev" version gets DevBuild while engram with a real version stays eligible.
 func TestCheckFiltered_DevBuildSkipNotEligible(t *testing.T) {
+	setupMockProcess(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -965,6 +997,7 @@ func TestCheckFiltered_DevBuildSkipNotEligible(t *testing.T) {
 
 // TestNoUpdatesPath verifies CheckFiltered returns correct statuses when nothing needs updating.
 func TestNoUpdatesPath(t *testing.T) {
+	setupMockProcess(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

@@ -83,7 +83,7 @@ func (a *Adapter) SystemPromptDir(homeDir string) string {
 }
 
 func (a *Adapter) SystemPromptFile(homeDir string) string {
-	return filepath.Join(homeDir, ".gemini", "system.md")
+	return filepath.Join(homeDir, ".gemini", "GEMINI.md")
 }
 
 func (a *Adapter) SkillsDir(homeDir string) string {
