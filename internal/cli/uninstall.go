@@ -19,6 +19,7 @@ type UninstallFlags struct {
 	Agents     []string
 	Components []string
 	All        bool
+	Purge      bool
 	Yes        bool
 }
 
@@ -32,6 +33,7 @@ func ParseUninstallFlags(args []string) (UninstallFlags, error) {
 	registerListFlag(fs, "component", &opts.Components)
 	registerListFlag(fs, "components", &opts.Components)
 	fs.BoolVar(&opts.All, "all", false, "remove managed configuration for all supported agents")
+	fs.BoolVar(&opts.Purge, "purge", false, "deep cleanup of all managed and legacy configuration")
 	fs.BoolVar(&opts.Yes, "yes", false, "skip confirmation prompt")
 	fs.BoolVar(&opts.Yes, "y", false, "skip confirmation prompt")
 
@@ -87,15 +89,26 @@ func RenderUninstallReport(result componentuninstall.Result) string {
 		_, _ = fmt.Fprintf(&b, "Backup: %s (%s)\n", result.Manifest.ID, result.Manifest.DisplayLabel())
 		_, _ = fmt.Fprintf(&b, "Backup path: %s\n", result.BackupPath)
 	}
-	_, _ = fmt.Fprintf(&b, "Changed files: %d\n", len(result.ChangedFiles))
-	_, _ = fmt.Fprintf(&b, "Removed files: %d\n", len(result.RemovedFiles))
-	_, _ = fmt.Fprintf(&b, "Removed directories: %d\n", len(result.RemovedDirectories))
-	if len(result.AgentsRemovedFromState) > 0 {
-		_, _ = fmt.Fprintf(&b, "Updated state.json: removed %s\n", strings.Join(agentLabels(result.AgentsRemovedFromState), ", "))
+
+	if len(result.Report) > 0 {
+		_, _ = fmt.Fprintln(&b, "\nAsset Detail:")
+		for _, res := range result.Report {
+			status := res.Status
+			if res.Error != "" {
+				status = fmt.Sprintf("%s (%s)", res.Status, res.Error)
+			}
+			_, _ = fmt.Fprintf(&b, "  %-15s %s\n", "["+status+"]", res.Path)
+		}
 	}
-	appendPathSection(&b, "Rewritten files", result.ChangedFiles)
-	appendPathSection(&b, "Deleted files", result.RemovedFiles)
-	appendPathSection(&b, "Deleted directories", result.RemovedDirectories)
+
+	_, _ = fmt.Fprintf(&b, "\nSummary:\n")
+	_, _ = fmt.Fprintf(&b, "  Changed files: %d\n", len(result.ChangedFiles))
+	_, _ = fmt.Fprintf(&b, "  Removed files: %d\n", len(result.RemovedFiles))
+	_, _ = fmt.Fprintf(&b, "  Removed directories: %d\n", len(result.RemovedDirectories))
+	if len(result.AgentsRemovedFromState) > 0 {
+		_, _ = fmt.Fprintf(&b, "  Updated state.json: removed %s\n", strings.Join(agentLabels(result.AgentsRemovedFromState), ", "))
+	}
+
 	appendPathSection(&b, "Manual cleanup required", result.ManualActions)
 
 	return strings.TrimRight(b.String(), "\n")
@@ -127,6 +140,9 @@ func runUninstallWithInput(args []string, stdout io.Writer, stdin io.Reader) (co
 		}
 	}
 
+	if flags.Purge {
+		return componentuninstall.Purge(homeDir, workspaceDir, AppVersion)
+	}
 	if flags.All {
 		return componentuninstall.CompleteUninstall(homeDir, workspaceDir, AppVersion)
 	}
@@ -134,7 +150,9 @@ func runUninstallWithInput(args []string, stdout io.Writer, stdin io.Reader) (co
 }
 
 func promptUninstallConfirm(flags UninstallFlags, stdout io.Writer, stdin io.Reader) (bool, error) {
-	if flags.All {
+	if flags.Purge {
+		_, _ = fmt.Fprintln(stdout, "This will perform a deep, comprehensive cleanup of all managed and legacy architect-ai configuration across global and project directories.")
+	} else if flags.All {
 		_, _ = fmt.Fprintln(stdout, "This will remove architect-ai managed configuration from all supported agents.")
 	} else {
 		_, _ = fmt.Fprintf(stdout, "This will remove architect-ai managed configuration from: %s\n", strings.Join(agentLabelsFromStrings(flags.Agents), ", "))

@@ -1,6 +1,8 @@
 package uninstall
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io/fs"
 	"os"
@@ -36,7 +38,23 @@ type Result struct {
 	RemovedDirectories     []string
 	ManualActions          []string
 	AgentsRemovedFromState []model.AgentID
+	Report                 []RemoveResult
 }
+
+type RemoveResult struct {
+	Path   string
+	Kind   string
+	Status string // removed|missing|skipped_drifted|error
+	Error  string
+}
+
+const (
+	StatusRemoved        = "removed"
+	StatusChanged        = "changed"
+	StatusMissing        = "missing"
+	StatusSkippedDrifted = "skipped_drifted"
+	StatusError          = "error"
+)
 
 type Service struct {
 	homeDir      string
@@ -118,7 +136,7 @@ var (
 type operation struct {
 	typeID opType
 	path   string
-	apply  func(path string) (changed bool, removed bool, err error)
+	apply  func(path string) (status string, err error)
 }
 
 func NewService(homeDir, workspaceDir, appVersion string) (*Service, error) {
@@ -142,6 +160,49 @@ func NewService(homeDir, workspaceDir, appVersion string) (*Service, error) {
 		now:                  time.Now,
 		engramUninstallScope: model.EngramUninstallScopeGlobal,
 	}, nil
+}
+
+func (s *Service) candidatePathsForAdapter(adapter agents.Adapter, home, workspace string) []string {
+	paths := []string{
+		adapter.GlobalConfigDir(home),
+		adapter.SystemPromptFile(home),
+		adapter.SettingsPath(home),
+		adapter.SkillsDir(home),
+	}
+	if adapter.SupportsMCP() {
+		paths = append(paths,
+			adapter.MCPConfigPath(home, "context7"),
+			adapter.MCPConfigPath(home, "engram"),
+			adapter.MCPConfigPath(home, "notebooklm-mcp"),
+		)
+	}
+	if adapter.SupportsSlashCommands() {
+		paths = append(paths, adapter.CommandsDir(home))
+	}
+	if cap, ok := adapter.(interface{ SubAgentsDir(string) string }); ok {
+		paths = append(paths, cap.SubAgentsDir(home))
+	}
+	if workspace != "" {
+		paths = append(paths,
+			filepath.Join(workspace, ".atl"),
+			filepath.Join(workspace, ".agents"),
+			filepath.Join(workspace, ".agent"),
+			filepath.Join(workspace, ".github", "copilot-instructions.md"),
+			filepath.Join(workspace, ".github", "instructions"),
+			filepath.Join(workspace, ".vscode", "mcp.json"),
+		)
+	}
+
+	result := make([]string, 0, len(paths))
+	seen := make(map[string]bool)
+	for _, p := range paths {
+		if p == "" || seen[p] {
+			continue
+		}
+		seen[p] = true
+		result = append(result, p)
+	}
+	return result
 }
 
 func PartialUninstall(homeDir, workspaceDir, appVersion string, agentIDs []string, componentIDs []string) (Result, error) {
@@ -190,6 +251,14 @@ func CompleteUninstall(homeDir, workspaceDir, appVersion string) (Result, error)
 	return svc.CompleteUninstall()
 }
 
+func Purge(homeDir, workspaceDir, appVersion string) (Result, error) {
+	svc, err := NewService(homeDir, workspaceDir, appVersion)
+	if err != nil {
+		return Result{}, err
+	}
+	return svc.Purge()
+}
+
 func (s *Service) PartialUninstall(agentIDs []model.AgentID, componentIDs []model.ComponentID) (Result, error) {
 	s.profileNamesToRemove = nil
 	s.profileSelectionScoped = false
@@ -197,6 +266,23 @@ func (s *Service) PartialUninstall(agentIDs []model.AgentID, componentIDs []mode
 
 	if len(agentIDs) == 0 {
 		return Result{}, fmt.Errorf("partial uninstall requires at least one agent")
+	}
+
+	// Try manifest-first
+	var allEntries []state.ManagedEntry
+	manifests := make(map[model.AgentID][]string)
+	for _, agentID := range agentIDs {
+		// Use current workspace if available
+		path := state.AgentManifestPath(s.homeDir, s.workspaceDir, agentID)
+		m, err := state.LoadManifest(path)
+		if err == nil {
+			allEntries = append(allEntries, m.Entries...)
+			manifests[agentID] = append(manifests[agentID], path)
+		}
+	}
+
+	if len(allEntries) > 0 {
+		return s.uninstallFromEntries(allEntries, manifests)
 	}
 
 	components := componentIDs
@@ -254,9 +340,20 @@ func (s *Service) SetEngramUninstallScope(scope model.EngramUninstallScope) {
 }
 
 func (s *Service) CompleteUninstall() (Result, error) {
-	manifestPath := state.ManifestPath(s.homeDir)
-	if manifest, err := state.LoadManifest(manifestPath); err == nil && len(manifest.Entries) > 0 {
-		return s.uninstallFromManifest(manifest)
+	manifests, err := state.DiscoverManifests(s.homeDir)
+	if err == nil && len(manifests) > 0 {
+		var allEntries []state.ManagedEntry
+		for _, paths := range manifests {
+			for _, path := range paths {
+				m, err := state.LoadManifest(path)
+				if err == nil {
+					allEntries = append(allEntries, m.Entries...)
+				}
+			}
+		}
+		if len(allEntries) > 0 {
+			return s.uninstallFromEntries(allEntries, manifests)
+		}
 	}
 
 	s.profileNamesToRemove = nil
@@ -277,49 +374,94 @@ func (s *Service) CompleteUninstall() (Result, error) {
 	return result, nil
 }
 
-func (s *Service) uninstallFromManifest(manifest *state.ManagedManifest) (Result, error) {
-	// Build operations directly from the manifest entries
+func (s *Service) Purge() (Result, error) {
+	allAgents := s.registry.SupportedAgents()
 	var ops []operation
-	backupTargets := map[string]struct{}{}
-	
-	// Add state file and manifest file to backup
-	backupTargets[state.Path(s.homeDir)] = struct{}{}
-	backupTargets[state.ManifestPath(s.homeDir)] = struct{}{}
+	var backupTargets []string
 
-	for _, entry := range manifest.Entries {
-		backupTargets[entry.Path] = struct{}{}
-		
-		switch entry.Kind {
-		case state.KindFile:
-			ops = append(ops, removeFile(entry.Path))
-		case state.KindDirectory:
-			ops = append(ops, removeTree(entry.Path))
-		case state.KindJSONPath:
-			ops = append(ops, rewriteJSONFile(entry.Path, strings.Split(entry.JSONPath, ".")))
-		case state.KindMarkdownSection:
-			ops = append(ops, rewriteMarkdownFile(entry.Path, func(content string) (string, bool) {
-				return removeMarkdownSections(content, entry.Marker)
-			}))
+	for _, agentID := range allAgents {
+		adapter, ok := s.registry.Get(agentID)
+		if !ok {
+			continue
+		}
+		paths := s.candidatePathsForAdapter(adapter, s.homeDir, s.workspaceDir)
+		for _, p := range paths {
+			if p == "" {
+				continue
+			}
+			info, err := os.Stat(p)
+			if err != nil {
+				continue
+			}
+			if info.IsDir() {
+				ops = append(ops, removeTree(p))
+			} else {
+				ops = append(ops, removeFile(p, ""))
+			}
+			targets, _ := expandBackupTarget(p)
+			backupTargets = append(backupTargets, targets...)
 		}
 	}
-	
-	orderedTargets := make([]string, 0, len(backupTargets))
-	for target := range backupTargets {
-		orderedTargets = append(orderedTargets, target)
-	}
-	slices.Sort(orderedTargets)
-	slices.SortFunc(ops, compareOperations)
 
-	p := plan{backupTargets: orderedTargets, operations: ops}
-	
-	allAgents := s.registry.SupportedAgents()
-	result, err := s.executePlan(p, allAgents)
-	if err == nil {
-		result.ManualActions = append(result.ManualActions, "To completely remove architect-ai from your system, delete the executable (e.g., rm -f $(which architect-ai))")
-		// Clean up the manifest itself
-		_ = removeFileIfExists(state.ManifestPath(s.homeDir))
+	// Global targets
+	for _, p := range globalBackupTargets(s.homeDir) {
+		ops = append(ops, removeFile(p, ""))
+		backupTargets = append(backupTargets, p)
 	}
-	return result, err
+
+	// Managed manifests dir
+	managedDir := filepath.Join(s.homeDir, ".architect-ai", "managed")
+	ops = append(ops, removeTree(managedDir))
+	backupTargets = append(backupTargets, managedDir)
+
+	result, err := s.executePlan(plan{operations: ops, backupTargets: backupTargets}, allAgents)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
+
+func (s *Service) uninstallFromEntries(entries []state.ManagedEntry, manifests map[model.AgentID][]string) (Result, error) {
+	var ops []operation
+	var backupTargets []string
+
+	for _, entry := range entries {
+		var op operation
+		switch entry.Kind {
+		case state.KindFile:
+			op = removeFile(entry.Path, entry.SHA256AtWrite)
+		case state.KindJSONPath:
+			op = rewriteJSONFile(entry.Path, jsonPath{entry.JSONPath})
+		case state.KindMarkdownSection:
+			op = rewriteMarkdownFile(entry.Path, func(content string) (string, bool) {
+				return removeMarkdownSections(content, entry.Marker)
+			})
+		case state.KindDirectory:
+			op = removeTree(entry.Path)
+		default:
+			continue
+		}
+		ops = append(ops, op)
+		targets, _ := expandBackupTarget(entry.Path)
+		backupTargets = append(backupTargets, targets...)
+	}
+
+	// Also remove the manifests themselves
+	var agentsToRemove []model.AgentID
+	for agentID, paths := range manifests {
+		agentsToRemove = append(agentsToRemove, agentID)
+		for _, path := range paths {
+			ops = append(ops, removeFile(path, ""))
+			backupTargets = append(backupTargets, path)
+		}
+	}
+
+	result, err := s.executePlan(plan{operations: ops, backupTargets: backupTargets}, agentsToRemove)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 type plan struct {
@@ -411,27 +553,34 @@ func (s *Service) executePlan(p plan, agentsToRemove []model.AgentID) (Result, e
 	}
 
 	for _, op := range p.operations {
-		changed, removed, err := op.apply(op.path)
-		if err != nil {
-			return result, err
+		status, err := op.apply(op.path)
+		res := RemoveResult{
+			Path:   op.path,
+			Status: status,
 		}
-		if op.typeID == opRemoveIfEmpty && !removed {
+		if err != nil {
+			res.Error = err.Error()
+			res.Status = StatusError
+		}
+		result.Report = append(result.Report, res)
+
+		if err != nil {
+			continue
+		}
+
+		if op.typeID == opRemoveIfEmpty && status != StatusRemoved {
 			if note, ok := manualActionForNonEmptyDirectory(op.path); ok {
 				result.ManualActions = append(result.ManualActions, note)
 			}
 		}
-		if !changed {
-			continue
-		}
-		switch op.typeID {
-		case opRewriteFile:
-			result.ChangedFiles = append(result.ChangedFiles, op.path)
-		case opRemoveFile:
-			if removed {
+
+		if status == StatusRemoved {
+			switch op.typeID {
+			case opRewriteFile:
+				result.ChangedFiles = append(result.ChangedFiles, op.path)
+			case opRemoveFile:
 				result.RemovedFiles = append(result.RemovedFiles, op.path)
-			}
-		case opRemoveTree, opRemoveIfEmpty:
-			if removed {
+			case opRemoveTree, opRemoveIfEmpty:
 				result.RemovedDirectories = append(result.RemovedDirectories, op.path)
 			}
 		}
@@ -488,7 +637,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 		if adapter.SupportsOutputStyles() {
 			path := filepath.Join(adapter.OutputStyleDir(homeDir), "gentleman.md")
 			targets = append(targets, path)
-			ops = append(ops, removeFile(path))
+			ops = append(ops, removeFile(path, ""))
 			ops = append(ops, removeDirIfEmpty(adapter.OutputStyleDir(homeDir)))
 		}
 		if path := adapter.SettingsPath(homeDir); path != "" {
@@ -583,7 +732,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 				}
 				path := filepath.Join(commandsDir, entry.Name())
 				targets = append(targets, path)
-				ops = append(ops, removeFile(path))
+				ops = append(ops, removeFile(path, ""))
 			}
 			ops = append(ops, removeDirIfEmpty(commandsDir))
 		}
@@ -615,7 +764,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 
 			pluginPath := filepath.Join(homeDir, ".config", "opencode", "plugins", "background-agents.ts")
 			targets = append(targets, pluginPath)
-			ops = append(ops, removeFile(pluginPath), removeDirIfEmpty(filepath.Dir(pluginPath)))
+			ops = append(ops, removeFile(pluginPath, ""), removeDirIfEmpty(filepath.Dir(pluginPath)))
 
 			depDir := filepath.Join(homeDir, ".config", "opencode", "node_modules", "unique-names-generator")
 			targets = append(targets, depDir)
@@ -645,7 +794,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 				}
 				path := filepath.Join(workflowsDir, entry.Name())
 				targets = append(targets, path)
-				ops = append(ops, removeFile(path))
+				ops = append(ops, removeFile(path, ""))
 			}
 			ops = append(ops, removeDirIfEmpty(workflowsDir), removeDirIfEmpty(filepath.Dir(workflowsDir)))
 		}
@@ -661,14 +810,14 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 				}
 				path := filepath.Join(agentsDir, entry.Name())
 				targets = append(targets, path)
-				ops = append(ops, removeFile(path))
+				ops = append(ops, removeFile(path, ""))
 			}
 			ops = append(ops, removeDirIfEmpty(agentsDir))
 		}
 	case model.ComponentGGA:
 		for _, path := range globalBackupTargets(homeDir) {
 			targets = append(targets, path)
-			ops = append(ops, removeFile(path))
+			ops = append(ops, removeFile(path, ""))
 		}
 		ops = append(ops, removeDirIfEmpty(filepath.Dir(gga.ConfigPath(homeDir))))
 	default:
@@ -693,7 +842,7 @@ func context7Operations(adapter agents.Adapter, homeDir string) []operation {
 	switch adapter.MCPStrategy() {
 	case model.StrategySeparateMCPFiles:
 		path := adapter.MCPConfigPath(homeDir, "context7")
-		return []operation{removeFile(path), removeDirIfEmpty(filepath.Dir(path))}
+		return []operation{removeFile(path, ""), removeDirIfEmpty(filepath.Dir(path))}
 	case model.StrategyMergeIntoSettings:
 		path := adapter.SettingsPath(homeDir)
 		if adapter.Agent() == model.AgentOpenCode {
@@ -728,7 +877,7 @@ func notebookLMOperations(adapter agents.Adapter, homeDir string) []operation {
 	switch adapter.MCPStrategy() {
 	case model.StrategySeparateMCPFiles:
 		path := adapter.MCPConfigPath(homeDir, "notebooklm-mcp")
-		return []operation{removeFile(path), removeDirIfEmpty(filepath.Dir(path))}
+		return []operation{removeFile(path, ""), removeDirIfEmpty(filepath.Dir(path))}
 	case model.StrategyMergeIntoSettings:
 		path := adapter.SettingsPath(homeDir)
 		if adapter.Agent() == model.AgentOpenCode || adapter.Agent() == model.AgentKilocode {
@@ -771,7 +920,7 @@ func engramOperations(adapter agents.Adapter, homeDir string) []operation {
 	switch adapter.MCPStrategy() {
 	case model.StrategySeparateMCPFiles:
 		path := adapter.MCPConfigPath(homeDir, "engram")
-		return []operation{removeFile(path), removeDirIfEmpty(filepath.Dir(path))}
+		return []operation{removeFile(path, ""), removeDirIfEmpty(filepath.Dir(path))}
 	case model.StrategyMergeIntoSettings:
 		path := adapter.SettingsPath(homeDir)
 		if adapter.Agent() == model.AgentOpenCode {
@@ -790,8 +939,8 @@ func engramOperations(adapter agents.Adapter, homeDir string) []operation {
 		compactPath := filepath.Join(homeDir, ".codex", "engram-compact-prompt.md")
 		return []operation{
 			rewriteTOMLFile(configPath, cleanCodexTOML),
-			removeFile(instructionsPath),
-			removeFile(compactPath),
+			removeFile(instructionsPath, ""),
+			removeFile(compactPath, ""),
 			removeDirIfEmpty(filepath.Dir(instructionsPath)),
 		}
 	default:
@@ -803,28 +952,31 @@ func rewriteMarkdownFile(path string, mutate func(content string) (string, bool)
 	return operation{
 		typeID: opRewriteFile,
 		path:   path,
-		apply: func(path string) (bool, bool, error) {
+		apply: func(path string) (string, error) {
 			content, err := readFileOrEmpty(path)
 			if err != nil {
-				return false, false, err
+				return StatusError, err
+			}
+			if content == "" {
+				return StatusMissing, nil
 			}
 			eol := detectEOL(content)
 			updated, changed := mutate(content)
 			if !changed {
-				return false, false, nil
+				return StatusMissing, nil // Already clean
 			}
 			updated = restoreEOL(updated, eol)
 			if strings.TrimSpace(updated) == "" {
 				if err := removeFileIfExists(path); err != nil {
-					return false, false, err
+					return StatusError, err
 				}
-				return true, true, nil
+				return StatusRemoved, nil
 			}
 			_, err = filemerge.WriteFileAtomic(path, []byte(updated), 0o644)
 			if err != nil {
-				return false, false, err
+				return StatusError, err
 			}
-			return true, false, nil
+			return StatusChanged, nil
 		},
 	}
 }
@@ -833,32 +985,32 @@ func rewriteJSONFile(path string, jsonPaths ...jsonPath) operation {
 	return operation{
 		typeID: opRewriteFile,
 		path:   path,
-		apply: func(path string) (bool, bool, error) {
+		apply: func(path string) (string, error) {
 			raw, err := readManagedFile(path)
 			if err != nil {
 				if os.IsNotExist(err) {
-					return false, false, nil
+					return StatusMissing, nil
 				}
-				return false, false, fmt.Errorf("read json file %q: %w", path, err)
+				return StatusError, fmt.Errorf("read json file %q: %w", path, err)
 			}
 			updated, changed, err := removeJSONPaths(raw, jsonPaths...)
 			if err != nil {
-				return false, false, fmt.Errorf("clean json file %q: %w", path, err)
+				return StatusError, fmt.Errorf("clean json file %q: %w", path, err)
 			}
 			if !changed {
-				return false, false, nil
+				return StatusRemoved, nil
 			}
 			if jsonIsEmptyObject(updated) {
 				if err := removeFileIfExists(path); err != nil {
-					return false, false, err
+					return StatusError, err
 				}
-				return true, true, nil
+				return StatusRemoved, nil
 			}
 			_, err = filemerge.WriteFileAtomic(path, updated, 0o644)
 			if err != nil {
-				return false, false, err
+				return StatusError, err
 			}
-			return true, false, nil
+			return StatusChanged, nil
 		},
 	}
 }
@@ -867,48 +1019,59 @@ func rewriteTOMLFile(path string, mutate func(content string) (string, bool)) op
 	return operation{
 		typeID: opRewriteFile,
 		path:   path,
-		apply: func(path string) (bool, bool, error) {
+		apply: func(path string) (string, error) {
 			content, err := readFileOrEmpty(path)
 			if err != nil {
-				return false, false, err
+				return StatusError, err
+			}
+			if content == "" {
+				return StatusMissing, nil
 			}
 			eol := detectEOL(content)
 			updated, changed := mutate(content)
 			if !changed {
-				return false, false, nil
+				return StatusMissing, nil
 			}
 			updated = restoreEOL(updated, eol)
 			if strings.TrimSpace(updated) == "" {
 				if err := removeFileIfExists(path); err != nil {
-					return false, false, err
+					return StatusError, err
 				}
-				return true, true, nil
+				return StatusRemoved, nil
 			}
 			_, err = filemerge.WriteFileAtomic(path, []byte(updated), 0o644)
 			if err != nil {
-				return false, false, err
+				return StatusError, err
 			}
-			return true, false, nil
+			return StatusChanged, nil
 		},
 	}
 }
 
-func removeFile(path string) operation {
+func removeFile(path string, expectedHash string) operation {
 	return operation{
 		typeID: opRemoveFile,
 		path:   path,
-		apply: func(path string) (bool, bool, error) {
-			_, statErr := os.Stat(path)
-			if statErr != nil {
-				if os.IsNotExist(statErr) {
-					return false, false, nil
+		apply: func(path string) (string, error) {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				if os.IsNotExist(err) {
+					return StatusMissing, nil
 				}
-				return false, false, statErr
+				return StatusError, err
 			}
+
+			if expectedHash != "" {
+				actualHash := sha256.Sum256(data)
+				if hex.EncodeToString(actualHash[:]) != expectedHash {
+					return StatusSkippedDrifted, nil
+				}
+			}
+
 			if err := removeFileIfExists(path); err != nil {
-				return false, false, err
+				return StatusError, err
 			}
-			return true, true, nil
+			return StatusRemoved, nil
 		},
 	}
 }
@@ -917,17 +1080,17 @@ func removeTree(path string) operation {
 	return operation{
 		typeID: opRemoveTree,
 		path:   path,
-		apply: func(path string) (bool, bool, error) {
+		apply: func(path string) (string, error) {
 			if _, err := os.Stat(path); err != nil {
 				if os.IsNotExist(err) {
-					return false, false, nil
+					return StatusMissing, nil
 				}
-				return false, false, err
+				return StatusError, err
 			}
 			if err := os.RemoveAll(path); err != nil {
-				return false, false, fmt.Errorf("remove directory tree %q: %w", path, err)
+				return StatusError, fmt.Errorf("remove directory tree %q: %w", path, err)
 			}
-			return true, true, nil
+			return StatusRemoved, nil
 		},
 	}
 }
@@ -936,12 +1099,18 @@ func removeDirIfEmpty(path string) operation {
 	return operation{
 		typeID: opRemoveIfEmpty,
 		path:   path,
-		apply: func(path string) (bool, bool, error) {
+		apply: func(path string) (string, error) {
 			if path == "" {
-				return false, false, nil
+				return StatusMissing, nil
 			}
 			removed, err := removeDirIfEmptyRecursive(path)
-			return removed, removed, err
+			if err != nil {
+				return StatusError, err
+			}
+			if removed {
+				return StatusRemoved, nil
+			}
+			return StatusMissing, nil // Or StatusError? Current logic treats non-empty as success with manual action
 		},
 	}
 }
@@ -1034,18 +1203,28 @@ func mergeRewriteOps(a, b operation) operation {
 	return operation{
 		typeID: opRewriteFile,
 		path:   a.path,
-		apply: func(path string) (bool, bool, error) {
-			changed1, removed1, err1 := a.apply(path)
+		apply: func(path string) (string, error) {
+			status1, err1 := a.apply(path)
 			if err1 != nil {
-				return changed1, removed1, err1
+				return status1, err1
 			}
 			// If the first op removed the file entirely, the second op
 			// has nothing left to rewrite.
-			if removed1 {
-				return changed1, removed1, nil
+			if status1 == StatusRemoved {
+				return status1, nil
 			}
-			changed2, removed2, err2 := b.apply(path)
-			return changed1 || changed2, removed2, err2
+			status2, err2 := b.apply(path)
+			if err2 != nil {
+				return status2, err2
+			}
+			// If either changed it, it's changed. If the last one removed it, it's removed.
+			if status2 == StatusRemoved {
+				return StatusRemoved, nil
+			}
+			if status1 == StatusChanged || status2 == StatusChanged {
+				return StatusChanged, nil
+			}
+			return StatusMissing, nil // or StatusSkipped
 		},
 	}
 }

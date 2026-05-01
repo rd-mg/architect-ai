@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rd-mg/architect-ai/internal/model"
 )
@@ -86,4 +87,32 @@ func Write(homeDir string, s InstallState) error {
 		return err
 	}
 	return os.WriteFile(Path(homeDir), append(data, '\n'), 0o644)
+}
+// DiscoverManifests returns a map of AgentID -> []string (absolute paths to manifest files)
+// by scanning the managed directory in the given home directory.
+func DiscoverManifests(homeDir string) (map[model.AgentID][]string, error) {
+	managedDir := filepath.Join(homeDir, stateDir, "managed")
+	_, err := os.Stat(managedDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	result := make(map[model.AgentID][]string)
+	err = filepath.WalkDir(managedDir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) == ".json" {
+			agentID := model.AgentID(strings.TrimSuffix(filepath.Base(path), ".json"))
+			result[agentID] = append(result[agentID], path)
+		}
+		return nil
+	})
+	return result, err
 }

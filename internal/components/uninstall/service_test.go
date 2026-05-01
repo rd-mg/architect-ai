@@ -117,7 +117,7 @@ func TestComponentOperationsSDD_RemovesBaseAndProfileAgentsFromSettings(t *testi
 			continue
 		}
 		appliedSettingsRewrite = true
-		_, _, err := op.apply(op.path)
+		_, err := op.apply(op.path)
 		if err != nil {
 			t.Fatalf("settings rewrite op.apply() error = %v", err)
 		}
@@ -206,7 +206,7 @@ func TestComponentOperationsSDD_RemovesOnlySelectedProfilesFromSettings(t *testi
 
 	for _, op := range ops {
 		if op.typeID == opRewriteFile && op.path == settingsPath {
-			if _, _, err := op.apply(op.path); err != nil {
+			if _, err := op.apply(op.path); err != nil {
 				t.Fatalf("settings rewrite op.apply() error = %v", err)
 			}
 		}
@@ -276,7 +276,7 @@ func TestComponentOperationsEngram_ProjectScopeRemovesWorkspaceDataOnly(t *testi
 	}
 
 	for _, op := range ops {
-		if _, _, err := op.apply(op.path); err != nil {
+		if _, err := op.apply(op.path); err != nil {
 			t.Fatalf("op.apply(%q) error = %v", op.path, err)
 		}
 	}
@@ -332,7 +332,7 @@ func TestComponentOperationsEngram_GlobalScopeKeepsWorkspaceProjectData(t *testi
 	}
 
 	for _, op := range ops {
-		if _, _, err := op.apply(op.path); err != nil {
+		if _, err := op.apply(op.path); err != nil {
 			t.Fatalf("op.apply(%q) error = %v", op.path, err)
 		}
 	}
