@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
+	"github.com/rd-mg/architect-ai/internal/model"
+	"github.com/rd-mg/architect-ai/internal/state"
 )
 
 // SharedPromptDir returns the directory where shared SDD prompt files are stored.
@@ -44,7 +46,7 @@ func SharedPromptPhases() []string {
 // {homeDir}/.config/opencode/prompts/sdd/. Returns (true, nil) if any file
 // was created or changed, (false, nil) if all files already match (idempotent).
 // Uses WriteFileAtomic so the operation is safe to repeat.
-func WriteSharedPromptFiles(homeDir string) (bool, error) {
+func WriteSharedPromptFiles(homeDir string, manifest *state.ManagedManifest) (bool, error) {
 	promptDir := SharedPromptDir(homeDir)
 	anyChanged := false
 
@@ -62,6 +64,7 @@ func WriteSharedPromptFiles(homeDir string) (bool, error) {
 
 		if result.Changed {
 			anyChanged = true
+			state.RecordManagedFile(manifest, model.ComponentSDD, path, content, state.DeleteIfUnchanged)
 		}
 	}
 

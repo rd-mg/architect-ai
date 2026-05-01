@@ -347,7 +347,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 			overlayBytes := []byte(overlayContent)
 			// For multi-mode, write shared prompt files before inlining references.
 			if sddMode == model.SDDModeMulti {
-				promptsChanged, promptsErr := WriteSharedPromptFiles(homeDir)
+				promptsChanged, promptsErr := WriteSharedPromptFiles(homeDir, manifest)
 				if promptsErr != nil {
 					return InjectionResult{}, fmt.Errorf("write shared SDD prompt files: %w", promptsErr)
 				}
@@ -388,11 +388,14 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 				return InjectionResult{}, err
 			}
 			changed = changed || agentResult.writeResult.Changed
+			if agentResult.writeResult.Changed {
+				state.RecordManagedJSONPath(manifest, model.ComponentSDD, settingsPath, "agent")
+			}
 			files = append(files, settingsPath)
 			mergedSettingsBytes = agentResult.merged
 
 			// Install OpenCode plugins (all SDD modes).
-			pluginResult, err := installOpenCodePlugins(homeDir, opts.Force)
+			pluginResult, err := installOpenCodePlugins(homeDir, opts.Force, manifest)
 			if err != nil {
 				return InjectionResult{}, err
 			}

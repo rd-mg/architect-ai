@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/rd-mg/architect-ai/internal/model"
 )
 
 type RemoveStrategy string
@@ -32,26 +34,26 @@ const (
 )
 
 type ManagedEntry struct {
-	Component      string         `json:"component"`
-	Path           string         `json:"path"`
-	Kind           Kind           `json:"kind"`
-	JSONPath       string         `json:"json_path,omitempty"`
-	Marker         string         `json:"marker,omitempty"`
-	SHA256AtWrite  string         `json:"sha256_at_write,omitempty"`
-	RemoveStrategy RemoveStrategy `json:"remove_strategy"`
+	Component      model.ComponentID `json:"component"`
+	Path           string            `json:"path"`
+	Kind           Kind              `json:"kind"`
+	JSONPath       string            `json:"json_path,omitempty"`
+	Marker         string            `json:"marker,omitempty"`
+	SHA256AtWrite  string            `json:"sha256_at_write,omitempty"`
+	RemoveStrategy RemoveStrategy    `json:"remove_strategy"`
 }
 
 type ManagedManifest struct {
-	SchemaVersion int            `json:"schema_version"`
-	Agent         string         `json:"agent"`
-	ProjectRoot   string         `json:"project_root"`
-	CreatedAt     time.Time      `json:"created_at"`
-	Entries       []ManagedEntry `json:"entries"`
+	SchemaVersion int               `json:"schema_version"`
+	Agent         model.AgentID     `json:"agent"`
+	ProjectRoot   string            `json:"project_root"`
+	CreatedAt     time.Time         `json:"created_at"`
+	Entries       []ManagedEntry    `json:"entries"`
 	
 	mu sync.RWMutex
 }
 
-func NewManagedManifest(agent, projectRoot string) *ManagedManifest {
+func NewManagedManifest(agent model.AgentID, projectRoot string) *ManagedManifest {
 	return &ManagedManifest{
 		SchemaVersion: 1,
 		Agent:         agent,
@@ -128,7 +130,7 @@ func (m *ManagedManifest) AddEntry(entry ManagedEntry) {
 
 // Helpers
 
-func RecordManagedFile(m *ManagedManifest, component, path, content string, strategy RemoveStrategy) {
+func RecordManagedFile(m *ManagedManifest, component model.ComponentID, path, content string, strategy RemoveStrategy) {
 	hash := sha256.Sum256([]byte(content))
 	m.AddEntry(ManagedEntry{
 		Component:      component,
@@ -139,7 +141,7 @@ func RecordManagedFile(m *ManagedManifest, component, path, content string, stra
 	})
 }
 
-func RecordManagedJSONPath(m *ManagedManifest, component, path, jsonPath string) {
+func RecordManagedJSONPath(m *ManagedManifest, component model.ComponentID, path, jsonPath string) {
 	m.AddEntry(ManagedEntry{
 		Component:      component,
 		Path:           path,
@@ -149,7 +151,7 @@ func RecordManagedJSONPath(m *ManagedManifest, component, path, jsonPath string)
 	})
 }
 
-func RecordManagedSection(m *ManagedManifest, component, path, marker string) {
+func RecordManagedSection(m *ManagedManifest, component model.ComponentID, path, marker string) {
 	m.AddEntry(ManagedEntry{
 		Component:      component,
 		Path:           path,
@@ -158,7 +160,7 @@ func RecordManagedSection(m *ManagedManifest, component, path, marker string) {
 		RemoveStrategy: RemoveMarkedSection,
 	})
 }
-func LoadOrNewManifest(homeDir, projectRoot, agent string) (*ManagedManifest, string) {
+func LoadOrNewManifest(homeDir, projectRoot string, agent model.AgentID) (*ManagedManifest, string) {
 	path := AgentManifestPath(homeDir, projectRoot, agent)
 	m, err := LoadManifest(path)
 	if err != nil {

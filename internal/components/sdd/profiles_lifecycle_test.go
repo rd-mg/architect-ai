@@ -8,6 +8,7 @@ import (
 
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
 	"github.com/rd-mg/architect-ai/internal/model"
+	"github.com/rd-mg/architect-ai/internal/state"
 )
 
 // TestProfileLifecycle_FullCRUD exercises the complete profile lifecycle:
@@ -30,7 +31,8 @@ func TestProfileLifecycle_FullCRUD(t *testing.T) {
 	}
 
 	// Step 2: WriteSharedPromptFiles — expect 10 files created.
-	changed, err := WriteSharedPromptFiles(home)
+	manifest := state.NewManagedManifest(model.AgentOpenCode, "/test")
+	changed, err := WriteSharedPromptFiles(home, manifest)
 	if err != nil {
 		t.Fatalf("WriteSharedPromptFiles(): %v", err)
 	}
@@ -202,7 +204,8 @@ func TestProfileLifecycle_TwoProfiles(t *testing.T) {
 		t.Fatalf("write initial settings: %v", err)
 	}
 
-	if _, err := WriteSharedPromptFiles(home); err != nil {
+	manifest := state.NewManagedManifest(model.AgentOpenCode, "/test")
+	if _, err := WriteSharedPromptFiles(home, manifest); err != nil {
 		t.Fatalf("WriteSharedPromptFiles(): %v", err)
 	}
 

@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rd-mg/architect-ai/internal/model"
+	"github.com/rd-mg/architect-ai/internal/state"
 )
 
 // TestSharedPromptDir verifies the expected directory path is returned.
@@ -21,8 +24,9 @@ func TestSharedPromptDir(t *testing.T) {
 // creates exactly the 10 expected prompt files under {homeDir}/.config/opencode/prompts/sdd/.
 func TestWriteSharedPromptFilesCreates10Files(t *testing.T) {
 	home := t.TempDir()
+	manifest := state.NewManagedManifest(model.AgentOpenCode, "/test")
 
-	changed, err := WriteSharedPromptFiles(home)
+	changed, err := WriteSharedPromptFiles(home, manifest)
 	if err != nil {
 		t.Fatalf("WriteSharedPromptFiles() error = %v", err)
 	}
@@ -61,8 +65,9 @@ func TestWriteSharedPromptFilesCreates10Files(t *testing.T) {
 // twice returns changed=false on the second call.
 func TestWriteSharedPromptFilesIdempotent(t *testing.T) {
 	home := t.TempDir()
+	manifest := state.NewManagedManifest(model.AgentOpenCode, "/test")
 
-	first, err := WriteSharedPromptFiles(home)
+	first, err := WriteSharedPromptFiles(home, manifest)
 	if err != nil {
 		t.Fatalf("WriteSharedPromptFiles() first error = %v", err)
 	}
@@ -70,7 +75,7 @@ func TestWriteSharedPromptFilesIdempotent(t *testing.T) {
 		t.Fatal("WriteSharedPromptFiles() first call changed = false, want true")
 	}
 
-	second, err := WriteSharedPromptFiles(home)
+	second, err := WriteSharedPromptFiles(home, manifest)
 	if err != nil {
 		t.Fatalf("WriteSharedPromptFiles() second error = %v", err)
 	}
@@ -83,8 +88,9 @@ func TestWriteSharedPromptFilesIdempotent(t *testing.T) {
 // executor-scoped sub-agent prompt content for the correct phase.
 func TestWriteSharedPromptFilesContent(t *testing.T) {
 	home := t.TempDir()
+	manifest := state.NewManagedManifest(model.AgentOpenCode, "/test")
 
-	if _, err := WriteSharedPromptFiles(home); err != nil {
+	if _, err := WriteSharedPromptFiles(home, manifest); err != nil {
 		t.Fatalf("WriteSharedPromptFiles() error = %v", err)
 	}
 

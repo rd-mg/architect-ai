@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"github.com/rd-mg/architect-ai/internal/model"
 )
 
 const stateDir = ".architect-ai"
@@ -45,12 +47,12 @@ func Path(homeDir string) string {
 
 // AgentManifestPath returns the absolute path to the manifest file for the
 // given home directory, project root, and agent.
-func AgentManifestPath(homeDir, projectRoot, agent string) string {
+func AgentManifestPath(homeDir, projectRoot string, agent model.AgentID) string {
 	slug := "global"
 	if projectRoot != "" {
 		slug = hexSlug(projectRoot)
 	}
-	return filepath.Join(homeDir, stateDir, "managed", slug, agent+".json")
+	return filepath.Join(homeDir, stateDir, "managed", slug, string(agent)+".json")
 }
 
 func hexSlug(s string) string {
