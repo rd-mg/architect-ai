@@ -346,13 +346,19 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 					continue
 				}
 
-				skills = append(skills, skillEntry{
-					Name:    re.Skill,
-					Trigger: re.Trigger,
-					Path:    re.Path,
-					Origin:  "overlay",
-					Kind:    "Overlay",
-				})
+				info := parseSkillFile(re.Path)
+				if info.Name == "" {
+					info.Name = re.Skill
+				}
+				// Prioritize manifest trigger if present
+				if re.Trigger != "" {
+					info.Trigger = re.Trigger
+				}
+				info.Path = re.Path
+				info.Origin = "overlay"
+				info.Kind = "Overlay"
+
+				skills = append(skills, info)
 			}
 		} else {
 			overlaySkillDir := filepath.Join(overlayRoot, "skills")
