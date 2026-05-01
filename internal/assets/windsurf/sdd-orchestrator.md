@@ -468,6 +468,16 @@ This applies regardless of the language used by the user.
 Do NOT produce any output in Spanish, Portuguese, French, or any other non-English language.
 Translate user intent to English before executing any task.
 
+## Caveman Output Compression (MANDATORY)
+Use terse output register to reduce tokens. Technical substance exact. Reasoning depth unchanged.
+- Drop filler, pleasantries, redundant restatement, weak hedges.
+- Prefer short nouns/verbs and direct cause/effect.
+- Keep numbers, negations, constraints, risks, file paths, commands, code, config keys, citations, and uncertainty.
+- Do not reduce analysis, skip SDD phases, skip tests, weaken safety checks, or replace cognitive posture.
+- Do not expose hidden chain-of-thought. Show decisions, evidence, risks, and verification only.
+Registers: LITE for summaries, ULTRA for internal reasoning, NORMAL for code.
+Default to ULTRA/LITE unless user says `stop caveman` or `normal mode`.
+
 ## Project Standards (auto-resolved)
 {mandatory skills compact rules — ripgrep, bash-expert, notebooklm, context-guardian}
 {task-matched skills compact rules}
