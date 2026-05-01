@@ -262,13 +262,18 @@ func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 		}
 
 		if d.IsDir() {
-			if scope.ShouldSkipRefactorPath(path) {
+			rel, _ := filepath.Rel(projectRoot, path)
+			// Explicitly allow .agent and its subdirectories (like .agent/skills)
+			// even though they are excluded from source refactoring.
+			if strings.Contains(filepath.ToSlash(rel), "/.agent") || strings.HasPrefix(filepath.ToSlash(rel), ".agent") {
+				return nil
+			}
+			if scope.ShouldSkipRefactorPath(rel) {
 				return filepath.SkipDir
 			}
 			return nil
 		}
 
-		// Any SKILL.md is a potential skill container
 		if d.Name() == "SKILL.md" {
 			info := parseSkillFile(path)
 			if info.Name == "" {

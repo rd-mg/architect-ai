@@ -5,33 +5,38 @@ import (
 	"testing"
 )
 
-func TestClassifyRefactorPath(t *testing.T) {
+func TestShouldRefactorSourcePath(t *testing.T) {
 	tests := []struct {
-		name     string
-		path     string
-		expected PathClass
+		name         string
+		path         string
+		activeChange string
+		expected     bool
 	}{
-		{"root readme", "README.md", PathSourceRefactor},
-		{"root go.mod", "go.mod", PathSourceRefactor},
-		{"cmd dir", filepath.Join("cmd", "main.go"), PathSourceRefactor},
-		{"internal dir", filepath.Join("internal", "scope", "scope.go"), PathSourceRefactor},
-		{"docs dir", filepath.Join("docs", "design.md"), PathSourceRefactor},
-		{"openspec root", filepath.Join("openspec", "config.yaml"), PathSourceRefactor},
-		{"openspec archive", filepath.Join("openspec", "archive", "old.md"), PathUnknown},
-		{"openspec changes archive", filepath.Join("openspec", "changes", "archive", "old.md"), PathUnknown},
-		{"dot dir root", filepath.Join(".agent", "workflows", "sdd.md"), PathGeneratedDotdir},
-		{"dot dir nested", filepath.Join("cmd", ".hidden", "file.go"), PathGeneratedDotdir},
-		{"node modules", filepath.Join("node_modules", "pkg", "index.js"), PathBuildArtifact},
-		{"vendor", filepath.Join("vendor", "pkg", "lib.go"), PathBuildArtifact},
-		{"tmp", filepath.Join("tmp", "cache.bin"), PathBuildArtifact},
-		{"unknown root file", "random.txt", PathUnknown},
-		{"unknown dir", filepath.Join("random", "file.go"), PathUnknown},
+		{"root readme", "README.md", "", true},
+		{"root go.mod", "go.mod", "", true},
+		{"cmd dir", filepath.Join("cmd", "main.go"), "", true},
+		{"internal dir", filepath.Join("internal", "scope", "scope.go"), "", true},
+		{"docs dir", filepath.Join("docs", "design.md"), "", true},
+		{"openspec root", "openspec/config.yaml", "", true},
+		{"openspec specs", filepath.Join("openspec", "specs", "auth.md"), "", true},
+		{"openspec active change", filepath.Join("openspec", "changes", "my-change", "delta.md"), "my-change", true},
+		{"openspec inactive change", filepath.Join("openspec", "changes", "other-change", "delta.md"), "my-change", false},
+		{"openspec archive", filepath.Join("openspec", "archive", "old.md"), "", false},
+		{"openspec changes archive", filepath.Join("openspec", "changes", "archive", "old.md"), "", false},
+		{"dot dir root", filepath.Join(".agent", "workflows", "sdd.md"), "", false},
+		{"dot dir nested", filepath.Join("cmd", ".hidden", "file.go"), "", false},
+		{"node modules", filepath.Join("node_modules", "pkg", "index.js"), "", false},
+		{"vendor", filepath.Join("vendor", "pkg", "lib.go"), "", false},
+		{"dot tmp", filepath.Join(".tmp", "cache.bin"), "", false},
+		{"regular tmp (allowed)", filepath.Join("tmp", "cache.bin"), "", false}, // Denylisted in v4.1
+		{"unknown root file", "random.txt", "", false},
+		{"unknown dir", filepath.Join("random", "file.go"), "", false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ClassifyRefactorPath(tt.path); got != tt.expected {
-				t.Errorf("ClassifyRefactorPath(%q) = %v, want %v", tt.path, got, tt.expected)
+			if got := ShouldRefactorSourcePath(tt.path, tt.activeChange); got != tt.expected {
+				t.Errorf("ShouldRefactorSourcePath(%q, %q) = %v, want %v", tt.path, tt.activeChange, got, tt.expected)
 			}
 		})
 	}

@@ -5,73 +5,59 @@ import (
 	"strings"
 )
 
-type PathClass string
-
-const (
-	PathSourceRefactor  PathClass = "source_refactor"
-	PathGeneratedDotdir PathClass = "generated_dotdir"
-	PathBuildArtifact   PathClass = "build_artifact"
-	PathUnknown         PathClass = "unknown"
-)
-
-func ClassifyRefactorPath(path string) PathClass {
-	clean := filepath.Clean(path)
-	
-	// Fast path for exact root files
-	if clean == "README.md" || clean == "PRD.md" || clean == "CONTRIBUTING.md" || 
-		clean == "go.mod" || clean == "go.sum" || clean == "package.json" || 
-		clean == "skills-lock.json" {
-		return PathSourceRefactor
-	}
-
-	parts := strings.Split(clean, string(filepath.Separator))
-	
-	for _, part := range parts {
-		if part == "." || part == "" {
+func hasDotSegment(path string) bool {
+	slash := filepath.ToSlash(filepath.Clean(path))
+	for _, part := range strings.Split(slash, "/") {
+		if part == "" || part == "." {
 			continue
 		}
-		if strings.HasPrefix(part, ".") && part != ".agent" {
-			return PathGeneratedDotdir
+		if strings.HasPrefix(part, ".") {
+			return true
 		}
 	}
+	return false
+}
 
-	// Reject dist, build, coverage, vendor, tmp, .tmp, node_modules
-	for _, part := range parts {
-		switch part {
-		case "node_modules", "dist", "build", "coverage", "vendor", ".tmp":
-			return PathBuildArtifact
-		}
+func ShouldRefactorSourcePath(path string, activeChange string) bool {
+	slash := filepath.ToSlash(filepath.Clean(path))
+	if hasDotSegment(slash) {
+		return false
 	}
-
-	// Check openspec archives
-	if strings.HasPrefix(clean, "openspec"+string(filepath.Separator)+"archive") || 
-	   strings.HasPrefix(clean, "openspec"+string(filepath.Separator)+"changes"+string(filepath.Separator)+"archive") {
-		return PathUnknown // or PathBuildArtifact
+	if strings.HasPrefix(slash, "openspec/archive/") || strings.HasPrefix(slash, "openspec/changes/archive/") {
+		return false
 	}
-
+	if activeChange != "" && strings.HasPrefix(slash, "openspec/changes/"+activeChange+"/") {
+		return true
+	}
+	if slash == "." || slash == "" {
+		return true
+	}
 	switch {
-	case strings.HasPrefix(clean, "cmd"+string(filepath.Separator)):
-		return PathSourceRefactor
-	case strings.HasPrefix(clean, "internal"+string(filepath.Separator)):
-		return PathSourceRefactor
-	case strings.HasPrefix(clean, "docs"+string(filepath.Separator)):
-		return PathSourceRefactor
-	case strings.HasPrefix(clean, "openspec"+string(filepath.Separator)):
-		return PathSourceRefactor
-	case strings.HasPrefix(clean, "scripts"+string(filepath.Separator)):
-		return PathSourceRefactor
-	case strings.HasPrefix(clean, "testdata"+string(filepath.Separator)):
-		return PathSourceRefactor
+	case strings.HasPrefix(slash, "cmd/"):
+		return true
+	case strings.HasPrefix(slash, "internal/"):
+		return true
+	case strings.HasPrefix(slash, "docs/"):
+		return true
+	case strings.HasPrefix(slash, "scripts/"):
+		return true
+	case strings.HasPrefix(slash, "testdata/"):
+		return true
+	case strings.HasPrefix(slash, "openspec/specs/"):
+		return true
+	case slash == "openspec/config.yaml":
+		return true
+	case slash == "README.md" || slash == "PRD.md" || slash == "CONTRIBUTING.md" || slash == "go.mod" || slash == "go.sum" || slash == "package.json" || slash == "skills-lock.json" || slash == "AGENTS.md":
+		return true
 	default:
-		return PathUnknown
+		return false
 	}
 }
 
 func ShouldRefactorPath(path string) bool {
-	return ClassifyRefactorPath(path) == PathSourceRefactor
+	return ShouldRefactorSourcePath(path, "")
 }
 
 func ShouldSkipRefactorPath(path string) bool {
-	class := ClassifyRefactorPath(path)
-	return class == PathGeneratedDotdir || class == PathBuildArtifact
+	return !ShouldRefactorSourcePath(path, "")
 }

@@ -621,7 +621,8 @@ func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error)
 			return nil
 		}
 		if d.IsDir() {
-			if scope.ShouldSkipRefactorPath(path) {
+			rel, _ := filepath.Rel(projectRoot, path)
+			if scope.ShouldSkipRefactorPath(rel) {
 				return filepath.SkipDir
 			}
 			return nil
