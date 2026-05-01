@@ -1,6 +1,8 @@
 package state
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -41,9 +43,19 @@ func Path(homeDir string) string {
 	return filepath.Join(homeDir, stateDir, stateFile)
 }
 
-// ManifestPath returns the absolute path to the manifest file for the given home directory.
-func ManifestPath(homeDir string) string {
-	return filepath.Join(homeDir, stateDir, "manifest.json")
+// AgentManifestPath returns the absolute path to the manifest file for the
+// given home directory, project root, and agent.
+func AgentManifestPath(homeDir, projectRoot, agent string) string {
+	slug := "global"
+	if projectRoot != "" {
+		slug = hexSlug(projectRoot)
+	}
+	return filepath.Join(homeDir, stateDir, "managed", slug, agent+".json")
+}
+
+func hexSlug(s string) string {
+	h := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(h[:])[:12]
 }
 
 // Read reads and unmarshals the state file from the given home directory.

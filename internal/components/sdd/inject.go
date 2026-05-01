@@ -14,6 +14,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/assets"
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
 	"github.com/rd-mg/architect-ai/internal/model"
+	"github.com/rd-mg/architect-ai/internal/state"
 )
 
 type InjectionResult struct {
@@ -169,17 +170,22 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 	driftCount := 0
 
 	// 0. Resolve project root and propagate to WorkspaceAware adapters.
-	if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+	projectRoot, _ := findProjectRoot(opts.WorkspaceDir)
+	if projectRoot != "" {
 		if wa, ok := adapter.(agents.WorkspaceAware); ok {
 			wa.SetWorkspaceRoot(projectRoot)
 		}
 	}
 
+	// 0b. Load manifest for tracking.
+	manifest, manifestPath := state.LoadOrNewManifest(homeDir, projectRoot, adapter.Agent())
+	defer manifest.Save(manifestPath)
+
 	// 1. Inject SDD orchestrator into the global system prompt for agents that
 	// rely on prompt files.
 	switch adapter.SystemPromptStrategy() {
 	case model.StrategyMarkdownSections:
-		result, err := injectMarkdownSections(homeDir, adapter, opts.ClaudeModelAssignments, opts.Force, opts)
+		result, err := injectMarkdownSections(homeDir, adapter, opts.ClaudeModelAssignments, opts.Force, manifest, opts)
 		if err != nil {
 			return InjectionResult{}, err
 		}
@@ -193,7 +199,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 		// custom persona, the SDD content must still be injected. We append the
 		// SDD orchestrator section to the existing system prompt file so it is
 		// always present regardless of persona choice.
-		result, err := injectFileAppend(homeDir, adapter, opts.Force, opts)
+		result, err := injectFileAppend(homeDir, adapter, opts.Force, manifest, opts)
 		if err != nil {
 			return InjectionResult{}, err
 		}
@@ -203,7 +209,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 	case model.StrategySteeringFile:
 		// For agents with dedicated steering files (e.g. Kiro), the
 		// SDD orchestrator is written directly to the steering path.
-		result, err := injectSteeringFile(homeDir, adapter, opts.Force, opts)
+		result, err := injectSteeringFile(homeDir, adapter, opts.Force, manifest, opts)
 		if err != nil {
 			return InjectionResult{}, err
 		}
@@ -229,8 +235,11 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 			return InjectionResult{}, writeErr
 		}
 		changed = changed || writeResult.Changed
-		if writeResult.Changed && !writeResult.Created {
-			driftCount++
+		if writeResult.Changed {
+			state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "strict-tdd-mode")
+			if !writeResult.Created {
+				driftCount++
+			}
 		}
 		// Only append path once (it may already be in files from step 1).
 		alreadyInFiles := false
@@ -292,13 +301,17 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 					return InjectionResult{}, err
 				}
 
+				if writeResult.Changed {
+					state.RecordManagedFile(manifest, model.ComponentSDD, path, string(writeContent), state.DeleteIfUnchanged)
+				}
+
 				changed = changed || writeResult.Changed
 				files = append(files, path)
 			}
 
 			// Claude Code specific: ensure plugin manifest exists
 			if adapter.Agent() == model.AgentClaudeCode {
-				manifestResult, err := ensureClaudePluginManifest(adapter.SystemPromptDir(homeDir), opts.Force)
+				manifestResult, err := ensureClaudePluginManifest(adapter.SystemPromptDir(homeDir), opts.Force, manifest)
 				if err != nil {
 					return InjectionResult{}, fmt.Errorf("ensure claude plugin manifest: %w", err)
 				}
@@ -833,7 +846,7 @@ func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir string, opts InjectOp
 // npm/bun dependency into ~/.config/opencode/. Returns an error with an
 // actionable message if the package manager is present but the install fails.
 // If no package manager is available, the install is skipped (soft failure).
-func installOpenCodePlugins(homeDir string, force bool) (InjectionResult, error) {
+func installOpenCodePlugins(homeDir string, force bool, manifest *state.ManagedManifest) (InjectionResult, error) {
 	opencodeDir := filepath.Join(homeDir, ".config", "opencode")
 	pluginsDir := filepath.Join(opencodeDir, "plugins")
 
@@ -850,6 +863,10 @@ func installOpenCodePlugins(homeDir string, force bool) (InjectionResult, error)
 	})
 	if err != nil {
 		return InjectionResult{}, fmt.Errorf("write plugin: %w", err)
+	}
+
+	if writeResult.Changed {
+		state.RecordManagedFile(manifest, model.ComponentSDD, pluginPath, string(content), state.DeleteIfUnchanged)
 	}
 
 	files := []string{pluginPath}
@@ -1051,27 +1068,31 @@ func transformMarkdownToGeminiTOML(name, mdContent string) (string, error) {
 	return b.String(), nil
 }
 
-func ensureClaudePluginManifest(pluginDir string, force bool) (InjectionResult, error) {
+func ensureClaudePluginManifest(pluginDir string, force bool, manifest *state.ManagedManifest) (InjectionResult, error) {
 	manifestDir := filepath.Join(pluginDir, ".claude-plugin")
 	if err := os.MkdirAll(manifestDir, 0o755); err != nil {
 		return InjectionResult{}, fmt.Errorf("create manifest dir: %w", err)
 	}
 
 	manifestPath := filepath.Join(manifestDir, "plugin.json")
-	manifest := map[string]any{
+	pluginManifest := map[string]any{
 		"name":        "gentleman",
 		"description": "Gentleman persona and SDD orchestrator for Claude Code",
 		"version":     "1.0.0",
 		"commands":    "./commands",
 	}
 
-	content, _ := json.MarshalIndent(manifest, "", "  ")
+	content, _ := json.MarshalIndent(pluginManifest, "", "  ")
 	writeResult, err := filemerge.WriteFileAtomicWithOptions(manifestPath, content, filemerge.WriteOptions{
 		Perm:  0o644,
 		Force: force,
 	})
 	if err != nil {
 		return InjectionResult{}, err
+	}
+
+	if writeResult.Changed {
+		state.RecordManagedFile(manifest, model.ComponentSDD, manifestPath, string(content), state.DeleteIfUnchanged)
 	}
 
 	return InjectionResult{Changed: writeResult.Changed, Files: []string{manifestPath}}, nil
@@ -1144,7 +1165,7 @@ func detectActiveOverlay(projectRoot string) (name string, active bool) {
 	return "", false
 }
 
-func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, options ...InjectOptions) (InjectionResult, error) {
+func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manifest *state.ManagedManifest, options ...InjectOptions) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
 
 	existing, err := readFileOrEmpty(promptPath)
@@ -1193,6 +1214,10 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, option
 	})
 	if err != nil {
 		return InjectionResult{}, err
+	}
+
+	if writeResult.Changed {
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "sdd-orchestrator")
 	}
 
 	return InjectionResult{Changed: writeResult.Changed, Files: []string{promptPath}}, nil
@@ -1369,7 +1394,7 @@ func stripBareOrchestratorSection(content string) string {
 	return result
 }
 
-func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments map[string]model.ClaudeModelAlias, force bool, options ...InjectOptions) (InjectionResult, error) {
+func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments map[string]model.ClaudeModelAlias, force bool, manifest *state.ManagedManifest, options ...InjectOptions) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
 	content := assets.MustRead("claude/sdd-orchestrator.md")
 
@@ -1424,6 +1449,10 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 	})
 	if err != nil {
 		return InjectionResult{}, err
+	}
+
+	if writeResult.Changed {
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "sdd-orchestrator")
 	}
 
 	return InjectionResult{Changed: writeResult.Changed, Files: []string{promptPath}}, nil
@@ -1619,7 +1648,7 @@ func readExistingAgentModels(path string) (map[string]bool, error) {
 	return result, nil
 }
 
-func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, options ...InjectOptions) (InjectionResult, error) {
+func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, manifest *state.ManagedManifest, options ...InjectOptions) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
 	content := assets.MustRead("claude/sdd-orchestrator.md")
 
@@ -1658,6 +1687,10 @@ func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, opti
 	})
 	if err != nil {
 		return InjectionResult{}, err
+	}
+
+	if writeResult.Changed {
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "sdd-orchestrator")
 	}
 
 	return InjectionResult{Changed: writeResult.Changed, Files: []string{promptPath}}, nil

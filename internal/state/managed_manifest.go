@@ -158,3 +158,11 @@ func RecordManagedSection(m *ManagedManifest, component, path, marker string) {
 		RemoveStrategy: RemoveMarkedSection,
 	})
 }
+func LoadOrNewManifest(homeDir, projectRoot, agent string) (*ManagedManifest, string) {
+	path := AgentManifestPath(homeDir, projectRoot, agent)
+	m, err := LoadManifest(path)
+	if err != nil {
+		return NewManagedManifest(agent, projectRoot), path
+	}
+	return m, path
+}
