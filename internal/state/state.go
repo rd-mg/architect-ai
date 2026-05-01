@@ -41,6 +41,11 @@ func Path(homeDir string) string {
 	return filepath.Join(homeDir, stateDir, stateFile)
 }
 
+// ManifestPath returns the absolute path to the manifest file for the given home directory.
+func ManifestPath(homeDir string) string {
+	return filepath.Join(homeDir, stateDir, "manifest.json")
+}
+
 // Read reads and unmarshals the state file from the given home directory.
 // Returns an error if the file does not exist or cannot be decoded.
 func Read(homeDir string) (InstallState, error) {

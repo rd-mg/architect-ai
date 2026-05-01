@@ -37,8 +37,12 @@ func Inject(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
 
 // injectSeparateFile writes a standalone JSON file per MCP server (Claude Code pattern).
 func injectSeparateFile(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
-	path := adapter.MCPConfigPath(homeDir, "context7")
-	writeResult, err := filemerge.WriteFileAtomic(path, DefaultContext7ServerJSON(), 0o644)
+	path := adapter.MCPConfigPath(homeDir, string(ServerContext7))
+	overlay, err := OverlayFor(adapter.Agent(), ServerContext7, Options{})
+	if err != nil {
+		return InjectionResult{}, err
+	}
+	writeResult, err := filemerge.WriteFileAtomic(path, overlay, 0o644)
 	if err != nil {
 		return InjectionResult{}, err
 	}
@@ -53,9 +57,9 @@ func injectMergeIntoSettings(homeDir string, adapter agents.Adapter) (InjectionR
 		return InjectionResult{}, nil
 	}
 
-	overlay := DefaultContext7OverlayJSON()
-	if adapter.Agent() == model.AgentOpenCode || adapter.Agent() == model.AgentKilocode {
-		overlay = OpenCodeContext7OverlayJSON()
+	overlay, err := OverlayFor(adapter.Agent(), ServerContext7, Options{})
+	if err != nil {
+		return InjectionResult{}, err
 	}
 
 	settingsWrite, err := mergeJSONFile(settingsPath, overlay)
@@ -68,17 +72,14 @@ func injectMergeIntoSettings(homeDir string, adapter agents.Adapter) (InjectionR
 
 // injectMCPConfigFile writes to a dedicated mcp.json config file (Cursor pattern).
 func injectMCPConfigFile(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
-	path := adapter.MCPConfigPath(homeDir, "context7")
+	path := adapter.MCPConfigPath(homeDir, string(ServerContext7))
 	if path == "" {
 		return InjectionResult{}, nil
 	}
 
-	overlay := DefaultContext7OverlayJSON()
-	if adapter.Agent() == model.AgentVSCodeCopilot {
-		overlay = VSCodeContext7OverlayJSON()
-	}
-	if adapter.Agent() == model.AgentAntigravity {
-		overlay = AntigravityContext7OverlayJSON()
+	overlay, err := OverlayFor(adapter.Agent(), ServerContext7, Options{})
+	if err != nil {
+		return InjectionResult{}, err
 	}
 
 	// For mcp.json pattern, merge the server config as a named entry.

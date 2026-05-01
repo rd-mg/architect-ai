@@ -1,12 +1,12 @@
 package agentbuilder
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
 
 	"github.com/rd-mg/architect-ai/internal/model"
+	"github.com/rd-mg/architect-ai/internal/process"
 )
 
 // GenerationEngine abstracts the AI CLI tool used to generate a skill.
@@ -47,14 +47,11 @@ func (e *ClaudeEngine) Available() bool {
 }
 
 func (e *ClaudeEngine) Generate(ctx context.Context, prompt string) (string, error) {
-	cmd := exec.CommandContext(ctx, "claude", "--print", "-p", prompt)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	out, err := cmd.Output()
+	res, err := process.Run(ctx, "claude", []string{"--print", "-p", prompt}, process.OptionsFor(process.AgentGenerate))
 	if err != nil {
-		return "", fmt.Errorf("claude generate: %w\nstderr: %s", err, stderr.String())
+		return "", fmt.Errorf("claude generate: %w\nstderr: %s", err, string(res.Stderr))
 	}
-	return string(out), nil
+	return string(res.Stdout), nil
 }
 
 // OpenCodeEngine drives OpenCode via `opencode run "{prompt}"`.
@@ -68,14 +65,11 @@ func (e *OpenCodeEngine) Available() bool {
 }
 
 func (e *OpenCodeEngine) Generate(ctx context.Context, prompt string) (string, error) {
-	cmd := exec.CommandContext(ctx, "opencode", "run", prompt)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	out, err := cmd.Output()
+	res, err := process.Run(ctx, "opencode", []string{"run", prompt}, process.OptionsFor(process.AgentGenerate))
 	if err != nil {
-		return "", fmt.Errorf("opencode generate: %w\nstderr: %s", err, stderr.String())
+		return "", fmt.Errorf("opencode generate: %w\nstderr: %s", err, string(res.Stderr))
 	}
-	return string(out), nil
+	return string(res.Stdout), nil
 }
 
 // GeminiEngine drives Gemini CLI via `gemini -p "{prompt}"`.
@@ -89,14 +83,11 @@ func (e *GeminiEngine) Available() bool {
 }
 
 func (e *GeminiEngine) Generate(ctx context.Context, prompt string) (string, error) {
-	cmd := exec.CommandContext(ctx, "gemini", "-p", prompt)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	out, err := cmd.Output()
+	res, err := process.Run(ctx, "gemini", []string{"-p", prompt}, process.OptionsFor(process.AgentGenerate))
 	if err != nil {
-		return "", fmt.Errorf("gemini generate: %w\nstderr: %s", err, stderr.String())
+		return "", fmt.Errorf("gemini generate: %w\nstderr: %s", err, string(res.Stderr))
 	}
-	return string(out), nil
+	return string(res.Stdout), nil
 }
 
 // CodexEngine drives Codex via `codex exec "{prompt}"`.
@@ -110,14 +101,11 @@ func (e *CodexEngine) Available() bool {
 }
 
 func (e *CodexEngine) Generate(ctx context.Context, prompt string) (string, error) {
-	cmd := exec.CommandContext(ctx, "codex", "exec", prompt)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	out, err := cmd.Output()
+	res, err := process.Run(ctx, "codex", []string{"exec", prompt}, process.OptionsFor(process.AgentGenerate))
 	if err != nil {
-		return "", fmt.Errorf("codex generate: %w\nstderr: %s", err, stderr.String())
+		return "", fmt.Errorf("codex generate: %w\nstderr: %s", err, string(res.Stderr))
 	}
-	return string(out), nil
+	return string(res.Stdout), nil
 }
 
 // MockEngine is a test double for GenerationEngine.

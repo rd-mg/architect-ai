@@ -623,6 +623,7 @@ func (m Model) handlePipelineDone(msg PipelineDoneMsg) (tea.Model, tea.Cmd) {
 	}
 	appendStepErrors(msg.Result.Prepare.Steps)
 	appendStepErrors(msg.Result.Apply.Steps)
+	appendStepErrors(msg.Result.Rollback.Steps)
 
 	if msg.Result.Err != nil {
 		m.Progress.AppendLog("pipeline completed with errors")

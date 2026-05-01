@@ -254,6 +254,11 @@ func (s *Service) SetEngramUninstallScope(scope model.EngramUninstallScope) {
 }
 
 func (s *Service) CompleteUninstall() (Result, error) {
+	manifestPath := state.ManifestPath(s.homeDir)
+	if manifest, err := state.LoadManifest(manifestPath); err == nil && len(manifest.Entries) > 0 {
+		return s.uninstallFromManifest(manifest)
+	}
+
 	s.profileNamesToRemove = nil
 	s.profileSelectionScoped = false
 	s.engramUninstallScope = model.EngramUninstallScopeGlobal
@@ -270,6 +275,51 @@ func (s *Service) CompleteUninstall() (Result, error) {
 
 	result.ManualActions = append(result.ManualActions, "To completely remove architect-ai from your system, delete the executable (e.g., rm -f $(which architect-ai))")
 	return result, nil
+}
+
+func (s *Service) uninstallFromManifest(manifest *state.ManagedManifest) (Result, error) {
+	// Build operations directly from the manifest entries
+	var ops []operation
+	backupTargets := map[string]struct{}{}
+	
+	// Add state file and manifest file to backup
+	backupTargets[state.Path(s.homeDir)] = struct{}{}
+	backupTargets[state.ManifestPath(s.homeDir)] = struct{}{}
+
+	for _, entry := range manifest.Entries {
+		backupTargets[entry.Path] = struct{}{}
+		
+		switch entry.Kind {
+		case state.KindFile:
+			ops = append(ops, removeFile(entry.Path))
+		case state.KindDirectory:
+			ops = append(ops, removeTree(entry.Path))
+		case state.KindJSONPath:
+			ops = append(ops, rewriteJSONFile(entry.Path, strings.Split(entry.JSONPath, ".")))
+		case state.KindMarkdownSection:
+			ops = append(ops, rewriteMarkdownFile(entry.Path, func(content string) (string, bool) {
+				return removeMarkdownSections(content, entry.Marker)
+			}))
+		}
+	}
+	
+	orderedTargets := make([]string, 0, len(backupTargets))
+	for target := range backupTargets {
+		orderedTargets = append(orderedTargets, target)
+	}
+	slices.Sort(orderedTargets)
+	slices.SortFunc(ops, compareOperations)
+
+	p := plan{backupTargets: orderedTargets, operations: ops}
+	
+	allAgents := s.registry.SupportedAgents()
+	result, err := s.executePlan(p, allAgents)
+	if err == nil {
+		result.ManualActions = append(result.ManualActions, "To completely remove architect-ai from your system, delete the executable (e.g., rm -f $(which architect-ai))")
+		// Clean up the manifest itself
+		_ = removeFileIfExists(state.ManifestPath(s.homeDir))
+	}
+	return result, err
 }
 
 type plan struct {

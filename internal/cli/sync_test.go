@@ -713,7 +713,7 @@ func TestRunSyncIsIdempotent(t *testing.T) {
 		t.Fatalf("run 1: Verify.Ready = false")
 	}
 
-	claudeMDPath := filepath.Join(home, ".claude", "CLAUDE.md")
+	claudeMDPath := filepath.Join(home, ".claude", "plugins", "gentleman", "instructions.md")
 	contentAfterRun1, err := os.ReadFile(claudeMDPath)
 	if err != nil {
 		t.Fatalf("ReadFile() run 1 error = %v", err)

@@ -121,8 +121,8 @@ func TestInjectCursorWithMalformedMCPJsonRecovery(t *testing.T) {
 	}
 
 	text := string(content)
-	if !strings.Contains(text, `"mcpServers"`) {
-		t.Fatalf("mcp.json missing mcpServers key; got:\n%s", text)
+	if !strings.Contains(text, `"servers"`) {
+		t.Fatalf("mcp.json missing servers key; got:\n%s", text)
 	}
 	if !strings.Contains(text, `"context7"`) {
 		t.Fatalf("mcp.json missing context7 server entry; got:\n%s", text)

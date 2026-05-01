@@ -66,13 +66,13 @@ func TestInjectClaudeWritesSectionMarkers(t *testing.T) {
 
 func TestInjectClaudePreservesExistingSections(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := claudeAdapter().GlobalConfigDir(home)
+	claudeDir := claudeAdapter().SystemPromptDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	existing := "# My Config\n\nSome user content.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(claudeAdapter().SystemPromptFile(home), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -81,7 +81,7 @@ func TestInjectClaudePreservesExistingSections(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, err := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
+	content, err := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
@@ -1033,14 +1033,14 @@ func TestInjectFileAppendSkipsAgentTeamsHeading(t *testing.T) {
 
 func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := claudeAdapter().GlobalConfigDir(home)
+	claudeDir := claudeAdapter().SystemPromptDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Pre-existing file with a BARE (no HTML markers) Agent Teams Orchestrator section.
 	existing := "# My Rules\n\n## Rules\n\nBe excellent.\n\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n\n### Delegation Rules\n\nSome old rules.\n\n## Other Section\n\nOther content.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(claudeAdapter().SystemPromptFile(home), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1052,7 +1052,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 		t.Fatal("Inject() returned no files")
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
+	content, readErr := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1091,14 +1091,14 @@ func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 
 func TestInjectClaudeDeduplicatesBareOrchestratorAtEndOfFile(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := claudeAdapter().GlobalConfigDir(home)
+	claudeDir := claudeAdapter().SystemPromptDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Bare orchestrator section at the END of file (no following ## heading).
 	existing := "# My Rules\n\n## Rules\n\nBe excellent.\n\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR, not an executor.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(claudeAdapter().SystemPromptFile(home), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1107,7 +1107,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtEndOfFile(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
+	content, readErr := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1871,14 +1871,14 @@ func TestInjectCopiesAllFilesReportedInResult(t *testing.T) {
 // orchestrator section at the very START of instructions.md is handled correctly.
 func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := claudeAdapter().GlobalConfigDir(home)
+	claudeDir := claudeAdapter().SystemPromptDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Bare orchestrator at the very start, followed by other content.
 	existing := "## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n\n## Other Rules\n\nBe excellent.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(claudeAdapter().SystemPromptFile(home), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1887,7 +1887,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
+	content, readErr := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1912,7 +1912,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 // correctly replaced with the marker-based version.
 func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := claudeAdapter().GlobalConfigDir(home)
+	claudeDir := claudeAdapter().SystemPromptDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
@@ -1920,7 +1920,7 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 	// Use a unique phrase that does NOT appear in the canonical orchestrator
 	// asset so we can confirm the bare version was stripped.
 	existing := "## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n\n### Delegation Rules\n\nLEGACY-RULE-MARKER-XYZ\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(claudeAdapter().SystemPromptFile(home), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1929,7 +1929,7 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
+	content, readErr := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1957,14 +1957,14 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 // section produces exactly one orchestrator section (no accumulation).
 func TestInjectClaudeDeduplicatesBareOrchestratorIsIdempotent(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := claudeAdapter().GlobalConfigDir(home)
+	claudeDir := claudeAdapter().SystemPromptDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 
 	// Start from bare state.
 	existing := "# My Rules\n\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n"
-	if err := os.WriteFile(filepath.Join(claudeDir, "instructions.md"), []byte(existing), 0o644); err != nil {
+	if err := os.WriteFile(claudeAdapter().SystemPromptFile(home), []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
@@ -1982,7 +1982,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorIsIdempotent(t *testing.T) {
 		t.Fatal("second Inject() changed = true — idempotency broken after dedup migration")
 	}
 
-	content, readErr := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
+	content, readErr := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if readErr != nil {
 		t.Fatalf("ReadFile() error = %v", readErr)
 	}
@@ -1999,7 +1999,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorIsIdempotent(t *testing.T) {
 // are absent).
 func TestInjectClaudeDoesNotStripMarkedSection(t *testing.T) {
 	home := t.TempDir()
-	claudeDir := claudeAdapter().GlobalConfigDir(home)
+	claudeDir := claudeAdapter().SystemPromptDir(home)
 	if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
@@ -2010,7 +2010,7 @@ func TestInjectClaudeDoesNotStripMarkedSection(t *testing.T) {
 	}
 
 	// Read and verify markers.
-	after1, err := os.ReadFile(filepath.Join(claudeDir, "instructions.md"))
+	after1, err := os.ReadFile(claudeAdapter().SystemPromptFile(home))
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}

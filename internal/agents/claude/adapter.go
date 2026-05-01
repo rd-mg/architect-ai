@@ -79,15 +79,19 @@ func (a *Adapter) InstallCommand(profile system.PlatformProfile) ([][]string, er
 // --- Config paths ---
 
 func (a *Adapter) GlobalConfigDir(homeDir string) string {
+	return ConfigPath(homeDir)
+}
+
+func (a *Adapter) PluginDir(homeDir string) string {
 	return filepath.Join(homeDir, ".claude", "plugins", "gentleman")
 }
 
 func (a *Adapter) SystemPromptDir(homeDir string) string {
-	return a.GlobalConfigDir(homeDir)
+	return a.PluginDir(homeDir)
 }
 
 func (a *Adapter) SystemPromptFile(homeDir string) string {
-	return filepath.Join(a.GlobalConfigDir(homeDir), "instructions.md")
+	return filepath.Join(a.PluginDir(homeDir), "instructions.md")
 }
 
 func (a *Adapter) SkillsDir(homeDir string) string {
@@ -129,7 +133,7 @@ func (a *Adapter) SupportsSlashCommands() bool {
 }
 
 func (a *Adapter) CommandsDir(homeDir string) string {
-	return filepath.Join(a.GlobalConfigDir(homeDir), "commands")
+	return filepath.Join(a.PluginDir(homeDir), "commands")
 }
 
 func (a *Adapter) SupportsSkills() bool {

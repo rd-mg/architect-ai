@@ -298,7 +298,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 
 			// Claude Code specific: ensure plugin manifest exists
 			if adapter.Agent() == model.AgentClaudeCode {
-				manifestResult, err := ensureClaudePluginManifest(adapter.GlobalConfigDir(homeDir), opts.Force)
+				manifestResult, err := ensureClaudePluginManifest(adapter.SystemPromptDir(homeDir), opts.Force)
 				if err != nil {
 					return InjectionResult{}, fmt.Errorf("ensure claude plugin manifest: %w", err)
 				}

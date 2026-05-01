@@ -52,11 +52,29 @@ func FirePostTask(ctx context.Context, task string, err error) {
 	}
 }
 
-func safeRun(fn func()) {
+type Outcome string
+
+const (
+	OutcomeSuccess Outcome = "success"
+	OutcomeError   Outcome = "error"
+	OutcomePanic   Outcome = "panic"
+	OutcomeTimeout Outcome = "timeout"
+)
+
+type HookResult struct {
+	Outcome Outcome
+	Error   error
+}
+
+func safeRun(fn func()) HookResult {
+	res := HookResult{Outcome: OutcomeSuccess}
 	defer func() {
-		_ = recover() // Observability hooks MUST NOT crash the main flow
+		if r := recover(); r != nil {
+			res.Outcome = OutcomePanic
+		}
 	}()
 	fn()
+	return res
 }
 
 // Reset clears all registered hooks (primarily for tests).
