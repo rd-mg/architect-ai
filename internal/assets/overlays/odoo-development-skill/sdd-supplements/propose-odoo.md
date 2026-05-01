@@ -2,6 +2,9 @@
 
 When proposing a change in an Odoo project, follow this protocol IN ADDITION to the standard sdd-propose behavior.
 
+## Odoo Version
+{See shared preamble — version already cached from sdd-init.}
+
 ## Scope Framing
 
 Every Odoo proposal MUST specify:

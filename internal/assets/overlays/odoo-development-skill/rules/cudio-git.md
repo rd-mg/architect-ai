@@ -1,3 +1,8 @@
+---
+name: cudio-git
+project_scope: cudio
+---
+
 # Cudio Git & Branch Convention
 
 Organization-specific Git workflow rules for Cudio projects. Extends the
@@ -146,7 +151,7 @@ Before creating a Pull Request:
 
 ### IDE-Based Review (Optional)
 
-Optionally perform an IDE-based review (e.g., PyCharm Copilot agent) for additional coverage before opening the PR.
+Optionally perform an IDE-based review (e.g., VSCode with Copilot agent) for additional coverage before opening the PR.
 
 ### Reviewers
 

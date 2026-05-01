@@ -2,6 +2,9 @@
 
 When designing in an Odoo project, follow this protocol IN ADDITION to the standard sdd-design behavior.
 
+## Odoo Version
+{See shared preamble — version already cached from sdd-init.}
+
 ## Architecture Layers
 
 Every Odoo design MUST explicitly address these layers:
@@ -25,7 +28,21 @@ Before starting the design, you MUST verify that your approach does not collide 
 
 ## Domain Bounded Contexts
 
-Reference `sdd-supplements/domain-map.md` for the DDD bounded contexts.
+| Odoo App | Bounded Context | Primary Aggregate | Common Anti-Corruption Layer |
+|----------|----------------|-------------------|------------------------------|
+| Sales | SaleContext | sale.order | sale.order.line (bridge to stock) |
+| Inventory | StockContext | stock.picking | stock.move (bridge to accounting) |
+| Accounting | AccountContext | account.move | account.move.line (bridge to sale) |
+| Purchase | PurchaseContext | purchase.order | purchase.order.line |
+| Manufacturing | MrpContext | mrp.production | mrp.bom |
+| HR | HRContext | hr.employee | hr.contract (bridge to payroll) |
+| CRM | CRMContext | crm.lead | crm.stage |
+| Website/Portal | PortalContext | website.visitor | portal.mixin |
+
+**Rule**: A change that spans 2+ bounded contexts REQUIRES an explicit anti-corruption layer
+(a model or method that bridges, not direct cross-domain writes).
+
+Full domain map: `sdd-supplements/domain-map.md`
 
 ## DDD Tactical Patterns
 

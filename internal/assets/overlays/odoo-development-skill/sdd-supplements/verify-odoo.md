@@ -2,6 +2,9 @@
 
 When verifying in an Odoo project, apply these domain-specific checks IN ADDITION to the standard sdd-verify.
 
+## Odoo Version
+{See shared preamble — version already cached from sdd-init.}
+
 ## Deterministic Checklist
 
 Apply ALL of these checks. Each is automatable via `ripgrep` or file existence.

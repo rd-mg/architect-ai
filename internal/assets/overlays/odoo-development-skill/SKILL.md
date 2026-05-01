@@ -49,14 +49,9 @@ BEFORE developing ANY new functionality, perform an exhaustive search in this or
 - Partially found → inherit and extend the closest module
 - Only develop from scratch if nothing similar exists
 
-### 3. Research Order for Questions
-
-When answering Odoo-specific questions:
-
-1. Query NotebookLM (query-only) with the Odoo code-first instruction:
-   "Base answers on source code first, then technical docs, then functional docs. Match the module's version."
-2. Use `ripgrep` on local Odoo source: `rg "class ModelName" ~/gitproj/odoo/community/{version}/`
-3. Use Context7 for official documentation as fallback
+### 3. Research Order
+See `sdd-supplements/explore-odoo.md` Research Fallback Chain.
+For non-explore phases: Engram → rg → Context7 (no web unless explicit).
 
 ### 4. SDD Integration
 
@@ -66,11 +61,15 @@ delegation:
 
 | SDD Phase | Supplement Injected |
 |-----------|---------------------|
+| sdd-init | `sdd-supplements/init-odoo.md` |
 | sdd-explore | `sdd-supplements/explore-odoo.md` |
 | sdd-propose | `sdd-supplements/propose-odoo.md` |
-| sdd-design | `sdd-supplements/design-odoo.md` (includes domain map) |
+| sdd-spec | `sdd-supplements/spec-odoo.md` |
+| sdd-design | `sdd-supplements/design-odoo.md` |
+| sdd-tasks | `sdd-supplements/tasks-odoo.md` |
 | sdd-apply | `sdd-supplements/apply-odoo.md` |
 | sdd-verify | `sdd-supplements/verify-odoo.md` |
+| sdd-archive | `sdd-supplements/archive-odoo.md` |
 
 These supplements provide Odoo-specific context on top of the standard SDD
 phase behavior.
@@ -161,6 +160,21 @@ Located in `instructions/` and `rules/`:
 - `rules/CAUTION_POLICY.md` — Conservative modification policy
 - `rules/coding-style.md` — General coding style
 - `rules/security.md` — Security hardening rules
+
+## Rule File Scoping
+
+Rules without `project_scope` in frontmatter are applied to ALL Odoo projects.
+Rules with `project_scope: {prefix}` are only applied when the project root
+or `__manifest__.py` contains a module name starting with that prefix.
+
+| File | Scope |
+|------|-------|
+| coding-style.md | universal |
+| security.md | universal |
+| cudio-git.md | cudio projects only |
+| cudio-naming.md | cudio projects only |
+| coding-style-cudio-append.md | cudio projects only |
+| security-cudio-append.md | cudio projects only |
 
 ## Pattern Discovery
 

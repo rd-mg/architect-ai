@@ -62,6 +62,18 @@ When you need a specific pattern, consult the matching file:
 | external, api, webhook, integration | `data-operations.md` |
 | quick, snippet, cheatsheet, 80/20 | `quick-patterns.md` |
 
+## Loading Protocol
+
+This index is always bridged. Individual domain files are NOT pre-loaded.
+
+When you need a specific domain pattern:
+1. Check this index for the matching file
+2. Read that file directly: cat .agent/skills/patterns-agnostic/{file}
+3. Apply patterns. Do NOT load files you don't need.
+
+Exception: sdd-verify always needs models-fields.md and views-widgets.md.
+Pre-load those for verify phases only.
+
 ## Don't Reinvent the Wheel — Key OCA Repos
 
 When searching for existing modules, start here:

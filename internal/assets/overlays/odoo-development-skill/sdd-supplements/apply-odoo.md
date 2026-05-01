@@ -2,25 +2,8 @@
 
 When applying changes in an Odoo project, follow this protocol IN ADDITION to the standard sdd-apply behavior.
 
-## Manifest Auto-Check (MANDATORY)
-
-Before completing any task, verify the manifest:
-
-```bash
-# Read current version
-rg '"version"' __manifest__.py
-# Example output: "version": "18.0.1.0.0"
-```
-
-Decision:
-- If ANY `.py`, `.xml`, `.js`, `.csv`, or `.scss` file was modified in this batch
-  → Version MUST be incremented (Z for features, W for fixes)
-- If version not incremented → ADD the version bump as part of your changes
-
-Version bump rules (X.Y.Z.W format):
-- X.Y = Odoo major version (stays constant for a given project)
-- Z = incremented for new features, model changes, view changes
-- W = incremented for bug fixes, small improvements
+## Odoo Version
+{See shared preamble — version already cached from sdd-init.}
 
 ## File Order Within a Module
 
@@ -194,18 +177,41 @@ Respect the 400-word progress report limit. Code changes themselves are separate
 - Do NOT use `attrs=` in v17+
 - Do NOT use `<tree>` in v18+
 
-## Branch & PR Checklist (Post-Apply)
+## Branch & PR Checklist (from branch-pr-odoo.md)
 
-Before marking a task or batch complete, verify all of the following:
+### Branch Naming
+Format: `{type}/{odoo-version}/{ticket-id}-{slug}`
+Examples:
+- `feat/18.0/OCA-42-approval-workflow`
+- `fix/18.0/CUDIO-101-manifest-version-bump`
 
-- [ ] Branch name matches convention: `{type}/{ticket-id}-{short-description}`
-      (e.g. `feat/PROJ-123-add-invoice-export`)
-- [ ] `__manifest__.py` version bumped (Z for features, W for fixes)
-- [ ] No direct commits to `main` or `master`
-- [ ] PR description references the SDD change document
-      (`openspec/changes/{change-name}/`)
-- [ ] PR title follows conventional commits: `feat(module): description`
-- [ ] All new models have `ir.model.access.csv` entries
-- [ ] `go vet` / `ruff` / linter passes (per project quality tools)
+Types: `feat`, `fix`, `refactor`, `chore`, `docs`
 
-> Full branch/PR protocol: `sdd-supplements/branch-pr-odoo.md`
+### Pre-PR Verification
+Before opening a pull request, confirm:
+- [ ] Manifest version bumped
+- [ ] All rg-based verify checks pass locally
+- [ ] `ir.model.access.csv` is complete
+- [ ] No debug print() or _logger.warning("DEBUG") statements
+- [ ] Migration scripts present if schema changed
+- [ ] CHANGELOG.md or README updated with this version's changes
+
+### PR Description Template
+```
+## What
+{1-2 sentence summary}
+
+## Odoo Version(s)
+{v18 | v19 | v18+v19}
+
+## Changes
+- {module}: {what changed}
+
+## Testing
+- [ ] Unit tests pass
+- [ ] Installed on clean DB
+- [ ] Upgraded from previous version (if migration scripts exist)
+
+## Migration Required
+{YES — describe | NO}
+```

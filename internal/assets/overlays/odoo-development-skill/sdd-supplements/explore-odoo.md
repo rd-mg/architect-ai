@@ -2,16 +2,8 @@
 
 When exploring in an Odoo project, follow this protocol IN ADDITION to the standard sdd-explore behavior.
 
-## Version Detection (MANDATORY)
-
-Read `__manifest__.py` → extract major version. ALL analysis must be version-specific from this point forward.
-
-```bash
-rg '"version"' __manifest__.py
-# Format: "version": "18.0.1.0.0" → major version = 18
-```
-
-If multiple modules are in scope, note their versions — they might differ.
+## Odoo Version
+{See shared preamble — version already cached from sdd-init.}
 
 ## Research Fallback Chain
 

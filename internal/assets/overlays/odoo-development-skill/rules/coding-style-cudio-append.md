@@ -1,5 +1,8 @@
 
 ---
+name: coding-style-cudio-append
+project_scope: cudio
+---
 
 ## Cudio Coding Standards Appendix
 

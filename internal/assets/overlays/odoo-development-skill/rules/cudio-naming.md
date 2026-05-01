@@ -1,3 +1,8 @@
+---
+name: cudio-naming
+project_scope: cudio
+---
+
 # Cudio Module Naming & Manifest Convention
 
 Organization-specific rules for modules developed at Cudio Inc. Extends the

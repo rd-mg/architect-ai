@@ -1,5 +1,8 @@
 
 ---
+name: security-cudio-append
+project_scope: cudio
+---
 
 ## Cudio Security Standards Appendix
 
