@@ -1,0 +1,161 @@
+{
+  "_comment": "DashboardBlueprint: Monthly Sales KPI — Odoo 19 .osheet reference blueprint",
+  "name": "Monthly Sales",
+  "version": "19.1.2",
+  "isNotSquishable": true,
+
+  "pivots": [
+    {
+      "name": "Sales by Month",
+      "model": "sale.report",
+      "domain": [],
+      "context": {},
+      "measures": [
+        { "id": "price_subtotal", "fieldName": "price_subtotal", "aggregator": "sum" }
+      ],
+      "columns": [],
+      "rows": [
+        { "fieldName": "date", "granularity": "month", "order": "asc" }
+      ]
+    },
+    {
+      "name": "Sales vs Previous",
+      "model": "sale.report",
+      "domain": [],
+      "context": {},
+      "measures": [
+        { "id": "price_subtotal", "fieldName": "price_subtotal", "aggregator": "sum" }
+      ],
+      "columns": [],
+      "rows": [
+        { "fieldName": "date", "granularity": "month", "order": "asc" }
+      ]
+    }
+  ],
+
+  "lists": [
+    {
+      "name": "Recent Orders",
+      "model": "sale.order",
+      "domain": [["state", "in", ["sale", "done"]]],
+      "context": {},
+      "orderBy": [{ "name": "date_order", "asc": false }],
+      "columns": [
+        { "name": "name", "type": "char" },
+        { "name": "partner_id", "type": "many2one" },
+        { "name": "amount_total", "type": "monetary" },
+        { "name": "date_order", "type": "datetime" }
+      ]
+    }
+  ],
+
+  "globalFilters": [
+    {
+      "id": "filter_company",
+      "type": "relation",
+      "label": "Company",
+      "modelName": "res.company",
+      "defaultValue": [],
+      "fields": {
+        "Sales by Month": { "field": "company_id", "type": "many2one" },
+        "Sales vs Previous": { "field": "company_id", "type": "many2one" },
+        "Recent Orders": { "field": "company_id", "type": "many2one" }
+      }
+    },
+    {
+      "id": "filter_date",
+      "type": "date",
+      "label": "Order Date",
+      "dateRange": "this_year",
+      "defaultValue": null,
+      "fields": {
+        "Sales by Month": { "field": "date", "type": "date" },
+        "Sales vs Previous": { "field": "date", "type": "date" }
+      }
+    },
+    {
+      "id": "filter_salesperson",
+      "type": "relation",
+      "label": "Salesperson",
+      "modelName": "res.users",
+      "defaultValue": [],
+      "fields": {
+        "Sales by Month": { "field": "user_id", "type": "many2one" },
+        "Recent Orders": { "field": "user_id", "type": "many2one" }
+      }
+    }
+  ],
+
+  "figures": [
+    {
+      "id": "figure_1",
+      "type": "scorecard",
+      "col": 0,
+      "row": 0,
+      "width": 240,
+      "height": 120,
+      "title": { "text": "Revenue", "bold": true },
+      "keyValue": "=IFERROR(PIVOT.VALUE(1,\"price_subtotal\"),0)",
+      "baseline": "=IFERROR(PIVOT.VALUE(2,\"price_subtotal\"),0)",
+      "baselineMode": "difference",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#E30000",
+      "background": "#FFFFFF",
+      "humanize": true
+    },
+    {
+      "id": "figure_2",
+      "type": "scorecard",
+      "col": 3,
+      "row": 0,
+      "width": 240,
+      "height": 120,
+      "title": { "text": "Orders", "bold": true },
+      "keyValue": "=IFERROR(PIVOT.VALUE(1,\"__count\"),0)",
+      "baseline": "=IFERROR(PIVOT.VALUE(2,\"__count\"),0)",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#E30000",
+      "background": "#FFFFFF",
+      "humanize": false
+    },
+    {
+      "id": "figure_3",
+      "type": "chart",
+      "chartType": "odoo_line",
+      "col": 0,
+      "row": 5,
+      "width": 720,
+      "height": 280,
+      "title": "Revenue by Month",
+      "legendPosition": "top",
+      "stacked": false,
+      "cumulative": false,
+      "odooDataSets": [
+        {
+          "metaData": {
+            "groupBy": ["date:month"],
+            "measure": "price_subtotal",
+            "order": "ASC",
+            "resModel": "sale.report"
+          },
+          "domain": [],
+          "context": {},
+          "label": "Revenue"
+        }
+      ],
+      "searchParams": { "groupBy": [], "orderBy": [], "domain": [] }
+    }
+  ],
+
+  "dataCells": {
+    "A1": "=IFERROR(PIVOT.VALUE(1,\"price_subtotal\"),0)",
+    "B1": "=IFERROR(PIVOT.VALUE(2,\"price_subtotal\"),0)",
+    "A2": "=IFERROR(PIVOT.VALUE(1,\"__count\"),0)",
+    "B2": "=IFERROR(PIVOT.VALUE(2,\"__count\"),0)"
+  },
+
+  "settings": {
+    "locale": { "name": "English (US)", "code": "en_US" }
+  }
+}

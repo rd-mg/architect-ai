@@ -130,6 +130,7 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 		"odoo-minimax-xlsx-o-spreadsheets": true,
 		"odoo-module-builder":              true,
 		"odoo-quote-calculator":            true,
+		"odoo-spreadsheet-dashboard":       true,
 	}
 
 	skillBundleNames, skillBundleAssets, err := copyOverlaySkillBundles(sourceFS, filepath.Join(overlayRoot, "skills"), overlayName, versionFilter)

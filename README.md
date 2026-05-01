@@ -300,6 +300,34 @@ When working in an Odoo repository (detected via `sdd-init`), specialized Odoo s
 > "encuentra por qué falla el cálculo de impuestos en las facturas"
 *(The agent uses Odoo-specific debugging strategies, checking `account.move` overrides and server logs)*
 
+### Odoo 19 Spreadsheet Dashboard Architect (`available`)
+
+Architect-AI includes a specialized skill for native Odoo 19 dashboard spreadsheet (`.osheet` / `.osps` JSON) work.
+
+Use it for:
+
+- Designing Odoo 19 dashboard spreadsheets.
+- Creating or refactoring native o-spreadsheet JSON.
+- Building dashboards with pivots, lists, scorecards, Odoo charts, global filters, Odoo formulas, and Odoo drill-down links.
+- Validating `.osheet` files before importing or storing them in Odoo.
+- Recreating sample Odoo dashboard JSON files for regression tests.
+
+The skill is separate from generic XLSX editing. XLSX import/export remains handled by `odoo-minimax-xlsx-o-spreadsheets`, while this skill focuses on native Odoo dashboard semantics.
+
+**Safety posture**: Uses Odoo pivots, lists, formulas, and native dashboard data sources by default. Does not vendor Dashboard Ninja code. Does not generate raw SQL dashboards. Respects Odoo model access and record rules.
+
+**Developer commands:**
+```bash
+python3 osheet_profile.py  Sales.osheet.json --markdown
+python3 osheet_validate.py Sales.osheet.json --strict
+python3 osheet_recipe.py   export Sales.osheet.json Sales.recipe.json
+python3 osheet_recipe.py   build  Sales.recipe.json Sales.recreated.osheet.json
+python3 osheet_compare.py  Sales.osheet.json Sales.recreated.osheet.json --mode exact
+python3 osheet_build.py    monthly-sales.json monthly-sales.osheet.json --pretty
+```
+
+> Status: `available` — skill, scripts, references, registry integration, and Go tests all complete.
+
 ---
 
 ## Research routing policy
