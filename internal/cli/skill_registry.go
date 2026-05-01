@@ -499,15 +499,24 @@ func parseSkillFile(path string) skillEntry {
 
 	var rulesLines []string
 	inRules := false
+	skipExtraction := false
 
-	lineCount := 0
 	for scanner.Scan() {
-		lineCount++
-		if lineCount > 500 { // Safety guard — must be >344 to reach ## Rules in sdd-init
-			break
-		}
 		line := scanner.Text()
 		trimmedLine := strings.TrimSpace(line)
+
+		// Handle skip markers
+		if strings.Contains(line, "<!-- skip-extraction:start -->") {
+			skipExtraction = true
+			continue
+		}
+		if strings.Contains(line, "<!-- skip-extraction:end -->") {
+			skipExtraction = false
+			continue
+		}
+		if skipExtraction {
+			continue
+		}
 
 		// Simple frontmatter parsing
 		if trimmedLine == "---" {
@@ -564,12 +573,20 @@ func parseSkillFile(path string) skillEntry {
 			if strings.Contains(lower, "rules") ||
 				strings.Contains(lower, "patterns") ||
 				strings.Contains(lower, "critical") ||
+				strings.Contains(lower, "contract") ||
+				strings.Contains(lower, "posture") ||
+				strings.Contains(lower, "convention") ||
+				strings.Contains(lower, "guideline") ||
+				strings.Contains(lower, "mandate") ||
+				strings.Contains(lower, "standard") ||
+				strings.Contains(lower, "logic") ||
+				strings.Contains(lower, "workflow") ||
+				strings.Contains(lower, "procedure") ||
+				strings.Contains(lower, "troubleshooting") ||
 				strings.Contains(lower, "core principle") ||
 				strings.Contains(lower, "key principle") ||
 				strings.Contains(lower, "key constraint") ||
 				strings.Contains(lower, "step-by-step") ||
-				strings.Contains(lower, "workflow") ||
-				strings.Contains(lower, "procedure") ||
 				strings.Contains(lower, "quick reference") ||
 				strings.Contains(lower, "discovery index") ||
 				strings.Contains(lower, "migration sequence") ||
@@ -588,9 +605,7 @@ func parseSkillFile(path string) skillEntry {
 		}
 
 		if inRules && len(rulesLines) < 40 {
-			if trimmedLine != "" {
-				rulesLines = append(rulesLines, line)
-			}
+			rulesLines = append(rulesLines, line)
 		}
 	}
 

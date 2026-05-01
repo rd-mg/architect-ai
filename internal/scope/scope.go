@@ -33,15 +33,15 @@ func ShouldRefactorSourcePath(path string, activeChange string) bool {
 		return true
 	}
 	switch {
-	case strings.HasPrefix(slash, "cmd/"):
+	case strings.HasPrefix(slash, "cmd/") || slash == "cmd":
 		return true
-	case strings.HasPrefix(slash, "internal/"):
+	case strings.HasPrefix(slash, "internal/") || slash == "internal":
 		return true
-	case strings.HasPrefix(slash, "docs/"):
+	case strings.HasPrefix(slash, "docs/") || slash == "docs":
 		return true
-	case strings.HasPrefix(slash, "scripts/"):
+	case strings.HasPrefix(slash, "scripts/") || slash == "scripts":
 		return true
-	case strings.HasPrefix(slash, "testdata/"):
+	case strings.HasPrefix(slash, "testdata/") || slash == "testdata":
 		return true
 	case strings.HasPrefix(slash, "openspec/specs/"):
 		return true
