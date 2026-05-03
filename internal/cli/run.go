@@ -982,6 +982,7 @@ func engramHealthChecks(homeDir string, agents []model.AgentID) []verify.Check {
 		{
 			ID:          "verify:engram:binary",
 			Description: "engram binary on PATH (restart shell if missing)",
+			FixHint:     verify.FixInstallEngram,
 			Soft:        true,
 			Run: func(context.Context) error {
 				if err := engram.VerifyInstalled(); err != nil {
@@ -1017,6 +1018,7 @@ func engramHealthChecks(homeDir string, agents []model.AgentID) []verify.Check {
 		checks = append(checks, verify.Check{
 			ID:          "verify:engram:codex-config",
 			Description: "Codex engram configuration valid",
+			FixHint:     verify.FixSync,
 			Soft:        true,
 			Run: func(context.Context) error {
 				return engram.VerifyCodexConfig(homeDir)
@@ -1143,6 +1145,7 @@ func notebookLMHealthChecks() []verify.Check {
 		{
 			ID:          "verify:notebooklm:binary",
 			Description: "notebooklm-mcp binary on PATH",
+			FixHint:     verify.FixInstallNotebookLM,
 			Soft:        true,
 			Run: func(context.Context) error {
 				if _, err := exec.LookPath("notebooklm-mcp"); err != nil {

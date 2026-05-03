@@ -22,6 +22,7 @@ COMMANDS
   restore      Restore a config backup
   overlay      Manage specialist project overlays (e.g. Odoo)
   skill-registry Generate or refresh the project's .atl/skill-registry.md
+  skills       Manage community skills and project-specific learned patterns
   sdd-init     Initialize SDD context in the current project
   version      Print version
 

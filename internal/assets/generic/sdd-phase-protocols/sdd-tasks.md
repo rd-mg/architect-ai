@@ -53,7 +53,25 @@ into an ordered, numbered checklist of implementable tasks.
 5.2 Post-migrate script for data Y
 
 ## Task Format
-Each task: `- [ ] {number} {action verb} {target}. Acceptance: {condition}.`
+
+Each task must include a risk rating.
+
+```markdown
+- [ ] {number} {action verb} {target}
+      Acceptance: {condition}
+      Risk: LOW | MEDIUM | HIGH
+      Risk-reason: {required only when HIGH — one sentence explaining why}
+```
+
+### Risk classification
+
+| Level | Criteria |
+|-------|----------|
+| `LOW` | Single file, additive only, no behavior change. |
+| `MEDIUM` | Multi-file, new logic, no external contract change. |
+| `HIGH` | API contract, public interface, schema, security. |
+
+When risk is HIGH, `Risk-reason` is **mandatory**.
 
 ## Artifact Store: {mode}
 

@@ -14,6 +14,7 @@ import (
 
 	"github.com/rd-mg/architect-ai/internal/agents"
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
+	"github.com/rd-mg/architect-ai/internal/components/skills"
 	"github.com/rd-mg/architect-ai/internal/scope"
 )
 
@@ -96,31 +97,31 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	}
 
 	// 1. Collect all entries
-	var skills []skillEntry
+	var allSkills []skillEntry
 	var conventions []conventionEntry
 	var assets []assetEntry
 
 	// User skills
 	userSkills, err := collectUserSkills(homeDir)
 	if err == nil {
-		skills = append(skills, userSkills...)
+		allSkills = append(allSkills, userSkills...)
 	}
 
 	// Project skills
 	projectSkills, err := collectProjectSkills(projectRoot)
 	if err == nil {
-		skills = append(skills, projectSkills...)
+		allSkills = append(allSkills, projectSkills...)
 	}
 
 	// Overlay content
 	overlaySkills, overlayAssets, err := collectOverlayContent(projectRoot)
 	if err == nil {
-		skills = append(skills, overlaySkills...)
+		allSkills = append(allSkills, overlaySkills...)
 		assets = append(assets, overlayAssets...)
 	}
 
 	// Deduplicate skills by name: project/overlay overrides user
-	skills = deduplicateSkills(skills)
+	allSkills = deduplicateSkills(allSkills)
 
 	// Project conventions
 	conventions = collectProjectConventions(projectRoot)
@@ -135,7 +136,7 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 
 	// Group skills by Kind
 	skillsByKind := make(map[string][]skillEntry)
-	for _, s := range skills {
+	for _, s := range allSkills {
 		skillsByKind[s.Kind] = append(skillsByKind[s.Kind], s)
 	}
 
@@ -225,6 +226,26 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	_, err = filemerge.WriteFileAtomic(registryPath, []byte(content), 0o644)
 	if err != nil {
 		return fmt.Errorf("write local skill registry: %w", err)
+	}
+
+	// 4. Update AGENTS.md skills index
+	var indexEntries []skills.SkillEntry
+	for _, s := range allSkills {
+		// Only include high-signal skills in the index
+		if s.Kind == "System" || s.Kind == "Project" || s.Kind == "Overlay" {
+			relPath := s.Path
+			if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
+				relPath = rel
+			}
+			indexEntries = append(indexEntries, skills.SkillEntry{
+				Name:        s.Name,
+				Description: s.Trigger, // Use Trigger as a proxy for concise description
+				Path:        filepath.ToSlash(relPath),
+			})
+		}
+	}
+	if err := skills.WriteAgentsIndex(projectRoot, indexEntries); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not update AGENTS.md skills index: %v\n", err)
 	}
 
 	return nil

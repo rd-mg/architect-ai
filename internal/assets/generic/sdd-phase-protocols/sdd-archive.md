@@ -35,6 +35,19 @@ Task: Close out the change "{change-name}". This is a mechanical phase.
    - Verification verdict
    - Research audit (NotebookLM status)
    - Any open follow-ups
+   - Step 3c: Entity Tag Extraction (scan artifacts and extract named entities).
+     **Format**:
+     ## Entity Index
+     modules: ...
+     types: ...
+     functions: ...
+     files: ...
+     services: ...
+     concepts: ...
+     risks: ...
+3b. Eval Gate Check: Verify NO tasks classified as HIGH risk lack an explicit eval step (peer review, manual validation, test evidence) in the mem_search observation history. If HIGH risk tasks lack evidence, STOP and return blocked.
+   
+4b. Extract and Save Learned Patterns: For each SDD phase used, synthesize 3-5 bullet patterns about what worked/failed. Search `knowledge/_global/skill/{skill-name}/learned-patterns`. If found, `mem_update` with appended patterns and incremented version. If not, `mem_save` new patterns.
 4. If OpenSpec mode: move change directory to archive/ folder
 5. Update DAG state to "archived"
 
@@ -46,7 +59,7 @@ mem_save(
   topic_key: "sdd/{change-name}/archive-report",
   type: "archive-summary",
   project: "{project}",
-  content: "{archive summary markdown}"
+  content: "{archive summary markdown with entity index at bottom}"
 )
 
 ## Size Budget: 200 words max

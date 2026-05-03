@@ -11,10 +11,21 @@ import (
 type PreTaskHook func(ctx context.Context, task string) error
 type PostTaskHook func(ctx context.Context, task string, err error) error
 
+// PrePhaseHook fires before the orchestrator delegates an SDD phase.
+// phaseName is the SDD phase name (e.g. "sdd-apply").
+// changeID is the active change name.
+type PrePhaseHook func(ctx context.Context, phaseName, changeID string) error
+
+// PostPhaseHook fires after an SDD phase sub-agent returns.
+// phaseErr is nil on success; non-nil if the phase returned a blocker.
+type PostPhaseHook func(ctx context.Context, phaseName, changeID string, phaseErr error) error
+
 var (
-	preTaskHooks  []PreTaskHook
-	postTaskHooks []PostTaskHook
-	mu            sync.RWMutex
+	preTaskHooks   []PreTaskHook
+	postTaskHooks  []PostTaskHook
+	prePhaseHooks  []PrePhaseHook
+	postPhaseHooks []PostPhaseHook
+	mu             sync.RWMutex
 )
 
 // RegisterPreTask adds a hook to be fired before a task starts.
@@ -29,6 +40,20 @@ func RegisterPostTask(fn PostTaskHook) {
 	mu.Lock()
 	defer mu.Unlock()
 	postTaskHooks = append(postTaskHooks, fn)
+}
+
+// RegisterPrePhase adds a hook fired before each SDD phase delegation.
+func RegisterPrePhase(fn PrePhaseHook) {
+	mu.Lock()
+	defer mu.Unlock()
+	prePhaseHooks = append(prePhaseHooks, fn)
+}
+
+// RegisterPostPhase adds a hook fired after each SDD phase completes.
+func RegisterPostPhase(fn PostPhaseHook) {
+	mu.Lock()
+	defer mu.Unlock()
+	postPhaseHooks = append(postPhaseHooks, fn)
 }
 
 type OutcomeStatus string
@@ -77,6 +102,42 @@ func FirePostTask(ctx context.Context, task string, err error) []Outcome {
 		name := fmt.Sprintf("post-task-%d", i)
 		outcomes = append(outcomes, runHook(ctx, name, "post", func(ctx context.Context) error {
 			return fn(ctx, task, err)
+		}))
+	}
+	return outcomes
+}
+
+// FirePrePhase executes all registered pre-phase hooks safely.
+func FirePrePhase(ctx context.Context, phaseName, changeID string) []Outcome {
+	mu.RLock()
+	hooks := make([]PrePhaseHook, len(prePhaseHooks))
+	copy(hooks, prePhaseHooks)
+	mu.RUnlock()
+
+	outcomes := make([]Outcome, 0, len(hooks))
+	for i, fn := range hooks {
+		fn := fn
+		name := fmt.Sprintf("pre-phase-%d", i)
+		outcomes = append(outcomes, runHook(ctx, name, "pre-phase", func(ctx context.Context) error {
+			return fn(ctx, phaseName, changeID)
+		}))
+	}
+	return outcomes
+}
+
+// FirePostPhase executes all registered post-phase hooks safely.
+func FirePostPhase(ctx context.Context, phaseName, changeID string, phaseErr error) []Outcome {
+	mu.RLock()
+	hooks := make([]PostPhaseHook, len(postPhaseHooks))
+	copy(hooks, postPhaseHooks)
+	mu.RUnlock()
+
+	outcomes := make([]Outcome, 0, len(hooks))
+	for i, fn := range hooks {
+		fn := fn
+		name := fmt.Sprintf("post-phase-%d", i)
+		outcomes = append(outcomes, runHook(ctx, name, "post-phase", func(ctx context.Context) error {
+			return fn(ctx, phaseName, changeID, phaseErr)
 		}))
 	}
 	return outcomes
@@ -132,4 +193,6 @@ func Reset() {
 	defer mu.Unlock()
 	preTaskHooks = nil
 	postTaskHooks = nil
+	prePhaseHooks = nil
+	postPhaseHooks = nil
 }

@@ -40,3 +40,22 @@ Todas las llaves de Engram en `architect-ai` deben seguir el formato:
 | Error de importación en Go | `debug/_global/error/import-cycle-tui` |
 | Patrón de Bubbletea | `knowledge/tui/pattern/key-simulation` |
 | Hallazgo de NotebookLM | `knowledge/odoo-v19/external/sql-constraints` |
+
+### Entity Index Convention
+
+Archive reports MUST include an entity index block as their final section. The block uses
+free-text format searchable by `mem_search`. It is not structured YAML — it is plain text
+that Engram indexes as observation content.
+
+**Required entity categories** (add more if the change touches additional concepts):
+- `modules:` — Go packages modified or created
+- `types:` — Go types (structs, interfaces) introduced or changed
+- `functions:` — Go functions introduced or changed
+- `files:` — file paths created or modified
+- `services:` — external services or MCPs involved
+- `concepts:` — design patterns, features, or behaviors
+- `risks:` — backward compat concerns, migration notes, known issues
+
+**Retrieval benefit**: An agent searching for any entity name will hit the archive report
+via `mem_search`, even if the observation title is generic. This reduces the number of
+`mem_search` calls needed to reconstruct context.

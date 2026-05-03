@@ -50,6 +50,7 @@ func RunArgs(args []string, stdout io.Writer) error {
 	// manifests record which version of architect-ai created them.
 	cli.AppVersion = Version
 	upgrade.AppVersion = Version
+	ctx := context.Background()
 
 	// Info commands: no system detection, no self-update, no platform validation.
 	if len(args) > 0 {
@@ -160,6 +161,8 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return cli.RunOverlay(args[1:], stdout)
 	case "skill-registry":
 		return cli.RunSkillRegistry(args[1:], stdout)
+	case "skills":
+		return runSkillsCmd(ctx, args[1:], stdout)
 	case "sdd-init":
 		return cli.RunSddInit(args[1:], stdout)
 	case "sdd-status":

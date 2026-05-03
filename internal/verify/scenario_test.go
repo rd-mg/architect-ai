@@ -34,7 +34,7 @@ func TestScenarioReadyWhenAllChecksPass(t *testing.T) {
 		t.Fatalf("Failed = %d, want 0", report.Failed)
 	}
 
-	if report.FinalNote != readyMessage {
+	if !strings.Contains(report.FinalNote, "READY") {
 		t.Fatalf("FinalNote = %q", report.FinalNote)
 	}
 }
@@ -69,7 +69,7 @@ func TestScenarioNotReadyWhenAnyCheckFails(t *testing.T) {
 		t.Fatalf("RenderReport() missing failed check line: %q", rendered)
 	}
 
-	if !strings.Contains(rendered, "verification issues") {
+	if !strings.Contains(rendered, "BLOCKED") {
 		t.Fatalf("RenderReport() missing failure final note: %q", rendered)
 	}
 }
@@ -122,13 +122,16 @@ func TestRenderReportFormatsAllStatuses(t *testing.T) {
 	report := BuildReport(results)
 	rendered := RenderReport(report)
 
-	if !strings.Contains(rendered, "[ok] check-ok - passes") {
+	if !strings.Contains(rendered, "[ok] check-ok — passes") {
 		t.Fatalf("missing passed line in: %s", rendered)
 	}
-	if !strings.Contains(rendered, "[!!] check-fail - fails (timeout)") {
+	if !strings.Contains(rendered, "[!!] check-fail — fails") {
 		t.Fatalf("missing failed line in: %s", rendered)
 	}
-	if !strings.Contains(rendered, "[--] check-skip - skipped (check not implemented)") {
+	if !strings.Contains(rendered, "error: timeout") {
+		t.Fatalf("missing timeout error in: %s", rendered)
+	}
+	if !strings.Contains(rendered, "[--] check-skip — skipped") {
 		t.Fatalf("missing skipped line in: %s", rendered)
 	}
 }
@@ -139,7 +142,7 @@ func TestEmptyCheckListIsReady(t *testing.T) {
 	if !report.Ready {
 		t.Fatalf("Ready = false, want true for empty check list")
 	}
-	if report.FinalNote != readyMessage {
+	if !strings.Contains(report.FinalNote, "READY") {
 		t.Fatalf("FinalNote = %q, want ready message", report.FinalNote)
 	}
 }

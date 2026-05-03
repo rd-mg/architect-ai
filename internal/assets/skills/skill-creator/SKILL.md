@@ -5,7 +5,7 @@ description: >
   Trigger: When user asks to create a new skill, add agent instructions, or document patterns for AI.
 license: Apache-2.0
 metadata:
-  author: gentleman-programming
+  author: rd-mg
   version: "1.0"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
 ---
@@ -49,7 +49,7 @@ description: >
   Trigger: {When the AI should load this skill}.
 license: Apache-2.0
 metadata:
-  author: gentleman-programming
+  author: rd-mg
   version: "1.0"
 ---
 

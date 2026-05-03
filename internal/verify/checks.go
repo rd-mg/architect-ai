@@ -17,6 +17,9 @@ type Check struct {
 	Run         func(context.Context) error
 	// Soft marks this check as non-blocking: errors produce a warning instead of a failure.
 	Soft bool
+	// FixHint is a copy-paste command shown under a failed or warning check.
+	// Leave empty when no automated fix is known.
+	FixHint string
 }
 
 type CheckResult struct {
@@ -24,12 +27,18 @@ type CheckResult struct {
 	Description string
 	Status      CheckStatus
 	Error       string
+	// FixHint is propagated from the originating Check.
+	FixHint string
 }
 
 func RunChecks(ctx context.Context, checks []Check) []CheckResult {
 	results := make([]CheckResult, 0, len(checks))
 	for _, check := range checks {
-		result := CheckResult{ID: check.ID, Description: check.Description}
+		result := CheckResult{
+			ID:          check.ID,
+			Description: check.Description,
+			FixHint:     check.FixHint, // propagate
+		}
 		if check.Run == nil {
 			result.Status = CheckStatusSkipped
 			result.Error = "check not implemented"

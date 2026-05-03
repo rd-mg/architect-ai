@@ -26,6 +26,19 @@ in the request. Reveal what has NOT been said.
 ## Phase: sdd-explore
 
 Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
+
+## Code Investigation (Section B — Skim-First)
+
+Follow the Code Skimming Protocol from `sdd-phase-common.md` Section B before reading any source file.
+
+Investigation sequence:
+1. ripgrep for candidate files: `rg "{topic}" --type go -l`
+2. Skim each candidate: `grep -n "^func\|^type\|^var\|^const" {file}`
+3. Load only confirmed targets: `sed -n '{start},{end}p' {file}` or `cat` for small files
+4. Do NOT `cat` any file that the skim shows is irrelevant
+
+If FastCode MCP is available in your tool list, use `fastcode_skim_file` and `fastcode_get_function` instead of manual grep.
+
 Identify constraints. Do NOT modify code. Do NOT create non-exploration files.
 
 ## Artifact Store: {mode}
