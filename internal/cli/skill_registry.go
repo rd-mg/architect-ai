@@ -299,6 +299,10 @@ func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 			if scope.ShouldSkipRefactorPath(rel) {
 				return filepath.SkipDir
 			}
+			// Skip internal overlay assets as they are not project skills
+			if strings.HasPrefix(filepath.ToSlash(rel), "internal/assets/overlays") {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 
@@ -769,6 +773,19 @@ func EnsureProjectRegistryReady(projectRoot string) (OverlayBootstrapResult, err
 	result, err := BootstrapProjectLocalOverlays(projectRoot, false, "")
 	if err != nil {
 		return OverlayBootstrapResult{}, fmt.Errorf("bootstrap local overlays: %w", err)
+	}
+
+	// 1.1 Cleanup false positives: if not Odoo but Odoo overlay exists, remove it.
+	if !result.IsOdooProject {
+		baseOverlayRoot := filepath.Join(projectRoot, ".atl", "overlays", defaultOverlayName)
+		if _, err := os.Stat(baseOverlayRoot); err == nil {
+			// We use a simplified removal to avoid circular dependency with WriteLocalSkillRegistry
+			manifestPath := filepath.Join(baseOverlayRoot, "manifest.json")
+			if manifest, err := readOverlayManifest(manifestPath); err == nil {
+				_ = unbridgeOverlaySkills(projectRoot, manifest)
+			}
+			_ = os.RemoveAll(baseOverlayRoot)
+		}
 	}
 
 	// 2. Build/Update the registry markdown

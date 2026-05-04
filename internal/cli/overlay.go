@@ -612,12 +612,49 @@ func copyFSTree(sourceFS fs.FS, sourceDir string, destDir string, include func(p
 	return names, nil
 }
 
+func isIgnoredTopLevel(relPath string) bool {
+	// Only ignore if it's a direct child of the project root
+	if strings.Contains(relPath, string(filepath.Separator)) {
+		return false
+	}
+	ignored := map[string]bool{
+		"internal": true,
+		"test":     true,
+		"tests":    true,
+		"scratch":  true,
+		"tmp":      true,
+		".atl":     true,
+		".agent":   true,
+		".git":     true,
+		"vendor":   true,
+		"node_modules": true,
+	}
+	return ignored[relPath]
+}
+
 func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error) {
 	versions := make(map[int]struct{})
-	seenManifest := false
+	manifestCount := 0
+	hasRootIndicator := false
+
+	// Check root indicators
+	if _, err := os.Stat(filepath.Join(projectRoot, "odoo-bin")); err == nil {
+		hasRootIndicator = true
+	}
+	if data, err := os.ReadFile(filepath.Join(projectRoot, "__manifest__.py")); err == nil {
+		hasRootIndicator = true
+		if major, ok := extractOdooMajorVersion(string(data)); ok {
+			versions[major] = struct{}{}
+		}
+	}
+
+	hasGoMod := false
+	if _, err := os.Stat(filepath.Join(projectRoot, "go.mod")); err == nil {
+		hasGoMod = true
+	}
 
 	err := filepath.WalkDir(projectRoot, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
+		if err != nil || d == nil {
 			return nil
 		}
 		rel, _ := filepath.Rel(projectRoot, path)
@@ -627,6 +664,10 @@ func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error)
 			}
 			// Skip hidden directories
 			if strings.HasPrefix(d.Name(), ".") {
+				return filepath.SkipDir
+			}
+			// Skip ignored top-level directories
+			if isIgnoredTopLevel(rel) {
 				return filepath.SkipDir
 			}
 			// Depth limit 3 (rel "a/b" has 1 slash, "a/b/c" has 2 slashes)
@@ -639,7 +680,12 @@ func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error)
 			return nil
 		}
 
-		seenManifest = true
+		// Skip if it's the root manifest (already handled)
+		if rel == "__manifest__.py" {
+			return nil
+		}
+
+		manifestCount++
 		data, readErr := os.ReadFile(path)
 		if readErr != nil {
 			return nil
@@ -654,11 +700,22 @@ func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error)
 		return nil, false, fmt.Errorf("scan manifests for Odoo version: %w", err)
 	}
 
-	if len(versions) == 0 && seenManifest {
+	isOdoo := hasRootIndicator || manifestCount >= 2
+	// If it's a Go project, we require at least one root indicator OR multiple manifests
+	// to avoid false positives from Odoo test project directories.
+	if hasGoMod && !hasRootIndicator && manifestCount < 2 {
+		isOdoo = false
+	}
+
+	if !isOdoo {
+		return nil, false, nil
+	}
+
+	if len(versions) == 0 && (hasRootIndicator || manifestCount > 0) {
 		versions[-1] = struct{}{}
 	}
 
-	return versions, seenManifest, nil
+	return versions, true, nil
 }
 
 func extractOdooMajorVersion(content string) (int, bool) {
