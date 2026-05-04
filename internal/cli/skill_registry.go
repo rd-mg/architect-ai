@@ -285,24 +285,24 @@ func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 	odooVersions, _, _ := detectOdooMajorVersions(projectRoot)
 
 	err := filepath.WalkDir(projectRoot, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			return nil // soft skip
+		if err != nil || d == nil {
+			return nil
+		}
+
+		rel, _ := filepath.Rel(projectRoot, path)
+		relSlash := filepath.ToSlash(rel)
+
+		// Explicitly allow .agent and its subdirectories
+		if strings.Contains(relSlash, "/.agent") || strings.HasPrefix(relSlash, ".agent") {
+			// continue
+		} else if scope.ShouldSkipRefactorPath(rel) || strings.HasPrefix(relSlash, "internal/assets/overlays") {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		if d.IsDir() {
-			rel, _ := filepath.Rel(projectRoot, path)
-			// Explicitly allow .agent and its subdirectories (like .agent/skills)
-			// even though they are excluded from source refactoring.
-			if strings.Contains(filepath.ToSlash(rel), "/.agent") || strings.HasPrefix(filepath.ToSlash(rel), ".agent") {
-				return nil
-			}
-			if scope.ShouldSkipRefactorPath(rel) {
-				return filepath.SkipDir
-			}
-			// Skip internal overlay assets as they are not project skills
-			if strings.HasPrefix(filepath.ToSlash(rel), "internal/assets/overlays") {
-				return filepath.SkipDir
-			}
 			return nil
 		}
 

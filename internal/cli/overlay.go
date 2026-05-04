@@ -629,7 +629,12 @@ func isIgnoredTopLevel(relPath string) bool {
 		"vendor":   true,
 		"node_modules": true,
 	}
-	return ignored[relPath]
+	if ignored[relPath] {
+		return true
+	}
+	// Also ignore common test folder prefixes
+	lower := strings.ToLower(relPath)
+	return strings.HasPrefix(lower, "test_") || strings.HasPrefix(lower, "tests_")
 }
 
 func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error) {
