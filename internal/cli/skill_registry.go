@@ -281,6 +281,9 @@ func collectUserSkills(homeDir string) ([]skillEntry, error) {
 func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 	var entries []skillEntry
 
+	// For Odoo version filtering if applicable
+	odooVersions, _, _ := detectOdooMajorVersions(projectRoot)
+
 	err := filepath.WalkDir(projectRoot, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return nil // soft skip
@@ -300,9 +303,16 @@ func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 		}
 
 		if d.Name() == "SKILL.md" {
+			skillName := filepath.Base(filepath.Dir(path))
+
+			// Apply Odoo version filtering if applicable
+			if !matchesOverlaySkillVersion(skillName, odooVersions) {
+				return nil
+			}
+
 			info := parseSkillFile(path)
 			if info.Name == "" {
-				info.Name = filepath.Base(filepath.Dir(path))
+				info.Name = skillName
 			}
 			info.Path = path
 			info.Origin = "project"
@@ -367,7 +377,7 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 				// We still apply version filtering if it's an Odoo project,
 				// though RegistryEntries should already be version-filtered at install time.
 				// This is a safety check for when a project version changes after install.
-				if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(re.Skill, odooVersions) {
+				if !matchesOverlaySkillVersion(re.Skill, odooVersions) {
 					continue
 				}
 
@@ -391,7 +401,7 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 				dirs, err := os.ReadDir(overlaySkillDir)
 				if err == nil {
 					for _, entry := range dirs {
-						if isOdoo && len(odooVersions) > 0 && !matchesOverlaySkillVersion(entry.Name(), odooVersions) {
+						if !matchesOverlaySkillVersion(entry.Name(), odooVersions) {
 							continue
 						}
 
