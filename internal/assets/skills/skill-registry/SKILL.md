@@ -122,7 +122,6 @@ See `_shared/skill-resolver.md` for the full resolution protocol.
 | {trigger from frontmatter} | {skill name} | {full path to SKILL.md} |
 | ... | ... | ... |
 
-<!-- skip-extraction:start -->
 ### Compact Rules
 
 Pre-digested rules per skill. Delegators copy matching blocks into sub-agent prompts as `## Project Standards (auto-resolved)`.
@@ -148,7 +147,6 @@ Pre-digested rules per skill. Delegators copy matching blocks into sub-agent pro
 | {standalone file} | {path} | |
 
 Read the convention files listed above for project-specific patterns and rules. All referenced paths have been extracted — no need to read index files to discover more.
-<!-- skip-extraction:end -->
 ```
 
 ### Step 4: Persist the Registry

@@ -9,7 +9,7 @@ Build and extend Odoo modules (v13.0 through v19.0) with correct structure, conv
 
 ## Workflow
 
-### Creating a New Module from Scratch
+**Creating a New Module from Scratch**
 
 1. Determine the Odoo version (13.0 to 19.0, default to 19.0 if not specified).
 2. Run the scaffold script to generate boilerplate:
@@ -22,7 +22,7 @@ Build and extend Odoo modules (v13.0 through v19.0) with correct structure, conv
 5. Update `__manifest__.py` `data` list whenever adding new XML/CSV files.
 6. **Documentation Lookup**: When searching for missing information, consult **Context7** as PREFERRED using `mcp_mcp_docker_resolve-library-id` and `mcp_mcp_docker_get-library-docs`. Use local workspace source assets and base modules only as a SECONDARY fallback. (e.g. `https://context7.com/websites/odoo_19_0_developer`).
 
-### Extending an Existing Module
+**Extending an Existing Module**
 
 1. Identify the target model(s) to inherit (e.g., `res.partner`, `sale.order`).
 2. Use `_inherit` in a new Python file within the module's `models/` directory.

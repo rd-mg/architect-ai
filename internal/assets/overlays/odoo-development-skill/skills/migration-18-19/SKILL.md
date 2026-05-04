@@ -21,7 +21,7 @@ This bundle contains migration patterns specific to upgrading from Odoo
 - `security-migration.md` — Security rule changes
 - `version-knowledge.md` — General behavioral differences
 
-## Migration Sequence
+**Migration Sequence**
 
 When migrating a real project:
 1. Review ALL files in this bundle

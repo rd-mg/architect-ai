@@ -71,3 +71,44 @@ func TestLayeredSkillScanning(t *testing.T) {
 		}
 	}
 }
+
+func TestWriteLocalSkillRegistry_VersionGating(t *testing.T) {
+	tmp := t.TempDir()
+	atlDir := filepath.Join(tmp, ".atl")
+
+	// Create Odoo 19 project
+	os.WriteFile(filepath.Join(tmp, "__manifest__.py"), []byte("'version': '19.0'"), 0644)
+
+	// Create Overlay with v18 and v19 skills
+	overlayRoot := filepath.Join(atlDir, "overlays", "odoo-development-skill")
+	os.MkdirAll(filepath.Join(overlayRoot, "skills", "odoo-18"), 0755)
+	os.WriteFile(filepath.Join(overlayRoot, "skills", "odoo-18", "SKILL.md"), []byte("---\nname: odoo-18\n---\nCompact Rules 18"), 0644)
+
+	os.MkdirAll(filepath.Join(overlayRoot, "skills", "odoo-19"), 0755)
+	os.WriteFile(filepath.Join(overlayRoot, "skills", "odoo-19", "SKILL.md"), []byte("---\nname: odoo-19\n---\nCompact Rules 19"), 0644)
+
+	os.MkdirAll(filepath.Join(overlayRoot, "skills", "odoo-agnostic"), 0755)
+	os.WriteFile(filepath.Join(overlayRoot, "skills", "odoo-agnostic", "SKILL.md"), []byte("---\nname: odoo-agnostic\n---\nCompact Rules Agnostic"), 0644)
+
+	// Create manifest
+	os.WriteFile(filepath.Join(overlayRoot, "manifest.json"), []byte(`{"name":"odoo-development-skill","activation_state":"active"}`), 0644)
+
+	err := WriteLocalSkillRegistry(tmp)
+	if err != nil {
+		t.Fatalf("WriteLocalSkillRegistry failed: %v", err)
+	}
+
+	content, _ := os.ReadFile(filepath.Join(atlDir, "skill-registry.md"))
+	markdown := string(content)
+
+	if !strings.Contains(markdown, "odoo-19") {
+		t.Errorf("expected odoo-19 in registry")
+	}
+	if !strings.Contains(markdown, "odoo-agnostic") {
+		t.Errorf("expected odoo-agnostic in registry")
+	}
+	// This is the RED part: currently it WILL contain odoo-18
+	if strings.Contains(markdown, "odoo-18") {
+		t.Errorf("did NOT expect odoo-18 in registry for v19 project")
+	}
+}

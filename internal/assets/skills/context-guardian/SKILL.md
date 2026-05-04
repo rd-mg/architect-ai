@@ -76,7 +76,6 @@ facts — not included verbatim.
 
 Your output MUST be a markdown artifact with these exact stable sections:
 
-<!-- skip-extraction:start -->
 ```markdown
 # Context Pack — {change-name or session-id}
 Generated: {ISO-8601 timestamp}
@@ -128,7 +127,6 @@ Token count (estimated): {number}
 - Compacted history cutoff: {timestamp before which history is suppressed}
 - Previous pack: {topic_key of prior pack, if any}
 ```
-<!-- skip-extraction:end -->
 
 ## Protected Classes
 

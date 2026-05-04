@@ -18,7 +18,6 @@ import (
 	"time"
 
 	embeddedassets "github.com/rd-mg/architect-ai/internal/assets"
-	"github.com/rd-mg/architect-ai/internal/scope"
 )
 
 const (
@@ -621,9 +620,17 @@ func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error)
 		if err != nil {
 			return nil
 		}
+		rel, _ := filepath.Rel(projectRoot, path)
 		if d.IsDir() {
-			rel, _ := filepath.Rel(projectRoot, path)
-			if scope.ShouldSkipRefactorPath(rel) {
+			if rel == "." {
+				return nil
+			}
+			// Skip hidden directories
+			if strings.HasPrefix(d.Name(), ".") {
+				return filepath.SkipDir
+			}
+			// Depth limit 3 (rel "a/b" has 1 slash, "a/b/c" has 2 slashes)
+			if strings.Count(filepath.ToSlash(rel), "/") >= 2 {
 				return filepath.SkipDir
 			}
 			return nil
@@ -645,6 +652,10 @@ func detectOdooMajorVersions(projectRoot string) (map[int]struct{}, bool, error)
 	})
 	if err != nil {
 		return nil, false, fmt.Errorf("scan manifests for Odoo version: %w", err)
+	}
+
+	if len(versions) == 0 && seenManifest {
+		versions[-1] = struct{}{}
 	}
 
 	return versions, seenManifest, nil
@@ -1219,11 +1230,16 @@ func EnableOverlaySkill(projectRoot string, overlayName string, skillName string
 }
 func populateRegistryEntries(manifest *OverlayManifest, projectRoot string) {
 	overlayRoot := filepath.Join(projectRoot, ".atl", "overlays", manifest.Name)
-	
+	detVersions, _, _ := detectOdooMajorVersions(projectRoot)
+
 	skillNames := uniqueStrings(append(manifest.Skills, manifest.OptionalSkills...))
 	sort.Strings(skillNames)
 	for _, skillName := range skillNames {
 		if skillName == manifest.Name {
+			continue
+		}
+
+		if !matchesOverlaySkillVersion(skillName, detVersions) {
 			continue
 		}
 		

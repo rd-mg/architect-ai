@@ -123,6 +123,12 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	// Deduplicate skills by name: project/overlay overrides user
 	allSkills = deduplicateSkills(allSkills)
 
+	// Group skills by Kind
+	skillsByKind := make(map[string][]skillEntry)
+	for _, s := range allSkills {
+		skillsByKind[s.Kind] = append(skillsByKind[s.Kind], s)
+	}
+
 	// Project conventions
 	conventions = collectProjectConventions(projectRoot)
 
@@ -132,12 +138,6 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	content := string(existingContent)
 	if content == "" {
 		content = "# Skill Registry\n\n**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.\n"
-	}
-
-	// Group skills by Kind
-	skillsByKind := make(map[string][]skillEntry)
-	for _, s := range allSkills {
-		skillsByKind[s.Kind] = append(skillsByKind[s.Kind], s)
 	}
 
 	kinds := []string{"System", "SharedRule", "Project", "Overlay", "User"}
@@ -167,7 +167,11 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	for _, kind := range kinds {
 		entries := skillsByKind[kind]
 		for _, s := range entries {
-			rulesBuilder.WriteString(fmt.Sprintf("### %s\n%s\n\n", s.Name, s.CompactRules))
+			compact := strings.TrimSpace(s.CompactRules)
+			if compact == "" {
+				continue
+			}
+			rulesBuilder.WriteString(fmt.Sprintf("### %s\n%s\n\n", s.Name, compact))
 		}
 	}
 	content = filemerge.InjectMarkdownSection(content, "registry:compact-rules", rulesBuilder.String())
@@ -526,24 +530,10 @@ func parseSkillFile(path string) skillEntry {
 
 	var rulesLines []string
 	inRules := false
-	skipExtraction := false
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		trimmedLine := strings.TrimSpace(line)
-
-		// Handle skip markers
-		if strings.Contains(line, "<!-- skip-extraction:start -->") {
-			skipExtraction = true
-			continue
-		}
-		if strings.Contains(line, "<!-- skip-extraction:end -->") {
-			skipExtraction = false
-			continue
-		}
-		if skipExtraction {
-			continue
-		}
 
 		// Simple frontmatter parsing
 		if trimmedLine == "---" {
