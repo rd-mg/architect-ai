@@ -119,6 +119,8 @@ Every phase MUST return a structured envelope to the orchestrator:
 - `executive_summary`: 1-3 sentence summary of what was done (LITE caveman style, user-facing)
 - `detailed_report`: (optional) full phase output, or omit if already inline
 - `artifacts`: list of artifact keys/paths written
+- `findings_triage`: (mandatory for sdd-verify) summary object `{ blocking: N, warning: M, suggestion: K }`
+- `pre_mortem`: (mandatory for sdd-propose) summary of top risks and viability score
 - `next_recommended`: the next SDD phase to run, or "none"
 - `risks`: risks discovered, or "None"
 - `skill_resolution`: how skills were loaded — `injected` (received Project Standards from orchestrator), `fallback-registry` (self-loaded from registry), `fallback-path` (loaded via SKILL: Load path), or `none` (no skills loaded)
@@ -153,12 +155,24 @@ NEVER exceed budget by more than 20%. If you cannot fit the content, split the w
 ```markdown
 **Status**: success
 **Summary**: Proposal created for `add-dark-mode`. Defined scope, approach, and rollback plan.
+**Pre-mortem**: Viability 9/10. Risk: theme flickering (Med) - mitigated via hydration guard.
 **Artifacts**: Engram `sdd/add-dark-mode/proposal` | `openspec/changes/add-dark-mode/proposal.md`
 **Next**: sdd-spec or sdd-design
 **Risks**: None
 **Skill Resolution**: injected — 3 skills (react-19, typescript, tailwind-4)
 **Cognitive Posture**: +++Critical
 **Estimated Tokens**: 850
+```
+
+```markdown
+**Status**: success
+**Summary**: Verified `add-dark-mode` implementation. Matches specs and design.
+**Triage**: { blocking: 0, warning: 1, suggestion: 2 }
+**Artifacts**: Engram `sdd/add-dark-mode/verify` | `openspec/changes/add-dark-mode/verify.md`
+**Next**: sdd-archive
+**Risks**: None
+**Skill Resolution**: injected
+**Estimated Tokens**: 1200
 ```
 
 (Other values for Skill Resolution: `fallback-registry`, `fallback-path`, or `none — no registry found`)

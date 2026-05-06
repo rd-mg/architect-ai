@@ -34,6 +34,23 @@ Follow `_shared/mode-branching.md` for artifact-store branching.
 
 ## What to Do
 
+### Step 0: Pre-flight Validation (MANDATORY)
+
+Before any analysis, you MUST validate that the environment is fit for SDD. Failure here gates all further work.
+
+```markdown
+VALIDATE:
+├── Required Tools: Check if `rg`, `git`, and the project's build tool (npm, go, etc.) are available.
+├── Writable Paths: Verify project root and `openspec/` (if mode includes openspec) are writable.
+└── Critical MCPs: Verify `engram` and `context7` are listed in `## Available Tools`.
+```
+
+If any critical validation fails:
+1. STOP immediately.
+2. Return status `pre-flight-fail`.
+3. List the missing/failing items in the `risks` section of the envelope.
+4. Set `executive_summary` to "Pre-flight validation failed. [Reason]".
+
 ### Step 1: Detect Project Context
 
 Read the project to understand:

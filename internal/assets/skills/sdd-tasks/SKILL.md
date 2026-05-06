@@ -52,6 +52,22 @@ From the design document, identify:
 - The dependency order (what must come first)
 - Testing requirements per component
 
+### Step 2b: Graphing Dependencies (MANDATORY)
+
+Visualize the implementation flow using a Mermaid diagram. This identifies vertical slices and integration points.
+
+```mermaid
+graph TD
+  P1[Phase 1: Foundation] --> P2[Phase 2: Core]
+  P2 --> P3[Phase 3: Integration]
+  P3 --> P4[Phase 4: Testing]
+```
+
+Rules for the graph:
+1. Use task IDs (e.g., 1.1, 2.1) or Phase names as nodes.
+2. Arrows `-->` must represent hard dependencies (X must be done before Y).
+3. Identify the "Critical Path".
+
 ### Step 3: Write tasks.md
 
 If using file-based persistence, create the task file:
@@ -68,6 +84,12 @@ openspec/changes/{change-name}/
 
 ```markdown
 # Tasks: {Change Title}
+
+## Dependency Graph
+
+```mermaid
+{Graph content from Step 2b}
+```
 
 ## Phase 1: {Phase Name} (e.g., Infrastructure / Foundation)
 
@@ -160,6 +182,7 @@ Ready for implementation (sdd-apply).
 
 ## Rules
 
+- ALWAYS include a Mermaid `## Dependency Graph` section
 - ALWAYS reference concrete file paths in tasks
 - Tasks MUST be ordered by dependency — Phase 1 tasks shouldn't depend on Phase 2
 - Testing tasks should reference specific scenarios from the specs

@@ -62,6 +62,14 @@ For each delta spec in `openspec/changes/{change-name}/specs/`:
 4. If it does not exist, write the delta body as a new full spec.
 5. Use atomic write patterns (tmp + rename).
 
+#### Step 2c: Scan for Deviations (MANDATORY)
+
+Compare the final implementation against the `design.md`.
+
+1. Check if all files in the implementation are listed in the design's "File Changes" table.
+2. Check if any major architecture decisions were changed.
+3. Record findings in the `## Deviation Log` section of the archive report.
+
 ### Step 3: Move to Archive
 
 If using file-based persistence, move the entire change folder to archive with date prefix:
@@ -102,23 +110,22 @@ Return to the orchestrator:
 |--------|--------|---------|
 | {domain} | Created/Updated | {N added, M modified, K removed requirements} |
 
+### Deviation Log
+{List any implementation deviations from design, or "None identified."}
+
 ### Archive Contents
 - proposal.md ✅
 - specs/ ✅
 - design.md ✅
 - tasks.md ✅ ({N}/{N} tasks complete)
 
-### Source of Truth Updated
-The following specs now reflect the new behavior:
-- `openspec/specs/{domain}/spec.md`
-
 ### SDD Cycle Complete
 The change has been fully planned, implemented, verified, and archived.
-Ready for the next change.
 ```
 
 ## Rules
 
+- ALWAYS include a `### Deviation Log` in the archive report
 - NEVER archive a change that has CRITICAL issues in its verification report
 - ALWAYS sync delta specs BEFORE moving to archive
 - When merging into existing specs, PRESERVE requirements not mentioned in the delta

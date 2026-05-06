@@ -233,11 +233,14 @@ FOR EACH REQUIREMENT in specs/:
 
 A spec scenario is only considered COMPLIANT when there is a test that passed proving the behavior at runtime. Code existing in the codebase is NOT sufficient evidence.
 
-### Step 7a: Test Layer Validation (Strict TDD only)
+### Step 7b: Adversarial Review Pass (MANDATORY)
 
-> **Skip this step entirely if Strict TDD Mode is not active.**
+Switch posture to **+++Adversarial**. Your goal is to find why the verification might be wrong or what was missed.
 
-If Strict TDD is active, follow the instructions in `strict-tdd-verify.md` (Step 5 Expanded: Test Layer Validation).
+1. State clearly: `[PASS 2: ADVERSARIAL REVIEW]`
+2. Re-examine the most critical requirements.
+3. Look for "False Positives" in test results.
+4. Check if error handling (Sad Paths) is actually tested or just exists.
 
 ### Step 8: Persist Verification Report
 
@@ -321,25 +324,42 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 
 ### Issues Found
 
-**CRITICAL** (must fix before archive):
-{List or "None"}
+| Level | Description | Status |
+|-------|-------------|--------|
+| **[BLOCKING]** | {Critical issue: test failure, spec violation} | Open |
+| **[WARNING]** | {Non-blocking issue: missing doc, minor lint} | Open |
+| **[SUGGESTION]** | {Improvement idea} | Open |
 
-**WARNING** (should fix):
-{List or "None"}
+---
 
-**SUGGESTION** (nice to have):
-{List or "None"}
+### Adversarial Findings
+
+{List findings from the second pass. If none, state "No critical bypasses or false positives identified."}
 
 ---
 
 ### Verdict
-{PASS / PASS WITH WARNINGS / FAIL}
+**{PASS / PASS WITH WARNINGS / FAIL}**
 
 {One-line summary of overall status}
+
+### Return Envelope (Internal)
+```json
+{
+  "status": "success",
+  "findings_triage": {
+    "blocking": {N},
+    "warning": {M},
+    "suggestion": {K}
+  },
+  "ready_for_archive": {true/false}
+}
+```
 ```
 
 ## Rules
 
+- ALWAYS perform a two-pass verification (Compliance + Adversarial)
 - ALWAYS read the actual source code — don't trust summaries
 - ALWAYS execute tests — static analysis alone is not verification
 - A spec scenario is only COMPLIANT when a test that covers it has PASSED

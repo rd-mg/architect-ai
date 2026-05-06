@@ -121,11 +121,14 @@ Reference the recommended approach from exploration if available.}
 |------|--------|-------------|
 | `path/to/area` | New/Modified/Removed | {What changes} |
 
-## Risks
+## Pre-mortem (Risks)
 
 | Risk | Likelihood | Mitigation |
 |------|------------|------------|
 | {Risk description} | Low/Med/High | {How we mitigate} |
+
+## Viability Score: {N}/10
+**Rationale**: {1-2 sentences on why this score was given based on current codebase readiness.}
 
 ## Rollback Plan
 
@@ -151,19 +154,11 @@ Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 Return to the orchestrator:
 
 ```markdown
-## Proposal Created
-
-**Change**: {change-name}
-**Location**: {artifact_path} | {topic_key}
-
-### Summary
-- **Intent**: {one-line summary}
-- **Scope**: {N deliverables in, M items deferred}
-- **Approach**: {one-line approach}
-- **Risk Level**: {Low/Medium/High}
-
-### Next Step
-Ready for specs (sdd-spec) or design (sdd-design).
+**Status**: success
+**Summary**: Proposal created for `{change-name}`.
+**Pre-mortem**: Viability {N}/10. Top risk: {risk} ({Likelihood}).
+**Artifacts**: {artifact_path} | {topic_key}
+**Next**: sdd-spec or sdd-design
 ```
 
 ## Rules
@@ -171,6 +166,8 @@ Ready for specs (sdd-spec) or design (sdd-design).
 - In `openspec` mode, ALWAYS create the `proposal.md` file
 - If the change directory already exists with a proposal, READ it first and UPDATE it
 - Keep the proposal CONCISE - it's a thinking tool, not a novel
+- Every proposal MUST have a Pre-mortem section with at least 2 risks
+- Every proposal MUST have a Viability Score with rationale
 - Every proposal MUST have a rollback plan
 - Every proposal MUST have success criteria
 - Use concrete file paths in "Affected Areas" when possible

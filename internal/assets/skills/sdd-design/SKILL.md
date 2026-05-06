@@ -42,7 +42,18 @@ Before designing, read the actual code that will be affected:
 - Dependencies and interfaces
 - Test infrastructure (if any)
 
-### Step 3: Write design.md
+### Step 3: Poka-Yoke Analysis (MANDATORY)
+
+Perform defensive design analysis to prevent common implementation errors.
+
+```markdown
+FOR EACH architectural decision:
+├── Identify potential mistake modes.
+├── How does this design prevent those mistakes?
+└── List specific checklist items for the implementer.
+```
+
+### Step 4: Write design.md
 
 If using file-based persistence, create the design document:
 
@@ -60,8 +71,14 @@ openspec/changes/{change-name}/
 
 ## Technical Approach
 
-{Concise description of the overall technical strategy.
-How does this map to the proposal's approach? Reference specs.}
+{Concise description of the overall technical strategy.}
+
+## Poka-Yoke Checklist (Mistake-Proofing)
+
+- [ ] **State Invalidation**: {How it's prevented}
+- [ ] **Dependency Loop**: {How it's avoided}
+- [ ] **Resource Leak**: {How it's handled}
+- [ ] **Boundary Errors**: {How it's validated}
 
 ## Architecture Decisions
 
@@ -71,16 +88,9 @@ How does this map to the proposal's approach? Reference specs.}
 **Alternatives considered**: {What we rejected}
 **Rationale**: {Why this choice over alternatives}
 
-### Decision: {Decision Title}
-
-**Choice**: {What we chose}
-**Alternatives considered**: {What we rejected}
-**Rationale**: {Why this choice over alternatives}
-
 ## Data Flow
 
-{Describe how data moves through the system for this change.
-Use ASCII diagrams when helpful.}
+{Describe how data moves through the system for this change.}
 
     Component A ──→ Component B ──→ Component C
          │                              │
@@ -148,6 +158,7 @@ Ready for tasks (sdd-tasks).
 
 ## Rules
 
+- ALWAYS include a `## Poka-Yoke Checklist` section
 - ALWAYS read the actual codebase before designing — never guess
 - Every decision MUST have a rationale (the "why")
 - Include concrete file paths, not abstract descriptions

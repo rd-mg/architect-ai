@@ -17,7 +17,7 @@ metadata:
 
 1. **Self-Classification**: You MUST score D1-D4 (0-3) before every response.
 2. **Response Header**: The very first line MUST match: `[MODE N | D1=X, D2=X, D3=X, D4=X]`.
-3. **Cross-Agent Parity**: This logic is identical across CLI (Clause Code, Gemini CLI, OpenCode) and IDE (Cursor/Windsurf/VSCode/Antigravity).
+3. **Cross-Agent Parity**: This logic is identical across CLI (Clause Code, Gemini CLI, OpenCode) and IDE (Cursor/Windsurf/Antigravity).
 4. **Deterministic Routing**: Modes are dictated by scores, not heuristics.
 5. **Mode Degradation**: If D3 (Error Pressure) >= 2, you MUST drop into Mode 3.
 

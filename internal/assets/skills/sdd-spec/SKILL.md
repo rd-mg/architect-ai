@@ -54,6 +54,20 @@ If the proposal has no Capabilities section (older format), fall back to inferri
 
 If `openspec/specs/{domain}/spec.md` exists, read it to understand CURRENT behavior. Your delta specs describe CHANGES to this behavior.
 
+### Step 3b: Failure Analysis (FMEA) (MANDATORY for Behavioral Changes)
+
+Before finalizing the spec, identify potential failure modes. This identifies the "Sad Paths" you must document.
+
+```markdown
+FOR EACH requirement:
+├── Identify what could go wrong (Failure Mode).
+├── Determine the impact (Effect).
+├── Rate Severity (1-5, where 5 is data loss/crash).
+└── Define Prevention/Mitigation.
+```
+
+If the change is a pure refactor or internal documentation without behavioral impact, you MAY skip this step but MUST state "FMEA: Not applicable (Refactor)" in your return summary.
+
 ### Step 4: Write Delta Specs
 
 If using file-based persistence, create specs inside the change folder:
@@ -89,6 +103,12 @@ Why copy-full-then-edit?
 ```markdown
 # Delta for {Domain}
 
+## FMEA (Failure Mode and Effects Analysis)
+
+| Failure Mode | Effect | Severity | Mitigation |
+|--------------|--------|----------|------------|
+| {mode}       | {eff}  | {1-5}    | {mit}      |
+
 ## ADDED Requirements
 
 ### Requirement: {Requirement Name}
@@ -102,13 +122,19 @@ The system {MUST/SHALL/SHOULD} {do something specific}.
 - GIVEN {precondition}
 - WHEN {action}
 - THEN {expected outcome}
-- AND {additional outcome, if any}
+
+#### Scenario: {Sad Path scenario}
+
+- GIVEN {error-triggering precondition}
+- WHEN {action}
+- THEN {expected error outcome}
 
 #### Scenario: {Edge case scenario}
 
 - GIVEN {precondition}
 - WHEN {action}
 - THEN {expected outcome}
+```
 
 ## MODIFIED Requirements
 
@@ -219,8 +245,9 @@ Ready for design (sdd-design). If design already exists, ready for tasks (sdd-ta
 - Read the proposal's **Capabilities section** first — it tells you exactly which spec files to create
 - If existing specs exist, write DELTA specs (ADDED/MODIFIED/REMOVED sections)
 - If NO existing specs exist for the domain, write a FULL spec
-- Every requirement MUST have at least ONE scenario
-- Include both happy path AND edge case scenarios
+- Every requirement MUST have at least ONE Happy Path scenario
+- Every requirement with behavioral logic MUST have at least ONE Sad Path scenario
+- Every delta spec with behavioral changes MUST include an FMEA table
 - Keep scenarios TESTABLE — someone should be able to write an automated test from each one
 - DO NOT include implementation details in specs — specs describe WHAT, not HOW
 - **MODIFIED requirements MUST be the FULL block** — copy entire requirement + all scenarios from main spec, then edit. Partial MODIFIED blocks lose content at archive time.

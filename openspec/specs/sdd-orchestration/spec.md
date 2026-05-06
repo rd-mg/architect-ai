@@ -13,11 +13,18 @@
 
 ## Requirement: Result Contract Extension
 The orchestrator result contract MUST include `chosen_mode` and `mode_rationale` fields.
+Additionally, for verification phases, it MUST include a `findings_triage` summary.
+(Previously: The orchestrator result contract MUST include chosen_mode and mode_rationale fields.)
 
 #### Scenario: Successful result processing
 - GIVEN a sub-agent response with `[MODE 2 | D1=1, D2=2, D3=0, D4=0] ...`
 - WHEN the orchestrator processes the result
 - THEN the result envelope MUST contain `chosen_mode: "2"` and `mode_rationale: "..."`.
+
+#### Scenario: Verification triage reporting
+- GIVEN a `sdd-verify` response with 1 Blocking and 2 Warning findings
+- WHEN the orchestrator processes the result
+- THEN the result envelope MUST contain a `findings_triage` object with counts `{ blocking: 1, warning: 2, suggestion: 0 }`.
 
 ## Requirement: Mode Field Validation and Re-prompt
 The orchestrator MUST validate the presence of the mode declaration and re-prompt the sub-agent exactly once if missing.
