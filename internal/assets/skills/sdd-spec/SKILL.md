@@ -68,6 +68,28 @@ FOR EACH requirement:
 
 If the change is a pure refactor or internal documentation without behavioral impact, you MAY skip this step but MUST state "FMEA: Not applicable (Refactor)" in your return summary.
 
+### Step 3c: UI State Analysis (FSM) (MANDATORY for Complex UI)
+
+For UI components with more than 3 states or complex transitions, model them using a Finite State Machine.
+
+```markdown
+FSM:
+├── States: List all possible UI states (e.g., Idle, Loading, Error, Success).
+├── Triggers: What causes a state change (e.g., user click, API response).
+└── Transitions: Define the matrix (Current + Trigger = Next).
+```
+
+### Step 3d: Accessibility (WCAG) (MANDATORY for UI)
+
+For all UI changes, define the accessibility contract.
+
+```markdown
+WCAG:
+├── Keyboard: Can the change be operated via keyboard only?
+├── ARIA: Are proper roles and labels (aria-*) defined?
+└── Focus: Is focus management handled (e.g., modal focus trap)?
+```
+
 ### Step 4: Write Delta Specs
 
 If using file-based persistence, create specs inside the change folder:
@@ -108,6 +130,20 @@ Why copy-full-then-edit?
 | Failure Mode | Effect | Severity | Mitigation |
 |--------------|--------|----------|------------|
 | {mode}       | {eff}  | {1-5}    | {mit}      |
+
+## FSM (UI States)
+> Only required for UI components with >3 states.
+
+| Current State | Trigger | Next State | Action |
+|---------------|---------|------------|--------|
+| {state}       | {trig}  | {next}     | {act}  |
+
+## Accessibility (WCAG)
+> Only required for UI changes.
+
+- **Keyboard**: {How keyboard nav is handled}
+- **Screen Reader**: {ARIA roles and labels used}
+- **Focus**: {Focus management strategy}
 
 ## ADDED Requirements
 
@@ -248,6 +284,8 @@ Ready for design (sdd-design). If design already exists, ready for tasks (sdd-ta
 - Every requirement MUST have at least ONE Happy Path scenario
 - Every requirement with behavioral logic MUST have at least ONE Sad Path scenario
 - Every delta spec with behavioral changes MUST include an FMEA table
+- Every UI-related spec MUST include an Accessibility (WCAG) section
+- Every complex UI component (>3 states) MUST include an FSM (UI States) table
 - Keep scenarios TESTABLE — someone should be able to write an automated test from each one
 - DO NOT include implementation details in specs — specs describe WHAT, not HOW
 - **MODIFIED requirements MUST be the FULL block** — copy entire requirement + all scenarios from main spec, then edit. Partial MODIFIED blocks lose content at archive time.

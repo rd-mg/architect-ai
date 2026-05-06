@@ -58,6 +58,20 @@ Read the project to understand:
 - Existing conventions (linters, test frameworks, CI)
 - Architecture patterns in use
 
+### Step 1b: Surface Mapping (MANDATORY)
+
+Identify the project's public interface and entry points to guide exploration.
+
+```markdown
+SCAN FOR:
+├── Entry Points: CLI commands (`main.go`, `cli.ts`), server routes (`routes/`), or hooks.
+├── Public APIs: Exported functions, classes, and REST/GraphQL endpoints.
+├── Core Interfaces: Key data structures or domain interfaces that define the system.
+└── Key Dependencies: External services or critical internal modules.
+```
+
+Return a brief "Surface Map" in your detailed report or executive summary.
+
 ### Step 2: Detect Testing Capabilities
 
 Scan the project for ALL testing infrastructure. This determines what testing modes are available.
@@ -338,6 +352,7 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 - NEVER behave like the orchestrator from this phase - execute directly and return results
 - If the project already has an `openspec/` directory, report what exists and ask the orchestrator if it should be updated
 - Keep config.yaml context CONCISE - no more than 10 lines
+- ALWAYS perform a Surface Mapping scan and return it in the summary
 - ALWAYS detect testing capabilities — this is not optional
 - ALWAYS persist testing capabilities as a separate observation/section — downstream phases depend on it
 - If Strict TDD Mode is requested but no test runner exists, set strict_tdd: false and explain why

@@ -89,3 +89,27 @@ The `sdd-archive` phase MUST generate a **Deviation Log** documenting any change
 - GIVEN an archived change
 - WHEN `sdd-archive` is executed
 - THEN it MUST record any file-change or decision deviations in the `archive-report.md`.
+
+### Requirement: Surface Mapping (Init Phase)
+The `sdd-init` phase MUST perform a **Surface Mapping** scan to identify the project's public interface (APIs, entry points, types).
+
+#### Scenario: Surface mapping generation
+- GIVEN a new project initialization
+- WHEN `sdd-init` is executed
+- THEN it MUST return a "Surface Map" identifying key entry points.
+
+### Requirement: FSM State Modeling (Spec Phase)
+For complex UI components (>3 states), the `sdd-spec` phase MUST include a **Finite State Machine (FSM)** table documenting transitions.
+
+#### Scenario: FSM generation for UI
+- GIVEN a complex UI change
+- WHEN `sdd-spec` generates the spec
+- THEN it MUST include an `## FSM (UI States)` table.
+
+### Requirement: WCAG Accessibility Mandates (Spec Phase)
+For all UI-related changes, the `sdd-spec` phase MUST include a **WCAG Accessibility** section.
+
+#### Scenario: WCAG criteria enforcement
+- GIVEN a UI-related spec
+- WHEN `sdd-spec` generates scenarios
+- THEN it MUST include accessibility requirements (keyboard, ARIA, focus).
