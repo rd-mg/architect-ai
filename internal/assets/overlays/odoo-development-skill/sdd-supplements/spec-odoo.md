@@ -26,6 +26,14 @@ If ANY model field is added/removed/renamed, the spec MUST include:
 - AC: Access rule covers all CRUD operations for affected model
 - AC: sudo() calls documented with justification comment
 
+## Odoo FMEA Patterns
+For Odoo-specific capabilities, the FMEA table MUST consider these common failure modes:
+1. **Concurrency**: Record locking during heavy compute or multi-user writes.
+2. **Migration**: Data loss when changing field types (e.g., Char -> Integer) without a pre-migrate script.
+3. **ACL Leaks**: Record rules not being restricted enough, allowing cross-user/cross-company access.
+4. **Performance**: O(N) queries (e.g., inside an `@api.depends` loop without pre-fetching).
+5. **Environment**: Registry inconsistencies when a module fails to load but database schema was updated.
+
 ## Spec Size Budget
 ≤ 300 words for Odoo-specific section.
 The spec supplement is SHORT — Odoo adds precision, not volume.

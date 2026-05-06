@@ -26,8 +26,6 @@ later? Prefer reversible decisions over optimal-but-irreversible ones.
 
 ## Phase: sdd-spec
 
-Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
-
 Task: Translate the proposal for "{change-name}" into detailed specifications.
 One spec entry per capability listed in proposal.md's Capabilities section.
 
@@ -39,6 +37,10 @@ One spec entry per capability listed in proposal.md's Capabilities section.
 - Error handling
 - Invariants (what must stay true across the change)
 - Test hooks (how this can be verified)
+- **FMEA Table**: Required for external I/O or user input. Columns: Failure Mode | Impact | Severity (1-5) | Detection.
+- **Sad-path BDD**: Required for any FMEA severity ≥ 3. Format: Given-When-Then for the failure case.
+- **UI & State Modeling**: Required for UI with async states. Use Mermaid `stateDiagram-v2` for FSM.
+- **Accessibility Contract**: Required for UI. Specify keyboard navigation, ARIA roles, and focus management.
 
 ## Artifact Store: {mode}
 
@@ -48,19 +50,20 @@ mem_save(
   topic_key: "sdd/{change-name}/spec",
   type: "architecture",
   project: "{project}",
-  content: "{your spec markdown}"
+  content: "{your spec markdown with FMEA, BDD, FSM, and A11y where applicable}"
 )
 
 ## Size Budget: 1000 words max
 
-## Return Envelope per sdd-phase-common.md Section D
-Include: research_cache_hits: int, research_cache_misses: int
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing
 
 - Validate one capability per spec section
-- Check each capability has all 7 mandatory fields
+- Check each capability has mandatory fields
+- **Validation Gate**: Verify presence of FMEA and Sad-path BDD if I/O or User Input detected.
+- **UI Gate**: Verify FSM and A11y contract if UI capabilities are present.
 - Update state: `proposing` → `specifying`
 - Next recommended: `sdd-design` or `sdd-tasks`
 

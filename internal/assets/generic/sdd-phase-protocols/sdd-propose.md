@@ -38,6 +38,9 @@ success criteria, capabilities section.
 - Rollback Plan (how to undo if this fails)
 - Success Criteria (observable conditions for "done")
 - Capabilities (contract with sdd-spec — new/modified/none)
+- **Pre-mortem**: Address: (1) What is most likely to break? (2) What dependency is the weakest link? (3) How will we detect failure in production? (4) Who is affected if this fails?
+- **Open Assumptions**: Table with ≥ 2 rows (Assumption | Impact if False). If 0 assumptions, justify why.
+- **Viability Score**: Score 1-15 (Sum of 3 dimensions: 1-5 Complexity, 1-5 Clarity, 1-5 Tooling). If score < 8, initialization is BLOCKED.
 
 ## Artifact Store: {mode}
 
@@ -47,18 +50,20 @@ mem_save(
   topic_key: "sdd/{change-name}/proposal",
   type: "architecture",
   project: "{project}",
-  content: "{your proposal markdown}"
+  content: "{your proposal markdown with Pre-mortem, Assumptions, and Viability Score}"
 )
 
-## Size Budget: 450 words max. Use bullets and tables over prose.
+## Size Budget: 600 words max. Use bullets and tables over prose.
 
-## Return Envelope per sdd-phase-common.md Section D
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing
 
 - Check `executive_summary` length — must be < 100 words
 - Validate `Capabilities` section is filled (not "TODO")
+- **Viability Gate**: If Viability Score < 8, set status to `blocked` and recommend `sdd-explore`.
+- **Pre-mortem Check**: Reject if Pre-mortem section is missing or incomplete.
 - Update state: `exploring` → `proposing`
 - Next recommended: `sdd-spec` or `sdd-design`
 

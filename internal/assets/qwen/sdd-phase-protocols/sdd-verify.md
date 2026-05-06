@@ -34,8 +34,6 @@ missed. Assume nothing is correct until proven. Construct:
 
 ## Phase: sdd-verify
 
-Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
-
 Task: Validate the implementation of "{change-name}" against proposal, spec,
 and design. Determine if the change meets acceptance criteria.
 
@@ -45,11 +43,13 @@ and design. Determine if the change meets acceptance criteria.
 3. Re-read design — check implementation matches
 4. Check tasks.md — all tasks marked [x] or blocked with reason
 5. Read apply-progress — verify no open blockers
-6. Run test suite if available — report pass/fail per test
+6. **Baseline Comparison**: Run test suite. Compare against `sdd/{project}/test-baseline`.
+   - Report NEW failures vs baseline.
+   - Fixed baseline failures are NOTED but do not impact current change verdict.
 7. Apply adversarial-review (from adaptive-reasoning Mode 2):
    - Pass A: happy-path correctness
    - Pass B: failure-mode lens
-8. Classify findings: CRITICAL / WARNING (real) / WARNING (theoretical) / SUGGESTION
+8. Classify findings: CRITICAL / BLOCKING / WARNING-REAL / WARNING-THEORETICAL / SUGGESTION
 9. Output verdict: APPROVED / CONDITIONALLY APPROVED / NEEDS CHANGES / UNRESOLVED
 
 ## Deterministic Checks (in addition to adversarial review)
@@ -58,7 +58,8 @@ and design. Determine if the change meets acceptance criteria.
 - [ ] All tasks marked [x] or with documented block reason
 - [ ] No TODO / FIXME / XXX in changed code
 - [ ] Tests exist for each capability
-- [ ] Test runner passes (if available)
+- [ ] Test runner passes (or matches baseline failures)
+- [ ] **WCAG Compliance Check**: Verify aria-labels, contrast ratios, and keyboard accessibility.
 
 ## Artifact Store: {mode}
 
@@ -68,16 +69,24 @@ mem_save(
   topic_key: "sdd/{change-name}/verify-report",
   type: "verification-report",
   project: "{project}",
-  content: "{your verify-report markdown with verdict}"
+  content: "{your verify-report markdown with verdict, findings, and FMEA Cross-Validation table}"
 )
 
-## Size Budget: 700 words max
+## Size Budget: 900 words max
 
-## Return Envelope per sdd-phase-common.md Section D
-Include: research_cache_hits: int, research_cache_misses: int
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing
+
+### Severity → Action Matrix
+| Finding Severity | Orchestrator Action |
+|------------------|---------------------|
+| **CRITICAL** | Set verdict to `NEEDS CHANGES`. Immediate re-apply. |
+| **BLOCKING** | Set status to `blocked`. Wait for user. |
+| **WARNING-REAL** | Set verdict to `CONDITIONALLY APPROVED`. Ask user. |
+| **WARNING-THEO** | Note in report. Maintain `APPROVED`. |
+| **SUGGESTION** | Note in report. Maintain `APPROVED`. |
 
 - Verdict field is AUTHORITATIVE for orchestrator decision:
   - `APPROVED` → next recommended `sdd-archive`

@@ -167,8 +167,15 @@ Respect the 800-word limit from the standard sdd-design protocol. If the design 
 - Split by layer (data design, business logic design, view design) across multiple artifacts
 - Move large migration SQL blocks to a separate artifact referenced by topic_key
 
-## Boundaries
+## Odoo YAGNI Patterns
+When applying the **YAGNI Gate**, reject these common Odoo over-engineering patterns:
+1. **Premature Abstract Models**: Do not create a `models.AbstractModel` unless it is used by ≥ 3 active models in this project.
+2. **Over-Inheritance**: Avoid inheriting from `mail.thread` or `mail.activity.mixin` for internal utility models with low churn.
+3. **Irrelevant Multi-company**: Do not add `company_id` fields or domain rules unless the project has explicit multi-company requirements.
+4. **Excessive Config Parameters**: Avoid creating `ir.config_parameter` entries for simple constants that can be module attributes.
+5. **Generic Views**: Do not create complex inherited views with extensive XPaths for views that have only 1-2 small changes.
 
+## Boundaries
 - Do NOT include implementation code
 - Do NOT decide file paths beyond the module root (that's sdd-tasks)
 - Do NOT skip the security section, EVEN for internal-only modules

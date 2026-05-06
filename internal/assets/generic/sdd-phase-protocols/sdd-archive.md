@@ -34,6 +34,8 @@ Task: Close out the change "{change-name}". This is a mechanical phase.
    - Tasks completed count
    - Verification verdict
    - Research audit (NotebookLM status)
+   - **Deviation Log**: Table of (Planned | Actual | Rationale). If none, state "None".
+   - **Lessons Learned**: ≥ 2 items documenting what worked, what failed, and what to avoid next time.
    - Any open follow-ups
    - Step 3c: Entity Tag Extraction (scan artifacts and extract named entities).
      **Format**:
@@ -47,7 +49,7 @@ Task: Close out the change "{change-name}". This is a mechanical phase.
      risks: ...
 3b. Eval Gate Check: Verify NO tasks classified as HIGH risk lack an explicit eval step (peer review, manual validation, test evidence) in the mem_search observation history. If HIGH risk tasks lack evidence, STOP and return blocked.
    
-4b. Extract and Save Learned Patterns: For each SDD phase used, synthesize 3-5 bullet patterns about what worked/failed. Search `knowledge/_global/skill/{skill-name}/learned-patterns`. If found, `mem_update` with appended patterns and incremented version. If not, `mem_save` new patterns.
+4. **Persistence (Learned Patterns)**: Save lessons and patterns to `project/{project}/lessons`. Search `knowledge/_global/skill/{skill-name}/learned-patterns`. If found, `mem_update` with appended patterns and incremented version. If not, `mem_save` new patterns.
 4. If OpenSpec mode: move change directory to archive/ folder
 5. Update DAG state to "archived"
 
@@ -64,8 +66,16 @@ mem_save(
 
 ## Size Budget: 200 words max
 
-## Return Envelope per sdd-phase-common.md Section D
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
+
+## Deviation Logging (MANDATORY)
+Compare the final implementation against the original Specs and Design:
+1. **Technical Debt**: List any shortcuts or temporary solutions implemented.
+2. **Spec Deviations**: List features that differ from the spec or were not implemented.
+3. **Rationale**: Briefly explain WHY these deviations occurred.
+
+Save to Engram: `sdd/{project}/deviations`.
 
 ## Result Processing
 

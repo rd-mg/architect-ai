@@ -1,113 +1,45 @@
 # Phase Protocol: sdd-explore
 
-**Version**: 3.1 (adds explicit Research Routing Policy)
-
 ## Dependencies
-- **Reads**: project context (`sdd-init`), existing exploration if any
-- **Writes**: `sdd/{change-name}/explore` artifact
+- **Reads**: nothing (optional: prior context)
+- **Writes**: `explore` artifact
 
 ## Cognitive Posture
-+++Socratic — reveal what has NOT been said; formulate 3 questions before producing artifacts.
++++Socratic — Reveal assumptions. Explore the problem space. Formulate questions.
 
 ## Model
-sonnet — reads code structurally; heavier reasoning not required.
-
-## Word Budget
-600 words (LITE mode user-facing summary); sub-agent prompt budget 800 words.
-
-## When Triggered
-
-- User invokes `/sdd-explore <topic>` explicitly
-- Orchestrator resolves natural-language intent "explore X" (including Spanish equivalent "investiga X") <!-- trigger-phrase-allowlist -->
-- Orchestrator runs as first phase of `/sdd-new`
-
----
-
-## Research Routing Policy (MANDATORY — enforced in this phase)
-
-This phase does more research than any other. It MUST follow the priority order defined in `_shared/research-routing.md`:
-
-```
-1. NotebookLM           ← FIRST — curated project knowledge
-2. Local code + docs    ← SECOND — ripgrep, find, cat, extract-text
-3. Context7             ← THIRD — framework/library official docs
-4. Internet             ← ONLY on EXPLICIT user request
-```
-
-### Decision tree for this phase
-
-```
-User asks about a topic. Is it project-specific?
-  YES → Try NotebookLM first:
-           1. mem_search(query: "notebooklm/") — any indexed notebooks?
-           2. If yes, notebooklm_list_notebooks()
-           3. Query the best-matching notebook
-           4. If hit → use result, persist to engram, report source: "notebooklm"
-           5. If miss → fall through
-        Then local code:
-           6. ripgrep for symbols/concepts
-           7. If hit → use result, report source: "ripgrep"
-           8. If miss → fall through
-
-  NO (framework/library question) → Context7 directly:
-           1. context7_resolve, context7_get_docs
-           2. Persist under `context7/{fw}/{ver}/{topic}`
-           3. Report source: "context7"
-```
-
-**Internet**: NOT used unless the user's message contains an explicit trigger phrase ("search the web", "look online", "google it", "busca en internet"). If the user did not explicitly ask, do NOT call `web_search` / `web_fetch` — return what you have and note that internet was not searched.
-
----
+sonnet — structural investigation, not architectural decisions
 
 ## Sub-Agent Launch Template
 
 ```
 +++Socratic
 Before producing artifacts, formulate 3 questions about unstated assumptions
-in the exploration topic. Reveal what has NOT been said. Examples: scope
-boundary, data ownership, backward compatibility, performance constraints.
-Present the questions; do NOT assume answers.
+in the request. Reveal what has NOT been said.
 
 ## Project Standards (auto-resolved)
-{mandatory: ripgrep, bash-expert, notebooklm, context-guardian}
-{task-matched skills}
-
-## Research Routing Policy
-{content of _shared/research-routing.md}
+{matching compact rules}
 
 ## Available Tools
 {verified tool list}
 
 ## Phase: sdd-explore
 
-Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 
-Task: Explore the topic "{topic}" and return:
+## ADR Pre-check (MANDATORY)
+**BEFORE** performing any code search, check for existing Architecture Decision Records:
+- `mem_search(query: "arch/_global/decision", project: "{project}")`
+- `mem_search(query: "sdd/{project}/design/main", project: "{project}")`
 
-## Code Investigation (Section B — Skim-First)
+## Code Investigation (Section B — 5-Step Skim Protocol)
+1. **Ripgrep Discovery**: Identify candidate files using specific keywords.
+2. **Structural Skim**: List functions and types (e.g., `rg "^func|^type|^var|^const" {file}`).
+3. **Boundary Check**: Identify imports and dependencies to see what OTHER files are affected.
+4. **Logic Isolation**: Read only the specific blocks of code (functions/methods) identified in step 2.
+5. **Pattern Comparison**: Compare found implementation with established project patterns.
 
-Follow the Code Skimming Protocol from `sdd-phase-common.md` Section B before reading any source file.
-
-Investigation sequence:
-1. ripgrep for candidate files: `rg "{topic}" --type go -l`
-2. Skim each candidate: `grep -n "^func\|^type\|^var\|^const" {file}`
-3. Load only confirmed targets: `sed -n '{start},{end}p' {file}` or `cat` for small files
-4. Do NOT `cat` any file that the skim shows is irrelevant
-
-If FastCode MCP is available in your tool list, use `fastcode_skim_file` and `fastcode_get_function` instead of manual grep.
-
-  1. Current state (3-5 bullet facts about how things work today)
-  2. Unknowns (the 3 Socratic questions and their importance)
-  3. References (files, symbols, notebooks, external docs consulted)
-  4. Next-phase recommendation (propose? more exploration? something else?)
-
-## Research Procedure
-1. FIRST: Compute \`topic_key\` (prefix + len) and \`mem_search\` for cached findings.
-2. If hit and age < 168h: Inject as "Previously Found Knowledge", skip tools. Report \`research_cache_hits: 1\`.
-3. SECOND: NotebookLM. Query + persist under \`research/notebooklm/{slug}-len{N}\`. Report \`research_cache_misses: 1\`.
-4. THIRD: Local ripgrep. Walk the repo. Persist key snippets.
-5. FOURTH: Context7 ONLY if framework-specific AND 2+3 gave nothing.
-6. NEVER: Internet, unless user message contains an explicit trigger.
+Do NOT `cat` entire files unless they are under 50 lines. Identify constraints. Do NOT modify code.
 
 ## Artifact Store: {mode}
 
@@ -115,60 +47,24 @@ If FastCode MCP is available in your tool list, use `fastcode_skim_file` and `fa
 mem_save(
   title: "sdd/{change-name}/explore",
   topic_key: "sdd/{change-name}/explore",
-  type: "exploration-artifact",
+  type: "architecture",
   project: "{project}",
-  content: "Topic: {topic}\nCurrent state: ...\nUnknowns: ...\nReferences: ...\nSources consulted: [{ordered list — engram, notebooklm, ripgrep, ...}]\nNext-phase recommendation: ..."
+  content: "{your exploration markdown}"
 )
 
-## Return Envelope per sdd-phase-common.md Section D
-Include NEW fields:
-- research_sources_used: [<ordered list>]
-- research_cache_hits: int
-- research_cache_misses: int
-```
+## Size Budget: 600 words max
 
----
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
+```
 
 ## Result Processing
 
-The orchestrator inspects `research_sources_used`:
-
-- If `["internet"]` appears and the user did not explicitly request it → the sub-agent violated routing. Re-prompt with stricter instructions.
-- If the ordered list starts with `["context7"]` for a project-specific question → suggest the user ask the team to add a NotebookLM notebook for that topic.
-- Append the ordered list to the exploration artifact; `sdd-archive` uses it for the final report.
-
----
+- Check `skill_resolution` — if not `injected`, trigger re-read of registry
+- Store `executive_summary` only; discard verbose output
+- Extract any `questions` returned by Socratic mode and present to user
+- Update state: `idle` → `exploring`
 
 ## Failure Handling
 
-- If NotebookLM is unavailable → note in return envelope (`"notebooklm": "unavailable"`) and fall through to local.
-- If the repo has no matching files AND Context7 has no matching library → return `status: "partial"` with a request to the user: either provide more context, authorize internet search, or narrow the question.
-- If the sub-agent returns fewer than 2 sources consulted on a non-trivial topic → re-delegate with expanded scope.
-
----
-
-## Interactive Mode Behavior
-
-After the exploration result returns, in interactive mode:
-
-1. Show concise summary (LITE caveman, ≤ 600 words)
-2. List the 3 Socratic questions back to the user
-3. Ask: "Answer any of these, refine the topic, or proceed to sdd-propose?"
-
-User's answer feeds into the next phase's context.
-
----
-
-## Automatic Mode Behavior
-
-In automatic mode, `sdd-explore` writes the artifact and IMMEDIATELY passes control to `sdd-propose`. The 3 Socratic questions are included in the propose sub-agent's input so it can make them concrete proposals rather than leaving them open.
-
----
-
-## See also
-
-- `_shared/research-routing.md` — the priority order
-- `mcp-notebooklm-orchestrator/SKILL.md` — how to query NotebookLM
-- `ripgrep/SKILL.md` — local search patterns
-- `mcp-context7-skill/SKILL.md` — framework docs
-- `cognitive-mode/SKILL.md` — the +++Socratic posture
+- If sub-agent returns `status: blocked` with unanswered questions → present to user, wait
+- If sub-agent cannot find enough information → record as `partial`, suggest next steps

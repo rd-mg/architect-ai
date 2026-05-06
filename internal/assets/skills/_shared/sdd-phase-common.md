@@ -177,7 +177,27 @@ NEVER exceed budget by more than 20%. If you cannot fit the content, split the w
 
 (Other values for Skill Resolution: `fallback-registry`, `fallback-path`, or `none — no registry found`)
 
-## E. Caveman Output Mode (NEW in v2)
+## E. Permission Tiers
+
+Every tool call MUST align with the permission tiers set by the orchestrator or user.
+
+- **ALWAYS**: Safe, read-only, or idempotent actions (e.g., `mem_search`, `rg`, `ls`).
+- **ASK FIRST**: Mutative, external, or resource-heavy actions (e.g., `mem_save` first time, `run_command` with side effects, `git push`).
+- **NEVER**: Destructive actions without multi-factor/manual override (e.g., `rm -rf /`, `git push --force` to main).
+
+If you are unsure of a tool's tier, DEFAULT to **ASK FIRST**.
+
+## F. Anti-Overengineering Constraints 
+
+Follow these constraints to ensure simple, maintainable solutions:
+
+- **F1: Abstraction Gate**: Do NOT create an interface/wrapper unless there are at least 2 distinct implementations planned.
+- **F2: Scale Check**: Design for the project's CURRENT scale, not its theoretical future scale.
+- **F3: Dependency Minimization**: Prefer built-in language features over adding new external libraries.
+- **F4: Cognitive Load**: A single function/component should ideally fit on one screen and do one thing.
+- **F5: YAGNI (You Ain't Gonna Need It)**: Do NOT implement features or edge-case handling until they are explicitly required by a spec.
+
+## G. Caveman Output Mode 
 
 When producing artifacts, apply caveman compression per the persona file:
 

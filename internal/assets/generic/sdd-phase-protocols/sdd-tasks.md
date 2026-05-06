@@ -52,13 +52,20 @@ into an ordered, numbered checklist of implementable tasks.
 5.1 Pre-migrate script for field X
 5.2 Post-migrate script for data Y
 
-## Task Format
+## Execution Graph Summary (MANDATORY ≥ 5 tasks)
+Use Mermaid `graph TD` to visualize the task sequence. This ensures dependencies are clear before starting implementation.
 
-Each task must include a risk rating.
+## Vertical Slice Organization (Recommended ≥ 3 capabilities)
+Group tasks by functional capability (vertical slices) rather than technical layer (horizontal slices). This enables incremental delivery of value.
+
+## Task Format
+Each task must include dependencies and safety metadata.
 
 ```markdown
 - [ ] {number} {action verb} {target}
       Acceptance: {condition}
+      Depends-on: {comma separated task numbers, or NONE}
+      Parallel-safe: {true|false}
       Risk: LOW | MEDIUM | HIGH
       Risk-reason: {required only when HIGH — one sentence explaining why}
 ```
@@ -86,7 +93,7 @@ mem_save(
 
 ## Size Budget: 530 words max
 
-## Return Envelope per sdd-phase-common.md Section D
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing

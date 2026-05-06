@@ -27,19 +27,19 @@ in the request. Reveal what has NOT been said.
 
 Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 
-## Code Investigation (Section B — Skim-First)
+## ADR Pre-check (MANDATORY)
+**BEFORE** performing any code search, check for existing Architecture Decision Records:
+- `mem_search(query: "arch/_global/decision", project: "{project}")`
+- `mem_search(query: "sdd/{project}/design/main", project: "{project}")`
 
-Follow the Code Skimming Protocol from `sdd-phase-common.md` Section B before reading any source file.
+## Code Investigation (Section B — 5-Step Skim Protocol)
+1. **Ripgrep Discovery**: Identify candidate files using specific keywords.
+2. **Structural Skim**: List functions and types (e.g., `rg "^func|^type|^var|^const" {file}`).
+3. **Boundary Check**: Identify imports and dependencies to see what OTHER files are affected.
+4. **Logic Isolation**: Read only the specific blocks of code (functions/methods) identified in step 2.
+5. **Pattern Comparison**: Compare found implementation with established project patterns.
 
-Investigation sequence:
-1. ripgrep for candidate files: `rg "{topic}" --type go -l`
-2. Skim each candidate: `grep -n "^func\|^type\|^var\|^const" {file}`
-3. Load only confirmed targets: `sed -n '{start},{end}p' {file}` or `cat` for small files
-4. Do NOT `cat` any file that the skim shows is irrelevant
-
-If FastCode MCP is available in your tool list, use `fastcode_skim_file` and `fastcode_get_function` instead of manual grep.
-
-Identify constraints. Do NOT modify code. Do NOT create non-exploration files.
+Do NOT `cat` entire files unless they are under 50 lines. Identify constraints. Do NOT modify code.
 
 ## Artifact Store: {mode}
 
@@ -54,7 +54,7 @@ mem_save(
 
 ## Size Budget: 600 words max
 
-## Return Envelope per sdd-phase-common.md Section D
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing

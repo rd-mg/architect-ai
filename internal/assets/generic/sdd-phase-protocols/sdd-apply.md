@@ -30,6 +30,16 @@ Test runner: {test-command}
 Follow strict-tdd.md procedure. Do NOT fall back to Standard Mode.
 Write failing test → verify red → implement → verify green → refactor.
 
+## Execution Graph Awareness (MANDATORY)
+**BEFORE** starting implementation, read `sdd/{change-name}/tasks` and verify the **Execution Graph**. 
+- Identify parallel-safe tasks vs sequence-locked tasks.
+- If current batch violates graph order, STOP and report.
+
+## Atomic Commit Protocol
+- **MANDATORY**: Each [x] task MUST be accompanied by a clean commit (if using Git).
+- Format: `type(scope): message` (Conventional Commits).
+- No attribution or "Co-authored-by" allowed.
+
 ## Phase: sdd-apply
 
 Task: Implement batch {N} of tasks for "{change-name}". Batch size: {size}.
@@ -44,6 +54,7 @@ SAVE the combined state. DO NOT overwrite — MERGE.
 Tasks to complete in this batch: {list from tasks artifact}
 
 ## Constraints
+- **Atomic Commits**: Verify each task has its own commit.
 - Update tasks.md: mark each completed task with [x]
 - If a task cannot be completed, mark as BLOCKED and note reason
 - Follow the compact rules in Project Standards EXACTLY
@@ -63,7 +74,7 @@ mem_save(
 
 ## Size Budget: 400 words (progress report). Code changes themselves are separate.
 
-## Return Envelope per sdd-phase-common.md Section D
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing

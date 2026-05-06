@@ -26,8 +26,6 @@ add speculative tasks.
 
 ## Phase: sdd-tasks
 
-Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
-
 Task: Break down the approved proposal + spec + design for "{change-name}"
 into an ordered, numbered checklist of implementable tasks.
 
@@ -54,13 +52,20 @@ into an ordered, numbered checklist of implementable tasks.
 5.1 Pre-migrate script for field X
 5.2 Post-migrate script for data Y
 
-## Task Format
+## Execution Graph Summary (MANDATORY ≥ 5 tasks)
+Use Mermaid `graph TD` to visualize the task sequence. This ensures dependencies are clear before starting implementation.
 
-Each task must include a risk rating.
+## Vertical Slice Organization (Recommended ≥ 3 capabilities)
+Group tasks by functional capability (vertical slices) rather than technical layer (horizontal slices). This enables incremental delivery of value.
+
+## Task Format
+Each task must include dependencies and safety metadata.
 
 ```markdown
 - [ ] {number} {action verb} {target}
       Acceptance: {condition}
+      Depends-on: {comma separated task numbers, or NONE}
+      Parallel-safe: {true|false}
       Risk: LOW | MEDIUM | HIGH
       Risk-reason: {required only when HIGH — one sentence explaining why}
 ```
@@ -75,11 +80,6 @@ Each task must include a risk rating.
 
 When risk is HIGH, `Risk-reason` is **mandatory**.
 
-## Research Procedure
-1. FIRST: Compute \`topic_key\` (prefix + len) and \`mem_search\` for cached findings.
-2. If hit and age < 168h: Inject as "Previously Found Knowledge", skip tools. Report \`research_cache_hits: 1\`.
-3. If miss or stale: Perform fresh research if needed for breakdown. Report \`research_cache_misses: 1\`.
-
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
@@ -93,8 +93,7 @@ mem_save(
 
 ## Size Budget: 530 words max
 
-## Return Envelope per sdd-phase-common.md Section D
-Include: research_cache_hits: int, research_cache_misses: int
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing
