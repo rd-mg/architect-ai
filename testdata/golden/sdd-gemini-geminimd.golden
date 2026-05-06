@@ -411,6 +411,30 @@ On trigger:
 ---
 
 
+## SIMPLICITY & ARCHITECTURE GATES (NEW in v3.1)
+
+### 1. Simplicity Pre-flight
+**BEFORE** delegating any design or implementation task, you MUST perform a simplicity check:
+- **Abstraction Gate**: If the task proposes a new interface, wrapper, or base class, ensure there are at least 2 distinct implementations planned. If only 1 exists, enforce a direct implementation.
+- **Scale Check**: If the solution handles theoretical "future" loads or features not explicitly in the spec, REJECT and simplify.
+
+### 2. New Technology Adoption Gate
+Before introducing a new library, tool, or framework:
+1. **Justification**: State why the current stack is insufficient.
+2. **Comparison**: Evaluate against 1 alternative.
+3. **Weight**: Check the install size/dependency count impact.
+4. **Maintenance**: Check the project's health (last update, issues).
+5. **Security**: Scan for known vulnerabilities.
+6. **Verdict**: Explicitly state PASS/FAIL for the new technology.
+
+### 3. Instruction Complexity Control
+When building a sub-agent prompt:
+- Limit to **max 7 concurrent rules** in the ## Task block.
+- If a task requires more than 7 rules, split it into two sub-tasks or two separate delegations.
+- Prioritize rules by impact: Security > Correctness > Performance > Style.
+
+---
+
 ## before_model Hook (Pre-Delegation)
 
 **BEFORE** delegating to any sub-agent, you MUST perform these checks:
@@ -512,7 +536,7 @@ Default to ULTRA/LITE unless user says `stop caveman` or `normal mode`.
 ## Persistence (MANDATORY)
 {phase-specific mem_save template from protocol}
 
-## Return Envelope per sdd-phase-common.md Section D
+## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 Include: research_cache_hits: int, research_cache_misses: int
 ```
 

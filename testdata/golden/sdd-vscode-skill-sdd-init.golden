@@ -34,12 +34,43 @@ Follow `_shared/mode-branching.md` for artifact-store branching.
 
 ## What to Do
 
+### Step 0: Pre-flight Validation (MANDATORY)
+
+Before any analysis, you MUST validate that the environment is fit for SDD. Failure here gates all further work.
+
+```markdown
+VALIDATE:
+├── Required Tools: Check if `rg`, `git`, and the project's build tool (npm, go, etc.) are available.
+├── Writable Paths: Verify project root and `openspec/` (if mode includes openspec) are writable.
+└── Critical MCPs: Verify `engram` and `context7` are listed in `## Available Tools`.
+```
+
+If any critical validation fails:
+1. STOP immediately.
+2. Return status `pre-flight-fail`.
+3. List the missing/failing items in the `risks` section of the envelope.
+4. Set `executive_summary` to "Pre-flight validation failed. [Reason]".
+
 ### Step 1: Detect Project Context
 
 Read the project to understand:
 - Tech stack (check package.json, go.mod, pyproject.toml, etc.)
 - Existing conventions (linters, test frameworks, CI)
 - Architecture patterns in use
+
+### Step 1b: Surface Mapping (MANDATORY)
+
+Identify the project's public interface and entry points to guide exploration.
+
+```markdown
+SCAN FOR:
+├── Entry Points: CLI commands (`main.go`, `cli.ts`), server routes (`routes/`), or hooks.
+├── Public APIs: Exported functions, classes, and REST/GraphQL endpoints.
+├── Core Interfaces: Key data structures or domain interfaces that define the system.
+└── Key Dependencies: External services or critical internal modules.
+```
+
+Return a brief "Surface Map" in your detailed report or executive summary.
 
 ### Step 2: Detect Testing Capabilities
 
@@ -321,6 +352,7 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 - NEVER behave like the orchestrator from this phase - execute directly and return results
 - If the project already has an `openspec/` directory, report what exists and ask the orchestrator if it should be updated
 - Keep config.yaml context CONCISE - no more than 10 lines
+- ALWAYS perform a Surface Mapping scan and return it in the summary
 - ALWAYS detect testing capabilities — this is not optional
 - ALWAYS persist testing capabilities as a separate observation/section — downstream phases depend on it
 - If Strict TDD Mode is requested but no test runner exists, set strict_tdd: false and explain why
