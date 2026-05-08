@@ -198,7 +198,7 @@ architect-ai  # installs, if not already installed
 # Open any supported agent and type either:
 #   /sdd-new add-user-export
 # or, as natural language (V3.1):
-#   "usa sdd para agregar exportación de usuarios"
+#   "use sdd to add user export"
 ```
 
 On the **first SDD command of the session** the orchestrator will ask:
@@ -277,11 +277,11 @@ Architect-AI agents use "skills" (specialized instruction sets) that are automat
 In a standard project, you trigger SDD phases and general skills:
 
 **1. Starting a new feature**
-> "usa sdd para crear un nuevo endpoint de autenticación"
+> "use sdd to create a new authentication endpoint"
 *(Triggers `/sdd-new` and loads the `sdd-propose` skill)*
 
 **2. Writing Tests (Go Example)**
-> "escribe tests para auth.go usando teatest"
+> "write tests for auth.go using teatest"
 *(Detects the context and automatically loads the `go-testing` skill before writing code)*
 
 **3. Code Review / Adversarial Mode**
@@ -293,11 +293,11 @@ In a standard project, you trigger SDD phases and general skills:
 When working in an Odoo repository (detected via `sdd-init`), specialized Odoo skills are available. The agent will automatically use Odoo best practices.
 
 **1. Creating a new model**
-> "crea un modelo de odoo para gestionar reservas de vehículos"
+> "create an Odoo model to manage vehicle reservations"
 *(The agent recognizes the Odoo context and loads the `odoo-development-skill` overlay to ensure correct inheritance, security rules, and view definitions)*
 
 **2. Debugging Odoo**
-> "encuentra por qué falla el cálculo de impuestos en las facturas"
+> "find why the tax calculation is failing on invoices"
 *(The agent uses Odoo-specific debugging strategies, checking `account.move` overrides and server logs)*
 
 ### Odoo 19 Spreadsheet Dashboard Architect (`available`)

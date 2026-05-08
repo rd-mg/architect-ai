@@ -2,7 +2,7 @@
 name: odoo-quote-calculator
 description: >
   Abstracts Quote Calculators using Odoo Spreadsheet in v19.
-  Trigger: Cuando el usuario pide crear, leer, actualizar, vincular, borrar un quote calculator, calculadora de cotización, o spreadsheet template de Odoo.
+  Trigger: When the user asks to create, read, update, link, or delete a quote calculator, quote calculator, or spreadsheet template of Odoo.
 license: Apache-2.0
 metadata:
   author: rd-mg
@@ -11,27 +11,27 @@ allowed-tools: Read, Edit, Write, Bash, mcp-server-odoo
 ---
 
 ## Purpose
-Estandarizar cómo crear, actualizar, leer o eliminar "Quote Calculators" (Odoo Spreadsheets) vinculados a Quotation Templates en Odoo 19 de una forma agnóstica a la configuración usando `mcp-server-odoo`.
+Standardize how to create, update, read, or delete "Quote Calculators" (Odoo Spreadsheets) linked to Quotation Templates in Odoo 19 in a configuration-agnostic way using `mcp-server-odoo`.
 
 ## When to Use
-- Cuando se pida crear un nuevo `sale.order.spreadsheet` (Quote Calculator).
-- Cuando se pida actualizar calculadoras de cotización volumétricas o de servicios.
-- Cuando se pida vincular un Excel de odoo a un `sale.order.template`.
-- Do not use when: Editando listas de precios estándar que no usen la vista `owl` de Odoo Spreadsheet.
+- When asked to create a new `sale.order.spreadsheet` (Quote Calculator).
+- When asked to update volumetric or service quote calculators.
+- When asked to link an Odoo Excel to a `sale.order.template`.
+- Do not use when: Editing standard price lists that don't use Odoo Spreadsheet's `owl` view.
 
 ## Critical Patterns
-- **No inventar el JSON**: El JSON para Odoo Spreadsheet v19 es masivo (~120KB) y estricto (requiere `searchParams`, `fieldMatching`, `globalFilters`). NO LO CONSTRUYAS DESDE CERO EN EL PROMPT.
-- **Flujo de Ejecución Canónico**:
-  1. Usa el archivo JSON canónico ubicado en `assets/jsons/odoo19_quotation_canonical.json`.
-  2. Corre el adaptador en Python `assets/adapt_spreadsheet.py` localmente en la shell para customizar el título y exportarlo en Base64 SIN usar la red.
-  3. Lee e inyecta el contenido generado (Base64) directo al comando de la tool `mcp_odoo_create_record`.
+- **Do not invent JSON**: JSON for Odoo Spreadsheet v19 is massive (~120KB) and strict (requires `searchParams`, `fieldMatching`, `globalFilters`). DO NOT BUILD IT FROM SCRATCH IN THE PROMPT.
+- **Canonical Execution Flow**:
+  1. Use the canonical JSON file located at `assets/jsons/odoo19_quotation_canonical.json`.
+  2. Run the Python adapter `assets/adapt_spreadsheet.py` locally in shell to customize the title and export it as Base64 WITHOUT using the network.
+  3. Read and inject the generated content (Base64) directly into the `mcp_odoo_create_record` tool command.
 
 ## Steps
-1. Revisa la marca requerida por el usuario.
-2. Ejecuta `python3 skills/40-odoo/odoo-quote-calculator/assets/adapt_spreadsheet.py --input skills/40-odoo/odoo-quote-calculator/assets/jsons/odoo19_quotation_canonical.json --output skills/40-odoo/odoo-quote-calculator/assets/jsons/deploy.txt --brand "Marca"`
-3. Extrae la string Base64 devuelta: `PAYLOAD=$(cat skills/40-odoo/odoo-quote-calculator/assets/jsons/deploy.txt)` *(recuerda usar `read_file` local para ti)*.
-4. Usa el tool `mcp_odoo_create_record` en el modelo `sale.order.spreadsheet` definiendo: `{"name": "...", "spreadsheet_binary_data": "<base64_recolectado>"}`.
-5. Para enlazar a la cotización, usa `mcp_odoo_update_record` al modelo `sale.order.template` cambiando el integer en el campo `spreadsheet_template_id`.
+1. Review the brand required by the user.
+2. Execute `python3 skills/40-odoo/odoo-quote-calculator/assets/adapt_spreadsheet.py --input skills/40-odoo/odoo-quote-calculator/assets/jsons/odoo19_quotation_canonical.json --output skills/40-odoo/odoo-quote-calculator/assets/jsons/deploy.txt --brand "Brand"`
+3. Extract the returned Base64 string: `PAYLOAD=$(cat skills/40-odoo/odoo-quote-calculator/assets/jsons/deploy.txt)` *(remember to use local `read_file` for yourself)*.
+4. Use the `mcp_odoo_create_record` tool on the `sale.order.spreadsheet` model defining: `{"name": "...", "spreadsheet_binary_data": "<collected_base64>"}`.
+5. To link to the quote, use `mcp_odoo_update_record` on the `sale.order.template` model changing the integer in the `spreadsheet_template_id` field.
 
 ## Code Examples
 Positive example (Deploy agnóstico vía MCP):
@@ -45,7 +45,7 @@ Positive example (Deploy agnóstico vía MCP):
 }
 ```
 
-Negative example (JSON inventado a mano con texto plano):
+Negative example (hand-crafted JSON with plain text):
 ```json
 {
   "model": "sale.order.spreadsheet",
@@ -69,9 +69,8 @@ python3 skills/40-odoo/odoo-quote-calculator/assets/adapt_spreadsheet.py \
 - **Adapter**: Script puente agnóstico a credenciales en `assets/adapt_spreadsheet.py`
 
 ## Guardrails
-- Solo utiliza `spreadsheet_binary_data` en el tool MCP. Nunca escribas directamente un string al `spreadsheet_data` field a menos que estés testeando patches de hotfix.
-- Verifica si la API rechaza el enlace M2O de `sale.order.template`; si el MCP API retorna integer List `[ID]` usa solo `ID`.
+- Only use `spreadsheet_binary_data` in the MCP tool. Never directly write a string to the `spreadsheet_data` field unless you are testing hotfix patches.
+- Verify if the API rejects the M2O link of `sale.order.template`; if the MCP API returns integer List `[ID]` use only `ID`.
 
-## Validation Checklist
-- [ ] Base JSON exportado es v19 (`version: 19`).
-- [ ] Extracción alfanumérica M2O respeta referencias de ID.
+## Checklist
+- [ ] M2O alphanumeric extraction respects ID references.

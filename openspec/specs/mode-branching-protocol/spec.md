@@ -20,12 +20,12 @@ Provide a single source of truth for how SDD sub-agents persist artifacts across
 ### Reference Pattern
 - Individual skills MUST reference this protocol using:
   `Follow _shared/mode-branching.md for artifact-store branching.`
-- Skills MUST specify their unique `artifact_name` and a `topic_key` que cumpla con la `engram-convention`.
+- Skills MUST specify their unique `artifact_name` and a `topic_key` that complies with the `engram-convention`.
 
 #### Scenario: Skill Reference Validation
-- GIVEN una skill que define `topic_key: adhoc_key`
-- WHEN el sistema valida el contrato de persistencia
-- THEN DEBE fallar la validación por incumplimiento de la convención de Engram.
+- GIVEN a skill that defines `topic_key: adhoc_key`
+- WHEN the system validates the persistence contract
+- THEN it MUST fail validation for non-compliance with the Engram convention.
 
 ### Coverage
 The following skills are verified to follow this protocol:

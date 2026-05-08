@@ -153,50 +153,50 @@ NEEDS CHANGES (README missing, CRITICAL uninstall issue, sudo() needs justificat
 - Do NOT skip deterministic checks because "the code looks fine"
 - Do NOT run tests in production-adjacent environments without user confirmation
 
-## JUDGEMENT DAY GATE (ejecutar antes de marcar verify como COMPLETE)
+## JUDGEMENT DAY GATE (execute before marking verify as COMPLETE)
 
-### Cuándo activar
-- El sub-agente sdd-verify está a punto de reportar "PASS" al Orchestrator
-- Mode 1 activo (razonamiento expansivo disponible — contexto no saturado)
-- Es la PRIMERA verificación completa del módulo (no en re-verificaciones parciales)
+### When to activate
+- The sdd-verify sub-agent is about to report "PASS" to the Orchestrator
+- Mode 1 active (expansive reasoning available — context not saturated)
+- This is the FIRST complete verification of the module (not in partial re-verifications)
 
-### Cuándo NO activar
-- Mode 3 activo (contexto saturado — Judgement Day gastaría demasiado)
-- Re-verificación de un sub-componente ya aprobado
-- Tarea trivial (Complexity = 0-1 en el Classifier)
+### When NOT to activate
+- Mode 3 active (saturated context — Judgement Day would cost too much)
+- Re-verification of an already approved sub-component
+- Trivial task (Complexity = 0-1 in the Classifier)
 
-### Protocolo de ejecución
+### Execution protocol
 
-**INPUT:** El Brief aprobado (mem_context de sdd/{module}/brief/v{N})
-**POSTURE:** +++Critical (obligatorio — Judgement Day sin Critical no tiene sentido)
-**TOKEN BUDGET:** máx 600 tokens (si excede → truncar forzadamente)
+**INPUT:** The approved Brief (mem_context of sdd/{module}/brief/v{N})
+**POSTURE:** +++Critical (mandatory — Judgement Day without Critical makes no sense)
+**TOKEN BUDGET:** max 600 tokens (if exceeded → force truncate)
 
-**PROMPT BLOCK (inyectar en Capa 8 cuando se activa):**
+**PROMPT BLOCK (inject in Layer 8 when activated):**
 
 > [!IMPORTANT]
-> [JUDGEMENT DAY GATE — verificación final del Brief]
-> Antes de cerrar sdd-verify como COMPLETE, audita el Brief activo contra los siguientes 3 criterios críticos para Odoo:
-> 
-> 1. INTEGRIDAD DEL MÓDULO: ¿El módulo puede desinstalarse sin dejar datos huérfanos en tablas del core? ¿Todos los campos relacionales tienen ondelete definido?
-> 2. COLISIÓN CON CORE: ¿El diseño modifica directamente modelos del core (res.partner, account.move, res.users) sin usar herencia? ¿O crea duplicados de funcionalidad que OCA ya provee?
-> 3. ESCALABILIDAD: ¿Hay operaciones N+1 en los computed fields? ¿Los search filters usan índices? ¿El diseño funciona con 1M registros?
-> 
-> Para cada criterio: PASS o FAIL + descripción de 1 oración.
-> Veredicto final: PASS (los 3 OK) o FAIL (cualquier falla grave).
-> 
-> Si FAIL: especifica solo el cambio mínimo requerido. No reescribas el Brief.
-> Si PASS: devuelve "JUDGEMENT DAY: PASS" y continúa con el cierre.
+> [JUDGEMENT DAY GATE — final verification of the Brief]
+> Before closing sdd-verify as COMPLETE, audit the active Brief against the following 3 critical criteria for Odoo:
+>
+> 1. MODULE INTEGRITY: Can the module be uninstalled without leaving orphan records in core tables? Do all relational fields have ondelete defined?
+> 2. CORE COLLISION: Does the design directly modify core models (res.partner, account.move, res.users) without using inheritance? Or does it create duplicate functionality that OCA already provides?
+> 3. SCALABILITY: Are there N+1 operations in computed fields? Do search filters use indexes? Does the design work with 1M records?
+>
+> For each criterion: PASS or FAIL + 1-sentence description.
+> Final verdict: PASS (all 3 OK) or FAIL (any serious failure).
+>
+> If FAIL: specify only the minimum required change. Do not rewrite the Brief.
+> If PASS: return "JUDGEMENT DAY: PASS" and proceed with closure.
 
-### Resultado y acción post-Judgement Day
+### Result and post-Judgement Day action
 
-- **PASS** → after_model hook guarda:
+- **PASS** → after_model hook saves:
   `mem_save("sdd/{module}/brief/v{N}", {brief + "judgement_day": "PASS"})`
-  Orchestrator avanza a la siguiente fase.
-- **FAIL** → Orchestrator re-abre sdd-design con las correcciones como input.
-  Se crea brief/v{N+1} (incrementa versión).
-  Contador de failures NO se incrementa (es una corrección de diseño, no un error).
+  Orchestrator advances to the next phase.
+- **FAIL** → Orchestrator re-opens sdd-design with the corrections as input.
+  brief/v{N+1} is created (version incremented).
+  Failure counter does NOT increment (it's a design correction, not an error).
 
-### Timeout y protección
-Si el sub-agente tarda más de 2 ciclos en Judgement Day → asumir PASS con advertencia:
-"JUDGEMENT DAY: TIMEOUT — Brief aprobado con advertencia. Revisar manualmente criterios 1-3 antes de deploy."
+### Timeout and protection
+If the sub-agent takes more than 2 cycles in Judgement Day → assume PASS with warning:
+"JUDGEMENT DAY: TIMEOUT — Brief approved with warning. Manually review criteria 1-3 before deploy."
 

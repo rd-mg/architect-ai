@@ -1,49 +1,49 @@
 # Engram Topic-Key Convention
 
 ## Purpose
-Establecer una taxonomía jerárquica y determinista para las llaves de búsqueda (`topic_key`) en el sistema de memoria persistente Engram. Esto garantiza que el conocimiento sea localizable, categorizado y reutilizable a través de diferentes sesiones y agentes.
+Establish a hierarchical and deterministic taxonomy for search keys (`topic_key`) in the Engram persistent memory system. This ensures knowledge is locatable, categorized, and reusable across different sessions and agents.
 
 ## Requirements
 
 ### Requirement: Topic-Key Structure
-El sistema DEBE utilizar una estructura jerárquica de cuatro segmentos para todas las llaves de Engram.
+The system MUST use a four-segment hierarchical structure for all Engram keys.
 
-Estructura: `{domain}/{scope}/{type}/{slug}`
+Structure: `{domain}/{scope}/{type}/{slug}`
 
 #### Scenario: Valid Topic-Key
-- GIVEN un agente que desea guardar un patrón de código Odoo 19
-- WHEN construye la `topic_key`
-- THEN el resultado DEBE ser `knowledge/odoo-v19/pattern/owl-useservice`
-- AND cumple con el formato de 4 segmentos.
+- GIVEN an agent that wants to save an Odoo 19 code pattern
+- WHEN building the `topic_key`
+- THEN the result MUST be `knowledge/odoo-v19/pattern/owl-useservice`
+- AND it complies with the 4-segment format.
 
 ### Requirement: Domain Taxonomy
-Los valores del segmento `domain` DEBEN limitarse a las siguientes categorías:
+The `domain` segment values MUST be limited to the following categories:
 
-| Domain | Descripción |
+| Domain | Description |
 |---|---|
-| `sdd` | Flujo de desarrollo Spec-Driven |
-| `tdd` | Flujo de desarrollo Test-Driven |
-| `debug` | Resolución de errores y tracebacks |
-| `knowledge` | Patrones, guías y conocimiento externo |
-| `arch` | Decisiones y contratos de arquitectura |
+| `sdd` | Spec-Driven Development flow |
+| `tdd` | Test-Driven Development flow |
+| `debug` | Error resolution and tracebacks |
+| `knowledge` | Patterns, guides, and external knowledge |
+| `arch` | Architecture decisions and contracts |
 
 #### Scenario: Incorrect Domain Usage
-- GIVEN una llave con domain `random`
-- WHEN el sistema valida la llave
-- THEN DEBE rechazarla o marcarla como no estándar.
+- GIVEN a key with domain `random`
+- WHEN the system validates the key
+- THEN it MUST reject it or mark it as non-standard.
 
 ### Requirement: Global Scope
-Cuando el conocimiento aplica de forma universal (cross-module), el segmento `scope` DEBE ser `_global`.
+When knowledge applies universally (cross-module), the `scope` segment MUST be `_global`.
 
 #### Scenario: Global pattern storage
-- GIVEN un error de importación que afecta a todo Odoo
-- WHEN se guarda en Engram
-- THEN la llave DEBE ser `debug/_global/error/import-error-account-move`.
+- GIVEN an import error that affects all of Odoo
+- WHEN saved to Engram
+- THEN the key MUST be `debug/_global/error/import-error-account-move`.
 
 ### Requirement: Deterministic Slugs
-Los `slugs` finales DEBEN ser deterministas, en minúsculas, y usar guiones como separadores.
+Final `slugs` MUST be deterministic, lowercase, and use hyphens as separators.
 
 #### Scenario: Slug generation
-- GIVEN un título "How to use OWL hooks?"
-- WHEN se genera el slug
-- THEN el resultado DEBE ser `how-to-use-owl-hooks`.
+- GIVEN a title "How to use OWL hooks?"
+- WHEN the slug is generated
+- THEN the result MUST be `how-to-use-owl-hooks`.

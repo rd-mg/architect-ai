@@ -447,24 +447,24 @@ def action_view_lines(self) -> dict:
 ```
 
 ## BREAKING: Model Constraints (v19 Mandatory)
-`_sql_constraints` está DEPRECADO/ELIMINADO en Odoo 19. Usar `models.Constraint` en su lugar a nivel de clase:
+`_sql_constraints` is DEPRECATED/REMOVED in Odoo 19. Use `models.Constraint` instead at class level:
 
 ```python
-# Odoo 19 (MANDATORIO):
+# Odoo 19 (MANDATORY):
 class MyModel(models.Model):
     _name = 'my.model'
-    
+
     _constraints = [
         models.Constraint('unique(code, company_id)', name='code_company_uniq', message='Code must be unique per company!'),
         models.Constraint('CHECK(quantity >= 0)', name='positive_quantity', message='Quantity must be positive!'),
     ]
 ```
 
-## BREAKING: SQL() Builder (Mandatorio)
-Se prohíbe el uso de cadenas SQL simples en `cr.execute`.
+## BREAKING: SQL() Builder (Mandatory)
+Simple SQL string usage is prohibited in `cr.execute`.
 
 ```python
-# Odoo 19 (REQUERIDO):
+# Odoo 19 (REQUIRED):
 self.env.cr.execute(SQL("SELECT id FROM my_model WHERE state = %s", 'draft'))
 ```
 
