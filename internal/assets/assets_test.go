@@ -331,12 +331,12 @@ func TestAdaptiveReasoningGateInjected(t *testing.T) {
 	}
 }
 
-func TestCognitivePosturesEightNotSevenOrNine(t *testing.T) {
+func TestCognitivePosturesElevenNotTenOrTwelve(t *testing.T) {
 	postures := []string{
 		"+++Socratic", "+++Critical", "+++Systemic",
 		"+++Adversarial", "+++Pragmatic", "+++Forensic",
-		"+++Caveman", "+++Autoreason-lite",
 		"+++Economic", "+++Empirical",
+		"+++Divergent", "+++Lateral", "+++Diamond",
 	}
 	body := MustRead("skills/cognitive-mode/SKILL.md")
 	for _, p := range postures {
@@ -361,7 +361,7 @@ func TestCognitivePosturesEightNotSevenOrNine(t *testing.T) {
 		t.Run(rel, func(t *testing.T) {
 			body := MustRead(rel)
 			// Check table rows to ensure they are in the injection table, not just prose.
-			for _, p := range []string{"+++Economic", "+++Empirical", "+++Caveman", "+++Autoreason-lite"} {
+			for _, p := range []string{"+++Economic", "+++Empirical", "+++Divergent", "+++Lateral", "+++Diamond"} {
 				if !strings.Contains(body, p) {
 					t.Errorf("%s missing in %s", p, rel)
 				}

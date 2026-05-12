@@ -2,7 +2,7 @@
 
 Architect-AI uses discrete cognitive postures to shape how agents approach different tasks. By shifting the "lens" of the agent, we achieve higher rigor in verification and better creativity in exploration.
 
-## The 8 Postures
+## The 11 Postures
 
 1. **Socratic** (+++Socratic): Reveal assumptions via questions.
 2. **Critical** (+++Critical): Evidence-based evaluation of claims.
@@ -12,6 +12,9 @@ Architect-AI uses discrete cognitive postures to shape how agents approach diffe
 6. **Forensic** (+++Forensic): Trace evidence chains and provenance.
 7. **Economic** (+++Economic): Optimize value/cost under budget.
 8. **Empirical** (+++Empirical): Data-driven proof and measurement.
+9. **Divergent** (+++Divergent): Generate options without judgment.
+10. **Lateral** (+++Lateral): Escape fixed frames via provocation.
+11. **Diamond** (+++Diamond): Structured two-phase diverge-then-converge cycle.
 
 ## Phase → Posture Mapping
 
@@ -37,8 +40,8 @@ Proposed postures must pass this test:
 2. Does its core verb overlap with an existing posture's core verb?
 3. If removed, would any phase lose a distinct discipline?
 
-### Why 8 is the ceiling
-Past V2 experiments showed that beyond 6 postures, sub-agents began to drift (confusing Adversarial with Critical). V3 raised the ceiling to 8 after introducing **Economic** (budgeting) and **Empirical** (measuring) which are strictly orthogonal to existing behaviors. 
+### Evolution of the Posture Catalog
+Past V2 experiments showed that beyond 6 analytical postures, sub-agents began to drift (confusing Adversarial with Critical). V3 initially raised this to 8 after introducing **Economic** (budgeting) and **Empirical** (measuring). V3.1 introduced three orthogonal **Creative** postures (**Divergent**, **Lateral**, **Diamond**) to support non-SDD tasks like brainstorming and problem-solving, bringing the total catalog to 11.
 
 **Max Postures per prompt: 2**.
 

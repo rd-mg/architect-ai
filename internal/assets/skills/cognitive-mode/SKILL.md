@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: rd-mg
-  version: "1.2"
+  version: "2.0"
 ---
 
 # Cognitive Mode
@@ -23,11 +23,11 @@ forensic rigor. A design review needs systemic breadth. An exploration needs
 Socratic questioning. Forcing one posture across all tasks produces mediocre
 results on each.
 
-This skill defines eight discrete postures. The orchestrator selects the
+This skill defines eleven discrete postures. The orchestrator selects the
 appropriate posture per SDD phase (or explicitly for a non-SDD task) and
 injects it as a prefix to the sub-agent's prompt.
 
-## The Ten Postures
+## The Eleven Postures
 
 ### 1. Socratic (+++Socratic)
 
@@ -169,46 +169,7 @@ as [unverified] and note what evidence would resolve it.
 
 ---
 
-### 7. Caveman (+++Caveman)
-
-**Use when**: Context pressure is critical (D4 ≥ 3) or performing high-volume execution tasks. Default for MCP executors.
-
-**Behavior**:
-- Communication MUST be restricted to the 4-field status block
-- PROHIBITED: pleasantries, explanations, decorative markdown, repetition of task
-- REQUIRED: STATUS, ACTION, RESULT, NEXT
-
-**Example output**:
-```
-STATUS: OK
-ACTION: create models/account_bank_statement.py
-RESULT: /addons/bank_reconciliation/models/account_bank_statement.py — 89 lines
-NEXT:   mem_save sdd/bank-reconciliation/state → purge context
-```
-
----
-
-### 8. Autoreason-lite (+++Autoreason-lite)
-
-**Use when**: Detecting micro-conflicts (Engram collision) or initial execution errors (Error Pressure = 1).
-
-**Behavior**:
-- Execute a single-cycle abductive loop: 3 hypotheses (H1-H3)
-- Act on H1 automatically without user confirmation
-- If H1 fails, try H2 automatically
-- Escalate to Mode 3 only if H1+H2+H3 fail
-
-**Example output**:
-```
-[AUTOREASON-LITE — collision detected]
-H1 (applied): Engram "sdd/_global/decision/no-modify-res-partner" prohibits modifying res.partner directly.
-ACTION: Updated brief — field x_bank_category in inheritance module.
-RESULT: collision resolved.
-```
-
----
-
-### 9. Economic (+++Economic)
+### 7. Economic (+++Economic)
 
 **Use when**: the task requires tradeoff analysis under resource
 constraints — token budget, latency SLA, dollar cost, developer-hours.
@@ -229,7 +190,7 @@ exceed budget, stating which constraint they violate.
 
 ---
 
-### 10. Empirical (+++Empirical)
+### 8. Empirical (+++Empirical)
 
 **Use when**: the task requires measurement-first reasoning —
 benchmarks, A/B prototypes, data-driven design decisions,
@@ -251,7 +212,79 @@ it. Numbers without a measurement plan are PROVISIONAL by default.
 
 ---
 
-## Phase → Posture Mapping (10-posture version)
+### 9. Divergent (+++Divergent)
+
+**Use when**: Task requires brainstorming or creative option generation. Default for the first phase of `/brainstorm`.
+
+**Behavior**:
+- Generate ≥7 ideas before evaluating any
+- Do NOT reject ideas during generation phase
+- Mark each idea as `[conventional]`, `[stretch]`, or `[moonshot]`
+- Cluster ideas by theme after generation
+
+**Example prefix**:
+```
++++Divergent
+Generate ideas without judgment. Rules:
+- Quantity over quality — aim for 7+ ideas minimum
+- Wild ideas welcome — they trigger useful associations
+- Build on previous ideas (Yes, AND...)
+- No evaluation during generation phase
+- Defer judgment — flag concerns for later evaluation
+- After generation, cluster ideas by theme
+- Mark each: [conventional], [stretch], [moonshot]
+```
+
+---
+
+### 10. Lateral (+++Lateral)
+
+**Use when**: The task is stuck or needs a non-obvious solution. Default alternative for `/brainstorm` or complex `/solve`.
+
+**Behavior**:
+- Apply deliberate provocations to escape fixed frames
+- Use REVERSAL, RANDOM ENTRY, CHALLENGE, ANALOGY, or ESCAPE
+- Extract ONE actionable insight per technique applied
+
+**Example prefix**:
+```
++++Lateral
+Apply deliberate provocations to escape fixed patterns:
+1. REVERSAL: What if we did the exact opposite?
+2. RANDOM ENTRY: Pick an unrelated concept — force a connection
+3. CHALLENGE: Why does this have to be this way? Question every assumption
+4. ANALOGY: What domain solved a structurally similar problem?
+5. ESCAPE: What constraint are we treating as fixed that isn't?
+After provocation, extract ONE actionable insight per technique.
+```
+
+---
+
+### 11. Diamond (+++Diamond)
+
+**Use when**: A full creative cycle is needed. Default for the full `/brainstorm` workflow.
+
+**Behavior**:
+- Execute two explicit phases: Diverge, then Converge
+- Diverge phase: generate freely without evaluation
+- Converge phase: evaluate based on feasibility, desirability, viability
+- Output must be the top 3 options ranked with rationale
+
+**Example prefix**:
+```
++++Diamond
+Two-phase structured ideation:
+PHASE 1 (Diverge): Apply +++Divergent rules. Generate options freely.
+PHASE 2 (Converge): Apply +++Critical rules. Evaluate each option against:
+  - Feasibility (can we build it with current resources?)
+  - Desirability (does it solve the actual problem?)
+  - Viability (can we maintain it long-term?)
+Output: Top 3 options ranked with rationale.
+```
+
+---
+
+## Phase → Posture Mapping
 
 | SDD Phase | Default Posture(s) | Alternative (user override or conditional) |
 |-----------|--------------------|---------------------------------------------|
@@ -265,6 +298,16 @@ it. Numbers without a measurement plan are PROVISIONAL by default.
 | sdd-apply | +++Pragmatic | — |
 | sdd-verify | +++Adversarial | +++Adversarial + +++Empirical (numeric SLAs) |
 | sdd-archive | (none) | — |
+
+## Non-SDD Task → Posture Mapping
+
+| Task Type | Required Postures |
+|-----------|------------------|
+| /brainstorm | +++Divergent, +++Diamond |
+| /solve | +++Forensic, +++Systemic |
+| /investigate | +++Socratic, +++Empirical |
+| /debug | +++Forensic, +++Adversarial |
+| /prototype | +++Pragmatic |
 
 ## Selection Rule for Empirical
 
