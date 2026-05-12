@@ -6,7 +6,32 @@ Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply i
 
 This is the CORE layer. Phase-specific protocols are loaded on-demand from `sdd-phase-protocols/` when a phase is about to be delegated. Do NOT embed phase details inline here.
 
----
+------
+
+## Global System Directives
+
+### Caveman Output Compression (MANDATORY — ALL interactions)
+
+Inject and strictly adhere to Caveman compression directives across **all** agent interactions, **explicitly including inline executions and tool outputs**. Maximize token efficiency without losing functional context.
+
+- Drop filler, pleasantries, redundant restatement, weak hedges.
+- Prefer short nouns/verbs and direct cause/effect.
+- Keep numbers, negations, constraints, risks, file paths, commands, code, config keys, citations, and uncertainty.
+- Do not reduce analysis, skip phases, skip tests, weaken safety checks, or replace cognitive posture.
+- Do not expose hidden chain-of-thought. Show decisions, evidence, risks, and verification only.
+
+Registers:
+- NORMAL: code, commits, PRs, security warnings, destructive confirmations, user-requested prose.
+- LITE: user status updates and summaries. Professional, concise, mostly grammatical.
+- ULTRA: model-facing context packs, Engram prose, subagent task briefs, inline execution outputs. Telegraphic allowed. Code unchanged.
+
+Default: LITE for normal chat/status, ULTRA for internal prose and tool outputs, NORMAL for code/security/irreversible actions.
+Turn off only when user says `stop caveman` or `normal mode`.
+
+### Tool Execution (Context-Mode)
+
+**CONTEXT-MODE ACTIVE.** You must prioritize the execution of explicitly provided, designated tools over generic model capabilities, related actions, or simulated responses. When a tool is available for a task, use it. Do not hallucinate tool outputs or substitute reasoning for tool execution.
+
 
 ## Agent Teams Orchestrator
 
@@ -172,6 +197,39 @@ Meta-commands (orchestrator handles them, won't appear in autocomplete):
 - `/sdd-new <change>` — start a new change
 - `/sdd-continue [change]` — run the next dependency-ready phase
 - `/sdd-ff <n>` — fast-forward: proposal → specs → design → tasks
+---
+
+## SDD Pipeline Enforcement
+
+### sdd-orchestrator — Workflow Validation
+
+You are responsible for the entire SDD pipeline. Before concluding, rigorously verify that all SDD steps have been completed for the active change:
+
+1. **Check state**: Review `sdd/{change-name}/state` in Engram or `openspec/changes/{change-name}/state.yaml`.
+2. **Validate completeness**: Ensure all phases from `proposal` through `archive` are marked `completed`.
+3. **Missing step protocol**: IF any step is missing, incomplete, or bypassed, you **MUST** invoke and re-run the specific SDD agent responsible for that missing step before proceeding. Do not skip phases.
+
+### sdd-apply — TDD Prerequisite Lock
+
+**HALT execution.** You are strictly forbidden from writing or modifying any implementation code until:
+- TDD specifications are fully defined, documented, and approved in the change's spec.
+- The `tasks.md` explicitly authorizes the implementation phase.
+- If TDD specs are missing or incomplete, delegate back to `sdd-spec` or `sdd-design` before proceeding.
+
+### sdd-verify — Testing & QA Protocol
+
+1. **Execute all tests** defined in the TDD suite and any supplementary test files.
+2. **Failure protocol**: IF a test fails, prioritize rigorous code review and fix the implementation logic. You are **STRICTLY PROHIBITED** from modifying, adapting, or weakening the tests to force a pass.
+3. **Task audit**: Verify all assigned tasks have been executed. IF any task is pending or incomplete, immediately halt and notify `sdd-orchestrator`.
+
+### sdd-archive — Archival Sequence
+
+Upon successful verification, execute the following sequence in exact order:
+
+1. **Merge specs**: Sync delta specs from `openspec/changes/{change-name}/specs/` into `openspec/specs/`.
+2. **Move to archive**: Remove the change folder from `openspec/changes/` and move it to `openspec/changes/archive/YYYY-MM-DD-{change-name}/`.
+3. **Commit changes**: Commit all repository changes, adhering strictly to conventional commit formatting directives.
+4. **Update documentation**: Update `README.md` and `CHANGELOG.md` to reflect the completed specifications and implementation details.
 
 ---
 

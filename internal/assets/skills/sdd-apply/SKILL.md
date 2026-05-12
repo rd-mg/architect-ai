@@ -84,6 +84,19 @@ If Strict TDD Mode is active (either from orchestrator injection or self-discove
 
 **There is no silent fallback.** If you resolved Strict TDD as active, you follow it or you report failure. You do NOT quietly switch to Standard Mode.
 
+### Step 3b: TDD Prerequisite Lock (MANDATORY)
+
+**HALT execution.** Before writing or modifying ANY implementation code, verify ALL of the following:
+
+1. **TDD specifications are defined**: The change's `spec.md` contains testable acceptance criteria and scenario tables.
+2. **Design is approved**: The change's `design.md` exists and is marked complete.
+3. **Tasks authorize implementation**: The current task(s) in `tasks.md` explicitly belong to an implementation phase (e.g., "Phase 3 — Implementation").
+
+**If any prerequisite is missing or incomplete:**
+- STOP immediately.
+- Do NOT write code.
+- Return control to `sdd-orchestrator` with the message: `PREREQUISITE MISSING: {which}. Cannot proceed with sdd-apply until resolved.`
+
 ### Step 4: Implement Tasks (Standard Workflow)
 
 This step is used when Strict TDD Mode is NOT active:

@@ -81,21 +81,53 @@ openspec/changes/{change-name}/
 
 Use today's date in ISO format (e.g., `2026-02-16`).
 
-### Step 4: Verify Archive
+### Step 4: Commit Changes
+
+Commit all repository changes introduced by this change:
+
+1. Stage all modified files (specs, code, tests, assets).
+2. Write a conventional commit message:
+   ```
+   feat(scope): summary of the change
+
+   - What changed (high-level)
+   - Why it changed (motivation)
+   - Closes openspec/changes/{change-name}
+   ```
+3. Adhere strictly to conventional commit formatting (type(scope): description).
+4. Do NOT include "Co-Authored-By" or AI attribution.
+
+### Step 5: Update Documentation
+
+Update project documentation to reflect the completed change:
+
+1. **README.md**: If the change introduces user-facing features, update the relevant sections.
+2. **CHANGELOG.md**: Append an entry under the current version/unreleased section:
+   ```markdown
+   ## [Unreleased]
+
+   ### Added|Changed|Fixed|Removed
+   - Summary of the change (link to openspec change if public)
+   ```
+3. **AGENTS.md** (if applicable): Update any agent-facing instructions affected by the change.
+
+### Step 6: Verify Archive
 
 Confirm:
 - [ ] Main specs updated correctly
 - [ ] Change folder moved to archive
 - [ ] Archive contains all artifacts (proposal, specs, design, tasks)
 - [ ] Active changes directory no longer has this change
+- [ ] Changes committed to repository with conventional commit message
+- [ ] README.md and CHANGELOG.md updated (if applicable)
 - [ ] For Engram: All artifact observation IDs are recorded in the archive report.
 
-### Step 5: Persist Archive Report
+### Step 7: Persist Archive Report
 
 **This step is MANDATORY — do NOT skip it.**
 Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
 
-### Step 6: Return Summary
+### Step 8: Return Summary
 
 Return to the orchestrator:
 

@@ -123,6 +123,10 @@ When you detect any of these contexts, IMMEDIATELY load the corresponding skill 
 | ------- | ------------- |
 | Go tests, Bubbletea TUI testing | go-testing |
 | Creating new AI skills | skill-creator |
+| When debugging, resolving crashes, or fixing complex bugs | solver |
+| When brainstorming, generating alternatives, or exploring ideas | ideator |
+| When investigating APIs, researching unfamiliar domains, or synthesizing documentation | researcher |
+| When prototyping or executing mechanical tasks | generalist |
 
 Load skills BEFORE writing code. Apply ALL patterns. Multiple skills can apply simultaneously.
 <!-- /architect-ai:persona -->

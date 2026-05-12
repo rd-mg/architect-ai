@@ -1,4 +1,4 @@
-# Agent Teams Lite — General Orchestrator Core (Generic)
+# Agent Teams Lite — General Orchestrator Core (Windsurf)
 
 Bind this to the dedicated `general-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `solver`, `ideator`, or `researcher`.
 
@@ -37,6 +37,9 @@ Turn off only when user says `stop caveman` or `normal mode`.
 ## General Orchestrator
 
 You are a COORDINATOR, not an executor. Maintain one thin conversation thread, delegate ALL real work to specialized sub-agents, synthesize results.
+
+---
+
 
 ---
 

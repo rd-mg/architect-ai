@@ -66,6 +66,30 @@ func context7Overlay(agent model.AgentID) ([]byte, error) {
     }
   }
 }`), nil
+	case model.AgentWindsurf:
+		return []byte(`{
+  "mcpServers": {
+    "context7": {
+      "serverUrl": "https://mcp.context7.com/mcp"
+    }
+  }
+}`), nil
+	case model.AgentQwenCode:
+		return []byte(`{
+  "mcpServers": {
+    "context7": {
+      "serverUrl": "https://mcp.context7.com/mcp"
+    }
+  }
+}`), nil
+	case model.AgentKiroIDE:
+		return []byte(`{
+  "mcpServers": {
+    "context7": {
+      "serverUrl": "https://mcp.context7.com/mcp"
+    }
+  }
+}`), nil
 	case model.AgentClaudeCode:
 		return []byte(`{
   "command": "npx",
@@ -113,6 +137,33 @@ func notebookLMOverlay(agent model.AgentID) ([]byte, error) {
   }
 }`), nil
 	case model.AgentAntigravity:
+		return []byte(`{
+  "mcpServers": {
+    "notebooklm-mcp": {
+      "command": "notebooklm-mcp",
+      "args": []
+    }
+  }
+}`), nil
+	case model.AgentWindsurf:
+		return []byte(`{
+  "mcpServers": {
+    "notebooklm-mcp": {
+      "command": "notebooklm-mcp",
+      "args": []
+    }
+  }
+}`), nil
+	case model.AgentQwenCode:
+		return []byte(`{
+  "mcpServers": {
+    "notebooklm-mcp": {
+      "command": "notebooklm-mcp",
+      "args": []
+    }
+  }
+}`), nil
+	case model.AgentKiroIDE:
 		return []byte(`{
   "mcpServers": {
     "notebooklm-mcp": {

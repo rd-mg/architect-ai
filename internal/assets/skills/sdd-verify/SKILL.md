@@ -212,6 +212,14 @@ IF coverage tool NOT available:
 
 If Strict TDD is active, follow the instructions in `strict-tdd-verify.md` Step 5e.
 
+#### Step 6f: Testing Protocol (MANDATORY)
+
+**Test Integrity Lock**:
+- Execute all tests defined in the TDD suite and any supplementary test files.
+- **Failure Protocol**: IF a test fails, prioritize rigorous code review and fix the implementation logic.
+- **STRICT PROHIBITION**: You are **STRICTLY PROHIBITED** from modifying, adapting, or weakening the tests to force a pass. The tests are the contract. If they fail, the implementation is wrong.
+- **Task Audit**: Verify all assigned tasks have been executed. IF any task is pending or incomplete, immediately halt verification and notify `sdd-orchestrator` with: `TASK AUDIT FAILURE: {task-list} incomplete. Cannot verify incomplete implementation.`
+
 ### Step 7: Spec Compliance Matrix (Behavioral Validation)
 
 This is the most important step. Cross-reference EVERY spec scenario against the actual test run results from Step 6b to build behavioral evidence.

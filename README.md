@@ -1,8 +1,8 @@
 # Architect-AI
 
-> A multi-agent framework that turns any supported IDE or CLI (Claude Code, Cursor, Gemini CLI, Codex, Antigravity, Kiro, OpenCode, VSCode, Windsurf, and more) into a Spec-Driven Development (SDD) workspace. One orchestrator, many agents, shared persistent memory via Engram, and curated research routing (ripgrep → local → Context7 → internet-by-permission).
+> A multi-agent framework that turns any supported IDE or CLI (Claude Code, Cursor, Gemini CLI, Codex, Antigravity, Kiro, OpenCode, VSCode, and more) into a Spec-Driven Development (SDD) workspace. One orchestrator, many agents, shared persistent memory via Engram, and curated research routing (ripgrep → local → Context7 → internet-by-permission).
 
-**Status**: V3.2 (remediation over V3.1)
+**Status**: V3.2.1 — Orchestrator directive improvements (Global System Directives, Orchestration & Fallback, SDD Pipeline Enforcement)
 
 ---
 
@@ -28,9 +28,12 @@
 
 Architect-AI installs a thin coordination layer on top of whatever coding agent you already use. The orchestrator:
 
-- Coordinates SDD phases: explore, propose, spec, design, tasks, apply, verify, archive.
-- Injects adaptive reasoning and phase-specific cognitive posture before delegation.
-- Applies Caveman as output compression only; it does not change reasoning depth.
+- **Coordinates SDD phases**: explore, propose, spec, design, tasks, apply, verify, archive.
+- **Enforces SDD pipeline compliance**: validates all phases complete before concluding; halts apply if TDD specs are missing; prohibits test weakening during verify; commits and updates docs during archive.
+- **Injects adaptive reasoning** and phase-specific cognitive posture before delegation.
+- **Applies Caveman** as output compression across all interactions, including inline executions and tool outputs; it does not change reasoning depth.
+- **Mandates tool execution** (Context-Mode): uses designated tools over generic model capabilities; never hallucinates tool outputs.
+- **Supports dual orchestration modes**: Primary (Task tool delegation for Claude/Gemini/OpenCode) and Fallback (inline execution for Antigravity/Cursor/Copilot/Windsurf).
 - Uses Engram as curated working memory with progressive disclosure.
 - Uses OpenSpec files when team-readable audit trail is required.
 - Uses ripgrep/local evidence before external documentation calls.
@@ -53,6 +56,7 @@ Architect-AI installs a thin coordination layer on top of whatever coding agent 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                       SDD ORCHESTRATOR (per agent)                          │
 │  ┌────────────────────────────────────────────────────────────────────┐    │
+│  │ Global System Directives (Caveman + Context-Mode)                  │    │
 │  │ Intent Resolution → Session-Setup Triplet → Overlay Detection      │    │
 │  │ Research-Routing Policy → Mandatory-Skills List → Model Assignment │    │
 │  └────────────────────────────────────────────────────────────────────┘    │
@@ -71,6 +75,7 @@ Architect-AI installs a thin coordination layer on top of whatever coding agent 
 │   SUB-AGENT (sdd-explore, sdd-propose, sdd-design, sdd-apply, sdd-verify…)  │
 │                                                                             │
 │   ┌───── Prompt Layers (stacked) ─────────────────────────────────────┐   │
+│   │ 0. Global System Directives (Caveman + Context-Mode — MANDATORY)  │   │
 │   │ 1. Cognitive Posture       (+++Socratic / +++Critical / +++Adv.…) │   │
 │   │ 2. Adaptive Classifier     (score 4 dims → Mode 1/2/3 — REQUIRED) │   │
 │   │ 3. Project Standards       (from .atl/skill-registry.md)          │   │
@@ -136,7 +141,7 @@ Architect-AI installs a thin coordination layer on top of whatever coding agent 
 
 ## Supported agents
 
-Eight SDD-capable agents share the same orchestrator core (`internal/assets/{agent}/sdd-orchestrator.md`):
+Nine agents receive orchestrator assets. All are SDD-capable (`sdd-orchestrator.md` + `general-orchestrator.md`). VSCode operates inline-only (no native sub-agent support) but follows the full SDD protocol:
 
 | Agent | Runtime | Parallel sub-agents | Prompt cache visible |
 |-------|---------|:-:|:-:|
@@ -147,16 +152,19 @@ Eight SDD-capable agents share the same orchestrator core (`internal/assets/{age
 | Gemini CLI | CLI | ✅ | ✅ |
 | Kiro | IDE | ✅ | ✅ |
 | OpenCode | CLI | ✅ | ✅ (per profile) |
-| Generic | template | — | — |
+| VSCode | IDE | ❌ inline-only | ✅ |
 
-Four additional agents get the install and uninstall pipeline but do NOT use `sdd-orchestrator.md`:
+**Template** (not an agent):
 
-| Agent | Notes |
-|-------|-------|
-| Kilocode | Non-SDD; can opt into session metering if provider exposes usage |
-| Qwen | Non-SDD; metering via OpenAI-compatible shape |
-| VSCode | Non-SDD; no direct usage visibility, metering disabled |
-| Windsurf | Non-SDD; same as VSCode |
+| Asset | Purpose |
+|-------|---------|
+| Generic | Canonical orchestrator template — copied and agent-name-patched per agent at install time |
+
+**Component** (not an agent):
+
+| Component | Purpose |
+|-----------|---------|
+| GGA | Gentleman Guardian Angel — AI provider switcher, installed via `architect-ai --component gga` |
 
 See `docs/antigravity-sdd-workaround.md` for notes on Antigravity's single-threaded sub-agent simulation.
 
@@ -471,6 +479,7 @@ architect-ai/
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| **V3.2.1** | 2026-05 | Orchestrator directive improvements: Global System Directives (Caveman + Context-Mode), Primary vs Fallback orchestration modes, SDD Pipeline Enforcement (workflow validation, TDD prerequisite lock, testing protocol strictures, archival sequence with commit + doc updates). |
 | **V3.2** | 2026-05 | Manifest-first purge, bounded subprocess runner, Caveman output-only clarification, Engram tool routing, context-mode external companion policy, dot-directory scope guard, optional NotebookLM policy. |
 | V3.1 | 2026-04 | Artifact-store question asked explicitly; natural-language intent resolution; TUI deep purge; token-cache banner; ripgrep + bash-expert `bridge: always`; NotebookLM-first research routing |
 | V3.0 | 2026-04 | V2 absorbed into caveman dual-mode; Odoo overlay restructured with version-gated bundles; 6 Odoo sub-agents absorbed into SDD supplements; judgment-day + autoreason-lite folded into adaptive-reasoning v1.0 |

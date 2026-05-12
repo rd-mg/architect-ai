@@ -824,11 +824,13 @@ func componentPaths(homeDir string, selection model.Selection, adapters []agents
 			if adapter.SupportsSystemPrompt() {
 				paths = append(paths, adapter.SystemPromptFile(homeDir))
 			}
-			if adapter.SupportsSlashCommands() {
+		if adapter.SupportsSlashCommands() {
+			if cmdDir := adapter.CommandsDir(homeDir); cmdDir != "" {
 				for _, command := range sdd.OpenCodeCommands() {
-					paths = append(paths, filepath.Join(adapter.CommandsDir(homeDir), command.Name+".md"))
+					paths = append(paths, filepath.Join(cmdDir, command.Name+".md"))
 				}
 			}
+		}
 			if adapter.Agent() == model.AgentOpenCode {
 				if p := adapter.SettingsPath(homeDir); p != "" {
 					paths = append(paths, p)
