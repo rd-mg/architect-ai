@@ -64,7 +64,7 @@ If version not incremented, ADD the version bump to your changes.
 ### Step 4: Icon Check
 ```bash
 test -f static/description/icon.png || \
-  echo "⚠️ icon.png missing from static/description/"
+  echo " icon.png missing from static/description/"
 ```
 
 If missing, flag in the apply-progress artifact (icon must be added by human).

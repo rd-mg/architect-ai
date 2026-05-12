@@ -24,7 +24,7 @@ type PurgeChoice struct {
 	Label       string
 	Description string
 	Selected    bool
-	Dangerous   bool // shows ⚠ glyph and red color
+	Dangerous   bool // shows  glyph and red color
 }
 
 // DefaultPurgeChoices returns the default checkbox selections.
@@ -77,7 +77,7 @@ func RenderPurge(choices []PurgeChoice, cursor int) string {
 	b.WriteString(styles.HeadingStyle.Render("Uninstall & Purge All"))
 	b.WriteString("\n\n")
 
-	b.WriteString(styles.WarningStyle.Render("⚠  This is IRREVERSIBLE beyond the pre-purge snapshot."))
+	b.WriteString(styles.WarningStyle.Render("  This is IRREVERSIBLE beyond the pre-purge snapshot."))
 	b.WriteString("\n")
 	b.WriteString(styles.SubtextStyle.Render("   A snapshot is captured automatically before any removal."))
 	b.WriteString("\n\n")
@@ -97,7 +97,7 @@ func RenderPurge(choices []PurgeChoice, cursor int) string {
 
 		line := cursorMark + check + " " + c.Label
 		if c.Dangerous {
-			line += "  ⚠"
+			line += "  "
 			b.WriteString(styles.ErrorStyle.Render(line))
 		} else {
 			b.WriteString(line)

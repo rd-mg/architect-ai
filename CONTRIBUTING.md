@@ -124,7 +124,7 @@ chmod +x docker-test.sh
 ./docker-test.sh
 ```
 
-> ⚠️ E2E tests spin up containers to simulate real installation environments. They may take a few minutes to complete.
+>  E2E tests spin up containers to simulate real installation environments. They may take a few minutes to complete.
 
 ### Windows — Known Test Limitations
 

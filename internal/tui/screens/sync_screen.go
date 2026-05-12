@@ -69,17 +69,17 @@ func renderSyncResult(filesChanged int, syncErr error) string {
 	var b strings.Builder
 
 	if syncErr != nil {
-		b.WriteString(styles.ErrorStyle.Render("✗ Sync failed"))
+		b.WriteString(styles.ErrorStyle.Render(" Sync failed"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.SubtextStyle.Render(syncErr.Error()))
 		b.WriteString("\n\n")
 		b.WriteString(styles.HelpStyle.Render("Check your configuration and try again."))
 	} else if filesChanged == 0 {
-		b.WriteString(styles.SuccessStyle.Render("✓ Sync complete"))
+		b.WriteString(styles.SuccessStyle.Render(" Sync complete"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.SubtextStyle.Render("No agents detected or no files needed updating."))
 	} else {
-		b.WriteString(styles.SuccessStyle.Render("✓ Sync complete"))
+		b.WriteString(styles.SuccessStyle.Render(" Sync complete"))
 		b.WriteString("\n\n")
 		b.WriteString(fmt.Sprintf("%s %s", styles.HeadingStyle.Render(fmt.Sprintf("%d file(s)", filesChanged)), styles.UnselectedStyle.Render("synchronized")))
 	}

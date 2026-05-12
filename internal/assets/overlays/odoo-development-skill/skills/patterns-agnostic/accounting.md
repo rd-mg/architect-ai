@@ -44,14 +44,14 @@ def reconcile_payment(self, payment, invoice):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER update account.move.line directly for posted moves.
-# ✅ CORRECT: Reverse/Cancel the move, or use credit notes.
+#  NEVER update account.move.line directly for posted moves.
+#  CORRECT: Reverse/Cancel the move, or use credit notes.
 
-# ❌ NEVER use cr.execute to change accounting balances.
-# ✅ CORRECT: Always use the ORM to ensure journal consistency.
+#  NEVER use cr.execute to change accounting balances.
+#  CORRECT: Always use the ORM to ensure journal consistency.
 
-# ❌ NEVER skip tax calculation on manual lines.
-# ✅ CORRECT: Call _compute_tax_totals() or ensure taxes_id is set.
+#  NEVER skip tax calculation on manual lines.
+#  CORRECT: Call _compute_tax_totals() or ensure taxes_id is set.
 ```
 
 ---

@@ -460,7 +460,7 @@ onSelect(value) {
 >
     <span>Select items</span>
     <t t-set-slot="choice" t-slot-scope="choice">
-        <span t-esc="'👉 ' + choice.data.label + ' 👈'" />
+        <span t-esc="' ' + choice.data.label + ' '" />
     </t>
 </SelectMenu>
 ```
@@ -1134,7 +1134,7 @@ static template = xml`
 
         <!-- Scoped slot -->
         <t t-set-slot="item" t-slot-scope="item">
-            <span>👉 <t t-esc="item.data.name" /> 👈</span>
+            <span> <t t-esc="item.data.name" /> </span>
         </t>
     </ParentComponent>
 `;
@@ -1196,7 +1196,7 @@ setup() {
 
 ## Best Practices
 
-### DO ✓
+### DO 
 
 1. **Use `setup()` instead of `constructor`**
    ```javascript
@@ -1247,7 +1247,7 @@ setup() {
    </select>
    ```
 
-### DON'T ✗
+### DON'T 
 
 1. **Don't use `constructor`**
    ```javascript

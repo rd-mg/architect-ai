@@ -67,7 +67,7 @@ Validate that:
 
 ## Anti-Pattern Examples
 
-### ❌ BAD: Direct cross-domain write
+###  BAD: Direct cross-domain write
 ```python
 # In sale.order.py
 def action_confirm(self):
@@ -76,7 +76,7 @@ def action_confirm(self):
     self.env.cr.execute("INSERT INTO account_move ...")
 ```
 
-### ✅ GOOD: Use the bridge
+###  GOOD: Use the bridge
 ```python
 # In sale.order.py
 def action_confirm(self):
@@ -86,7 +86,7 @@ def action_confirm(self):
     return result
 ```
 
-### ❌ BAD: Reading across domains without event
+###  BAD: Reading across domains without event
 ```python
 # In hr.employee.py
 def action_compute_timesheet_billing(self):
@@ -95,7 +95,7 @@ def action_compute_timesheet_billing(self):
     ...
 ```
 
-### ✅ GOOD: Use a method exposed by the target domain
+###  GOOD: Use a method exposed by the target domain
 ```python
 # In hr.employee.py
 def action_compute_timesheet_billing(self):

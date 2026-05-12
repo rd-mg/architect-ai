@@ -87,7 +87,7 @@ Step 4: Output report highlighting potential issues
 **Workflow:**
 ```
 Step 1: Run full checklist
-Step 2: Focus on ⚠️ warnings (not just ❌ failures)
+Step 2: Focus on  warnings (not just  failures)
 Step 3: Provide detailed improvement suggestions
 Step 4: Reference best practices from guide
 ```
@@ -107,7 +107,7 @@ Step 4: Reference best practices from guide
 
 **Analysis Capability:**
 ```
-✓ L1 Engineering correctness check
+ L1 Engineering correctness check
   - Tool call errors
   - Script execution failures
   - Loop detection
@@ -116,7 +116,7 @@ Step 4: Reference best practices from guide
   - Can only compare goal with final output
   - Cannot check step coverage
 
-✗ L3 Optimization suggestions
+ L3 Optimization suggestions
   - Missing implementation reference, cannot give specific suggestions
 ```
 
@@ -147,12 +147,12 @@ Step 4: Reference best practices from guide
 
 **Analysis Capability:**
 ```
-✓ L1 Engineering correctness check
-✓ L2 Goal achievement
+ L1 Engineering correctness check
+ L2 Goal achievement
   - Step coverage check
   - Output format comparison
   - Quality assessment
-✓ L3 Optimization suggestions
+ L3 Optimization suggestions
   - For SKILL.md
   - For scripts/
   - For references/
@@ -174,7 +174,7 @@ Step 3: L1 check
 
 Step 4: L2 comparison
         Design steps vs actual execution
-        Mark: ✓ executed / ✗ skipped / △ partial
+        Mark:  executed /  skipped / △ partial
 
 Step 5: L3 suggestions
         Propose improvements for deviation points
@@ -210,12 +210,12 @@ For references/:
 
 **Analysis Capability:**
 ```
-✓ L1 Engineering correctness check
-✓ L2 Goal achievement
+ L1 Engineering correctness check
+ L2 Goal achievement
   - Are parameters used correctly
   - Are return values handled correctly
   - Does it meet Tool design intent
-✓ L3 Optimization suggestions
+ L3 Optimization suggestions
   - Parameter definition optimization
   - Return format improvement
   - Description improvement
@@ -273,11 +273,11 @@ For Tool implementation:
 
 **Analysis Capability:**
 ```
-✓ L1 Engineering correctness check
-✓ L2 Goal achievement
+ L1 Engineering correctness check
+ L2 Goal achievement
   - Skill step coverage
   - Is Agent decision reasonable
-✓ L3 Deep optimization suggestions
+ L3 Deep optimization suggestions
   - Skill improvement
   - Tool improvement
   - System prompt improvement

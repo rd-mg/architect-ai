@@ -13,8 +13,8 @@
 ## Verification Evidence
 
 ### Coverage Check
-- `rg -l "mode-branching.md" internal/assets/skills/sdd-*/SKILL.md | wc -l`: **10** (✅ 100% of sdd skills)
-- `rg -l "mode-branching.md" internal/assets/skills/skill-registry/SKILL.md | wc -l`: **1** (✅ 100% of infrastructure skills)
+- `rg -l "mode-branching.md" internal/assets/skills/sdd-*/SKILL.md | wc -l`: **10** ( 100% of sdd skills)
+- `rg -l "mode-branching.md" internal/assets/skills/skill-registry/SKILL.md | wc -l`: **1** ( 100% of infrastructure skills)
 
 ### Audit Check
 - [x] Canonical protocol created at `_shared/mode-branching.md`

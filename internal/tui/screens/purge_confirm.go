@@ -27,9 +27,9 @@ func RenderPurgeConfirm(choices []PurgeChoice, typedInput string, errorMsg strin
 			continue
 		}
 		if c.Dangerous {
-			b.WriteString(styles.ErrorStyle.Render("  ✗ " + c.Label))
+			b.WriteString(styles.ErrorStyle.Render("   " + c.Label))
 		} else {
-			b.WriteString("  ✗ " + c.Label)
+			b.WriteString("   " + c.Label)
 		}
 		b.WriteString("\n")
 	}
@@ -49,7 +49,7 @@ func RenderPurgeConfirm(choices []PurgeChoice, typedInput string, errorMsg strin
 
 	if errorMsg != "" {
 		b.WriteString("\n")
-		b.WriteString(styles.ErrorStyle.Render("  ✗ " + errorMsg))
+		b.WriteString(styles.ErrorStyle.Render("   " + errorMsg))
 		b.WriteString("\n")
 	}
 

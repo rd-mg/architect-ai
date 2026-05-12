@@ -117,10 +117,10 @@ def unpack(xlsx_path: str, output_dir: str) -> None:
     for path, warning in risky.items():
         full = os.path.join(output_dir, path)
         if os.path.exists(full):
-            print(f"    ⚠️  {path} — {warning}")
+            print(f"      {path} — {warning}")
             found_any = True
     if not found_any:
-        print("    ✓ None (safe to edit)")
+        print("     None (safe to edit)")
 
 
 if __name__ == "__main__":

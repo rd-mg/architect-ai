@@ -62,7 +62,7 @@ def pack(source_dir: str, xlsx_path: str) -> None:
         )
         sys.exit(1)
 
-    print("✓ All XML files are well-formed")
+    print(" All XML files are well-formed")
 
     # Count files to pack
     file_count = sum(len(files) for _, _, files in os.walk(source_dir))

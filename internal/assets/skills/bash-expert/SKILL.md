@@ -167,7 +167,7 @@ wait "$child_pid"
 
 ## Common anti-patterns
 
-**❌ Parsing `ls`**
+** Parsing `ls`**
 ```bash
 for f in $(ls); do ...
 ```
@@ -177,7 +177,7 @@ for f in *; do ...
 ```
 or `find ... -print0 | xargs -0`.
 
-**❌ `cat file | grep`**
+** `cat file | grep`**
 ```bash
 cat log.txt | grep ERROR
 ```
@@ -186,13 +186,13 @@ Useless use of cat:
 grep ERROR log.txt
 ```
 
-**❌ `(( $var > 5 ))` without quotes on empty**
+** `(( $var > 5 ))` without quotes on empty**
 If `$var` is empty, `(( > 5 ))` is a syntax error. Guard:
 ```bash
 if [[ -n "$var" && "$var" -gt 5 ]]; then ...
 ```
 
-**❌ Silent failures**
+** Silent failures**
 ```bash
 some_command 2>/dev/null
 ```

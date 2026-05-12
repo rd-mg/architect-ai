@@ -82,13 +82,13 @@ Override for code blocks: **code is always normal English** regardless of cavema
 
 ## Anti-patterns
 
-**❌ Pidgin / "me Tarzan"**
+** Pidgin / "me Tarzan"**
 > Me read file. Me fix bug. Me commit.
 
-**❌ Over-compression that loses meaning**
+** Over-compression that loses meaning**
 > models split → ambiguous: "split the models" or "models were split"?
 
-**❌ Caveman in code comments**
+** Caveman in code comments**
 ```python
 # calc total. handle null. return int.
 ```
@@ -97,7 +97,7 @@ Keep code comments normal:
 # Computes the order total, returning 0 for an empty cart.
 ```
 
-**❌ Caveman in error messages or security warnings**
+** Caveman in error messages or security warnings**
 ```
 bad input. aborted.
 ```

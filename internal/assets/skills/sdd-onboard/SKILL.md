@@ -141,7 +141,7 @@ Implement the tasks following `sdd-apply` behavior. Narrate each task as you com
 
 ```
 "Implementing task 1.1: [description]
- ✓ Done — [brief note on what was created/changed]"
+  Done — [brief note on what was created/changed]"
 ```
 
 If Strict TDD mode is active, apply the TDD cycle and explain it:
@@ -183,7 +183,7 @@ Run `sdd-archive` behavior. Show the result:
 Close the session with a recap:
 
 ```markdown
-## Onboarding Complete! 🎉
+## Onboarding Complete! 
 
 Here's what we built together:
 

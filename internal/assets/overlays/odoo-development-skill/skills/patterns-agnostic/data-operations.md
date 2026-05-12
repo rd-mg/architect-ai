@@ -30,7 +30,7 @@ company_records = self.with_company(company_id).search([])
 ```python
 @api.model_create_multi
 def create(self, vals_list):
-    # ✅ ALWAYS use create_multi for performance
+    #  ALWAYS use create_multi for performance
     return super().create(vals_list)
 ```
 
@@ -74,13 +74,13 @@ ids = models.execute_kw(db, uid, password, 'res.partner', 'search', [[['is_compa
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER use cr.commit() inside Odoo methods (use for migrations/crons only).
+#  NEVER use cr.commit() inside Odoo methods (use for migrations/crons only).
 
-# ❌ NEVER use with_context in a loop: cache the environment instead.
-# ✅ CORRECT: env = self.with_context(key=val).env
+#  NEVER use with_context in a loop: cache the environment instead.
+#  CORRECT: env = self.with_context(key=val).env
 
-# ❌ NEVER use cr.execute() with string formatting: SQL injection risk.
-# ✅ CORRECT: cr.execute("SELECT * FROM table WHERE id = %s", (id,))
+#  NEVER use cr.execute() with string formatting: SQL injection risk.
+#  CORRECT: cr.execute("SELECT * FROM table WHERE id = %s", (id,))
 ```
 
 ---

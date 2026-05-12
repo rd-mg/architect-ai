@@ -113,11 +113,11 @@ Review each component category:
 ## Reviewed: {date}
 
 ### Overall Assessment
-- **Security**: ⭐⭐⭐⭐☆ (4/5)
-- **Code Quality**: ⭐⭐⭐⭐⭐ (5/5)
-- **Performance**: ⭐⭐⭐☆☆ (3/5)
-- **Version Compliance**: ⭐⭐⭐⭐⭐ (5/5)
-- **Test Coverage**: ⭐⭐☆☆☆ (2/5)
+- **Security**:  (4/5)
+- **Code Quality**:  (5/5)
+- **Performance**:  (3/5)
+- **Version Compliance**:  (5/5)
+- **Test Coverage**:  (2/5)
 
 ### Critical Issues (Fix Immediately)
 1. **[SECURITY]** `models/model.py:45`

@@ -50,13 +50,13 @@ access_my_model_user,my.model.user,model_my_model,base.group_user,1,1,1,0
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER use [('id', 'in', ids)] for large lists: Odoo 17+ optimizes this, but old versions slow down.
-# ✅ CORRECT: Use domain filters or _read_group.
+#  NEVER use [('id', 'in', ids)] for large lists: Odoo 17+ optimizes this, but old versions slow down.
+#  CORRECT: Use domain filters or _read_group.
 
-# ❌ NEVER define record rules with broad permissions for everyone.
-# ✅ CORRECT: Scope rules to specific groups to avoid overlaps.
+#  NEVER define record rules with broad permissions for everyone.
+#  CORRECT: Scope rules to specific groups to avoid overlaps.
 
-# ❌ NEVER hardcode translations in Python: use _("string").
+#  NEVER hardcode translations in Python: use _("string").
 ```
 
 ---

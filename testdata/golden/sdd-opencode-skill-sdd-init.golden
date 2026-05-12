@@ -219,20 +219,20 @@ Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md` us
 ### Test Layers
 | Layer | Available | Tool |
 |-------|-----------|------|
-| Unit | ✅ / ❌ | {tool or —} |
-| Integration | ✅ / ❌ | {tool or —} |
-| E2E | ✅ / ❌ | {tool or —} |
+| Unit |  /  | {tool or —} |
+| Integration |  /  | {tool or —} |
+| E2E |  /  | {tool or —} |
 
 ### Coverage
-- Available: ✅ / ❌
+- Available:  / 
 - Command: `{command or —}`
 
 ### Quality Tools
 | Tool | Available | Command |
 |------|-----------|---------|
-| Linter | ✅ / ❌ | {command or —} |
-| Type checker | ✅ / ❌ | {command or —} |
-| Formatter | ✅ / ❌ | {command or —} |
+| Linter |  /  | {command or —} |
+| Type checker |  /  | {command or —} |
+| Formatter |  /  | {command or —} |
 ```
 
 If mode is `openspec` or `hybrid`, also write this as a section in `openspec/config.yaml` under `testing:`.
@@ -268,18 +268,18 @@ Return:
 **Project**: {project name}
 **Stack**: {detected stack}
 **Persistence**: engram
-**Strict TDD Mode**: {enabled ✅ / disabled ❌ / unavailable (no test runner)}
+**Strict TDD Mode**: {enabled  / disabled  / unavailable (no test runner)}
 
 ### Testing Capabilities
 | Capability | Status |
 |------------|--------|
-| Test Runner | {tool} ✅ / ❌ Not found |
-| Unit Tests | ✅ / ❌ |
-| Integration Tests | {tool} ✅ / ❌ Not installed |
-| E2E Tests | {tool} ✅ / ❌ Not installed |
-| Coverage | ✅ / ❌ |
-| Linter | {tool} ✅ / ❌ |
-| Type Checker | {tool} ✅ / ❌ |
+| Test Runner | {tool}  /  Not found |
+| Unit Tests |  /  |
+| Integration Tests | {tool}  /  Not installed |
+| E2E Tests | {tool}  /  Not installed |
+| Coverage |  /  |
+| Linter | {tool}  /  |
+| Type Checker | {tool}  /  |
 
 ### Context Saved
 Project context persisted to Engram.
@@ -290,7 +290,7 @@ Project context persisted to Engram.
 
 No project files created.
 
-### ⚠️ Engram Mode Limitations
+###  Engram Mode Limitations
 Engram mode is ideal for **solo developers** doing fast iteration. Be aware:
 - **No iteration history**: re-running a phase (e.g., `sdd-spec`) overwrites the previous version. Only the latest artifact is retained.
 - **Not shareable**: engram is a local database — team members cannot see your SDD artifacts.
@@ -309,7 +309,7 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 **Project**: {project name}
 **Stack**: {detected stack}
 **Persistence**: openspec
-**Strict TDD Mode**: {enabled ✅ / disabled ❌ / unavailable (no test runner)}
+**Strict TDD Mode**: {enabled  / disabled  / unavailable (no test runner)}
 
 ### Testing Capabilities
 {same table as above}
@@ -330,7 +330,7 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 **Project**: {project name}
 **Stack**: {detected stack}
 **Persistence**: none (ephemeral)
-**Strict TDD Mode**: {enabled ✅ / disabled ❌ / unavailable (no test runner)}
+**Strict TDD Mode**: {enabled  / disabled  / unavailable (no test runner)}
 
 ### Testing Capabilities
 {same table as above}

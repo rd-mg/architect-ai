@@ -609,7 +609,7 @@ func (m Model) handlePipelineDone(msg PipelineDoneMsg) (tea.Model, tea.Cmd) {
 	m.Execution = msg.Result
 	m.pipelineRunning = false
 
-	// Rebuild progress from real step results so failed steps show ✗ instead
+	// Rebuild progress from real step results so failed steps show  instead
 	// of being blindly marked as succeeded.
 	m.Progress = ProgressFromExecution(msg.Result)
 
@@ -1579,7 +1579,7 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 		// ModelPicker sits BETWEEN SDDMode and StrictTDD in the forward flow:
 		//   SDDMode → ModelPicker → StrictTDD → DependencyTree
 		// So Back from ModelPicker must go to SDDMode, NOT StrictTDD
-		// (going to StrictTDD would create a loop: ModelPicker ↔ StrictTDD).
+		// (going to StrictTDD would create a loop: ModelPicker  StrictTDD).
 		if m.ModelConfigMode {
 			m.ModelConfigMode = false
 			m.setScreen(ScreenModelConfig)

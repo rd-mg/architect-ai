@@ -78,11 +78,11 @@ SITUATION?
 READ → UNDERSTAND → VERIFY → EVALUATE → RESPOND → IMPLEMENT
 
 ### Key Rules
-- ❌ No performative agreement: "You're absolutely right!", "Great point!", "Thanks for [anything]"
-- ❌ No implementation before verification
-- ✅ Restate requirement, ask questions, push back with technical reasoning, or just start working
-- ✅ If unclear: STOP and ask for clarification on ALL unclear items first
-- ✅ YAGNI check: grep for usage before implementing suggested "proper" features
+-  No performative agreement: "You're absolutely right!", "Great point!", "Thanks for [anything]"
+-  No implementation before verification
+-  Restate requirement, ask questions, push back with technical reasoning, or just start working
+-  If unclear: STOP and ask for clarification on ALL unclear items first
+-  YAGNI check: grep for usage before implementing suggested "proper" features
 
 ### Source Handling
 - **Human partner:** Trusted - implement after understanding, no performative agreement

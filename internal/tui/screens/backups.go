@@ -111,7 +111,7 @@ func RenderRestoreResult(manifest backup.Manifest, err error) string {
 	b.WriteString("\n\n")
 
 	if err == nil {
-		b.WriteString(styles.SuccessStyle.Render("✓ Restore complete"))
+		b.WriteString(styles.SuccessStyle.Render(" Restore complete"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.SubtextStyle.Render("Restored: "))
 		b.WriteString(styles.SelectedStyle.Render(manifest.ID))
@@ -120,7 +120,7 @@ func RenderRestoreResult(manifest backup.Manifest, err error) string {
 		b.WriteString("\n\n")
 		b.WriteString(styles.UnselectedStyle.Render("Your configuration has been restored from this backup."))
 	} else {
-		b.WriteString(styles.ErrorStyle.Render("✗ Restore failed"))
+		b.WriteString(styles.ErrorStyle.Render(" Restore failed"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.SubtextStyle.Render("Backup: "))
 		b.WriteString(styles.SelectedStyle.Render(manifest.ID))
@@ -174,7 +174,7 @@ func RenderDeleteResult(manifest backup.Manifest, err error) string {
 	b.WriteString("\n\n")
 
 	if err == nil {
-		b.WriteString(styles.SuccessStyle.Render("✓ Backup deleted"))
+		b.WriteString(styles.SuccessStyle.Render(" Backup deleted"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.SubtextStyle.Render("Deleted: "))
 		b.WriteString(styles.SelectedStyle.Render(manifest.ID))
@@ -183,7 +183,7 @@ func RenderDeleteResult(manifest backup.Manifest, err error) string {
 		b.WriteString("\n\n")
 		b.WriteString(styles.UnselectedStyle.Render("The backup has been permanently removed."))
 	} else {
-		b.WriteString(styles.ErrorStyle.Render("✗ Delete failed"))
+		b.WriteString(styles.ErrorStyle.Render(" Delete failed"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.SubtextStyle.Render("Backup: "))
 		b.WriteString(styles.SelectedStyle.Render(manifest.ID))

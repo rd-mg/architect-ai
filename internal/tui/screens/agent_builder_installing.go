@@ -14,7 +14,7 @@ func RenderABInstalling(engineName string, spinnerFrame int, installErr error) s
 	b.WriteString("\n\n")
 
 	if installErr != nil {
-		b.WriteString(styles.ErrorStyle.Render("✗ Installation failed"))
+		b.WriteString(styles.ErrorStyle.Render(" Installation failed"))
 		b.WriteString("\n")
 		b.WriteString(styles.SubtextStyle.Render("  Engine: " + engineName))
 		b.WriteString("\n")

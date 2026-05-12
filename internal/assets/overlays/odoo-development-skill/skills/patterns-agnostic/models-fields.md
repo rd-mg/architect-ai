@@ -111,12 +111,12 @@ class MyWizard(models.TransientModel):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER use mutable defaults: tag_ids = fields.Many2many(default=[])
-# ✅ CORRECT: default=lambda self: self.env['my.tag']
+#  NEVER use mutable defaults: tag_ids = fields.Many2many(default=[])
+#  CORRECT: default=lambda self: self.env['my.tag']
 
-# ❌ NEVER compute without @api.depends: Odoo won't know when to recompute.
+#  NEVER compute without @api.depends: Odoo won't know when to recompute.
 
-# ❌ NEVER use sudo() in a loop: Use self.sudo().write() instead of for r in self: r.sudo().write().
+#  NEVER use sudo() in a loop: Use self.sudo().write() instead of for r in self: r.sudo().write().
 ```
 
 ---

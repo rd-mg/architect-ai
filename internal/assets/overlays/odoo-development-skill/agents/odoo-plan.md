@@ -209,8 +209,8 @@ Starting with Odoo 16, dark mode is supported (Enterprise only; Community from v
 #### Essential Rules
 
 **Always use Odoo/Bootstrap variables and classes - never hardcode colors:**
-- ✅ Use: `$gray-700`, `text-muted`, `bg-view`, `$o-view-background-color`
-- ❌ Avoid: `#ffffff`, `color: #000`, inline styles with fixed colors
+-  Use: `$gray-700`, `text-muted`, `bg-view`, `$o-view-background-color`
+-  Avoid: `#ffffff`, `color: #000`, inline styles with fixed colors
 
 **Common variables:** `$o-view-background-color`, `$o-main-text-color`, `$o-main-color-muted`, `$gray-100` to `$gray-900`
 **Bootstrap classes:** `text-muted`, `bg-view`, `opacity-muted`, `alert alert-info`, etc.
@@ -256,11 +256,11 @@ When custom CSS is needed, create separate `.dark.scss` files:
 **ALWAYS use `hasclass()` function** when selecting elements by CSS class in XPath (never use `@class`):
 
 ```xml
-<!-- ✅ CORRECT -->
+<!--  CORRECT -->
 <xpath expr="//div[hasclass('o_settings_container')]" position="inside"/>
 <xpath expr="//div[hasclass('row', 'mt32', 'mb32')]" position="replace"/>
 
-<!-- ❌ INCORRECT (generates WARNING) -->
+<!--  INCORRECT (generates WARNING) -->
 <xpath expr="//div[@class='o_settings_container']" position="inside"/>
 <xpath expr="//div[contains(@class, 'btn-primary')]" position="after"/>
 ```
@@ -273,7 +273,7 @@ When custom CSS is needed, create separate `.dark.scss` files:
 
 When creating plans, make effective use of the comprehensive toolset available. Tools are organized by category:
 
-#### 📁 Local Codebase Research
+####  Local Codebase Research
 - **#tool:file_search**: Find modules and files by glob pattern
   - Example: Find all views: `**/*_views.xml`
   - Example: Find specific module: `**/purchase_analytic/**/*.py`
@@ -287,7 +287,7 @@ When creating plans, make effective use of the comprehensive toolset available. 
 - **#tool:get_errors**: Check files for syntax errors
   - Validate that referenced files are syntactically correct
 
-#### 📄 Documentation & Specifications
+####  Documentation & Specifications
 - **#tool:convert_to_markdown**: Convert documents to readable format
   - Supports: PDFs, Word docs (.docx), images (OCR), PowerPoint
   - Essential for reading user requirements and specifications
@@ -295,7 +295,7 @@ When creating plans, make effective use of the comprehensive toolset available. 
   - Use for displaying generated plans, tables, or documentation
 - **#tool:open_file**: Open files in the editor for detailed review
 
-#### 🌐 External Research
+####  External Research
 - **#tool:brave_web_search**: Search the web for Odoo solutions
   - Example: "Odoo 19 analytic distribution best practices"
   - Example: "Odoo purchase order workflow customization"
@@ -307,7 +307,7 @@ When creating plans, make effective use of the comprehensive toolset available. 
   - Example: Get docs for libraries used in Odoo (requests, werkzeug, etc.)
 - **#tool:resolve-library-id**: Identify correct library versions
 
-#### 🌍 Interactive Web Browser (for complex research)
+####  Interactive Web Browser (for complex research)
 - **#tool:browser_navigate**: Navigate to Odoo documentation
   - Example: Browse official Odoo docs at odoo.com/documentation
 - **#tool:browser_take_screenshot**: Capture visual examples
@@ -317,7 +317,7 @@ When creating plans, make effective use of the comprehensive toolset available. 
 - **#tool:fetch_content**: Retrieve raw content from URLs
   - Download examples, code snippets, or documentation
 
-#### 🧠 Advanced Planning & Analysis
+####  Advanced Planning & Analysis
 - **#skill:adaptive-reasoning**: Break down complex problems step-by-step
   - **CRITICAL**: Use this for complex architectural decisions
   - Use for analyzing multi-module integrations
@@ -328,14 +328,14 @@ When creating plans, make effective use of the comprehensive toolset available. 
   - Verify Python dependencies: `pip list | grep odoo`
 - **#tool:get_terminal_output**: Check output of background commands
 
-#### 🗄️ Database Research
+####  Database Research
 - **#tool:run_subagent**: Delegate to specialized agents
   - **Odoo Database Query**: Analyze database schema and data
     - Example: "Check if table purchase_order_line has analytic_distribution column"
     - Example: "Find all custom fields added to res.partner"
     - Example: "Analyze existing data patterns in sale.order"
 
-#### ⏱️ Utility Tools
+####  Utility Tools
 - **#tool:get_current_time**: Get current timestamp for planning
 - **#tool:convert_time**: Convert between timezones if relevant
 
@@ -525,19 +525,19 @@ When planning features that integrate multiple modules:
 #### Efficiency Tips
 
 **DO:**
-- ✅ Use #skill:adaptive-reasoning for complex features before starting research
-- ✅ Use #tool:grep_search to quickly find patterns across multiple files
-- ✅ Use #tool:convert_to_markdown first when specs are provided
-- ✅ Use #tool:run_subagent(Odoo Database Query) to verify database assumptions
-- ✅ Combine #tool:file_search + #tool:read_file for focused investigation
-- ✅ Use #tool:brave_web_search for version-specific Odoo documentation
-- ✅ Use #tool:get_errors to validate before suggesting file modifications
+-  Use #skill:adaptive-reasoning for complex features before starting research
+-  Use #tool:grep_search to quickly find patterns across multiple files
+-  Use #tool:convert_to_markdown first when specs are provided
+-  Use #tool:run_subagent(Odoo Database Query) to verify database assumptions
+-  Combine #tool:file_search + #tool:read_file for focused investigation
+-  Use #tool:brave_web_search for version-specific Odoo documentation
+-  Use #tool:get_errors to validate before suggesting file modifications
 
 **DON'T:**
-- ❌ Don't use browser tools for simple searches (use brave_web_search instead)
-- ❌ Don't read entire files when grep_search can find specific patterns
-- ❌ Don't search externally for patterns that exist in base Odoo modules
-- ❌ Don't skip adaptive-reasoning for complex multi-module features
+-  Don't use browser tools for simple searches (use brave_web_search instead)
+-  Don't read entire files when grep_search can find specific patterns
+-  Don't search externally for patterns that exist in base Odoo modules
+-  Don't skip adaptive-reasoning for complex multi-module features
 
 #### When to Use Advanced Tools
 
@@ -717,19 +717,19 @@ Path: the-pourium
 
 When you provide a simple request, the agent will **automatically**:
 
-✅ Read specification documents with #tool:convert_to_markdown  
-✅ Use #skill:adaptative-thinking for complex features  
-✅ Search custom modules for existing patterns  
-✅ Validate XML IDs and references in base modules  
-✅ Apply version-specific syntax (list vs tree, chatter, etc.)  
-✅ Query database if needed with #tool:run_subagent  
-✅ Research Odoo best practices externally when needed  
-✅ Include security files ONLY if required  
-✅ Follow all version-specific best practices  
-✅ Generate comprehensive, actionable plans  
+ Read specification documents with #tool:convert_to_markdown  
+ Use #skill:adaptative-thinking for complex features  
+ Search custom modules for existing patterns  
+ Validate XML IDs and references in base modules  
+ Apply version-specific syntax (list vs tree, chatter, etc.)  
+ Query database if needed with #tool:run_subagent  
+ Research Odoo best practices externally when needed  
+ Include security files ONLY if required  
+ Follow all version-specific best practices  
+ Generate comprehensive, actionable plans  
 
 **Just provide**: Version + Description + Paths  
-**The agent handles**: Everything else! 🚀
+**The agent handles**: Everything else! 
 
 ## Version-Specific Quick Reference
 

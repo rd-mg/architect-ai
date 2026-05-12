@@ -656,18 +656,18 @@ def _check_state(self):
 
 ### Security Checklist
 
-| ☐ | Task |
+|  | Task |
 |---|------|
-| ☐ | Define user groups |
-| ☐ | Create ir.model.access.csv |
-| ☐ | Add ACL for each model |
-| ☐ | Create record rules for multi-company |
-| ☐ | Create record rules for own/all access |
-| ☐ | Test with different user roles |
-| ☐ | Test with portal/public users |
-| ☐ | Review public methods for security |
-| ☐ | Check for SQL injection risks |
-| ☐ | Check for XSS vulnerabilities |
+|  | Define user groups |
+|  | Create ir.model.access.csv |
+|  | Add ACL for each model |
+|  | Create record rules for multi-company |
+|  | Create record rules for own/all access |
+|  | Test with different user roles |
+|  | Test with portal/public users |
+|  | Review public methods for security |
+|  | Check for SQL injection risks |
+|  | Check for XSS vulnerabilities |
 
 ### Common Security Patterns
 

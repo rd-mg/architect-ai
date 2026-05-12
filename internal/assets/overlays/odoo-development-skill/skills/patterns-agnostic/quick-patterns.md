@@ -47,11 +47,11 @@ class MyModel(models.Model):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER use attrs={'invisible': ...} in v17+. Use invisible="..." directly.
+#  NEVER use attrs={'invisible': ...} in v17+. Use invisible="..." directly.
 
-# ❌ NEVER use cr.execute() for simple queries. Use self.env['model'].search().
+#  NEVER use cr.execute() for simple queries. Use self.env['model'].search().
 
-# ❌ NEVER forget to add 'mail' to depends if using mail.thread.
+#  NEVER forget to add 'mail' to depends if using mail.thread.
 ```
 
 ---

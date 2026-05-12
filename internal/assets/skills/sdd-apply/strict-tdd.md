@@ -46,8 +46,8 @@ FOR EACH TASK:
 │   ├── Implement ONLY what the failing test needs
 │   ├── Fake It is VALID here (hardcoded return values are OK)
 │   ├── EXECUTE tests → must PASS
-│   │   ├── ✅ Passed → proceed to TRIANGULATE or REFACTOR
-│   │   └── ❌ Failed → fix the implementation, NOT the test
+│   │   ├──  Passed → proceed to TRIANGULATE or REFACTOR
+│   │   └──  Failed → fix the implementation, NOT the test
 │   └── GATE: Do NOT proceed until GREEN is confirmed by execution
 │
 ├── 4. TRIANGULATE (MANDATORY for most tasks)
@@ -78,8 +78,8 @@ FOR EACH TASK:
 │   ├── Push toward pure functions where feasible
 │   ├── Apply Boy Scout Rule: leave code cleaner than you found it
 │   ├── EXECUTE tests after EACH refactoring step → must STILL PASS
-│   │   ├── ✅ Still passing → refactoring is safe, continue
-│   │   └── ❌ Failed → REVERT that refactoring step, try smaller
+│   │   ├──  Still passing → refactoring is safe, continue
+│   │   └──  Failed → REVERT that refactoring step, try smaller
 │   └── GATE: Tests green after EVERY refactoring change
 │
 ├── 6. Mark task complete [x]
@@ -138,12 +138,12 @@ When executing tests during TDD:
 When writing production code in GREEN/TRIANGULATE steps, prefer pure functions:
 
 ```
-✅ PREFER (pure — easy to test):
+ PREFER (pure — easy to test):
 function calculateDiscount(price: number, quantity: number): number {
   return quantity >= 5 ? price * quantity * 0.1 : 0
 }
 
-❌ AVOID (impure — hard to test):
+ AVOID (impure — hard to test):
 function calculateDiscount(item: Item) {
   globalState.lastDiscount = item.price * 0.1  // side effect
   updateDOM()                                   // side effect
@@ -167,8 +167,8 @@ BEFORE touching production code:
 ├── 3. Run approval tests → must PASS (they describe current reality)
 ├── 4. NOW refactor the production code
 ├── 5. Run approval tests again → must STILL PASS
-│   ├── ✅ Passing → refactoring preserved behavior
-│   └── ❌ Failing → refactoring broke something, revert
+│   ├──  Passing → refactoring preserved behavior
+│   └──  Failing → refactoring broke something, revert
 └── 6. If the spec says behavior should CHANGE:
     ├── Update the approval test to reflect NEW expected behavior
     ├── Run → test FAILS (RED — new behavior not implemented yet)
@@ -183,9 +183,9 @@ When Strict TDD Mode is active, your return summary MUST include this section:
 ### TDD Cycle Evidence
 | Task | Test File | Layer | Safety Net | RED | GREEN | TRIANGULATE | REFACTOR |
 |------|-----------|-------|------------|-----|-------|-------------|----------|
-| 1.1 | `path/test.ext` | Unit | ✅ 5/5 | ✅ Written | ✅ Passed | ✅ 3 cases | ✅ Clean |
-| 1.2 | `path/test.ext` | Integration | N/A (new) | ✅ Written | ✅ Passed | ➖ Single | ✅ Clean |
-| 1.3 | `path/test.ext` | Unit | ✅ 2/2 | ✅ Written | ✅ Passed | ✅ 2 cases | ➖ None needed |
+| 1.1 | `path/test.ext` | Unit |  5/5 |  Written |  Passed |  3 cases |  Clean |
+| 1.2 | `path/test.ext` | Integration | N/A (new) |  Written |  Passed |  Single |  Clean |
+| 1.3 | `path/test.ext` | Unit |  2/2 |  Written |  Passed |  2 cases |  None needed |
 
 ### Test Summary
 - **Total tests written**: {N}
@@ -197,10 +197,10 @@ When Strict TDD Mode is active, your return summary MUST include this section:
 
 **Column definitions**:
 - **Safety Net**: Pre-existing tests run before modifying files. "N/A (new)" for new files.
-- **RED**: Test written first, referencing code that doesn't exist yet. Always "✅ Written".
+- **RED**: Test written first, referencing code that doesn't exist yet. Always " Written".
 - **GREEN**: Tests executed and passing after minimal implementation. Must show execution result.
-- **TRIANGULATE**: Additional test cases added to force real logic. "➖ Single" if spec has only one scenario.
-- **REFACTOR**: Code improved with tests still passing. "➖ None needed" if code was already clean.
+- **TRIANGULATE**: Additional test cases added to force real logic. " Single" if spec has only one scenario.
+- **REFACTOR**: Code improved with tests still passing. " None needed" if code was already clean.
 
 ## Assertion Quality Rules (MANDATORY)
 
@@ -210,32 +210,32 @@ When Strict TDD Mode is active, your return summary MUST include this section:
 
 ```
 # TRIVIAL ASSERTIONS — test proves nothing
-expect(true).toBe(true)              # ❌ Tautology
-expect(false).toBe(false)            # ❌ Tautology
-expect(1).toBe(1)                    # ❌ Tautology — no production code involved
-assert True                          # ❌ Always passes
-assert 1 == 1                        # ❌ Always passes
+expect(true).toBe(true)              #  Tautology
+expect(false).toBe(false)            #  Tautology
+expect(1).toBe(1)                    #  Tautology — no production code involved
+assert True                          #  Always passes
+assert 1 == 1                        #  Always passes
 
 # EMPTY COLLECTION ASSERTIONS without setup context
-expect(result).toEqual([])           # ❌ ONLY valid if you set up conditions for empty
-expect(result).toHaveLength(0)       # ❌ Same — why is it empty? Did production code run?
-assert len(result) == 0              # ❌ Same — prove the emptiness comes from real logic
-assert result == []                  # ❌ Same
+expect(result).toEqual([])           #  ONLY valid if you set up conditions for empty
+expect(result).toHaveLength(0)       #  Same — why is it empty? Did production code run?
+assert len(result) == 0              #  Same — prove the emptiness comes from real logic
+assert result == []                  #  Same
 
 # TYPE-ONLY ASSERTIONS — proves existence, not behavior
-expect(result).toBeDefined()         # ❌ Alone is useless — WHAT is the value?
-expect(result).not.toBeNull()        # ❌ Alone is useless — assert the actual value
-expect(typeof result).toBe('object') # ❌ Alone is useless — what does the object contain?
-assert result is not None            # ❌ Alone — assert what result actually IS
+expect(result).toBeDefined()         #  Alone is useless — WHAT is the value?
+expect(result).not.toBeNull()        #  Alone is useless — assert the actual value
+expect(typeof result).toBe('object') #  Alone is useless — what does the object contain?
+assert result is not None            #  Alone — assert what result actually IS
 
 # GHOST LOOP — assertion inside a loop that iterates 0 times
 const items = screen.queryAllByTestId("item");  // returns []
 for (const item of items) {
-  expect(item).toHaveTextContent("value");       # ❌ NEVER EXECUTES — loop body is dead code
+  expect(item).toHaveTextContent("value");       #  NEVER EXECUTES — loop body is dead code
 }
 # FIX: assert the collection is non-empty FIRST, or set up data so it IS non-empty:
-expect(items).toHaveLength(3);                   # ✅ Proves items exist
-for (const item of items) { ... }                # ✅ Now the loop actually runs
+expect(items).toHaveLength(3);                   #  Proves items exist
+for (const item of items) { ... }                #  Now the loop actually runs
 
 # INCOMPLETE TDD CYCLE — GREEN without TRIANGULATE
 # If your GREEN test passes because the setup doesn't exercise the code path,
@@ -253,7 +253,7 @@ Every test assertion must satisfy ALL of these:
 3. **Would FAIL if the production code were wrong** — if you change the implementation logic, THIS test breaks
 
 ```
-# ✅ REAL assertions — production code determines the result
+#  REAL assertions — production code determines the result
 expect(calculateDiscount(100, 10)).toBe(10)       # Real input → real output
 expect(screen.getByText('Welcome, John')).toBeInTheDocument()  # Rendered from data
 assert result[0].status == "FAIL"                  # Specific finding from check execution
@@ -275,11 +275,11 @@ If you cannot explain WHY the result is empty based on setup → the assertion i
 A test that only renders a component without asserting any output is NOT a valid test:
 
 ```
-# ❌ SMOKE TEST ONLY — proves nothing about behavior
+#  SMOKE TEST ONLY — proves nothing about behavior
 render(<MyComponent data={mockData} />);
 expect(screen.getByTestId("wrapper")).toBeInTheDocument();  # Just proves it rendered
 
-# ✅ BEHAVIORAL TEST — proves what the component DOES with the data
+#  BEHAVIORAL TEST — proves what the component DOES with the data
 render(<MyComponent data={mockData} />);
 expect(screen.getByText("Expected Title")).toBeInTheDocument();  # Verifies output from data
 expect(screen.getByRole("button")).toHaveTextContent("Submit");  # Verifies real content
@@ -293,9 +293,9 @@ expect(screen.getByRole("button")).toHaveTextContent("Submit");  # Verifies real
 
 ```
 Mock/assertion ratio guide:
-├── ≤ 3 mocks for a test file → ✅ Healthy — focused test
-├── 4–6 mocks → ⚠️ Consider extracting logic to a pure function
-├── 7+ mocks → ❌ STOP — you are testing at the wrong layer
+├── ≤ 3 mocks for a test file →  Healthy — focused test
+├── 4–6 mocks →  Consider extracting logic to a pure function
+├── 7+ mocks →  STOP — you are testing at the wrong layer
 │   ├── Extract the logic under test to a PURE FUNCTION and test it without mocks
 │   ├── OR move the test to integration/E2E layer where real dependencies exist
 │   └── NEVER write 10+ mocks to verify a one-line transformation
@@ -304,7 +304,7 @@ Mock/assertion ratio guide:
 **Extract-Before-Mock Rule**: If the behavior you want to test is a data transformation, mapping, filtering, or conditional logic (e.g., `MUTED → FAIL` status conversion), EXTRACT it to a pure function FIRST, then test the pure function directly. No mocks needed.
 
 ```
-# ❌ BAD: 15 mocks to test a one-line status conversion
+#  BAD: 15 mocks to test a one-line status conversion
 vi.mock("next/navigation", ...);
 vi.mock("next/link", ...);
 vi.mock("@/components/shadcn", ...);
@@ -312,7 +312,7 @@ vi.mock("@/components/shadcn", ...);
 render(<StatusCell row={mutedRow} />);
 expect(screen.getByText("FAIL")).toBeInTheDocument();
 
-# ✅ GOOD: extract and test the logic directly
+#  GOOD: extract and test the logic directly
 // In production code:
 export function resolveDisplayStatus(status: string, isMuted: boolean): string {
   return status === "MUTED" ? "FAIL" : status;
@@ -328,17 +328,17 @@ expect(resolveDisplayStatus("PASS", false)).toBe("PASS");
 Tests must assert **behavior visible to the user**, not internal implementation details:
 
 ```
-# ❌ COUPLED TO IMPLEMENTATION — breaks on any style refactor
+#  COUPLED TO IMPLEMENTATION — breaks on any style refactor
 expect(element.className).toContain("text-xs");
 expect(element.className).toContain("-mt-2.5");
 expect(element.className).toContain("border-border-error-primary");
 expect(element.style.color).toBe("red");
 
-# ❌ COUPLED TO INTERNALS — breaks when implementation changes
+#  COUPLED TO INTERNALS — breaks when implementation changes
 expect(mockService.mock.calls.length).toBe(3);  # Why 3? Brittle.
 expect(component.state.isLoading).toBe(true);    # Internal state, not behavior.
 
-# ✅ BEHAVIORAL — survives refactors, tests what users see
+#  BEHAVIORAL — survives refactors, tests what users see
 expect(screen.getByText("Error: Payment failed")).toBeInTheDocument();
 expect(screen.getByRole("alert")).toHaveTextContent("Risk:");
 expect(screen.getByRole("button")).toBeDisabled();

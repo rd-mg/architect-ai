@@ -307,7 +307,7 @@ func Execute(ctx context.Context, results []update.UpdateResult, profile system.
 			sp.Finish(true)
 		case UpgradeSkipped:
 			// Intentional skip (manual fallback, dry-run, dev-build) — NOT a failure.
-			// Render with skip marker (--) instead of failure marker (✗).
+			// Render with skip marker (--) instead of failure marker ().
 			sp.FinishSkipped()
 		default:
 			sp.Finish(false)

@@ -17,9 +17,9 @@ When running sdd-init in an Odoo project:
 ## Overlay Validation
 
 Confirm active supplements for detected version:
-- patterns-{version}/ bundle bridged ✓
-- migration-{from}-{to}/ bundled if multi-version ✓
-- patterns-agnostic/ always bridged ✓
+- patterns-{version}/ bundle bridged 
+- migration-{from}-{to}/ bundled if multi-version 
+- patterns-agnostic/ always bridged 
 
 ## Session Context Block
 

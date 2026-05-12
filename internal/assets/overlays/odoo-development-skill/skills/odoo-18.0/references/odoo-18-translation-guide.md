@@ -668,7 +668,7 @@ STATUS_DRAFT = _("Draft")
 
 ## Anti-Patterns
 
-### ❌ Dynamic Source Strings
+###  Dynamic Source Strings
 
 ```python
 # BAD - Cannot be extracted or translated
@@ -678,7 +678,7 @@ message = _(f"User {user.name} created")
 message = _("User %(name)s created", name=user.name)
 ```
 
-### ❌ Translated Technical Terms
+###  Translated Technical Terms
 
 ```python
 # BAD - Technical IDs should not be translated
@@ -688,7 +688,7 @@ xml_id = _("my_module.my_record")
 xml_id = 'my_module.my_record'
 ```
 
-### ❌ Conditional Inside Translation
+###  Conditional Inside Translation
 
 ```python
 # BAD
@@ -701,7 +701,7 @@ else:
 msg = _("Operation %(status)s", status='success' if condition else 'failed')
 ```
 
-### ❌ Translation in Loops
+###  Translation in Loops
 
 ```python
 # BAD - Performance issue
@@ -714,7 +714,7 @@ for record in records:
     print(f"{label}: {record.name}")
 ```
 
-### ❌ HTML in Python Translations
+###  HTML in Python Translations
 
 ```python
 # BAD - HTML should be in QWeb templates

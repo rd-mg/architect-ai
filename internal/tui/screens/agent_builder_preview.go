@@ -23,12 +23,12 @@ func RenderABPreview(agent *agentbuilder.GeneratedAgent, targets []string, scrol
 	}
 
 	if installErr != nil {
-		b.WriteString(styles.ErrorStyle.Render("✗ Installation failed: " + installErr.Error()))
+		b.WriteString(styles.ErrorStyle.Render(" Installation failed: " + installErr.Error()))
 		b.WriteString("\n\n")
 	}
 
 	if conflictWarning != "" {
-		b.WriteString(styles.WarningStyle.Render("⚠ " + conflictWarning))
+		b.WriteString(styles.WarningStyle.Render(" " + conflictWarning))
 		b.WriteString("\n\n")
 	}
 

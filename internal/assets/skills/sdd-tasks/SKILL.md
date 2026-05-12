@@ -120,7 +120,7 @@ openspec/changes/{change-name}/
 
 Each task MUST be:
 
-| Criteria | Example ✅ | Anti-example ❌ |
+| Criteria | Example  | Anti-example  |
 |----------|-----------|----------------|
 | **Specific** | "Create `internal/auth/middleware.go` with JWT validation" | "Add auth" |
 | **Actionable** | "Add `ValidateToken()` method to `AuthService`" | "Handle tokens" |

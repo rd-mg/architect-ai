@@ -232,10 +232,10 @@ FOR EACH REQUIREMENT in specs/:
   ├── Find tests that cover this scenario (by name, description, or file path)
   ├── Look up that test's result from Step 6b output
   ├── Assign compliance status:
-  │   ├── ✅ COMPLIANT   → test exists AND passed
-  │   ├── ❌ FAILING     → test exists BUT failed (CRITICAL)
-  │   ├── ❌ UNTESTED    → no test found for this scenario (CRITICAL)
-  │   └── ⚠️ PARTIAL    → test exists, passes, but covers only part of the scenario (WARNING)
+  │   ├──  COMPLIANT   → test exists AND passed
+  │   ├──  FAILING     → test exists BUT failed (CRITICAL)
+  │   ├──  UNTESTED    → no test found for this scenario (CRITICAL)
+  │   └──  PARTIAL    → test exists, passes, but covers only part of the scenario (WARNING)
   └── Record: requirement, scenario, test file, test name, result
 ```
 
@@ -281,17 +281,17 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 
 ### Build & Tests Execution
 
-**Build**: ✅ Passed / ❌ Failed
+**Build**:  Passed /  Failed
 ```
 {build command output or error if failed}
 ```
 
-**Tests**: ✅ {N} passed / ❌ {N} failed / ⚠️ {N} skipped
+**Tests**:  {N} passed /  {N} failed /  {N} skipped
 ```
 {failed test names and errors if any}
 ```
 
-**Coverage**: {N}% / threshold: {N}% → ✅ Above threshold / ⚠️ Below threshold / ➖ Not available
+**Coverage**: {N}% / threshold: {N}% →  Above threshold /  Below threshold /  Not available
 
 ---
 
@@ -304,10 +304,10 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 
 | Requirement | Scenario | Test | Result |
 |-------------|----------|------|--------|
-| {REQ-01: name} | {Scenario name} | `{test file} > {test name}` | ✅ COMPLIANT |
-| {REQ-01: name} | {Scenario name} | `{test file} > {test name}` | ❌ FAILING |
-| {REQ-02: name} | {Scenario name} | (none found) | ❌ UNTESTED |
-| {REQ-02: name} | {Scenario name} | `{test file} > {test name}` | ⚠️ PARTIAL |
+| {REQ-01: name} | {Scenario name} | `{test file} > {test name}` |  COMPLIANT |
+| {REQ-01: name} | {Scenario name} | `{test file} > {test name}` |  FAILING |
+| {REQ-02: name} | {Scenario name} | (none found) |  UNTESTED |
+| {REQ-02: name} | {Scenario name} | `{test file} > {test name}` |  PARTIAL |
 
 **Compliance summary**: {N}/{total} scenarios compliant
 
@@ -316,17 +316,17 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 ### Correctness (Static — Structural Evidence)
 | Requirement | Status | Notes |
 |------------|--------|-------|
-| {Req name} | ✅ Implemented | {brief note} |
-| {Req name} | ⚠️ Partial | {what's missing} |
-| {Req name} | ❌ Missing | {not implemented} |
+| {Req name} |  Implemented | {brief note} |
+| {Req name} |  Partial | {what's missing} |
+| {Req name} |  Missing | {not implemented} |
 
 ---
 
 ### Coherence (Design)
 | Decision | Followed? | Notes |
 |----------|-----------|-------|
-| {Decision name} | ✅ Yes | |
-| {Decision name} | ⚠️ Deviated | {how and why} |
+| {Decision name} |  Yes | |
+| {Decision name} |  Deviated | {how and why} |
 
 ---
 

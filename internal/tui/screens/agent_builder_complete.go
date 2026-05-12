@@ -11,7 +11,7 @@ import (
 func RenderABComplete(agent *agentbuilder.GeneratedAgent, results []agentbuilder.InstallResult) string {
 	var b strings.Builder
 
-	b.WriteString(styles.SuccessStyle.Render("✓ Agent Created!"))
+	b.WriteString(styles.SuccessStyle.Render(" Agent Created!"))
 	b.WriteString("\n\n")
 
 	if agent != nil {
@@ -25,12 +25,12 @@ func RenderABComplete(agent *agentbuilder.GeneratedAgent, results []agentbuilder
 		b.WriteString("\n")
 		for _, r := range results {
 			if r.Success {
-				b.WriteString("  " + styles.SuccessStyle.Render("✓") + "  " + styles.UnselectedStyle.Render(string(r.AgentID)))
+				b.WriteString("  " + styles.SuccessStyle.Render("") + "  " + styles.UnselectedStyle.Render(string(r.AgentID)))
 				b.WriteString("\n")
 				b.WriteString("     " + styles.SubtextStyle.Render(r.Path))
 				b.WriteString("\n")
 			} else {
-				b.WriteString("  " + styles.ErrorStyle.Render("✗") + "  " + styles.ErrorStyle.Render(string(r.AgentID)))
+				b.WriteString("  " + styles.ErrorStyle.Render("") + "  " + styles.ErrorStyle.Render(string(r.AgentID)))
 				b.WriteString("\n")
 				if r.Err != nil {
 					b.WriteString("     " + styles.SubtextStyle.Render(r.Err.Error()))

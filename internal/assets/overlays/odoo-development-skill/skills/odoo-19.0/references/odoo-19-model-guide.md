@@ -219,7 +219,7 @@ If you omit the `_name` in the constraint, Odoo auto-generates a unique name bas
 ### Migration from `_sql_constraints`
 
 ```python
-# ❌ OLD (Odoo 18 and earlier) — NO LONGER WORKS in Odoo 19
+#  OLD (Odoo 18 and earlier) — NO LONGER WORKS in Odoo 19
 class MyModel(models.Model):
     _name = 'my.model'
     _sql_constraints = [
@@ -227,7 +227,7 @@ class MyModel(models.Model):
         ('check_qty', 'CHECK(quantity > 0)', 'Quantity must be positive!'),
     ]
 
-# ✅ NEW (Odoo 19)
+#  NEW (Odoo 19)
 class MyModel(models.Model):
     _name = 'my.model'
 

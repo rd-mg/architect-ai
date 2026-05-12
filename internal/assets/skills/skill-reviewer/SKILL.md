@@ -44,8 +44,8 @@ Review Skill definition quality against best practices.
 
 **Result**:
 ```
-# 🔍 Skill Review: my-skill
-| Category | ✅ Pass | ⚠️ Warn | ❌ Fail |
+#  Skill Review: my-skill
+| Category |  Pass |  Warn |  Fail |
 |----------|---------|---------|--------|
 | Structure | 4 | 0 | 0 |
 | Format | 5 | 0 | 0 |
@@ -76,10 +76,10 @@ Required: Skill folder path (e.g., ./skill/ or ./my-skill/)
 
 | Category | Focus | Items |
 |----------|-------|-------|
-| 📁 Structure | File/folder layout | S1-S4 |
-| 📋 Format | YAML frontmatter | F1-F6 |
-| 📝 Content | Instructions quality | C1-C8 |
-| 🎯 Trigger | Activation design | T1-T3 |
+|  Structure | File/folder layout | S1-S4 |
+|  Format | YAML frontmatter | F1-F6 |
+|  Content | Instructions quality | C1-C8 |
+|  Trigger | Activation design | T1-T3 |
 
 > See `references/definition-checklist.md` for complete 21-item checklist
 
@@ -102,13 +102,13 @@ Step 6: Output report
 ### Output Format
 
 ```markdown
-# 🔍 Skill Review: {skill-name}
+#  Skill Review: {skill-name}
 
 > Path: `{skill-path}`
 
-## 📊 Summary
+##  Summary
 
-| Category | ✅ Pass | ⚠️ Warn | ❌ Fail |
+| Category |  Pass |  Warn |  Fail |
 |----------|---------|---------|---------|
 | Structure | x | x | x |
 | Format | x | x | x |
@@ -118,17 +118,17 @@ Step 6: Output report
 
 ---
 
-## 📁 Structure
+##  Structure
 
-- ✅ **S1 SKILL.md exists** — Description
-- ⚠️ **S2 Item** — Description
-  > 💡 Suggestion
+-  **S1 SKILL.md exists** — Description
+-  **S2 Item** — Description
+  >  Suggestion
 
 (Continue for all categories...)
 
 ---
 
-## 💡 Review Comments
+##  Review Comments
 
 ### Strengths
 - Point 1
@@ -151,7 +151,7 @@ Step 6: Output report
 **Purpose**: Analyze Skill/Tool/Agent execution through three-layer progressive analysis.
 
 ```
-L1 Engineering Correctness ──▶ L2 Goal Achievement ──▶ L3 Optimization Space
+L1 Engineering Correctness ── L2 Goal Achievement ── L3 Optimization Space
    Is execution correct?         Is effect good?          Can it be better?
 ```
 
@@ -165,8 +165,8 @@ L1 Engineering Correctness ──▶ L2 Goal Achievement ──▶ L3 Optimizati
 
 | Input | Description | Required |
 |-------|-------------|----------|
-| Execution Trace | Tool calls, output, errors | ✅ Yes |
-| Execution Goal | Original prompt | ✅ Yes |
+| Execution Trace | Tool calls, output, errors |  Yes |
+| Execution Goal | Original prompt |  Yes |
 | Implementation Reference | Skill/Tool definition | Optional |
 | Agent Implementation | Agent source | Optional |
 
@@ -193,7 +193,7 @@ L1 Engineering Correctness ──▶ L2 Goal Achievement ──▶ L3 Optimizati
 - Are key steps executed?
 - How is output format/quality?
 
-**Rating:** ✓✓✓ Excellent / ✓✓ Good / ✓ Pass / ✗ Fail
+**Rating:**  Excellent /  Good /  Pass /  Fail
 
 #### L3: Optimization Space
 
@@ -237,13 +237,13 @@ Step 7: (Optional) Generate execution plan if user adopts suggestions
 | Analysis Target | {Skill/Tool/Agent} |
 | Execution Goal | "{prompt}" |
 
-### L1: Engineering Correctness ✓/✗
+### L1: Engineering Correctness /
 [Check result table]
 
-### L2: Goal Achievement ✓✓
+### L2: Goal Achievement 
 [Achievement status + Rating]
 
-### L3: Optimization Space 💡
+### L3: Optimization Space 
 [Suggestions by dimension]
 
 ### Summary

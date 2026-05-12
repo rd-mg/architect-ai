@@ -123,7 +123,7 @@ func renderCompleteFailed(data CompletePayload) string {
 	b.WriteString(styles.HeadingStyle.Render("Failed steps"))
 	b.WriteString("\n")
 	for _, step := range data.FailedSteps {
-		b.WriteString("  " + styles.ErrorStyle.Render("✗ "+step.ID))
+		b.WriteString("  " + styles.ErrorStyle.Render(" "+step.ID))
 		b.WriteString("\n")
 		lines := strings.Split(step.Error, "\n")
 		if len(lines) > maxErrorLines {

@@ -6,13 +6,13 @@
 
 | Symbol | Meaning | Action |
 |--------|---------|--------|
-| ✅ | Pass | No action needed |
-| ⚠️ | Warning | Consider improving |
-| ❌ | Fail | Must fix |
+|  | Pass | No action needed |
+|  | Warning | Consider improving |
+|  | Fail | Must fix |
 
 ---
 
-## 📁 Structure (S1-S4)
+##  Structure (S1-S4)
 
 ### S1: SKILL.md Exists
 
@@ -20,8 +20,8 @@
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | File exists and named exactly `SKILL.md` (case-sensitive) |
-| ❌ Fail | File missing or named incorrectly (SKILL.MD, skill.md, etc.) |
+|  Pass | File exists and named exactly `SKILL.md` (case-sensitive) |
+|  Fail | File missing or named incorrectly (SKILL.MD, skill.md, etc.) |
 
 **Detection:** Programmatic (file system check)
 
@@ -31,9 +31,9 @@
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | kebab-case (e.g., `my-skill`, `skill-reviewer`) |
-| ⚠️ Warn | Contains underscore (e.g., `my_skill`) - works but non-standard |
-| ❌ Fail | Contains spaces or capitals (e.g., `My Skill`, `MySkill`) |
+|  Pass | kebab-case (e.g., `my-skill`, `skill-reviewer`) |
+|  Warn | Contains underscore (e.g., `my_skill`) - works but non-standard |
+|  Fail | Contains spaces or capitals (e.g., `My Skill`, `MySkill`) |
 
 **Detection:** Programmatic (regex: `^[a-z0-9]+(-[a-z0-9]+)*$`)
 
@@ -43,9 +43,9 @@
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Uses standard optional directories: `scripts/`, `references/`, `assets/` |
-| ⚠️ Warn | Missing optional directories (acceptable if not needed) |
-| ❌ Fail | Contains forbidden `README.md` in skill folder |
+|  Pass | Uses standard optional directories: `scripts/`, `references/`, `assets/` |
+|  Warn | Missing optional directories (acceptable if not needed) |
+|  Fail | Contains forbidden `README.md` in skill folder |
 
 **Detection:** Programmatic (directory listing)
 
@@ -64,14 +64,14 @@ your-skill/
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Folder name and `name` field are identical |
-| ⚠️ Warn | Different but both valid kebab-case (works but confusing) |
+|  Pass | Folder name and `name` field are identical |
+|  Warn | Different but both valid kebab-case (works but confusing) |
 
 **Detection:** Programmatic (string comparison)
 
 ---
 
-## 📋 Format (F1-F5)
+##  Format (F1-F5)
 
 ### F1: YAML Frontmatter Delimiters
 
@@ -79,8 +79,8 @@ your-skill/
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Starts with `---` and has closing `---` |
-| ❌ Fail | Missing delimiters or malformed |
+|  Pass | Starts with `---` and has closing `---` |
+|  Fail | Missing delimiters or malformed |
 
 **Detection:** Programmatic (regex: `^---\n[\s\S]*?\n---`)
 
@@ -90,22 +90,22 @@ your-skill/
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Exists, kebab-case, no spaces, no capitals |
-| ⚠️ Warn | Exists but has minor format issues |
-| ❌ Fail | Missing or completely invalid |
+|  Pass | Exists, kebab-case, no spaces, no capitals |
+|  Warn | Exists but has minor format issues |
+|  Fail | Missing or completely invalid |
 
 **Detection:** Programmatic (YAML parse + regex)
 
 **Valid Examples:**
 ```yaml
-name: skill-reviewer      # ✅
-name: my-cool-skill       # ✅
+name: skill-reviewer      # 
+name: my-cool-skill       # 
 ```
 
 **Invalid Examples:**
 ```yaml
-name: Skill Reviewer      # ❌ spaces and capitals
-name: skill_reviewer      # ⚠️ underscore
+name: Skill Reviewer      #  spaces and capitals
+name: skill_reviewer      #  underscore
 ```
 
 ### F3: description Field
@@ -114,9 +114,9 @@ name: skill_reviewer      # ⚠️ underscore
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Exists and < 1024 characters |
-| ⚠️ Warn | Exists but close to limit (> 900 characters) |
-| ❌ Fail | Missing or exceeds 1024 characters |
+|  Pass | Exists and < 1024 characters |
+|  Warn | Exists but close to limit (> 900 characters) |
+|  Fail | Missing or exceeds 1024 characters |
 
 **Detection:** Programmatic (YAML parse + length check)
 
@@ -126,8 +126,8 @@ name: skill_reviewer      # ⚠️ underscore
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | No XML angle brackets `< >`, no reserved prefixes |
-| ❌ Fail | Contains `<` or `>` or uses reserved name prefixes |
+|  Pass | No XML angle brackets `< >`, no reserved prefixes |
+|  Fail | Contains `<` or `>` or uses reserved name prefixes |
 
 **Detection:** Programmatic (regex scan)
 
@@ -141,8 +141,8 @@ name: skill_reviewer      # ⚠️ underscore
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | `license`, `metadata`, `compatibility` formatted correctly |
-| ⚠️ Warn | Present but minor format issues |
+|  Pass | `license`, `metadata`, `compatibility` formatted correctly |
+|  Warn | Present but minor format issues |
 | N/A | Optional fields not used |
 
 **Detection:** Programmatic (YAML validation)
@@ -164,14 +164,14 @@ metadata:
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Exists and is a clear, short natural language phrase |
-| ❌ Fail | Missing or empty |
+|  Pass | Exists and is a clear, short natural language phrase |
+|  Fail | Missing or empty |
 
 **Detection:** Programmatic (YAML parse)
 
 ---
 
-## 📝 Content (C1-C8)
+##  Content (C1-C8)
 
 ### C1: Description Contains WHAT
 
@@ -179,9 +179,9 @@ metadata:
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Clear statement of purpose/function |
-| ⚠️ Warn | Vague (e.g., "Helps with projects") |
-| ❌ Fail | No purpose statement |
+|  Pass | Clear statement of purpose/function |
+|  Warn | Vague (e.g., "Helps with projects") |
+|  Fail | No purpose statement |
 
 **Detection:** Model-based (semantic analysis)
 
@@ -203,9 +203,9 @@ description: "Use when needed."            # No WHAT
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Clear trigger phrases (e.g., "Use when user asks to...") |
-| ⚠️ Warn | Has trigger intent but not specific |
-| ❌ Fail | No trigger description |
+|  Pass | Clear trigger phrases (e.g., "Use when user asks to...") |
+|  Warn | Has trigger intent but not specific |
+|  Fail | No trigger description |
 
 **Detection:** Model-based (pattern matching + semantic analysis)
 
@@ -227,9 +227,9 @@ description: "For projects."               # No trigger phrases
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Specific steps, clear parameters, expected outputs |
-| ⚠️ Warn | Basically usable but could be more specific |
-| ❌ Fail | Vague (e.g., "validate properly", "handle errors") |
+|  Pass | Specific steps, clear parameters, expected outputs |
+|  Warn | Basically usable but could be more specific |
+|  Fail | Vague (e.g., "validate properly", "handle errors") |
 
 **Detection:** Model-based (instruction quality analysis)
 
@@ -252,9 +252,9 @@ Validate the data before proceeding.
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Has Troubleshooting section or error handling instructions |
-| ⚠️ Warn | Brief mention of errors |
-| ❌ Fail | No error handling |
+|  Pass | Has Troubleshooting section or error handling instructions |
+|  Warn | Brief mention of errors |
+|  Fail | No error handling |
 
 **Detection:** Model-based (section/keyword scan + semantic analysis)
 
@@ -273,9 +273,9 @@ Solution: Rename to SKILL.md (case-sensitive)
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Has complete examples (input → action → result) |
-| ⚠️ Warn | Has examples but incomplete |
-| ❌ Fail | No examples |
+|  Pass | Has complete examples (input → action → result) |
+|  Warn | Has examples but incomplete |
+|  Fail | No examples |
 
 **Detection:** Model-based (section scan + completeness check)
 
@@ -299,9 +299,9 @@ Result: Review report with pass/warn/fail status
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | All referenced files exist and paths are correct |
-| ⚠️ Warn | Some links may be broken |
-| ❌ Fail | Critical links broken or missing |
+|  Pass | All referenced files exist and paths are correct |
+|  Warn | Some links may be broken |
+|  Fail | Critical links broken or missing |
 
 **Detection:** Model-based (link extraction + file existence check)
 
@@ -311,9 +311,9 @@ Result: Review report with pass/warn/fail status
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | SKILL.md focused on core instructions, details in references/ |
-| ⚠️ Warn | SKILL.md is long (> 200 lines) but acceptable |
-| ❌ Fail | SKILL.md is bloated (> 300 lines), should split |
+|  Pass | SKILL.md focused on core instructions, details in references/ |
+|  Warn | SKILL.md is long (> 200 lines) but acceptable |
+|  Fail | SKILL.md is bloated (> 300 lines), should split |
 
 **Detection:** Model-based (line count + content analysis)
 
@@ -330,9 +330,9 @@ Level 3: references/ files (loaded on demand)
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Uses CRITICAL/IMPORTANT markers, key points at top |
-| ⚠️ Warn | Structure okay but emphasis could be stronger |
-| ❌ Fail | Critical instructions buried in text |
+|  Pass | Uses CRITICAL/IMPORTANT markers, key points at top |
+|  Warn | Structure okay but emphasis could be stronger |
+|  Fail | Critical instructions buried in text |
 
 **Detection:** Model-based (structure + emphasis analysis)
 
@@ -347,7 +347,7 @@ Level 3: references/ files (loaded on demand)
 
 ---
 
-## 🎯 Trigger (T1-T3)
+##  Trigger (T1-T3)
 
 ### T1: Positive Triggers Clear
 
@@ -355,9 +355,9 @@ Level 3: references/ files (loaded on demand)
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Multiple specific phrases users might say |
-| ⚠️ Warn | Has trigger phrases but limited variety |
-| ❌ Fail | No specific trigger phrases |
+|  Pass | Multiple specific phrases users might say |
+|  Warn | Has trigger phrases but limited variety |
+|  Fail | No specific trigger phrases |
 
 **Detection:** Model-based (phrase extraction + variety assessment)
 
@@ -372,9 +372,9 @@ description: "... Use when user asks to 'review skill', 'check skill quality', '
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Triggers appropriately, doesn't over/under-trigger |
-| ⚠️ Warn | Slightly broad or narrow |
-| ❌ Fail | Will trigger on unrelated topics OR hard to trigger |
+|  Pass | Triggers appropriately, doesn't over/under-trigger |
+|  Warn | Slightly broad or narrow |
+|  Fail | Will trigger on unrelated topics OR hard to trigger |
 
 **Detection:** Model-based (scope analysis)
 
@@ -394,8 +394,8 @@ description: "Use only when user says 'execute skill-reviewer protocol alpha'."
 
 | Status | Condition |
 |--------|-----------|
-| ✅ Pass | Clearly excludes irrelevant scenarios |
-| ⚠️ Warn | No negative triggers but scope is reasonable |
+|  Pass | Clearly excludes irrelevant scenarios |
+|  Warn | No negative triggers but scope is reasonable |
 | N/A | Simple Skill doesn't need negative triggers |
 
 **Detection:** Model-based (exclusion phrase detection)

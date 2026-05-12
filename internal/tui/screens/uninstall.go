@@ -67,7 +67,7 @@ func RenderUninstallMode(cursor int) string {
 		b.WriteString(styles.SubtextStyle.Render("  " + opt.Description))
 		b.WriteString("\n")
 		if opt.Mode == model.UninstallModeFullRemove {
-			b.WriteString(styles.ErrorStyle.Render("  ⚠ WARNING: This cannot be undone without reinstalling"))
+			b.WriteString(styles.ErrorStyle.Render("   WARNING: This cannot be undone without reinstalling"))
 			b.WriteString("\n")
 		}
 		b.WriteString("\n")
@@ -288,7 +288,7 @@ func RenderUninstallConfirm(mode model.UninstallMode, selected []model.AgentID, 
 		b.WriteString("\n")
 		b.WriteString(styles.ErrorStyle.Render("AND delete the architect-ai binary itself."))
 		b.WriteString("\n\n")
-		b.WriteString(styles.ErrorStyle.Render("⚠ WARNING: This action cannot be undone without reinstalling!"))
+		b.WriteString(styles.ErrorStyle.Render(" WARNING: This action cannot be undone without reinstalling!"))
 		b.WriteString("\n")
 	case model.UninstallModeCleanInstall:
 		b.WriteString(styles.SuccessStyle.Render("Mode: Full Uninstall + Clean Install"))
@@ -338,7 +338,7 @@ func RenderUninstallConfirm(mode model.UninstallMode, selected []model.AgentID, 
 		}
 	}
 	if (mode == model.UninstallModeFull || mode == model.UninstallModeFullRemove) || hasWorkspaceAssets {
-		b.WriteString(styles.WarningStyle.Render("⚠ Workspace Assets Warning:"))
+		b.WriteString(styles.WarningStyle.Render(" Workspace Assets Warning:"))
 		b.WriteString("\n")
 		b.WriteString(styles.SubtextStyle.Render("  Removing SDD or Skills will delete workspace-scoped files like:"))
 		b.WriteString("\n")
@@ -368,7 +368,7 @@ func RenderUninstallResult(result componentuninstall.Result, err error, mode mod
 	b.WriteString("\n\n")
 
 	if err != nil {
-		b.WriteString(styles.ErrorStyle.Render("✗ Uninstall failed"))
+		b.WriteString(styles.ErrorStyle.Render(" Uninstall failed"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.HeadingStyle.Render("Error:"))
 		b.WriteString("\n")
@@ -381,7 +381,7 @@ func RenderUninstallResult(result componentuninstall.Result, err error, mode mod
 			b.WriteString(styles.SubtextStyle.Render(result.Manifest.DisplayLabel()))
 		}
 	} else {
-		b.WriteString(styles.SuccessStyle.Render("✓ Uninstall complete"))
+		b.WriteString(styles.SuccessStyle.Render(" Uninstall complete"))
 		b.WriteString("\n\n")
 		if result.Manifest.ID != "" {
 			b.WriteString(styles.SubtextStyle.Render("Backup: "))
@@ -455,13 +455,13 @@ func RenderUninstallResult(result componentuninstall.Result, err error, mode mod
 		if mode == model.UninstallModeCleanInstall {
 			b.WriteString("\n\n")
 			if syncErr != nil {
-				b.WriteString(styles.ErrorStyle.Render("✗ Clean install sync failed"))
+				b.WriteString(styles.ErrorStyle.Render(" Clean install sync failed"))
 				b.WriteString("\n")
 				b.WriteString(styles.ErrorStyle.Render("  " + syncErr.Error()))
 				b.WriteString("\n\n")
 				b.WriteString(styles.WarningStyle.Render("You can run 'architect-ai sync' manually to retry."))
 			} else {
-				b.WriteString(styles.SuccessStyle.Render("✓ Clean install sync complete"))
+				b.WriteString(styles.SuccessStyle.Render(" Clean install sync complete"))
 				b.WriteString("\n")
 				b.WriteString(styles.UnselectedStyle.Render(fmt.Sprintf("Synced files: %d", syncFilesChanged)))
 			}

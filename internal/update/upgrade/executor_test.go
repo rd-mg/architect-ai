@@ -1045,10 +1045,10 @@ func TestConfigPathsForBackup_ExcludesRuntimeDirs(t *testing.T) {
 
 // TestExecute_SkippedUpgradeDoesNotRenderFailureMarker verifies that when a tool
 // upgrade is intentionally skipped (e.g. Windows manual fallback), the progress
-// output shown to the user does NOT contain the ✗ failure marker.
+// output shown to the user does NOT contain the  failure marker.
 //
 // RED: This test must fail before the fix because the executor calls Finish(false)
-// for any non-success result, which renders ✗ for skipped/manual outcomes.
+// for any non-success result, which renders  for skipped/manual outcomes.
 func TestExecute_SkippedUpgradeDoesNotRenderFailureMarker(t *testing.T) {
 	origRunProcess := runProcess
 	t.Cleanup(func() { runProcess = origRunProcess })
@@ -1072,9 +1072,9 @@ func TestExecute_SkippedUpgradeDoesNotRenderFailureMarker(t *testing.T) {
 
 	got := progressBuf.String()
 
-	// The spinner output for a skipped/manual tool must NOT show ✗.
-	if strings.Contains(got, "✗") {
-		t.Errorf("Execute() progress output for skipped upgrade contains '✗' (failure marker):\n%s\nWant skip marker '--' or '⊘' instead", got)
+	// The spinner output for a skipped/manual tool must NOT show [FAIL].
+	if strings.Contains(got, "[FAIL]") {
+		t.Errorf("Execute() progress output for skipped upgrade contains '[FAIL]' (failure marker):\n%s\nWant skip marker '--' or '⊘' instead", got)
 	}
 
 	// The spinner output for a skipped/manual tool should show a skip marker.

@@ -19,11 +19,11 @@ Default (if user doesn't specify): if Engram is available → `engram`. Otherwis
 
 | Capability | `engram` | `openspec` | `hybrid` | `none` |
 |------------|----------|------------|----------|--------|
-| Cross-session recovery | ✅ | ❌ (needs git) | ✅ | ❌ |
-| Compaction survival | ✅ | ❌ | ✅ | ❌ |
-| Shareable with team | ❌ (local DB) | ✅ (committed files) | ✅ (files) | ❌ |
-| Full iteration history | ❌ (upsert overwrites) | ✅ (git history) | ✅ (files + git) | ❌ |
-| Audit trail (archive) | Partial (report only) | ✅ (full folder) | ✅ (both) | ❌ |
+| Cross-session recovery |  |  (needs git) |  |  |
+| Compaction survival |  |  |  |  |
+| Shareable with team |  (local DB) |  (committed files) |  (files) |  |
+| Full iteration history |  (upsert overwrites) |  (git history) |  (files + git) |  |
+| Audit trail (archive) | Partial (report only) |  (full folder) |  (both) |  |
 | Project files created | Never | Yes | Yes | Never |
 
 ### `engram` mode limitation

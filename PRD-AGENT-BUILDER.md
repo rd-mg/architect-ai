@@ -77,7 +77,7 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
 │     Sync configs                                                 │
 │     Upgrade + Sync                                               │
 │     Configure models                                             │
-│   ★ Create your own Agent                                        │
+│    Create your own Agent                                        │
 │     Manage backups                                               │
 │     Quit                                                         │
 │                                                                  │
@@ -97,7 +97,7 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
 │  Which installed agent should    │
 │  help you build your sub-agent?  │
 │                                  │
-│  ★ Claude Code (installed)       │  ← Uses claude --print to generate
+│   Claude Code (installed)       │  ← Uses claude --print to generate
 │  ○ OpenCode (installed)          │  ← Uses opencode run to generate
 │  ○ Gemini CLI (installed)        │  ← Uses gemini -p to generate
 │  ○ Codex (installed)             │  ← Uses codex exec to generate
@@ -139,7 +139,7 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
 │  the SDD (Spec-Driven Dev)       │
 │  workflow?                       │
 │                                  │
-│  ★ Standalone                    │  ← Independent skill, not part of SDD
+│   Standalone                    │  ← Independent skill, not part of SDD
 │  ○ New SDD Phase                 │  ← Adds as a new phase in the pipeline
 │  ○ Support for existing phase    │  ← Augments an existing SDD phase
 │                                  │
@@ -159,7 +159,7 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
            │   │  ○ explore                    │
            │   │  ○ propose                    │
            │   │  ○ spec                       │
-           │   │  ★ design                     │
+           │   │   design                     │
            │   │  ○ tasks                      │
            │   │  ○ apply                      │
            │   │  ○ verify                     │
@@ -172,7 +172,7 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
            │   │  ○ explore                    │
            │   │  ○ propose                    │
            │   │  ○ spec                       │
-           │   │  ★ design                     │
+           │   │   design                     │
            │   │  ○ tasks                      │
            │   │  ○ apply                      │
            │   │  ○ verify                     │
@@ -189,7 +189,7 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
 │  [████████████░░░░] 75%          │
 │                                  │
 │  ◌ Analyzing your description    │
-│  ✓ Generating skill definition   │
+│   Generating skill definition   │
 │  ◌ Creating trigger patterns     │
 │  ◌ Building agent instructions   │
 └──────────┬──────────────────────┘
@@ -203,7 +203,7 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
 │               accessibility compliance                       │
 │  Trigger: When reviewing React/JSX files for accessibility   │
 │  SDD: Supports "design" phase                                │
-│  Engram: ✓ (reads project patterns, saves a11y decisions)    │
+│  Engram:  (reads project patterns, saves a11y decisions)    │
 │                                                              │
 │  ── Generated Skill ──────────────────────────────────────   │
 │  │ # A11y Reviewer                                       │   │
@@ -241,10 +241,10 @@ The Agent Builder is a **top-level menu option** on the Welcome screen, alongsid
 │                                  │
 │  Installing "a11y-reviewer"...   │
 │                                  │
-│  ✓ Claude Code — skill installed │
-│  ✓ OpenCode — skill installed    │
-│  ✓ Skill registered in catalog   │
-│  ✓ SDD integration configured   │
+│   Claude Code — skill installed │
+│   OpenCode — skill installed    │
+│   Skill registered in catalog   │
+│   SDD integration configured   │
 │                                  │
 │  Done! Your agent is ready.      │
 │                                  │

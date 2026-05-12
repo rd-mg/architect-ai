@@ -41,9 +41,9 @@ func RenderInstalling(progress InstallProgress, spinner string) string {
 		var icon string
 		switch item.Status {
 		case "succeeded":
-			icon = styles.SuccessStyle.Render("✓")
+			icon = styles.SuccessStyle.Render("")
 		case "failed":
-			icon = styles.ErrorStyle.Render("✗")
+			icon = styles.ErrorStyle.Render("")
 		case "running":
 			icon = styles.WarningStyle.Render(spinner)
 		default:

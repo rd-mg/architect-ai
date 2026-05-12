@@ -21,11 +21,11 @@ This skill defines architectural mandates for Odoo 19 native AI integration usin
 
 ### A. Exposing Server Actions as AI Tools
 ```python
-# ❌ LEGACY: External API approach / Returning data
+#  LEGACY: External API approach / Returning data
 def get_info(self):
     return "Some data"
 
-# ✅ v19 STANDARD: Native AI Server Action
+#  v19 STANDARD: Native AI Server Action
 # XML Definition: <field name="use_in_ai" eval="True"/>
 # Python Code:
 ai['result'] = f"Info: {self.get_info()}"
@@ -33,11 +33,11 @@ ai['result'] = f"Info: {self.get_info()}"
 
 ### B. AI Computed Fields
 ```python
-# ❌ BAD: Manual logic in Python
+#  BAD: Manual logic in Python
 def compute_summary(self):
     self.summary = openai.create_summary(self.description)
 
-# ✅ v19 STANDARD: Declarative AI Automation
+#  v19 STANDARD: Declarative AI Automation
 # Server Action Field:
 # <field name="evaluation_type">ai_computed</field>
 # <field name="ai_update_prompt">Summarize this text: /field</field>
@@ -69,10 +69,10 @@ The `odoo-auth-passkeys-19` skill defines the architectural mandates for WebAuth
 
 ### A. Frontend WebAuthn Flow
 ```javascript
-// ❌ LEGACY: Manual implementation of browser crypto APIs
+//  LEGACY: Manual implementation of browser crypto APIs
 navigator.credentials.create(...) // Risk of implementation errors
 
-// ✅ v19 STANDARD: Odoo native wrapper (simplewebauthn)
+//  v19 STANDARD: Odoo native wrapper (simplewebauthn)
 const serverOptions = await rpc("/auth/passkey/start-auth");
 const auth = await passkeyLib.startAuthentication(serverOptions);
 this.model.root.update({ password: JSON.stringify(auth) });
@@ -80,7 +80,7 @@ this.model.root.update({ password: JSON.stringify(auth) });
 
 ### B. Backend Identity Verification
 ```xml
-<!-- ✅ v19 STANDARD: Integration in IdentityCheck views -->
+<!--  v19 STANDARD: Integration in IdentityCheck views -->
 <xpath expr="//footer/button[@id='password_confirm']" position="before">
     <button string="Use Passkey" type="object" name="run_check" class="btn btn-primary" 
             invisible="auth_method != 'webauthn'" context="{'password': password}"/>
@@ -113,10 +113,10 @@ The `odoo-hoot-testing-19` skill defines the architectural mandates for the new 
 
 ### A. Test Structure
 ```javascript
-// ❌ LEGACY: QUnit approach (deprecated)
+//  LEGACY: QUnit approach (deprecated)
 QUnit.test("my test", async (assert) => { ... });
 
-// ✅ v19 STANDARD: Hoot structure
+//  v19 STANDARD: Hoot structure
 import { describe, expect, test } from "@odoo/hoot";
 
 test("My Component Test", async () => {
@@ -126,11 +126,11 @@ test("My Component Test", async () => {
 
 ### B. Reactive Reactivity Flush
 ```javascript
-// ❌ LEGACY: Assuming sync DOM updates
+//  LEGACY: Assuming sync DOM updates
 await click(".o_save");
 expect(".o_form").toHaveText("Saved");
 
-// ✅ v19 STANDARD: Explicitly wait for OWL reactivity
+//  v19 STANDARD: Explicitly wait for OWL reactivity
 await click(".o_save");
 await animationFrame(); // Flush reactive updates
 expect(".o_form").toHaveText("Saved");
@@ -165,7 +165,7 @@ Avoid using physical hardware in tests. Use Dummies and MockServices to simulate
 Simulate success/failure with `setTimeout` and `Promise.resolve()` in mock services.
 
 ```javascript
-// ✅ GOOD: Mocking IoT Service
+//  GOOD: Mocking IoT Service
 class IotHttpServiceDummy {
     action(iotBoxId, deviceId, data, onSuccess) {
         setTimeout(() => onSuccess({ 
@@ -214,10 +214,10 @@ The `odoo-orm-extreme-19` skill defines the architectural mandates for ORM effic
 
 ### A. Declarative Indexing
 ```python
-# ❌ LEGACY: Field-level index=True
+#  LEGACY: Field-level index=True
 name = fields.Char(index=True)
 
-# ✅ v19 STANDARD: Declarative Index
+#  v19 STANDARD: Declarative Index
 class MyModel(models.Model):
     _indexes = [
         models.Index(name='custom_idx', expressions=['company_id', 'state'])
@@ -226,10 +226,10 @@ class MyModel(models.Model):
 
 ### B. Aggregation (The Performance Standard)
 ```python
-# ❌ LEGACY: Expensive UI-metadata aggregation
+#  LEGACY: Expensive UI-metadata aggregation
 results = self.env['model'].read_group(domain, ['amount:sum'], ['partner_id'])
 
-# ✅ v19 STANDARD: Efficient Tuple Aggregation
+#  v19 STANDARD: Efficient Tuple Aggregation
 results = self.env['model']._read_group(
     domain, 
     groupby=['partner_id'], 
@@ -262,11 +262,11 @@ The `odoo-security-hardening-19` skill defines the architectural mandates for se
 
 ### A. Blocking RPC Access
 ```python
-# ❌ LEGACY: Underscore prefix is no longer sufficient for security.
+#  LEGACY: Underscore prefix is no longer sufficient for security.
 def _sensitive_action(self):
     pass
 
-# ✅ v19 STANDARD: Explicit security gating
+#  v19 STANDARD: Explicit security gating
 from odoo import api
 
 @api.private
@@ -277,13 +277,13 @@ def _sensitive_action(self):
 
 ### B. Safe User Creation
 ```python
-# ❌ LEGACY: Privilege escalation risk (Blocked in Odoo 19)
+#  LEGACY: Privilege escalation risk (Blocked in Odoo 19)
 user = self.env['res.users'].create({
     'name': 'User',
     'groups_id': [Command.link(self.env.ref('base.group_system').id)]
 })
 
-# ✅ v19 STANDARD: Secure two-step approach
+#  v19 STANDARD: Secure two-step approach
 user = self.env['res.users'].create({'name': 'User'})
 user.write({'groups_id': [Command.link(self.env.ref('base.group_system').id)]})
 ```
@@ -349,12 +349,12 @@ The `odoo-webhooks-automation-19` skill defines patterns for native webhook inge
 
 ### A. Ingestion Pattern
 ```python
-# ❌ LEGACY: Manual HTTP Controller
+#  LEGACY: Manual HTTP Controller
 @http.route('/api/ingest', type='json', auth='none')
 def ingest(self, **kw):
     # Logic...
 
-# ✅ v19 STANDARD: Native base.automation
+#  v19 STANDARD: Native base.automation
 # Automation Rule Definition:
 automation = self.env["base.automation"].create({
     "name": "Webhook Ingest",
@@ -366,10 +366,10 @@ automation = self.env["base.automation"].create({
 
 ### B. Payload Access
 ```python
-# ❌ LEGACY: Parsing request objects manually
+#  LEGACY: Parsing request objects manually
 data = json.loads(request.httprequest.data)
 
-# ✅ v19 STANDARD: Direct native payload access
+#  v19 STANDARD: Direct native payload access
 # Access 'payload' directly in the action scope
 amount = payload.get('monto') 
 ```
@@ -403,7 +403,7 @@ Agents MUST NOT implement direct `RTCPeerConnection` for IoT. Use `IotHttpServic
 Always use the service orchestrator which automatically degrades connection type if WebRTC fails.
 
 ```javascript
-// ✅ GOOD: Pattern for IotHttpService
+//  GOOD: Pattern for IotHttpService
 async setup({ iot_http }) {
     this.iot = iot_http;
 }
@@ -424,7 +424,7 @@ async sendAction(iotBoxId, deviceId, data) {
 Large industrial data payloads MUST be chunked if they exceed `sctp.maxMessageSize`.
 
 ```javascript
-// ✅ GOOD: Use chunking patterns defined in IotWebRtc
+//  GOOD: Use chunking patterns defined in IotWebRtc
 if (messageString.length >= rtcConnection.connection.sctp.maxMessageSize) {
     this._sendChunkedMessage(rtcConnection, messageString);
 } else {

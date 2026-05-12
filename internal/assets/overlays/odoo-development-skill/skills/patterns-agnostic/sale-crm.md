@@ -77,14 +77,14 @@ def get_price(self, product, pricelist, qty=1):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER hardcode currency conversion.
-# ✅ CORRECT: Use from_currency._convert(amount, to_currency, company, date).
+#  NEVER hardcode currency conversion.
+#  CORRECT: Use from_currency._convert(amount, to_currency, company, date).
 
-# ❌ NEVER use attrs= in v17+ views.
-# ✅ CORRECT: Use invisible="state != 'draft'" directly on the field/button.
+#  NEVER use attrs= in v17+ views.
+#  CORRECT: Use invisible="state != 'draft'" directly on the field/button.
 
-# ❌ NEVER bypass pricelists for customer pricing.
-# ✅ CORRECT: Always use partner.property_product_pricelist.
+#  NEVER bypass pricelists for customer pricing.
+#  CORRECT: Always use partner.property_product_pricelist.
 ```
 
 ---
@@ -93,7 +93,7 @@ def get_price(self, product, pricelist, qty=1):
 
 | Feature | v14-v16 | v17 | v18 | v19 |
 |---------|---------|-----|-----|-----|
-| `attrs=` | ✅ | ❌ | ❌ | ❌ |
-| `<tree>` | ✅ | ✅ | `<list>` | `<list>` |
+| `attrs=` |  |  |  |  |
+| `<tree>` |  |  | `<list>` | `<list>` |
 | Tracking | `track_visibility`| `tracking=True` | `tracking=True` | `tracking=True` |
 | Multi-company| `company_id` | `company_id` | `check_company` | `check_company` |

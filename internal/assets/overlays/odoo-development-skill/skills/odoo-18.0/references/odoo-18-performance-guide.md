@@ -272,11 +272,11 @@ for matching_number, account, lines in self._read_group(
 |---------|-----------------|----------------|
 | Return type | List of tuples | List of dicts |
 | API style | `domain, groupby, aggregates` | `domain, fields, groupby` |
-| Metadata | ❌ No `__domain`, `__context` | ✅ Includes metadata |
-| Lazy grouping | ❌ Not supported | ✅ Supported |
-| Empty group fill | ❌ Not supported | ✅ Supported |
-| Recordsets | ✅ Proper browse records | ✅ Proper browse records |
-| Used internally | ✅ Core method | Wrapper that calls `_read_group()` |
+| Metadata |  No `__domain`, `__context` |  Includes metadata |
+| Lazy grouping |  Not supported |  Supported |
+| Empty group fill |  Not supported |  Supported |
+| Recordsets |  Proper browse records |  Proper browse records |
+| Used internally |  Core method | Wrapper that calls `_read_group()` |
 | Use case | Data processing, internal logic | UI components, reports |
 
 **Key Insight**: `_read_group()` is the **core method** that `read_group()` calls internally (see `odoo/models.py:2888`). Both return proper recordsets for relational fields.

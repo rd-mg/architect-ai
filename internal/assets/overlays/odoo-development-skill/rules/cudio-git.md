@@ -200,12 +200,12 @@ Resolves task-1234
 
 ## Forbidden Patterns
 
-- ❌ Co-Authored-By trailers (AI attribution)
-- ❌ Merge commits (use squash and merge)
-- ❌ Force-pushes to shared branches (staging, production)
-- ❌ Committing directly to staging or production
-- ❌ Branch names without task IDs (when a task ID exists)
-- ❌ Commit messages without tags
+-  Co-Authored-By trailers (AI attribution)
+-  Merge commits (use squash and merge)
+-  Force-pushes to shared branches (staging, production)
+-  Committing directly to staging or production
+-  Branch names without task IDs (when a task ID exists)
+-  Commit messages without tags
 
 ## Compact Rule Summary (for skill registry)
 

@@ -47,12 +47,12 @@ def get_stock_at_location(self, product, location):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER manually update qty_available: it is a computed field.
-# ✅ CORRECT: Use inventory adjustments or stock.move to change stock.
+#  NEVER manually update qty_available: it is a computed field.
+#  CORRECT: Use inventory adjustments or stock.move to change stock.
 
-# ❌ NEVER bypass the picking state machine (draft -> waiting -> assigned -> done).
+#  NEVER bypass the picking state machine (draft -> waiting -> assigned -> done).
 
-# ❌ NEVER use product.qty_available without location context if you need specific site stock.
+#  NEVER use product.qty_available without location context if you need specific site stock.
 ```
 
 ---

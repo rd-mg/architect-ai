@@ -2402,7 +2402,7 @@ func TestDependencyTreeEnterBackNavigatesToStrictTDD(t *testing.T) {
 // the "Back" option of ScreenModelPicker navigates to ScreenSDDMode (NOT
 // StrictTDD). ModelPicker sits between SDDMode and StrictTDD in the forward
 // flow: SDDMode → ModelPicker → StrictTDD. Back must go to SDDMode to avoid
-// a loop between ModelPicker ↔ StrictTDD.
+// a loop between ModelPicker  StrictTDD.
 func TestModelPickerEnterBackNavigatesToSDDMode(t *testing.T) {
 	m := NewModel(system.DetectionResult{}, "dev")
 	m.Screen = ScreenModelPicker

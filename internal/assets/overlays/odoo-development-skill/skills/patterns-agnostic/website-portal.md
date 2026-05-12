@@ -74,13 +74,13 @@ def public_api(self, **kwargs):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER use auth='none' for customer data routes — use auth='user'.
+#  NEVER use auth='none' for customer data routes — use auth='user'.
 
-# ❌ NEVER forget sudo() in public/website routes — context has no user by default.
+#  NEVER forget sudo() in public/website routes — context has no user by default.
 
-# ❌ NEVER return None in type='json' routes — always return a dict.
+#  NEVER return None in type='json' routes — always return a dict.
 
-# ❌ NEVER disable csrf=False on HTML forms — use type='json' for AJAX instead.
+#  NEVER disable csrf=False on HTML forms — use type='json' for AJAX instead.
 ```
 
 ---

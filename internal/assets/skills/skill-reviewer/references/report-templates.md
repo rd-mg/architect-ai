@@ -23,8 +23,8 @@ Suitable for quick troubleshooting, fits on one screen.
 
 | Layer | Result | One Sentence |
 |-------|--------|--------------|
-| L1 Engineering | ✓/✗ | {Issue or pass} |
-| L2 Effect | ✓✓/✓/✗ | {Achievement status} |
+| L1 Engineering | / | {Issue or pass} |
+| L2 Effect | // | {Achievement status} |
 | L3 Optimization | N items | {Main direction} |
 
 ### Key Issues
@@ -57,16 +57,16 @@ Suitable for formal analysis, complete structure.
 
 ---
 
-### L1: Engineering Correctness ✓/✗
+### L1: Engineering Correctness /
 
 | Check Item | Status | Details |
 |------------|--------|---------|
-| Tool Calls | ✓/✗ | {Success/failure count, error info} |
-| Script Execution | ✓/✗ | {exit code, error output} |
-| Code Quality | ✓/✗/- | {linter error count} |
-| Execution Flow | ✓/✗ | {complete/interrupted/loop} |
+| Tool Calls | / | {Success/failure count, error info} |
+| Script Execution | / | {exit code, error output} |
+| Code Quality | //- | {linter error count} |
+| Execution Flow | / | {complete/interrupted/loop} |
 
-**L1 Conclusion**: ✓ Pass / ✗ Fail
+**L1 Conclusion**:  Pass /  Fail
 
 **Blocking Issues**: (if any)
 ```
@@ -77,7 +77,7 @@ Suitable for formal analysis, complete structure.
 
 ---
 
-### L2: Goal Achievement ✓✓✓/✓✓/✓/✗
+### L2: Goal Achievement ///
 
 **Execution Goal**: 
 > {User's original prompt}
@@ -89,27 +89,27 @@ Suitable for formal analysis, complete structure.
 
 | Design Step | Actual Execution | Notes |
 |-------------|------------------|-------|
-| Step 1: {description} | ✓/✗/△ | {explanation} |
-| Step 2: {description} | ✓/✗/△ | {explanation} |
-| Step 3: {description} | ✓/✗/△ | {explanation} |
+| Step 1: {description} | //△ | {explanation} |
+| Step 2: {description} | //△ | {explanation} |
+| Step 3: {description} | //△ | {explanation} |
 
 #### Output Quality
 
 | Dimension | Evaluation | Explanation |
 |-----------|------------|-------------|
-| Format | ✓/✗ | {Does it match expected format} |
-| Completeness | ✓/✗ | {Any omissions} |
-| Accuracy | ✓/✗ | {Is content correct} |
-| Usability | ✓/✗ | {Can it be used directly} |
+| Format | / | {Does it match expected format} |
+| Completeness | / | {Any omissions} |
+| Accuracy | / | {Is content correct} |
+| Usability | / | {Can it be used directly} |
 
-**L2 Rating**: ✓✓ Good
+**L2 Rating**:  Good
 
 **Rating Reason**: 
 {1-2 sentences explaining why this rating}
 
 ---
 
-### L3: Optimization Space 💡
+### L3: Optimization Space 
 
 #### Execution Statistics
 
@@ -133,11 +133,11 @@ Suitable for formal analysis, complete structure.
 
 | Check Item | Status | Notes |
 |-----------|--------|-------|
-| Redundant content | ✓/⚠️ | {Details or "None found"} |
-| Over-explanation (templates vs text) | ✓/⚠️ | {Details or "Appropriate balance"} |
-| Clarity preserved | ✓/⚠️ | {Details or "Clear and concise"} |
+| Redundant content | / | {Details or "None found"} |
+| Over-explanation (templates vs text) | / | {Details or "Appropriate balance"} |
+| Clarity preserved | / | {Details or "Clear and concise"} |
 
-**Conciseness Verdict**: {✓ Pass / ⚠️ Warning with suggestions}
+**Conciseness Verdict**: { Pass /  Warning with suggestions}
 
 ---
 
@@ -145,8 +145,8 @@ Suitable for formal analysis, complete structure.
 
 | Layer | Result | Explanation |
 |-------|--------|-------------|
-| L1 Engineering Correctness | ✓ Pass | {One sentence} |
-| L2 Goal Achievement | ✓✓ Good | {One sentence} |
+| L1 Engineering Correctness |  Pass | {One sentence} |
+| L2 Goal Achievement |  Good | {One sentence} |
 | L3 Optimization Space | N suggestions | {Main direction} |
 
 **Core Issues**: 
@@ -190,22 +190,22 @@ When Agent implementation is provided, add to complete report:
 
 | Check Item | Status | Explanation |
 |-----------|--------|-------------|
-| Instruction Clarity | ✓/✗ | {Is it clear} |
-| Constraint Completeness | ✓/✗ | {Any omissions} |
-| Alignment with Skill | ✓/✗ | {Is it consistent} |
+| Instruction Clarity | / | {Is it clear} |
+| Constraint Completeness | / | {Any omissions} |
+| Alignment with Skill | / | {Is it consistent} |
 
 #### Tool Definition Check
 
 | Tool | Description | Parameter Design | Issues |
 |------|-------------|------------------|--------|
-| {tool1} | ✓/✗ | ✓/✗ | {explanation} |
-| {tool2} | ✓/✗ | ✓/✗ | {explanation} |
+| {tool1} | / | / | {explanation} |
+| {tool2} | / | / | {explanation} |
 
 #### Problem Location
 
 ```
 Problem Chain:
-Skill Instruction ──?──▶ Agent Understanding ──?──▶ Tool Call ──?──▶ Final Output
+Skill Instruction ──?── Agent Understanding ──?── Tool Call ──?── Final Output
                             │
                             └── Problem is here: {Specific explanation}
 ```
@@ -248,20 +248,20 @@ Skill Instruction ──?──▶ Agent Understanding ──?──▶ Tool Cal
 
 ---
 
-### L1: Engineering Correctness ✓
+### L1: Engineering Correctness 
 
 | Check Item | Status | Details |
 |------------|--------|---------|
-| Tool Calls | ✓ | 8/8 successful |
-| Script Execution | ✓ | curl exit 0 |
+| Tool Calls |  | 8/8 successful |
+| Script Execution |  | curl exit 0 |
 | Code Quality | - | No code generation |
-| Execution Flow | ✓ | Completed normally |
+| Execution Flow |  | Completed normally |
 
-**L1 Conclusion**: ✓ Pass
+**L1 Conclusion**:  Pass
 
 ---
 
-### L2: Goal Achievement ✓✓
+### L2: Goal Achievement 
 
 **Execution Goal**: 
 > Help me analyze why chatId xxx is stuck
@@ -273,29 +273,29 @@ Skill Instruction ──?──▶ Agent Understanding ──?──▶ Tool Cal
 
 | Design Step | Actual Execution | Notes |
 |-------------|------------------|-------|
-| Step 0: Initialize session | ✓ | Used init-debug-session.sh |
-| Step 1: Collect information | ✓ | Retrieved chatId |
-| Step 2: Query API | ✓ | curl call successful |
+| Step 0: Initialize session |  | Used init-debug-session.sh |
+| Step 1: Collect information |  | Retrieved chatId |
+| Step 2: Query API |  | curl call successful |
 | Step 3: Generate timeline | △ | Only text description, no chart |
-| Step 4: Root cause analysis | ✓ | Found stuck reason |
-| Step 5: Generate report | ✓ | Markdown format |
+| Step 4: Root cause analysis |  | Found stuck reason |
+| Step 5: Generate report |  | Markdown format |
 
 #### Output Quality
 
 | Dimension | Evaluation | Explanation |
 |-----------|------------|-------------|
-| Format | ✓ | Markdown table correct |
+| Format |  | Markdown table correct |
 | Completeness | △ | Missing Timeline chart |
-| Accuracy | ✓ | Correctly identified stuck reason |
-| Usability | ✓ | Can be used directly for OnCall |
+| Accuracy |  | Correctly identified stuck reason |
+| Usability |  | Can be used directly for OnCall |
 
-**L2 Rating**: ✓✓ Good
+**L2 Rating**:  Good
 
 **Rating Reason**: Core goal achieved, found problem reason, but Timeline visualization missing.
 
 ---
 
-### L3: Optimization Space 💡
+### L3: Optimization Space 
 
 #### Execution Statistics
 
@@ -311,7 +311,7 @@ Skill Instruction ──?──▶ Agent Understanding ──?──▶ Tool Cal
 
 - **Priority**: Medium
 - **Current State**: Step 3 only says "generate timeline", doesn't emphasize need for chart
-- **Suggestion**: Add "⭐ Use ASCII or Mermaid visualization"
+- **Suggestion**: Add " Use ASCII or Mermaid visualization"
 - **Location**: SKILL.md Step 3
 - **Expected Benefit**: Improve output readability
 
@@ -329,8 +329,8 @@ Skill Instruction ──?──▶ Agent Understanding ──?──▶ Tool Cal
 
 | Layer | Result | Explanation |
 |-------|--------|-------------|
-| L1 Engineering Correctness | ✓ Pass | No errors |
-| L2 Goal Achievement | ✓✓ Good | Core achieved, Timeline missing |
+| L1 Engineering Correctness |  Pass | No errors |
+| L2 Goal Achievement |  Good | Core achieved, Timeline missing |
 | L3 Optimization Space | 2 suggestions | Visualization + Efficiency |
 
 **Core Issue**: 

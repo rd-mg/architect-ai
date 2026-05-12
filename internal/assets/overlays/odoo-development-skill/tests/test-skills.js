@@ -88,54 +88,54 @@ async function main() {
   log(colors.cyan, '╚════════════════════════════════════════════════════════════╝\n');
 
   // 1. Check settings.json
-  log(colors.bold, '📋 Step 1: Checking .claude/settings.json');
+  log(colors.bold, ' Step 1: Checking .claude/settings.json');
   log(colors.blue, '─'.repeat(60));
 
   const settings = checkFile(SETTINGS_PATH);
   if (!settings.exists) {
-    log(colors.red, '  ❌ settings.json not found!');
+    log(colors.red, '   settings.json not found!');
     return;
   }
 
   let settingsData;
   try {
     settingsData = JSON.parse(fs.readFileSync(SETTINGS_PATH, 'utf8'));
-    log(colors.green, `  ✅ settings.json found (${settings.lines} lines)`);
+    log(colors.green, `   settings.json found (${settings.lines} lines)`);
   } catch (err) {
-    log(colors.red, `  ❌ Failed to parse settings.json: ${err.message}`);
+    log(colors.red, `   Failed to parse settings.json: ${err.message}`);
     return;
   }
 
   // 2. Check what's in documentation
-  log(colors.bold, '\n📚 Step 2: Checking documentation array');
+  log(colors.bold, '\n Step 2: Checking documentation array');
   log(colors.blue, '─'.repeat(60));
 
   const docs = settingsData.documentation || [];
   if (docs.length === 0) {
-    log(colors.yellow, '  ⚠️  No documentation configured');
+    log(colors.yellow, '    No documentation configured');
   } else {
-    log(colors.green, `  ✅ ${docs.length} file(s) in documentation:\n`);
+    log(colors.green, `   ${docs.length} file(s) in documentation:\n`);
     let totalTokens = 0;
     docs.forEach((docPath, idx) => {
       // Resolve documentation paths relative to BASE_DIR (where settings.json is)
       const fullPath = path.join(BASE_DIR, docPath);
       const info = checkFile(fullPath);
       if (info.exists) {
-        const icon = docPath.includes('SKILL.md') ? '📑' : '📄';
+        const icon = docPath.includes('SKILL.md') ? '' : '';
         log(colors.reset, `    ${idx + 1}. ${icon} ${path.basename(docPath)}`);
         log(colors.reset, `       Path: ${docPath}`);
         log(colors.reset, `       Tokens: ~${info.estimatedTokens.toLocaleString()}`);
         totalTokens += info.estimatedTokens;
         console.log('');
       } else {
-        log(colors.red, `    ${idx + 1}. ❌ ${docPath} (NOT FOUND)`);
+        log(colors.red, `    ${idx + 1}.  ${docPath} (NOT FOUND)`);
       }
     });
-    log(colors.cyan, `  📊 Total estimated tokens: ~${totalTokens.toLocaleString()}\n`);
+    log(colors.cyan, `   Total estimated tokens: ~${totalTokens.toLocaleString()}\n`);
   }
 
   // 3. Check all guide files
-  log(colors.bold, '📁 Step 3: Scanning all guide files');
+  log(colors.bold, ' Step 3: Scanning all guide files');
   log(colors.blue, '─'.repeat(60));
 
   const guides = getGuideList();
@@ -143,14 +143,14 @@ async function main() {
 
   console.log('');
   console.log('  Priority Legend:');
-  log(colors.green, '    🟢 HIGH  - Essential for daily work');
-  log(colors.yellow, '    🟡 MEDIUM - Frequently used');
-  log(colors.red, '    🔴 LOW   - Occasionally used');
+  log(colors.green, '     HIGH  - Essential for daily work');
+  log(colors.yellow, '     MEDIUM - Frequently used');
+  log(colors.red, '     LOW   - Occasionally used');
   console.log('');
   console.log('  Status Legend:');
-  log(colors.green, '    ✅ LOADED - In documentation, auto-loaded');
-  log(colors.yellow, '    ⚠️  AVAILABLE - Exists, Claude must Read manually');
-  log(colors.red, '    ❌ MISSING - File not found');
+  log(colors.green, '     LOADED - In documentation, auto-loaded');
+  log(colors.yellow, '      AVAILABLE - Exists, Claude must Read manually');
+  log(colors.red, '     MISSING - File not found');
   console.log('');
 
   let loadedCount = 0;
@@ -163,32 +163,32 @@ async function main() {
     const isLoaded = loadedGuides.includes(guide.file);
 
     if (!info.exists) {
-      log(colors.red, `  ❌ [${guide.priority.toUpperCase()}] ${guide.name}`);
+      log(colors.red, `   [${guide.priority.toUpperCase()}] ${guide.name}`);
       log(colors.red, `     File: ${guide.file} - NOT FOUND`);
       missingCount++;
     } else if (isLoaded) {
-      log(colors.green, `  ✅ [${guide.priority.toUpperCase()}] ${guide.name}`);
+      log(colors.green, `   [${guide.priority.toUpperCase()}] ${guide.name}`);
       log(colors.green, `     ~${info.estimatedTokens.toLocaleString()} tokens - AUTO-LOADED`);
       loadedCount++;
     } else {
-      log(colors.yellow, `  ⚠️  [${guide.priority.toUpperCase()}] ${guide.name}`);
+      log(colors.yellow, `    [${guide.priority.toUpperCase()}] ${guide.name}`);
       log(colors.yellow, `     ~${info.estimatedTokens.toLocaleString()} tokens - NEEDS READ`);
       availableCount++;
     }
   });
 
   // 4. Summary
-  log(colors.bold, '\n📊 Summary');
+  log(colors.bold, '\n Summary');
   log(colors.blue, '─'.repeat(60));
 
-  log(colors.green, `  ✅ Auto-loaded (in documentation): ${loadedCount}/${guides.length}`);
-  log(colors.yellow, `  ⚠️  Available (needs Read tool):  ${availableCount}/${guides.length}`);
+  log(colors.green, `   Auto-loaded (in documentation): ${loadedCount}/${guides.length}`);
+  log(colors.yellow, `    Available (needs Read tool):  ${availableCount}/${guides.length}`);
   if (missingCount > 0) {
-    log(colors.red, `  ❌ Missing: ${missingCount}/${guides.length}`);
+    log(colors.red, `   Missing: ${missingCount}/${guides.length}`);
   }
 
   // 5. Recommendations
-  log(colors.bold, '\n💡 Recommendations');
+  log(colors.bold, '\n Recommendations');
   log(colors.blue, '─'.repeat(60));
 
   const highPriorityNotLoaded = guides.filter(
@@ -196,9 +196,9 @@ async function main() {
   );
 
   if (loadedCount >= 5) {
-    log(colors.green, '  ✅ Good coverage! Core guides are loaded.');
+    log(colors.green, '   Good coverage! Core guides are loaded.');
   } else {
-    log(colors.yellow, '  ⚠️  Consider adding more HIGH priority guides.');
+    log(colors.yellow, '    Consider adding more HIGH priority guides.');
   }
 
   console.log('');
@@ -210,7 +210,7 @@ async function main() {
   log(colors.reset, '  3. "Tạo ir.model.access.csv cho model mới"');
   log(colors.reset, '     → Needs: security-guide.md\n');
 
-  log(colors.bold, '\n✨ Test complete!\n');
+  log(colors.bold, '\n Test complete!\n');
 }
 
 main().catch(err => {

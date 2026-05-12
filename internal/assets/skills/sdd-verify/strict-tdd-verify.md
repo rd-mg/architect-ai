@@ -16,23 +16,23 @@ Read apply-progress artifact:
 ├── Find the "TDD Cycle Evidence" table
 ├── FOR EACH task row:
 │   ├── RED column:
-│   │   ├── Must say "✅ Written"
+│   │   ├── Must say " Written"
 │   │   ├── Verify: test file EXISTS in the codebase
 │   │   └── Flag: CRITICAL if test file does not exist
 │   │
 │   ├── GREEN column:
-│   │   ├── Must say "✅ Passed"
+│   │   ├── Must say " Passed"
 │   │   ├── Cross-reference with Step 5b test execution results:
 │   │   │   └── The test file listed must PASS when you run it
 │   │   └── Flag: CRITICAL if test fails now (was it really green?)
 │   │
 │   ├── TRIANGULATE column:
-│   │   ├── If "✅ N cases" → verify N test cases exist in the test file
-│   │   ├── If "➖ Single" → verify spec truly has only one scenario for this task
+│   │   ├── If " N cases" → verify N test cases exist in the test file
+│   │   ├── If " Single" → verify spec truly has only one scenario for this task
 │   │   └── Flag: WARNING if spec has multiple scenarios but only 1 test case
 │   │
 │   ├── SAFETY NET column:
-│   │   ├── If "✅ N/N" → existing tests were run before modification (good)
+│   │   ├── If " N/N" → existing tests were run before modification (good)
 │   │   ├── If "N/A (new)" → verify the file was actually NEW (not modified)
 │   │   └── Flag: WARNING if file was modified but safety net shows "N/A"
 │   │
@@ -94,9 +94,9 @@ IF coverage tool available (from cached capabilities):
 │   ├── Branch coverage % (if available)
 │   ├── Uncovered line ranges (specific lines, not just %)
 │   └── Flag per file:
-│       ├── ≥ 95% → ✅ Excellent
-│       ├── ≥ 80% → ⚠️ Acceptable
-│       └── < 80% → ⚠️ Low (list uncovered lines)
+│       ├── ≥ 95% →  Excellent
+│       ├── ≥ 80% →  Acceptable
+│       └── < 80% →  Low (list uncovered lines)
 ├── Report aggregate:
 │   ├── Average coverage of changed files
 │   ├── Total uncovered lines in changed files
@@ -138,12 +138,12 @@ When Strict TDD Mode is active, your verification report MUST include these addi
 ### TDD Compliance
 | Check | Result | Details |
 |-------|--------|---------|
-| TDD Evidence reported | ✅ / ❌ | {Found in apply-progress / Missing} |
-| All tasks have tests | ✅ / ❌ | {N}/{total} tasks have test files |
-| RED confirmed (tests exist) | ✅ / ⚠️ | {N}/{total} test files verified |
-| GREEN confirmed (tests pass) | ✅ / ❌ | {N}/{total} tests pass on execution |
-| Triangulation adequate | ✅ / ⚠️ / ➖ | {N} tasks triangulated / {N} single-case |
-| Safety Net for modified files | ✅ / ⚠️ | {N}/{total} modified files had safety net |
+| TDD Evidence reported |  /  | {Found in apply-progress / Missing} |
+| All tasks have tests |  /  | {N}/{total} tasks have test files |
+| RED confirmed (tests exist) |  /  | {N}/{total} test files verified |
+| GREEN confirmed (tests pass) |  /  | {N}/{total} tests pass on execution |
+| Triangulation adequate |  /  /  | {N} tasks triangulated / {N} single-case |
+| Safety Net for modified files |  /  | {N}/{total} modified files had safety net |
 
 **TDD Compliance**: {N}/{total} checks passed
 
@@ -162,9 +162,9 @@ When Strict TDD Mode is active, your verification report MUST include these addi
 ### Changed File Coverage
 | File | Line % | Branch % | Uncovered Lines | Rating |
 |------|--------|----------|-----------------|--------|
-| `path/to/file.ext` | 95% | 90% | — | ✅ Excellent |
-| `path/to/other.ext` | 82% | 75% | L45-48, L62 | ⚠️ Acceptable |
-| `path/to/new.ext` | 100% | 100% | — | ✅ Excellent |
+| `path/to/file.ext` | 95% | 90% | — |  Excellent |
+| `path/to/other.ext` | 82% | 75% | L45-48, L62 |  Acceptable |
+| `path/to/new.ext` | 100% | 100% | — |  Excellent |
 
 **Average changed file coverage**: {N}%
 {or "Coverage analysis skipped — no coverage tool detected"}
@@ -177,13 +177,13 @@ When Strict TDD Mode is active, your verification report MUST include these addi
 | ... | ... | ... | ... | ... |
 
 **Assertion quality**: {N} CRITICAL, {N} WARNING
-{or "✅ All assertions verify real behavior"}
+{or " All assertions verify real behavior"}
 
 ---
 
 ### Quality Metrics
-**Linter**: ✅ No errors / ⚠️ {N} warnings / ❌ {N} errors / ➖ Not available
-**Type Checker**: ✅ No errors / ❌ {N} errors / ➖ Not available
+**Linter**:  No errors /  {N} warnings /  {N} errors /  Not available
+**Type Checker**:  No errors /  {N} errors /  Not available
 ```
 
 ## Step 5f: Assertion Quality Audit (MANDATORY)
@@ -254,7 +254,7 @@ Include this table in the verification report when any issues are found:
 **Assertion quality**: {N} CRITICAL, {N} WARNING
 ```
 
-If zero issues found, report: "**Assertion quality**: ✅ All assertions verify real behavior"
+If zero issues found, report: "**Assertion quality**:  All assertions verify real behavior"
 
 ## Rules (Strict TDD Verify specific)
 

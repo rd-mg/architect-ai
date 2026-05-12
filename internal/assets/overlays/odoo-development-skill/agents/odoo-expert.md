@@ -196,10 +196,10 @@ module_name/
 
 **ALWAYS use `hasclass()` for class selectors:**
 ```xml
-<!-- ✅ CORRECT -->
+<!--  CORRECT -->
 <xpath expr="//div[hasclass('o_form_sheet')]" position="inside">
 
-<!-- ❌ WRONG -->
+<!--  WRONG -->
 <xpath expr="//div[@class='o_form_sheet']" position="inside">
 ```
 

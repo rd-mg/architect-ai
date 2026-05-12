@@ -43,13 +43,13 @@ Core principle: **does this inflate my context without need?** If yes → delega
 
 | Action | Inline | Delegate |
 |--------|--------|----------|
-| Read to decide/verify (1-3 files) | ✅ | — |
-| Read to explore/understand (4+ files) | — | ✅ |
-| Read as preparation for writing | — | ✅ together with the write |
-| Write atomic (one file, mechanical, you already know what) | ✅ | — |
-| Write with analysis (multiple files, new logic) | — | ✅ |
-| Bash for state (git, gh) | ✅ | — |
-| Bash for execution (test, build, install) | — | ✅ |
+| Read to decide/verify (1-3 files) |  | — |
+| Read to explore/understand (4+ files) | — |  |
+| Read as preparation for writing | — |  together with the write |
+| Write atomic (one file, mechanical, you already know what) |  | — |
+| Write with analysis (multiple files, new logic) | — |  |
+| Bash for state (git, gh) |  | — |
+| Bash for execution (test, build, install) | — |  |
 
 Claude delegation syntax: use the `Task` tool with `subagent_type` matching the phase. Prefer async (`delegate`) over sync; only use sync when the result must gate the next action.
 
@@ -244,10 +244,10 @@ NOT available in Mode 3. Validate result with ripgrep-odoo if possible.
 ## Mode-Based Research Restrictions
 | Mode | Engram | ripgrep-odoo | Context7 | NotebookLM | Web |
 |---|---|---|---|---|---|
-| Mode 1 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Mode 2 | ✅ | ✅ | ✅ (limited) | ⚠️ (if tokens) | ❌ |
-| Mode 3-ERR | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Mode 3-CTX | ✅ (save) | ❌ | ❌ | ❌ | ❌ |
+| Mode 1 |  |  |  |  |  |
+| Mode 2 |  |  |  (limited) |  (if tokens) |  |
+| Mode 3-ERR |  |  |  |  |  |
+| Mode 3-CTX |  (save) |  |  |  |  |
 
 ## Mandatory Skills (ALWAYS injected) — NEW in V3.1
 

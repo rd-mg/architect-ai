@@ -242,16 +242,16 @@ This save is executed by the **Orchestrator's after_model hook** (defined in Ste
 ## Anti-patterns (what NOT to do)
 
 ```bash
-# ❌ NEVER — domain-less search on full monorepo
+#  NEVER — domain-less search on full monorepo
 rg "account_move" ~/gitproj/odoo/
 
-# ❌ NEVER — no --max-count in content search
+#  NEVER — no --max-count in content search
 rg "def compute" ~/gitproj/odoo/community/ -t py
 
-# ❌ NEVER — too generic term without specific file
+#  NEVER — too generic term without specific file
 rg "def " ~/gitproj/odoo/community/addons/account/ -t py
 
-# ✅ ALWAYS — 2 steps: files-only first
+#  ALWAYS — 2 steps: files-only first
 rg "class BankStatementLine" ~/gitproj/odoo/community/ -t py -l
 rg "_compute_amount" {file_from_step_1} --max-count 2 -C 3
 ```

@@ -53,16 +53,16 @@ func (s *CLISpinner) Finish(success bool) {
 	close(s.stop)
 	s.done.Wait()
 
-	icon := "✓"
+	icon := "[OK]"
 	if !success {
-		icon = "✗"
+		icon = "[FAIL]"
 	}
 	clearLine := "\r" + strings.Repeat(" ", len(s.message)+20) + "\r"
 	fmt.Fprintf(s.w, "%s  %s %s\n", clearLine, icon, s.message)
 }
 
 // FinishSkipped stops the spinner and renders a skip marker (--) instead of
-// the failure marker (✗). Use this for intentional skips such as manual-update
+// the failure marker (). Use this for intentional skips such as manual-update
 // fallbacks on Windows — these are NOT failures and must not be displayed as such.
 func (s *CLISpinner) FinishSkipped() {
 	close(s.stop)

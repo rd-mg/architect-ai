@@ -156,9 +156,9 @@ Use when analyzing your own developed Agent.
 
 | Scenario | Need Agent Implementation? |
 |----------|---------------------------|
-| Analyze Skill in Claude Code | ❌ Not needed |
-| Analyze IDE Agent issues | ✅ Needed |
-| Analyze custom Tool effectiveness | ⚡ Optional |
+| Analyze Skill in Claude Code |  Not needed |
+| Analyze IDE Agent issues |  Needed |
+| Analyze custom Tool effectiveness |  Optional |
 
 ### What to Read
 

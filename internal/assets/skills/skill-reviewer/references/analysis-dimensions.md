@@ -89,10 +89,10 @@ L2 Checklist
 
 | Level | Condition | Description |
 |-------|-----------|-------------|
-| ✓✓✓ Excellent | 100% goal + excellent quality + extra value | Exceeds expectation |
-| ✓✓ Good | 100% goal + good quality | Meets expectation |
-| ✓ Pass | Core achieved + omissions but usable | Basically usable |
-| ✗ Fail | Core not achieved or unusable | Needs rework |
+|  Excellent | 100% goal + excellent quality + extra value | Exceeds expectation |
+|  Good | 100% goal + good quality | Meets expectation |
+|  Pass | Core achieved + omissions but usable | Basically usable |
+|  Fail | Core not achieved or unusable | Needs rework |
 
 ### Process Comparison Method
 
@@ -100,9 +100,9 @@ L2 Checklist
 1. Extract step list from SKILL.md
 2. Find corresponding execution in trace one by one
 3. Mark status:
-   ✓ Fully executed
+    Fully executed
    △ Partially executed
-   ✗ Skipped
+    Skipped
    ? Cannot determine
 ```
 
@@ -180,8 +180,8 @@ Optimization Suggestions
 ```
 Conciseness Check
 ├── Reference Thresholds (Advisory, not mandatory)
-│   ├── SKILL.md > 150 lines → ⚠️ Consider if simplifiable
-│   ├── Single reference doc > 200 lines → ⚠️ Consider splitting/simplifying
+│   ├── SKILL.md > 150 lines →  Consider if simplifiable
+│   ├── Single reference doc > 200 lines →  Consider splitting/simplifying
 │   └── Note: Complex features may need more. Don't over-split for numbers.
 │
 ├── Redundancy Check (Real issues)
@@ -197,7 +197,7 @@ Conciseness Check
 
 **When to Flag**:
 - If redundancy found → **Must fix**
-- If exceeds thresholds → ⚠️ **Warning**, check if simplifiable
+- If exceeds thresholds →  **Warning**, check if simplifiable
 - If unclear → **Clarity over brevity**
 
 ### [OPTIONAL] Execution Plan Generation (When user adopts suggestions)

@@ -1155,10 +1155,10 @@ Use \`delegation_read(id)\` to retrieve the full result. Results are persisted t
     },
     async execute(args: DelegateArgs, toolCtx: ToolContext): Promise<string> {
       if (!toolCtx?.sessionID) {
-        return "❌ delegate requires sessionID. This is a system error."
+        return " delegate requires sessionID. This is a system error."
       }
       if (!toolCtx?.messageID) {
-        return "❌ delegate requires messageID. This is a system error."
+        return " delegate requires messageID. This is a system error."
       }
 
       try {
@@ -1183,7 +1183,7 @@ Use \`delegation_read(id)\` to retrieve the full result. Results are persisted t
         return response
       } catch (error) {
         // Return validation errors as guidance, not exceptions
-        return `❌ Delegation failed:\n\n${error instanceof Error ? error.message : "Unknown error"}`
+        return ` Delegation failed:\n\n${error instanceof Error ? error.message : "Unknown error"}`
       }
     },
   })
@@ -1198,7 +1198,7 @@ Use this to retrieve results from delegated tasks if the inline notification was
     },
     async execute(args: { id: string }, toolCtx: ToolContext): Promise<string> {
       if (!toolCtx?.sessionID) {
-        return "❌ delegation_read requires sessionID. This is a system error."
+        return " delegation_read requires sessionID. This is a system error."
       }
 
       return await manager.readOutput(toolCtx.sessionID, args.id)
@@ -1213,7 +1213,7 @@ Shows both running and completed delegations.`,
     args: {},
     async execute(_args: Record<string, never>, toolCtx: ToolContext): Promise<string> {
       if (!toolCtx?.sessionID) {
-        return "❌ delegation_list requires sessionID. This is a system error."
+        return " delegation_list requires sessionID. This is a system error."
       }
 
       const delegations = await manager.listDelegations(toolCtx.sessionID)

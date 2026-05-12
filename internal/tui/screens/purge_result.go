@@ -28,7 +28,7 @@ func RenderPurgeResult(res uninstall.PurgeResult) string {
 
 	marks := func(ok bool, label string) string {
 		if ok {
-			return "  ✓ " + label + "\n"
+			return "   " + label + "\n"
 		}
 		return "  ─ " + label + " (skipped)\n"
 	}
@@ -38,9 +38,9 @@ func RenderPurgeResult(res uninstall.PurgeResult) string {
 	}
 	if res.ScopeRequested.EngramProject {
 		if res.EngramRemoved {
-			b.WriteString("  ✓ Engram project memories\n")
+			b.WriteString("   Engram project memories\n")
 		} else {
-			b.WriteString(styles.ErrorStyle.Render("  ✗ Engram: " + res.EngramError))
+			b.WriteString(styles.ErrorStyle.Render("   Engram: " + res.EngramError))
 			b.WriteString("\n")
 		}
 	}
@@ -52,9 +52,9 @@ func RenderPurgeResult(res uninstall.PurgeResult) string {
 	}
 	if res.ScopeRequested.Binary {
 		if res.BinaryRemoved {
-			b.WriteString(fmt.Sprintf("  ✓ Binary removed via: %s\n", res.BinaryCommandUsed))
+			b.WriteString(fmt.Sprintf("   Binary removed via: %s\n", res.BinaryCommandUsed))
 		} else {
-			b.WriteString(styles.ErrorStyle.Render("  ✗ Binary: " + res.BinaryError))
+			b.WriteString(styles.ErrorStyle.Render("   Binary: " + res.BinaryError))
 			b.WriteString("\n")
 		}
 	}

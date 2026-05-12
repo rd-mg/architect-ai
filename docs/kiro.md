@@ -134,7 +134,7 @@ The `model` value is injected during sync from Claude alias assignments (`opus|s
 
 ---
 
-## ⚠️ Split-Root Layout
+##  Split-Root Layout
 
 Kiro uses a **split-root layout** — architect-ai managed files and IDE settings live in different directories:
 
@@ -158,10 +158,10 @@ If architect-ai skills or steering are missing, check `~/.kiro/skills/` and `~/.
 
 | Capability | Status |
 |------------|--------|
-| Skills | ✅ Yes |
-| System prompt | ✅ Yes |
-| MCP | ✅ Yes |
-| Output styles | ❌ No |
-| Slash commands | ❌ No |
+| Skills |  Yes |
+| System prompt |  Yes |
+| MCP |  Yes |
+| Output styles |  No |
+| Slash commands |  No |
 | Delegation model | Full (native subagents) |
-| Auto-install | ❌ No — manual install required |
+| Auto-install |  No — manual install required |

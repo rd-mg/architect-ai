@@ -366,7 +366,7 @@ export class CustomFieldWidget extends Component {
         const value = this.props.record.data[this.props.name];
         if (!value) return "";
         // Custom formatting
-        return `★ ${value}`;
+        return ` ${value}`;
     }
 
     /** @returns {boolean} */

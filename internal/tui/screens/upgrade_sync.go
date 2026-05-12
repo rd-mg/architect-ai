@@ -37,9 +37,9 @@ func RenderUpgradeSync(results []update.UpdateResult, upgradeReport *upgrade.Upg
 	// State 2: upgrade done, sync now running
 	if operationRunning && (upgradeReport != nil || upgradeErr != nil) {
 		if upgradeErr != nil {
-			b.WriteString(styles.ErrorStyle.Render("✗ Upgrade failed"))
+			b.WriteString(styles.ErrorStyle.Render(" Upgrade failed"))
 		} else {
-			b.WriteString(styles.SuccessStyle.Render("✓ Upgrade complete"))
+			b.WriteString(styles.SuccessStyle.Render(" Upgrade complete"))
 		}
 		b.WriteString("\n\n")
 		b.WriteString(styles.WarningStyle.Render(SpinnerChar(spinnerFrame) + "  Syncing configurations..."))
@@ -115,11 +115,11 @@ func renderUpgradeSyncResult(report *upgrade.UpgradeReport, syncFilesChanged int
 	b.WriteString("\n\n")
 
 	if upgradeErr != nil {
-		b.WriteString(styles.ErrorStyle.Render("✗ Upgrade failed: " + upgradeErr.Error()))
+		b.WriteString(styles.ErrorStyle.Render(" Upgrade failed: " + upgradeErr.Error()))
 		b.WriteString("\n")
 	} else if report != nil {
 		if len(report.Results) == 0 {
-			b.WriteString("  " + styles.SuccessStyle.Render("✓ All tools are up to date"))
+			b.WriteString("  " + styles.SuccessStyle.Render(" All tools are up to date"))
 			b.WriteString("\n")
 		}
 
@@ -134,10 +134,10 @@ func renderUpgradeSyncResult(report *upgrade.UpgradeReport, syncFilesChanged int
 					styles.SubtextStyle.Render(r.OldVersion),
 					styles.SuccessStyle.Render(r.NewVersion),
 				)
-				b.WriteString("  " + styles.SuccessStyle.Render("✓") + "  " + line)
+				b.WriteString("  " + styles.SuccessStyle.Render("") + "  " + line)
 			case upgrade.UpgradeFailed:
 				upgradeFailed++
-				b.WriteString("  " + styles.ErrorStyle.Render("✗") + "  " + styles.ErrorStyle.Render(r.ToolName))
+				b.WriteString("  " + styles.ErrorStyle.Render("") + "  " + styles.ErrorStyle.Render(r.ToolName))
 				if r.Err != nil {
 					b.WriteString("\n     " + styles.SubtextStyle.Render(r.Err.Error()))
 				}
@@ -169,7 +169,7 @@ func renderUpgradeSyncResult(report *upgrade.UpgradeReport, syncFilesChanged int
 		}
 
 		if report.BackupWarning != "" {
-			b.WriteString("  " + styles.WarningStyle.Render("⚠ "+report.BackupWarning))
+			b.WriteString("  " + styles.WarningStyle.Render(" "+report.BackupWarning))
 			b.WriteString("\n")
 		}
 	}
@@ -181,11 +181,11 @@ func renderUpgradeSyncResult(report *upgrade.UpgradeReport, syncFilesChanged int
 	b.WriteString("\n\n")
 
 	if syncErr != nil {
-		b.WriteString("  " + styles.ErrorStyle.Render("✗ Sync failed: "+syncErr.Error()))
+		b.WriteString("  " + styles.ErrorStyle.Render(" Sync failed: "+syncErr.Error()))
 	} else if syncFilesChanged == 0 {
 		b.WriteString("  " + styles.SubtextStyle.Render("No files needed updating"))
 	} else {
-		b.WriteString("  " + styles.SuccessStyle.Render("✓") + "  " + fmt.Sprintf("%s synchronized", styles.HeadingStyle.Render(fmt.Sprintf("%d file(s)", syncFilesChanged))))
+		b.WriteString("  " + styles.SuccessStyle.Render("") + "  " + fmt.Sprintf("%s synchronized", styles.HeadingStyle.Render(fmt.Sprintf("%d file(s)", syncFilesChanged))))
 	}
 
 	b.WriteString("\n\n")

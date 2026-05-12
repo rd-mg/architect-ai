@@ -287,9 +287,9 @@ Use the structure that best fits the task.
 
 | Finding | Pass A | Pass B | Severity | Status |
 |---------|--------|--------|----------|--------|
-| {issue} | ✅ | ✅ | CRITICAL | Confirmed |
-| {issue} | ✅ | ❌ | WARNING (real) | Suspect |
-| {issue} | ❌ | ✅ | WARNING (theoretical) | Info |
+| {issue} |  |  | CRITICAL | Confirmed |
+| {issue} |  |  | WARNING (real) | Suspect |
+| {issue} |  |  | WARNING (theoretical) | Info |
 
 **Confirmed**: {count}
 **Suspect**: {count}

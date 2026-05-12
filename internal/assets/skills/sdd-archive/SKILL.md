@@ -146,10 +146,10 @@ Return to the orchestrator:
 {List any implementation deviations from design, or "None identified."}
 
 ### Archive Contents
-- proposal.md ✅
-- specs/ ✅
-- design.md ✅
-- tasks.md ✅ ({N}/{N} tasks complete)
+- proposal.md 
+- specs/ 
+- design.md 
+- tasks.md  ({N}/{N} tasks complete)
 
 ### SDD Cycle Complete
 The change has been fully planned, implemented, verified, and archived.

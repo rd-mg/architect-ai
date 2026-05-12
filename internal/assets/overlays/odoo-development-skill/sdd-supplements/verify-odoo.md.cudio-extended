@@ -31,7 +31,7 @@ Apply ALL of these checks. Each is automatable via `ripgrep` or file existence.
 - [ ] **CUDIO**: Module folder name matches `{client}_{app}_{desc}` or `cudio_{app}_{desc}`
 - [ ] **CUDIO**: `icon.png` exists in `static/description/`
   ```bash
-  test -f static/description/icon.png && echo "✅ icon present" || echo "❌ icon missing"
+  test -f static/description/icon.png && echo " icon present" || echo " icon missing"
   ```
 - [ ] `depends` list contains all imported modules (cross-check with `_inherit` and Python imports)
 - [ ] `external_dependencies` declared if new Python libraries are used
@@ -182,24 +182,24 @@ In your verify-report, include:
 ## Odoo-Specific Verification (Cudio Extended)
 
 ### Deterministic Checks — Manifest
-✅ Manifest version bumped (18.0.1.0.0 → 18.0.1.1.0)
-✅ author/company/maintainer = "Cudio Inc."
-✅ license = "OPL-1"
-❌ icon.png missing in static/description/ — BLOCKER
-⚠️ name field uses "acme | Invoice" — should be "Acme | Invoice" (capitalization)
+ Manifest version bumped (18.0.1.0.0 → 18.0.1.1.0)
+ author/company/maintainer = "Cudio Inc."
+ license = "OPL-1"
+ icon.png missing in static/description/ — BLOCKER
+ name field uses "acme | Invoice" — should be "Acme | Invoice" (capitalization)
 
 ### Deterministic Checks — Security
-✅ ir.model.access.csv exists for acme.approval.request
-⚠️ sudo() used in models/approval.py:45 without justification comment
+ ir.model.access.csv exists for acme.approval.request
+ sudo() used in models/approval.py:45 without justification comment
 
 ### Deterministic Checks — Documentation
-❌ README.md missing in module root — BLOCKER
-⚠️ Changelog entry missing for version 18.0.1.1.0
+ README.md missing in module root — BLOCKER
+ Changelog entry missing for version 18.0.1.1.0
 
 ### Deterministic Checks — Git
-✅ Branch name `feat/12345-approval-workflow` matches convention
-✅ Commits formatted correctly
-✅ No Co-Authored-By trailers
+ Branch name `feat/12345-approval-workflow` matches convention
+ Commits formatted correctly
+ No Co-Authored-By trailers
 
 ### Adversarial Findings
 - CRITICAL: Uninstall leaves orphan records in acme_approval_log

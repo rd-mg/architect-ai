@@ -125,10 +125,10 @@ In your verify-report, include:
 ## Odoo-Specific Verification
 
 ### Deterministic Checks
-✅ Manifest version bumped (18.0.1.0.0 → 18.0.1.1.0)
-✅ ir.model.access.csv exists for acme.approval.request
-❌ README.md missing in module root — BLOCKER
-⚠️ sudo() used in models/approval.py:45 without justification comment
+ Manifest version bumped (18.0.1.0.0 → 18.0.1.1.0)
+ ir.model.access.csv exists for acme.approval.request
+ README.md missing in module root — BLOCKER
+ sudo() used in models/approval.py:45 without justification comment
 
 ### Adversarial Findings
 - CRITICAL: Uninstall leaves orphan records in acme_approval_log

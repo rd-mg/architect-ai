@@ -284,7 +284,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 
 **IMPORTANT**: In Odoo 18, the `attrs` attribute is **DEPRECATED**. Use direct attributes instead.
 
-#### ❌ BAD: Using `attrs` (Old Odoo 13-17 syntax)
+####  BAD: Using `attrs` (Old Odoo 13-17 syntax)
 
 ```xml
 <!-- Old syntax - DEPRECATED in Odoo 18 -->
@@ -294,7 +294,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 <button name="action" attrs="{'invisible': [('state', '=', 'done')]}"/>
 ```
 
-#### ✅ GOOD: Using Direct Attributes (Odoo 18 syntax)
+####  GOOD: Using Direct Attributes (Odoo 18 syntax)
 
 ```xml
 <!-- New syntax - Odoo 18+ -->
@@ -864,7 +864,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 
 ## Common Anti-Patterns
 
-### ❌ BAD: Using deprecated `attrs` attribute (Odoo 17-)
+###  BAD: Using deprecated `attrs` attribute (Odoo 17-)
 
 ```xml
 <!-- Odoo 17 and earlier -->
@@ -874,7 +874,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 <button name="action" attrs="{'invisible': [('state', '=', 'done')]}"/>
 ```
 
-### ✅ GOOD: Use direct attributes (Odoo 18+)
+###  GOOD: Use direct attributes (Odoo 18+)
 
 ```xml
 <!-- Odoo 18+ - attrs is REMOVED -->
@@ -886,7 +886,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 
 **Migration Note**: Replace all `attrs="{'invisible': [...]}"` with `invisible="..."`, `attrs="{'readonly': [...]}"` with `readonly="..."`, and `attrs="{'required': [...]}"` with `required="..."`. The domain syntax inside these attributes is now a Python expression, not a domain tuple list.
 
-### ❌ BAD: Using old `<tree>` tag
+###  BAD: Using old `<tree>` tag
 
 ```xml
 <!-- Odoo 17- -->
@@ -895,7 +895,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 </tree>
 ```
 
-### ✅ GOOD: Use `<list>` tag
+###  GOOD: Use `<list>` tag
 
 ```xml
 <!-- Odoo 18+ -->
@@ -904,25 +904,25 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 </list>
 ```
 
-### ❌ BAD: Missing `inverse_name` for One2many
+###  BAD: Missing `inverse_name` for One2many
 
 ```xml
 <field name="line_ids" comodel_name="sale.order.line"/>
 ```
 
-### ✅ GOOD: Always specify `inverse_name`
+###  GOOD: Always specify `inverse_name`
 
 ```xml
 <field name="line_ids" comodel_name="sale.order.line" inverse_name="order_id"/>
 ```
 
-### ❌ BAD: Hardcoded domain in view
+###  BAD: Hardcoded domain in view
 
 ```xml
 <field name="partner_id" domain="[('id', '=', 1)]"/>
 ```
 
-### ✅ GOOD: Use dynamic domain or none
+###  GOOD: Use dynamic domain or none
 
 ```xml
 <field name="partner_id" domain="[('supplier_rank', '>', 0)]"/>

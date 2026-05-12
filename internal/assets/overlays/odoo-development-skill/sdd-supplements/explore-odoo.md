@@ -36,7 +36,7 @@ test -d "$ODOO_ENTERPRISE_PATH" && \
 ### Step 5 — Web search (last resort)
 - Include `site:github.com/odoo` or `site:github.com/OCA` filter when possible.
 
-> ⚠️ If Steps 1–3 are ALL skipped: **declare the limitation explicitly** in your artifact
+>  If Steps 1–3 are ALL skipped: **declare the limitation explicitly** in your artifact
 > before proceeding with Steps 4–5. Do NOT silently fall through.
 
 ### OCA Search
@@ -50,9 +50,9 @@ rg "class ModelName" ~/gitproj/odoo/oca/ -t py
 ## Don't Reinvent the Wheel
 
 Before proposing new functionality, verify it doesn't already exist:
-- ✅ Odoo community (`~/gitproj/odoo/community/`)
-- ✅ Odoo Enterprise (`~/gitproj/odoo/enterprise/`, if path configured)
-- ✅ OCA repositories (`~/gitproj/odoo/oca/` or https://github.com/OCA)
+-  Odoo community (`~/gitproj/odoo/community/`)
+-  Odoo Enterprise (`~/gitproj/odoo/enterprise/`, if path configured)
+-  OCA repositories (`~/gitproj/odoo/oca/` or https://github.com/OCA)
 
 If something similar exists, explore it. Decide: inherit/extend, use as reference, or combine.
 

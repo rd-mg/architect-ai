@@ -165,28 +165,28 @@ Examples:
 Verbose output from tools MUST NOT be dumped raw into the context pack.
 Replace large dumps with masked references in `masked_evidence`.
 
-### ❌ BAD (dumping raw tool output)
+###  BAD (dumping raw tool output)
 
 ```
 Command output:
 <1000 lines of `ls -la` results>
 ```
 
-### ✅ GOOD (masked with provenance)
+###  GOOD (masked with provenance)
 
 ```
 masked_evidence:
 - [provenance: cmd/abc1] Verified file structure exists. Full tree masked. Summary: 47 files in 12 directories.
 ```
 
-### ❌ BAD (dropping validation state)
+###  BAD (dropping validation state)
 
 ```
 protected_facts:
 - We chose Zettelkasten memory.
 ```
 
-### ✅ GOOD (strict protected class usage)
+###  GOOD (strict protected class usage)
 
 ```
 protected_facts:

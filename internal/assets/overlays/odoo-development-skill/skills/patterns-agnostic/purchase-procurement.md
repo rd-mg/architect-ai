@@ -64,12 +64,12 @@ def trigger_mto(self, product, qty, location):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER use product.standard_price as vendor price.
-# ✅ CORRECT: Use seller = product._select_seller(partner_id=vendor).
+#  NEVER use product.standard_price as vendor price.
+#  CORRECT: Use seller = product._select_seller(partner_id=vendor).
 
-# ❌ NEVER create account.move for bills without move_type='in_invoice'.
+#  NEVER create account.move for bills without move_type='in_invoice'.
 
-# ❌ NEVER confirm a PO without checking custom approval states in overrides.
+#  NEVER confirm a PO without checking custom approval states in overrides.
 ```
 
 ---

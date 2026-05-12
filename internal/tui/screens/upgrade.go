@@ -55,7 +55,7 @@ func RenderUpgrade(results []update.UpdateResult, report *upgrade.UpgradeReport,
 
 	// State 4: upgrade error — show error and allow returning
 	if upgradeErr != nil {
-		b.WriteString(styles.ErrorStyle.Render("✗ Upgrade failed: " + upgradeErr.Error()))
+		b.WriteString(styles.ErrorStyle.Render(" Upgrade failed: " + upgradeErr.Error()))
 		b.WriteString("\n\n")
 		b.WriteString(styles.HelpStyle.Render("enter: return • esc: back • q: quit"))
 		return b.String()
@@ -79,7 +79,7 @@ func renderUpgradeReady(b *strings.Builder, results []update.UpdateResult) strin
 			)
 			b.WriteString("  " + styles.WarningStyle.Render("↑") + "  " + line)
 		case update.UpToDate:
-			line := styles.SelectedStyle.Render(r.Tool.Name) + "  " + styles.SuccessStyle.Render("✓ up to date")
+			line := styles.SelectedStyle.Render(r.Tool.Name) + "  " + styles.SuccessStyle.Render(" up to date")
 			if r.InstalledVersion != "" {
 				line += "  " + styles.SubtextStyle.Render(r.InstalledVersion)
 			}
@@ -102,7 +102,7 @@ func renderUpgradeReady(b *strings.Builder, results []update.UpdateResult) strin
 	if hasUpdates {
 		b.WriteString(styles.HeadingStyle.Render("Press enter to upgrade all"))
 	} else {
-		b.WriteString(styles.SuccessStyle.Render("✓ All tools are up to date"))
+		b.WriteString(styles.SuccessStyle.Render(" All tools are up to date"))
 	}
 
 	b.WriteString("\n\n")
@@ -117,7 +117,7 @@ func renderUpgradeReady(b *strings.Builder, results []update.UpdateResult) strin
 
 func renderUpgradeResult(b *strings.Builder, report *upgrade.UpgradeReport) string {
 	if len(report.Results) == 0 {
-		b.WriteString("  " + styles.SuccessStyle.Render("✓ All tools are up to date"))
+		b.WriteString("  " + styles.SuccessStyle.Render(" All tools are up to date"))
 		b.WriteString("\n\n")
 		b.WriteString(styles.HelpStyle.Render("enter: return • esc: back • q: quit"))
 		return b.String()
@@ -134,11 +134,11 @@ func renderUpgradeResult(b *strings.Builder, report *upgrade.UpgradeReport) stri
 				styles.SubtextStyle.Render(r.OldVersion),
 				styles.SuccessStyle.Render(r.NewVersion),
 			)
-			b.WriteString("  " + styles.SuccessStyle.Render("✓") + "  " + line)
+			b.WriteString("  " + styles.SuccessStyle.Render("") + "  " + line)
 		case upgrade.UpgradeFailed:
 			failed++
 			line := r.ToolName
-			b.WriteString("  " + styles.ErrorStyle.Render("✗") + "  " + styles.ErrorStyle.Render(line))
+			b.WriteString("  " + styles.ErrorStyle.Render("") + "  " + styles.ErrorStyle.Render(line))
 			if r.Err != nil {
 				b.WriteString("\n     " + styles.SubtextStyle.Render(r.Err.Error()))
 			}
@@ -173,7 +173,7 @@ func renderUpgradeResult(b *strings.Builder, report *upgrade.UpgradeReport) stri
 
 	if report.BackupWarning != "" {
 		b.WriteString("\n")
-		b.WriteString(styles.WarningStyle.Render("⚠ Backup warning: " + report.BackupWarning))
+		b.WriteString(styles.WarningStyle.Render(" Backup warning: " + report.BackupWarning))
 	}
 
 	b.WriteString("\n\n")

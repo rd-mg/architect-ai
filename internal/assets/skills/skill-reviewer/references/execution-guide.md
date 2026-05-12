@@ -201,10 +201,10 @@ User confirms
      ↓
 Execute with progress output:
   → Executing Step 1: Load Core Context
-  [DONE] Step 1 ✓
+  [DONE] Step 1 
   
   → Executing Step 2: Add Validation Step
-  [DONE] Step 2 ✓
+  [DONE] Step 2 
   ...
      ↓
 Output completion summary

@@ -156,20 +156,20 @@ Staleness:
 
 ## Anti-patterns
 
-**❌ Skipping NotebookLM**
+** Skipping NotebookLM**
 ```
 # WRONG — jumping straight to context7
 context7_resolve(library: "odoo")
 ```
 NotebookLM might have an Odoo-upgrade notebook with exactly the answer. Check first.
 
-**❌ Not persisting findings**
+** Not persisting findings**
 ```
 # WRONG — querying Context7 twice in the same session for the same topic
 ```
 Always `mem_save` after the first call. Every future session benefits.
 
-**❌ Using Context7 for our own code**
+** Using Context7 for our own code**
 ```
 # WRONG
 context7_get_docs(library: "our-service", topic: "...")

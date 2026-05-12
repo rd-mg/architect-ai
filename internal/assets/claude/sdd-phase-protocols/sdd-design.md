@@ -40,7 +40,7 @@ and spec (if present), produce a design document covering:
 - Data flow & Interface contracts
 - State management & Error propagation
 - Integration points with existing code
-- **Poka-Yoke Checklist**: (1) Type Safety (2) State Integrity (3) Resource Cleanup (4) Interface Simplicity. Mark each as ✅/⚠️/N/A.
+- **Poka-Yoke Checklist**: (1) Type Safety (2) State Integrity (3) Resource Cleanup (4) Interface Simplicity. Mark each as //N/A.
 - **Architecture Decision Records (ADR)**: Table of key decisions made, rationale, and consequences.
 - **YAGNI Gate**: Table of proposed abstractions. For each, state: (1) Current need (2) Anticipated implementations (3) Cost of direct implementation. If only 1 implementation exists, abstraction is REJECTED.
 - Alternative designs considered and why rejected
@@ -67,7 +67,7 @@ mem_save(
 - Validate all mandatory sections present
 - **Decision Check**: Reject if `Alternative designs considered` is empty.
 - **Simplicity Check**: Reject if `YAGNI Gate` shows premature abstractions.
-- **Poka-Yoke Check**: Ensure checklist is filled and items with ⚠️ have justification.
+- **Poka-Yoke Check**: Ensure checklist is filled and items with  have justification.
 - Update state: `specifying` → `designing`
 - Next recommended: `sdd-tasks`
 

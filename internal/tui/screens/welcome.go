@@ -15,13 +15,13 @@ import (
 // When hasEngines is false, "Create your own Agent" is shown as disabled
 // (labelled "(no agents)") to signal that no supported AI engine is installed.
 //
-// V3.1: Adds "Uninstall & Purge All ⚠" option directly below "Managed uninstall".
-// The ⚠ glyph signals irreversibility; confirmation in-screen requires the user
+// V3.1: Adds "Uninstall & Purge All " option directly below "Managed uninstall".
+// The  glyph signals irreversibility; confirmation in-screen requires the user
 // to type the word PURGE.
 func WelcomeOptions(updateResults []update.UpdateResult, updateCheckDone bool, showProfiles bool, profileCount int, hasEngines bool) []string {
 	upgradeLabel := "Upgrade tools"
 	if updateCheckDone && update.HasUpdates(updateResults) {
-		upgradeLabel = "Upgrade tools ★"
+		upgradeLabel = "Upgrade tools "
 	} else if updateCheckDone && !update.HasUpdates(updateResults) {
 		upgradeLabel = "Upgrade tools (up to date)"
 	}
@@ -50,7 +50,7 @@ func WelcomeOptions(updateResults []update.UpdateResult, updateCheckDone bool, s
 
 	opts = append(opts, "Manage backups")
 	opts = append(opts, "Managed uninstall")
-	opts = append(opts, "Uninstall & Purge All ⚠") // V3.1 — deep purge (see tui/screens/purge.go)
+	opts = append(opts, "Uninstall & Purge All ") // V3.1 — deep purge (see tui/screens/purge.go)
 	opts = append(opts, "Quit")
 
 	return opts

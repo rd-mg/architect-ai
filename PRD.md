@@ -100,14 +100,14 @@ The installer follows a **dependency-first** approach:
 │  DEPENDENCY TREE (shown to user before install)                  │
 │                                                                  │
 │  Base tools:                                                     │
-│    ✓ git (already installed: 2.43.0)                             │
-│    ✓ curl (already installed)                                    │
-│    ✓ bash (already installed: 5.2)                               │
+│     git (already installed: 2.43.0)                             │
+│     curl (already installed)                                    │
+│     bash (already installed: 5.2)                               │
 │    ◌ Homebrew (will install)                                     │
 │                                                                  │
 │  Runtimes (needed by selected agents):                           │
 │    ◌ Node.js 20 (needed by: Claude Code, Gemini CLI)            │
-│    ✓ Go 1.25 (already installed — not needed for binary installs)│
+│     Go 1.25 (already installed — not needed for binary installs)│
 │                                                                  │
 │  AI Agents:                                                      │
 │    ◌ Claude Code (via npm)                                       │
@@ -186,16 +186,16 @@ Node.js is the most critical dependency — multiple agents depend on it, and di
 
 | Component | bash | git | curl | Node.js | Homebrew | python3 | gh CLI |
 |-----------|------|-----|------|---------|----------|---------|--------|
-| **Engram** (binary) | — | — | ✓ (download) | — | ✓ (preferred) | — | — |
-| **GGA** | ✓ | ✓ | ◌ (some providers) | — | ✓ (preferred) | ◌ (some providers) | ◌ (github provider) |
-| **Claude Code** | ✓ (hooks) | ✓ | — | ✓ (20+) | ◌ | — | — |
-| **OpenCode** | — | — | ✓ (download) | — | — | — | — |
-| **Gemini CLI** | — | — | — | ✓ (20+) | ◌ | — | — |
-| **Codex** | — | — | — | ✓ (18+) | — | — | — |
-| **SDD Skills** | ✓ (install script) | ✓ (clone) | — | — | — | — | — |
-| **Coding Skills** | — | ✓ (clone) | — | — | — | — | — |
+| **Engram** (binary) | — | — |  (download) | — |  (preferred) | — | — |
+| **GGA** |  |  | ◌ (some providers) | — |  (preferred) | ◌ (some providers) | ◌ (github provider) |
+| **Claude Code** |  (hooks) |  | — |  (20+) | ◌ | — | — |
+| **OpenCode** | — | — |  (download) | — | — | — | — |
+| **Gemini CLI** | — | — | — |  (20+) | ◌ | — | — |
+| **Codex** | — | — | — |  (18+) | — | — | — |
+| **SDD Skills** |  (install script) |  (clone) | — | — | — | — | — |
+| **Coding Skills** | — |  (clone) | — | — | — | — | — |
 
-✓ = required, ◌ = optional/conditional, — = not needed
+ = required, ◌ = optional/conditional, — = not needed
 
 ---
 
@@ -419,21 +419,21 @@ curl -sL get.gentleman.ai/ai | sh
                 ▼
      ┌─────────────────────────────────┐
      │  System Scan                     │
-     │  Detected: Claude Code ✓         │
-     │            OpenCode ✓            │
-     │            Cursor ✗              │
-     │            Engram ✗              │
+     │  Detected: Claude Code          │
+     │            OpenCode             │
+     │            Cursor               │
+     │            Engram               │
      │  OS: macOS (Apple Silicon)       │
      └──────────┬──────────────────────┘
                 │
                 ▼
      ┌─────────────────────────────────┐
      │  Select AI Agents                │  ← Shows detected (pre-checked) + available
-     │  ☑ Claude Code (installed)       │
-     │  ☑ OpenCode (installed)          │
-     │  ☐ Gemini CLI                    │
-     │  ☐ Cursor                        │
-     │  ☐ VSCode (Copilot/Cline)       │
+     │   Claude Code (installed)       │
+     │   OpenCode (installed)          │
+     │   Gemini CLI                    │
+     │   Cursor                        │
+     │   VSCode (Copilot/Cline)       │
      │  ...                             │
      └──────────┬──────────────────────┘
                 │
@@ -441,7 +441,7 @@ curl -sL get.gentleman.ai/ai | sh
      ┌─────────────────────────────────┐
      │  Choose your Persona             │
      │                                  │
-     │  ★ "Your own Gentleman!"         │  ← Senior Architect mentor, teaches,
+     │   "Your own Gentleman!"         │  ← Senior Architect mentor, teaches,
      │     The mentor who pushes you     │     challenges,  Spanish
      │     to understand before coding.  │
      │                                  │
@@ -453,7 +453,7 @@ curl -sL get.gentleman.ai/ai | sh
      ┌─────────────────────────────────┐
      │  Select Ecosystem Preset         │
      │                                  │
-     │  ★ Full Gentleman                │  ← Everything: Engram + SDD + Skills
+     │   Full Gentleman                │  ← Everything: Engram + SDD + Skills
      │     (Engram + SDD + All Skills   │     + MCP + Theme + Permissions
      │      + MCP + Theme)              │
      │                                  │
@@ -466,9 +466,9 @@ curl -sL get.gentleman.ai/ai | sh
         │ If "Custom":  │
         │               ▼
         │  ┌──────────────────────┐
-        │  │ ☑ Engram (memory)    │
-        │  │ ☑ SDD (workflow)     │
-        │  │ ☑ GGA (code review)  │
+        │  │  Engram (memory)    │
+        │  │  SDD (workflow)     │
+        │  │  GGA (code review)  │
         │  │ Select Skills...     │
         │  │ Select MCP servers...│
         │  │ Select Theme...      │
@@ -482,12 +482,12 @@ curl -sL get.gentleman.ai/ai | sh
      │                                  │
      │  Agents: Claude Code, OpenCode   │
      │  Persona: Gentleman              │
-     │  Memory: Engram ✓                │
-     │  Workflow: SDD (9 skills) ✓      │
-     │  Code Review: GGA (claude) ✓     │
-     │  Coding Skills: 15 skills ✓      │
-     │  MCP: Context7, Notion ✓         │
-     │  Theme: Gentleman Dark ✓         │
+     │  Memory: Engram                 │
+     │  Workflow: SDD (9 skills)       │
+     │  Code Review: GGA (claude)      │
+     │  Coding Skills: 15 skills       │
+     │  MCP: Context7, Notion          │
+     │  Theme: Gentleman Dark          │
      │                                  │
      │  [Install]  [Back]               │
      └──────────┬──────────────────────┘
@@ -496,14 +496,14 @@ curl -sL get.gentleman.ai/ai | sh
      ┌─────────────────────────────────┐
      │  Configuring...                  │
      │                                  │
-     │  ✓ Installing Engram             │
-     │  ✓ Installing GGA               │
-     │  ✓ Configuring Claude Code       │
-     │    ✓ Skills (22 files)           │
-     │    ✓ MCP servers                 │
-     │    ✓ Engram plugin               │
-     │    ✓ Permissions & theme         │
-     │  ✓ Configuring GGA (claude)      │
+     │   Installing Engram             │
+     │   Installing GGA               │
+     │   Configuring Claude Code       │
+     │     Skills (22 files)           │
+     │     MCP servers                 │
+     │     Engram plugin               │
+     │     Permissions & theme         │
+     │   Configuring GGA (claude)      │
      │  ◌ Configuring OpenCode...       │
      │    [████████░░] 80%              │
      └──────────┬──────────────────────┘
@@ -523,7 +523,7 @@ curl -sL get.gentleman.ai/ai | sh
      │                                  │
      │  Agents configured: 2            │
      │  Skills installed: 22            │
-     │  Memory: Engram running ✓        │
+     │  Memory: Engram running         │
      └─────────────────────────────────┘
 ```
 
@@ -579,7 +579,7 @@ This section describes how all Gentleman ecosystem components interact with each
 
 ```mermaid
 graph TB
-    subgraph INSTALLER["🔧 GENTLEMAN AI INSTALLER (one-time setup)"]
+    subgraph INSTALLER[" GENTLEMAN AI INSTALLER (one-time setup)"]
         direction TB
         GAI[architect-ai binary]
         GAI --> DEP_ENGINE[Dependency Engine]
@@ -587,14 +587,14 @@ graph TB
         GAI --> ECO_ENGINE[Ecosystem Injector]
     end
 
-    subgraph DEPS["📦 DEPENDENCIES (installed first)"]
+    subgraph DEPS[" DEPENDENCIES (installed first)"]
         BREW[Homebrew]
         NODE[Node.js 20+]
         GIT[git]
         BASH_DEP[bash]
     end
 
-    subgraph AGENTS["🤖 AI CODING AGENTS (user's choice)"]
+    subgraph AGENTS[" AI CODING AGENTS (user's choice)"]
         CC[Claude Code]
         OC[OpenCode]
         GEM[Gemini CLI]
@@ -604,17 +604,17 @@ graph TB
         OTHER[Other agents...]
     end
 
-    subgraph ECOSYSTEM["⚡ GENTLEMAN ECOSYSTEM (injected into agents)"]
+    subgraph ECOSYSTEM[" GENTLEMAN ECOSYSTEM (injected into agents)"]
         direction TB
-        ENGRAM[🧠 Engram<br/>Persistent Memory]
-        SDD[📋 SDD Skills<br/>Spec-Driven Development]
-        GGA_COMP[🛡️ GGA<br/>Guardian Angel Code Review]
-        SKILLS[📚 Coding Skills<br/>React, TS, Tailwind, etc.]
-        MCP[🔌 MCP Servers<br/>Context7, Notion, Jira]
-        PERSONA[🎭 Persona & Config<br/>Gentleman / Neutral / Custom]
+        ENGRAM[ Engram<br/>Persistent Memory]
+        SDD[ SDD Skills<br/>Spec-Driven Development]
+        GGA_COMP[ GGA<br/>Guardian Angel Code Review]
+        SKILLS[ Coding Skills<br/>React, TS, Tailwind, etc.]
+        MCP[ MCP Servers<br/>Context7, Notion, Jira]
+        PERSONA[ Persona & Config<br/>Gentleman / Neutral / Custom]
     end
 
-    subgraph RUNTIME["🏃 DAILY DEVELOPMENT (after install)"]
+    subgraph RUNTIME[" DAILY DEVELOPMENT (after install)"]
         DEV[Developer]
     end
 
@@ -790,10 +790,10 @@ flowchart TD
     subgraph PHASE_7["Phase 7: Verification"]
         direction TB
         VERIFY[Health checks]
-        VERIFY --> CHECK_ENGRAM[Engram: GET /health ✓]
-        CHECK_ENGRAM --> CHECK_SKILLS[Skills: files exist ✓]
-        CHECK_SKILLS --> CHECK_MCP[MCP: configs valid ✓]
-        CHECK_MCP --> CHECK_GGA[GGA: gga --version ✓]
+        VERIFY --> CHECK_ENGRAM[Engram: GET /health ]
+        CHECK_ENGRAM --> CHECK_SKILLS[Skills: files exist ]
+        CHECK_SKILLS --> CHECK_MCP[MCP: configs valid ]
+        CHECK_MCP --> CHECK_GGA[GGA: gga --version ]
     end
 
     CHECK_GGA --> DONE([Complete!<br/>Show next steps])
@@ -916,9 +916,9 @@ sequenceDiagram
     Dev->>GGA: git commit -m "feat: add auth"
     GGA->>GGA: Read staged files<br/>+ AGENTS.md rules
     GGA->>Agent: Review code against standards
-    Agent-->>GGA: STATUS: PASSED ✓
+    Agent-->>GGA: STATUS: PASSED 
     GGA->>GGA: Cache passed files (SHA256)
-    GGA-->>Dev: Commit allowed ✓
+    GGA-->>Dev: Commit allowed 
 
     Note over Dev,GGA: === SESSION END ===
 

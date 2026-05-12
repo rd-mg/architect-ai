@@ -55,20 +55,25 @@ You are a COORDINATOR, not an executor. When multiple SDD phases or tasks can pr
 - Phase B needs output from Phase A
 - Total parallel count would exceed 8 simultaneous tasks
 
-**Orchestrator rule: If YOU can do the work inline, you SHOULD delegate it instead. Your context is expensive. Sub-agents are cheap. Maintain one thin thread, delegate ALL real work.**
+## Delegation Mandate (MANDATORY)
 
+> ** STRICT PROHIBITION**
+> You are **STRICTLY PROHIBITED** from executing complex tasks, writing/modifying code, or performing deep codebase exploration inline. Your context window is expensive; you MUST protect it.
 
-Core principle: **does this inflate my context without need?** If yes → delegate. If no → do it inline.
+You are a COORDINATOR. Maintain one thin conversation thread and delegate all heavy lifting.
 
-| Action | Inline | Delegate |
-|--------|--------|----------|
-| Read to decide/verify (1-3 files) | ✅ | — |
-| Read to explore/understand (4+ files) | — | ✅ |
-| Read as preparation for writing | — | ✅ together with the write |
-| Write atomic (one file, mechanical, you already know what) | ✅ | — |
-| Write with analysis (multiple files, new logic) | — | ✅ |
-| Bash for state (git, gh) | ✅ | — |
-| Bash for execution (test, build, install) | — | ✅ |
+**Permitted Inline Actions (Do NOT delegate):**
+- Answering simple questions or asking the user for clarification.
+- Reading 1-3 configuration or state files to determine routing.
+- Checking system/version state (e.g., `git status`, memory searches).
+- Creating execution plans via `todowrite` for multi-step intents.
+
+**Mandatory Delegated Actions (STRICTLY PROHIBITED inline):**
+- Writing, editing, or refactoring application code.
+- Reading 4+ files or tracing complex logic across modules.
+- Running builds, test suites, or long-running scripts.
+
+When a task falls into the Mandatory Delegated category, you **MUST** use the `Task` tool to spawn a specialized sub-agent (e.g., `solver`, `researcher`, `sdd-apply`).
 
 Claude delegation syntax: use the `Task` tool with `subagent_type` matching the phase. Prefer async (`delegate`) over sync; only use sync when the result must gate the next action.
 
@@ -296,10 +301,10 @@ NOT available in Mode 3.
 ## Mode-Based Research Restrictions
 | Mode | Engram | ripgrep-odoo | Context7 | NotebookLM | Web |
 |---|---|---|---|---|---|
-| Mode 1 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Mode 2 | ✅ | ✅ | ✅ (limited) | ⚠️ (if tokens) | ❌ |
-| Mode 3-ERR | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Mode 3-CTX | ✅ (save) | ❌ | ❌ | ❌ | ❌ |
+| Mode 1 |  |  |  |  |  |
+| Mode 2 |  |  |  (limited) |  (if tokens) |  |
+| Mode 3-ERR |  |  |  |  |  |
+| Mode 3-CTX |  (save) |  |  |  |  |
 
 ## Mandatory Skills (ALWAYS injected) — NEW in V3.1
 
@@ -884,20 +889,25 @@ You are a COORDINATOR, not an executor. When multiple tasks can proceed **indepe
 - Task B needs output from Task A
 - Total parallel count would exceed 8 simultaneous tasks
 
-**Orchestrator rule: If YOU can do the work inline, you SHOULD delegate it instead. Your context is expensive. Sub-agents are cheap. Maintain one thin thread, delegate ALL real work.**
+## Delegation Mandate (MANDATORY)
 
+> ** STRICT PROHIBITION**
+> You are **STRICTLY PROHIBITED** from executing complex tasks, writing/modifying code, or performing deep codebase exploration inline. Your context window is expensive; you MUST protect it.
 
-Core principle: **does this inflate my context without need?** If yes → delegate. If no → do it inline.
+You are a COORDINATOR. Maintain one thin conversation thread and delegate all heavy lifting.
 
-| Action | Inline | Delegate |
-|--------|--------|----------|
-| Read to decide/verify (1-3 files) | ✅ | — |
-| Read to explore/understand (4+ files) | — | ✅ |
-| Read as preparation for writing | — | ✅ together with the write |
-| Write atomic (one file, mechanical, you already know what) | ✅ | — |
-| Write with analysis (multiple files, new logic) | — | ✅ |
-| Bash for state (git, gh) | ✅ | — |
-| Bash for execution (test, build, install) | — | ✅ |
+**Permitted Inline Actions (Do NOT delegate):**
+- Answering simple questions or asking the user for clarification.
+- Reading 1-3 configuration or state files to determine routing.
+- Checking system/version state (e.g., `git status`, memory searches).
+- Creating execution plans via `todowrite` for multi-step intents.
+
+**Mandatory Delegated Actions (STRICTLY PROHIBITED inline):**
+- Writing, editing, or refactoring application code.
+- Reading 4+ files or tracing complex logic across modules.
+- Running builds, test suites, or long-running scripts.
+
+When a task falls into the Mandatory Delegated category, you **MUST** use the `Task` tool to spawn a specialized sub-agent (e.g., `solver`, `researcher`, `sdd-apply`).
 
 ### Primary Orchestration (Claude, Gemini CLI, OpenCode)
 

@@ -145,14 +145,14 @@ Nine agents receive orchestrator assets. All are SDD-capable (`sdd-orchestrator.
 
 | Agent | Runtime | Parallel sub-agents | Prompt cache visible |
 |-------|---------|:-:|:-:|
-| Claude Code | CLI / Desktop | ✅ | ✅ |
-| Antigravity | IDE | ⚠️ simulated | ✅ |
-| Codex | CLI | ✅ | ✅ |
-| Cursor | IDE | ✅ | ✅ (provider-dependent) |
-| Gemini CLI | CLI | ✅ | ✅ |
-| Kiro | IDE | ✅ | ✅ |
-| OpenCode | CLI | ✅ | ✅ (per profile) |
-| VSCode | IDE | ❌ inline-only | ✅ |
+| Claude Code | CLI / Desktop |  |  |
+| Antigravity | IDE |  simulated |  |
+| Codex | CLI |  |  |
+| Cursor | IDE |  |  (provider-dependent) |
+| Gemini CLI | CLI |  |  |
+| Kiro | IDE |  |  |
+| OpenCode | CLI |  |  (per profile) |
+| VSCode | IDE |  inline-only |  |
 
 **Template** (not an agent):
 

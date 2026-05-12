@@ -65,11 +65,11 @@ class ProjectTask(models.Model):
 ## Anti-Patterns
 
 ```python
-# ❌ NEVER update hr.employee active status without checking related user status.
+#  NEVER update hr.employee active status without checking related user status.
 
-# ❌ NEVER use float_time widget for durations longer than 24h without custom logic.
+#  NEVER use float_time widget for durations longer than 24h without custom logic.
 
-# ❌ NEVER bypass the project.task state machine when integrating with Sales.
+#  NEVER bypass the project.task state machine when integrating with Sales.
 ```
 
 ---

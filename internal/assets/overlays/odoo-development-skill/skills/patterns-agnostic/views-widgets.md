@@ -69,17 +69,17 @@ Consolidated from the following source files:
 
 ### Reliable Selectors
 ```xml
-<!-- ✅ GOOD: use hasclass() — robust against class order changes -->
+<!--  GOOD: use hasclass() — robust against class order changes -->
 <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
     <button .../>
 </xpath>
 
-<!-- ✅ GOOD: use named attributes -->
+<!--  GOOD: use named attributes -->
 <xpath expr="//field[@name='partner_id']" position="after">
     <field name="custom_field"/>
 </xpath>
 
-<!-- ❌ BAD: position-based xpath breaks when siblings are added -->
+<!--  BAD: position-based xpath breaks when siblings are added -->
 <xpath expr="//group[2]/field[1]" position="replace">
 ```
 
@@ -116,11 +116,11 @@ registry.category("fields").add("my_widget", { component: MyWidget });
 ## Anti-Patterns
 
 ```xml
-<!-- ❌ NEVER use contains(@class) in XPath — use hasclass() instead. -->
+<!--  NEVER use contains(@class) in XPath — use hasclass() instead. -->
 
-<!-- ❌ NEVER use attrs= in v17+ — Use invisible="state == 'done'" directly. -->
+<!--  NEVER use attrs= in v17+ — Use invisible="state == 'done'" directly. -->
 
-<!-- ❌ NEVER use <tree> in v18+ — Use <list> instead. -->
+<!--  NEVER use <tree> in v18+ — Use <list> instead. -->
 ```
 
 ---
@@ -129,7 +129,7 @@ registry.category("fields").add("my_widget", { component: MyWidget });
 
 | Feature | v14-v16 | v17 | v18 | v19 |
 |---------|---------|-----|-----|-----|
-| `attrs=` | ✅ | ❌ removed | ❌ | ❌ |
-| `<tree>` | ✅ | ✅ | `<list>` | `<list>` |
-| `invisible=` | partial | ✅ full | ✅ | ✅ |
+| `attrs=` |  |  removed |  |  |
+| `<tree>` |  |  | `<list>` | `<list>` |
+| `invisible=` | partial |  full |  |  |
 | OWL | 1.x / 2.x | 2.x | 2.x | 3.x |

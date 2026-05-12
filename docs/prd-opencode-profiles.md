@@ -98,7 +98,7 @@ Currently, this is a manual headache. This feature solves it.
 │  OpenCode SDD Profiles                                   │
 │                                                          │
 │  Existing profiles:                                      │
-│    ✦ default ─── anthropic/claude-opus-4                 │
+│     default ─── anthropic/claude-opus-4                 │
 │    • cheap ───── anthropic/claude-haiku-3.5              │
 │    • gemini ──── google/gemini-2.5-pro                   │
 │                                                          │
@@ -442,7 +442,7 @@ Sync Start
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                          │
-│  ★  Gentleman AI Ecosystem — v0.x.x                     │
+│    Gentleman AI Ecosystem — v0.x.x                     │
 │     Supercharge your AI agents.                          │
 │                                                          │
 │  ▸ Install Ecosystem                                     │
@@ -468,7 +468,7 @@ Sync Start
 │  creates its own orchestrator (visible with Tab).        │
 │                                                          │
 │  Existing profiles:                                      │
-│    ✦ default ─── anthropic/claude-opus-4                 │
+│     default ─── anthropic/claude-opus-4                 │
 │  ▸   cheap ───── anthropic/claude-haiku-3.5              │
 │      gemini ──── google/gemini-2.5-pro                   │
 │                                                          │
@@ -606,14 +606,14 @@ If `~/.cache/opencode/models.json` does not exist (OpenCode has never run), prof
 
 | Input | Valid? | Reason |
 |-------|--------|--------|
-| `cheap` | ✓ | Simple slug |
-| `premium-v2` | ✓ | Hyphens allowed |
-| `my profile` | ✗ | Spaces not allowed |
-| `default` | ✗ | Reserved |
+| `cheap` |  | Simple slug |
+| `premium-v2` |  | Hyphens allowed |
+| `my profile` |  | Spaces not allowed |
+| `default` |  | Reserved |
 | `LOUD` | → `loud` | Auto-lowercased |
-| `sdd-orchestrator` | ✗ | Would create `sdd-orchestrator-sdd-orchestrator` — confusing |
-| `a` | ✓ | Minimum 1 char |
-| (empty) | ✗ | Must have a name |
+| `sdd-orchestrator` |  | Would create `sdd-orchestrator-sdd-orchestrator` — confusing |
+| `a` |  | Minimum 1 char |
+| (empty) |  | Must have a name |
 
 ### 8.3 Model Inheritance for Sub-agents
 

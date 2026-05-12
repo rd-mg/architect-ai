@@ -78,7 +78,7 @@ func renderProfileNameStep(draft model.Profile, nameInput string, namePos int, n
 		b.WriteString("\n\n")
 
 		if nameErr != "" {
-			b.WriteString(styles.ErrorStyle.Render("✗ " + nameErr))
+			b.WriteString(styles.ErrorStyle.Render(" " + nameErr))
 			b.WriteString("\n\n")
 		}
 	}

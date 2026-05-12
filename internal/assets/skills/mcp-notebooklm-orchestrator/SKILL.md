@@ -42,11 +42,11 @@ See `_shared/research-routing.md` for the full routing table.
 
 ## What this skill does NOT do (enforced)
 
-- ❌ Create new notebooks
-- ❌ Upload sources
-- ❌ Generate audio overviews
-- ❌ Create video overviews, mind maps, or Studio content
-- ❌ Write to notebooks
+-  Create new notebooks
+-  Upload sources
+-  Generate audio overviews
+-  Create video overviews, mind maps, or Studio content
+-  Write to notebooks
 
 **Any attempt to create artifacts must be redirected** — tell the user to go to the NotebookLM web app. This skill is read-only on content; it may only edit metadata.
 

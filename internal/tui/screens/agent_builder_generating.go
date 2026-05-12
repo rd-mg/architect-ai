@@ -14,7 +14,7 @@ func RenderABGenerating(engineName string, spinnerFrame int, genErr error) strin
 	b.WriteString("\n\n")
 
 	if genErr != nil {
-		b.WriteString(styles.ErrorStyle.Render("✗ Generation failed"))
+		b.WriteString(styles.ErrorStyle.Render(" Generation failed"))
 		b.WriteString("\n")
 		b.WriteString(styles.SubtextStyle.Render("  Engine: " + engineName))
 		b.WriteString("\n")

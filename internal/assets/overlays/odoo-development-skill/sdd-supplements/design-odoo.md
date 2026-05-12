@@ -115,9 +115,9 @@ Every new model requires explicit security design:
 ### Access (ir.model.access.csv)
 | User Group | Read | Write | Create | Delete |
 |-----------|:----:|:-----:|:------:|:------:|
-| base.group_user | ✓ | | | |
-| sales_team.group_sale_salesman | ✓ | ✓ | ✓ | |
-| sales_team.group_sale_manager | ✓ | ✓ | ✓ | ✓ |
+| base.group_user |  | | | |
+| sales_team.group_sale_salesman |  |  |  | |
+| sales_team.group_sale_manager |  |  |  |  |
 
 ### Record Rules (ir.rule)
 - {Rule name}: {domain filter} — {reason}

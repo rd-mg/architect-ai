@@ -37,7 +37,7 @@ B5  → column B (2), row 5
 AA1 → column 27, row 1
 ```
 
-Column letter ↔ number conversion:
+Column letter  number conversion:
 ```python
 def col_letter(n):  # 1-based → letter
     r = ""
