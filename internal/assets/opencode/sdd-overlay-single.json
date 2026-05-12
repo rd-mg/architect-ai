@@ -1,6 +1,7 @@
 {
   "plugin": [
-    "./plugins/background-agents.ts"
+    "./plugins/background-agents.ts",
+    "opencode-gemini-auth@latest"
   ],
   "agent": {
     "sdd-orchestrator": {

@@ -6,7 +6,7 @@ description: >
 license: MIT
 metadata:
   author: rd-mg
-  version: "1.0"
+  version: "2.0"
 ---
 
 ## Persistence
@@ -21,10 +21,15 @@ Follow `_shared/mode-branching.md` for artifact-store branching (metadata only).
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
+You generate or update the **skill registry** — a dynamic catalog of available skills with **compact rules** (pre-digested, 5-15 line summaries).
 
-You generate or update the **skill registry** — a catalog of all available skills with **compact rules** (pre-digested, 5-15 line summaries) that any delegator injects directly into sub-agent prompts. Sub-agents do NOT read the registry or individual SKILL.md files — they receive compact rules pre-resolved in their launch prompt.
+## Lazy Load Protocol
 
-This is the foundation of the **Skill Resolver Protocol** (see `_shared/skill-resolver.md`). The registry is built ONCE (expensive), then read cheaply at every delegation.
+The project uses a lazy-load architecture:
+1. Skills are discovered via `glob` dynamically at runtime.
+2. The kernel's intent router handles top-level routing.
+3. This skill-registry generates compact rules for injection into sub-agent prompts.
+4. No static index is maintained in the kernel.
 
 ## When to Run
 
@@ -35,41 +40,33 @@ This is the foundation of the **Skill Resolver Protocol** (see `_shared/skill-re
 
 ## What to Do
 
-### Step 1: Scan User Skills
+### Step 1: Scan Skills
 
-1. Glob for `*/SKILL.md` files across ALL known skill directories. Check every path below — scan ALL that exist, not just the first match:
-
-   **User-level (global skills):**
-   - `~/.claude/skills/` — Claude Code
-   - `~/.config/opencode/skills/` — OpenCode
-   - `~/.gemini/skills/` — Gemini CLI
-   - `~/.cursor/skills/` — Cursor
-   - `~/.copilot/skills/` — VS Code Copilot
-   - The parent directory of this skill file (catch-all for any tool)
-
-   **Project-level (workspace skills):**
-   - `{project-root}/.claude/skills/` — Claude Code
-   - `{project-root}/.gemini/skills/` — Gemini CLI
-   - `{project-root}/.agent/skills/` — Antigravity (workspace)
-   - `{project-root}/skills/` — Generic
-
-2. **SKIP `sdd-*` and `_shared`** — those are SDD workflow skills, not coding/task skills
-3. Also **SKIP `skill-registry`** — that's this skill
-4. **Deduplicate** — if the same skill name appears in multiple locations, keep the project-level version (more specific). If both are user-level, keep the first found.
-5. For each skill found, read the **full SKILL.md** (if a SKILL.md exceeds 200 lines, focus on the frontmatter and Critical Patterns / Rules sections only) to extract:
-   - `name` field (from frontmatter)
-   - `description` field → extract the trigger text (after "Trigger:" in the description)
-   - **Compact rules** — the actionable patterns and constraints (see Step 1b)
-6. Build a table of: Trigger | Skill Name | Full Path
+1. **Auto-Installed Skills (skills-lock.json)**:
+   - Check for `skills-lock.json` in the project root.
+   - If found, parse it to get the list of auto-installed skill names.
+   - For each auto-installed skill, check if it is already present in the filesystem (might be cached).
+   - If cached, include it in the scan.
+   - If not cached, note it as "available but not downloaded".
+2. **Filesystem Skills (glob)**:
+   - Glob `internal/assets/skills/**/SKILL.md` for project-level skills.
+   - Glob `.agent/skills/**/SKILL.md` for workspace-level skills.
+3. **SKIP** `_shared`, `_archived`, and `skill-registry`.
+4. **Deduplicate**: Auto-installed skills > Project-level > Workspace-level.
+5. For each skill found, read the **full SKILL.md** (if >200 lines, focus on frontmatter and Critical Patterns/Rules) to extract:
+   - `name` field
+   - `description` field
+   - **Compact rules** (see Step 1b)
+6. Do NOT build a static trigger table.
 
 ### Step 1b: Generate Compact Rules
 
-For each skill found in Step 1, generate a **compact rules block** (5-15 lines max) containing ONLY:
+For each skill found, generate a **compact rules block** (5-15 lines max) containing ONLY:
 - Actionable rules and constraints ("do X", "never Y", "prefer Z over W")
 - Key patterns with one-line examples where critical
 - Breaking changes or gotchas that would cause bugs if missed
 
-**DO NOT include**: purpose/motivation, when-to-use, full code examples, installation steps, or anything the sub-agent doesn't need to APPLY the skill.
+**DO NOT include**: purpose/motivation, when-to-use, full code examples, installation steps.
 
 Format per skill:
 ```markdown
@@ -79,30 +76,13 @@ Format per skill:
 - ...
 ```
 
-**Example** — compact rules for a React 19 skill:
-```markdown
-### react-19
-- No useMemo/useCallback — React Compiler handles memoization automatically
-- use() hook for promises/context, replaces useEffect for data fetching
-- Server Components by default, add 'use client' only for interactivity/hooks
-- ref is a regular prop — no forwardRef needed
-- Actions: use useActionState for form mutations, useOptimistic for optimistic UI
-- Metadata: export metadata object from page/layout, no <Head> component
-```
-
-**The compact rules are the MOST IMPORTANT output of this skill.** They are what sub-agents actually receive. Invest time making them accurate and concise.
+**The compact rules are the MOST IMPORTANT output of this skill.**
 
 ### Step 2: Scan Project Conventions
 
-1. Check the project root for convention files. Look for:
-   - `agents.md` or `AGENTS.md`
-   - `CLAUDE.md` (only project-level, not `~/.claude/CLAUDE.md`)
-   - `.cursorrules`
-   - `GEMINI.md`
-   - `copilot-instructions.md`
-2. **If an index file is found** (e.g., `agents.md`, `AGENTS.md`): READ its contents and extract all referenced file paths. These index files typically list project conventions with paths — extract every referenced path and include it in the registry table alongside the index file itself.
-3. For non-index files (`.cursorrules`, `CLAUDE.md`, etc.): record the file directly.
-4. The final table should include the index file AND all paths it references — zero extra hops for sub-agents.
+1. Check the project root for convention files: `agents.md`, `AGENTS.md`, `CLAUDE.md` (project-level only), `.cursorrules`, `GEMINI.md`, `copilot-instructions.md`.
+2. **If an index file is found**: READ its contents and extract all referenced file paths. Include referenced paths in the registry table.
+3. For non-index files, record the file directly.
 
 ### Step 3: Write the Registry
 
@@ -111,50 +91,38 @@ Build the registry markdown:
 ```markdown
 # Skill Registry
 
-**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.
+**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts.
 
-See `_shared/skill-resolver.md` for the full resolution protocol.
+## Lazy Load Protocol
+The kernel handles top-level routing. Skills are loaded on demand. 
 
-## User Skills
+## Skills Index
+Use `glob internal/assets/skills/**/SKILL.md` or `glob .agent/skills/**/SKILL.md` to discover skills dynamically.
 
-| Trigger | Skill | Path |
-|---------|-------|------|
-| {trigger from frontmatter} | {skill name} | {full path to SKILL.md} |
-| ... | ... | ... |
+## Auto-Installed Skills
+| Skill | Source | Status | Path |
+|-------|--------|--------|------|
+| {name} | {source} | cached / not cached | {path} |
 
-### Compact Rules
+## Compact Rules
 
 Pre-digested rules per skill. Delegators copy matching blocks into sub-agent prompts as `## Project Standards (auto-resolved)`.
 
 ### {skill-name-1}
 - Rule 1
-- Rule 2
 - ...
-
-### {skill-name-2}
-- Rule 1
-- Rule 2
-- ...
-
-{repeat for each skill}
 
 ## Project Conventions
 
 | File | Path | Notes |
 |------|------|-------|
-| {index file} | {path} | Index — references files below |
-| {referenced file} | {extracted path} | Referenced by {index file} |
-| {standalone file} | {path} | |
-
-Read the convention files listed above for project-specific patterns and rules. All referenced paths have been extracted — no need to read index files to discover more.
+| {file} | {path} | |
 ```
 
 ### Step 4: Persist the Registry
 
 **This step is MANDATORY — do NOT skip it.**
-Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
-
-Note: This skill defaults to **hybrid** behavior regardless of session mode to ensure the orchestrator can always resolve skills from the filesystem or memory.
+Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`. Note: This skill defaults to **hybrid** behavior.
 
 ### Step 5: Return Summary
 
@@ -165,11 +133,10 @@ Note: This skill defaults to **hybrid** behavior regardless of session mode to e
 **Location**: .atl/skill-registry.md
 **Engram**: {saved / not available}
 
-### User Skills Found
-| Skill | Trigger |
-|-------|---------|
-| {name} | {trigger} |
-| ... | ... |
+### Skills Processed
+| Skill | Compact Rules Count |
+|-------|---------------------|
+| {name} | {count} |
 
 ### Project Conventions Found
 | File | Path |
@@ -177,17 +144,15 @@ Note: This skill defaults to **hybrid** behavior regardless of session mode to e
 | {file} | {path} |
 
 ### Next Steps
-The orchestrator reads this registry once per session and passes pre-resolved skill paths to sub-agents via their launch prompts.
-To update after installing/removing skills, run this again.
+The orchestrator reads this registry once per session. To discover skills dynamically, use glob.
 ```
 
 ## Rules
 
 - ALWAYS write `.atl/skill-registry.md` regardless of any SDD persistence mode
 - ALWAYS save to engram if the `mem_save` tool is available
-- SKIP `sdd-*`, `_shared`, and `skill-registry` directories when scanning
-- Read SKILL.md files (respecting the 200-line guard in Step 1) to generate accurate compact rules — this is a build-time cost, not a runtime cost
-- Compact rules MUST be 5-15 lines per skill — concise, actionable, no fluff
-- Include ALL convention index files found (not just the first)
-- If no skills or conventions are found, write an empty registry (so sub-agents don't waste time searching)
-- Add `.atl/` to the project's `.gitignore` if it exists and `.atl` is not already listed
+- Check `skills-lock.json` BEFORE scanning filesystem.
+- SKIP `_shared`, `_archived`, and `skill-registry` directories when scanning.
+- Compact rules MUST be 5-15 lines per skill.
+- If an auto-installed skill is not cached, note that it needs to be downloaded.
+- Add `.atl/` to the project's `.gitignore` if not listed.
