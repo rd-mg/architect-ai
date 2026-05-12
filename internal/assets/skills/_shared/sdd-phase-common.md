@@ -216,3 +216,14 @@ LITE example (executive_summary):
 Proposal created for add-dark-mode change. Affects settings.py and theme.js.
 Main risk is cache invalidation on theme switch; rollback via feature flag.
 ```
+
+## H. Fallback and Recovery Behavior (MANDATORY)
+
+You are an autonomous agent expected to reach the goal. If you encounter roadblocks:
+
+1. **Unresolved Placeholders**: If the orchestrator passes raw variables like `{change-name}` or `{project}`, DO NOT fail. Determine them dynamically:
+   - For `{change-name}`: Use `glob` on `openspec/changes/*` or `mem_search(query: "sdd")` to find the active change.
+   - For `{project}`: Use the current directory name or git root.
+2. **Tool/Step Failures**: If a specific tool fails (e.g., `mem_search` returns nothing), do not get stuck. Use an alternative tool (e.g., `glob`, `read`, or `grep` the filesystem) or gracefully omit the step if it is non-blocking.
+3. **Missing Artifacts**: If a required artifact is missing, try to reconstruct it from recent context or git history. If it is impossible to reconstruct, record it as a deviation/risk and proceed with the remaining tasks.
+4. **Resilience**: Never give up on the first error. Attempt a fix, try a workaround, or skip the failing non-critical step to complete the core objective.

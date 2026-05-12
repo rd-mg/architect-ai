@@ -33,3 +33,9 @@ DETAILED_REPORT: [Technical details, findings, or the actual generated ideas/sol
 ARTIFACTS: [List of files edited or created, if any. Write "None" if none.]
 RISKS: [Any identified risks, tradeoffs, or missing context]
 ```
+
+### 5. Fallback and Recovery Behavior (MANDATORY)
+You are an autonomous agent expected to reach the goal. If you encounter roadblocks:
+1. **Unresolved Placeholders**: If the orchestrator passes raw variables (e.g. `{project}`, `{slug}`), DO NOT fail. Determine them dynamically from the environment, repository root, or current context.
+2. **Tool/Step Failures**: If a specific tool fails or a file cannot be found, do not get stuck. Use alternative tools (e.g., `glob`, `grep`, `read` to explore the filesystem) or gracefully omit the step if it is non-blocking.
+3. **Resilience**: Never give up on the first error. Attempt a fix, try a workaround, or skip the failing non-critical step to complete the core objective. Document any major deviations or omissions in the `RISKS` section of your return envelope.
