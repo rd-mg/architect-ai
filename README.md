@@ -479,6 +479,7 @@ architect-ai/
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| **V3.3.0** | 2026-05 | Gentleman Angel suite: Nonce DAG for state sync, Empirical Feedback Loop (+++Empirical) in phase protocols, context-aware pipeline integration (context.Context hardening), differential context injection via skill-registry.md indexing. |
 | **V3.2.1** | 2026-05 | Orchestrator directive improvements: Global System Directives (Caveman + Context-Mode), Primary vs Fallback orchestration modes, SDD Pipeline Enforcement (workflow validation, TDD prerequisite lock, testing protocol strictures, archival sequence with commit + doc updates). |
 | **V3.2** | 2026-05 | Manifest-first purge, bounded subprocess runner, Caveman output-only clarification, Engram tool routing, context-mode external companion policy, dot-directory scope guard, optional NotebookLM policy. |
 | V3.1 | 2026-04 | Artifact-store question asked explicitly; natural-language intent resolution; TUI deep purge; token-cache banner; ripgrep + bash-expert `bridge: always`; NotebookLM-first research routing |
