@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/rd-mg/architect-ai/internal/agents"
@@ -231,7 +232,10 @@ func buildStagePlan(selection model.Selection, resolved planner.ResolvedPlan) pi
 		prepare = nil
 	}
 
-	return pipeline.StagePlan{Prepare: prepare, Apply: apply}
+	return pipeline.StagePlan{
+		Prepare: []pipeline.StepGroup{pipeline.SingleGroup(prepare...)},
+		Apply:   []pipeline.StepGroup{pipeline.SingleGroup(apply...)},
+	}
 }
 
 type installRuntime struct {
@@ -245,7 +249,20 @@ type installRuntime struct {
 }
 
 type runtimeState struct {
+	mu       sync.Mutex
 	manifest backup.Manifest
+}
+
+func (s *runtimeState) setManifest(m backup.Manifest) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.manifest = m
+}
+
+func (s *runtimeState) getManifest() backup.Manifest {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.manifest
 }
 
 func newInstallRuntime(homeDir string, selection model.Selection, resolved planner.ResolvedPlan, profile system.PlatformProfile) (*installRuntime, error) {
@@ -303,7 +320,10 @@ func (r *installRuntime) stagePlan() pipeline.StagePlan {
 		})
 	}
 
-	return pipeline.StagePlan{Prepare: prepare, Apply: apply}
+	return pipeline.StagePlan{
+		Prepare: []pipeline.StepGroup{pipeline.SingleGroup(prepare...)},
+		Apply:   []pipeline.StepGroup{pipeline.SingleGroup(apply...)},
+	}
 }
 
 type prepareBackupStep struct {
@@ -367,7 +387,7 @@ func (s prepareBackupStep) Run() error {
 		}
 	}
 
-	s.state.manifest = manifest
+	s.state.setManifest(manifest)
 
 	// Retention pruning: remove oldest unpinned backups beyond the limit.
 	// Non-fatal: a prune failure must not prevent the install/sync from succeeding.
@@ -394,11 +414,11 @@ func (s rollbackRestoreStep) Run() error {
 }
 
 func (s rollbackRestoreStep) Rollback() error {
-	if len(s.state.manifest.Entries) == 0 {
+	if len(s.state.getManifest().Entries) == 0 {
 		return nil
 	}
 
-	return backup.RestoreService{}.Restore(s.state.manifest)
+	return backup.RestoreService{}.Restore(s.state.getManifest())
 }
 
 type agentInstallStep struct {

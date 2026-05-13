@@ -267,17 +267,97 @@ The resolved choice is cached per session and injected into every sub-agent prom
 
 ---
 
-## Tool Availability Check
+## Tool Availability Check (PARALLEL DISPATCH — all probes in ONE response)
 
-Before first delegation, probe available tools:
+Launch ALL of the following tool calls in the SAME response (parallel dispatch):
 
-1. Engram: `mem_search(query: "tool-test", project: "{project}")`
-2. NotebookLM: `mem_search(query: "notebooklm/")` presence + `notebooklm_list_notebooks()` probe
-3. Context7: presence of `context7_resolve` tool
-4. Other MCPs: per-tool status
+```
+[probe-1] mem_search(query: "tool-test", project: "{project}")
+[probe-2] mem_search(query: "notebooklm/", project: "{project}")
+[probe-3] mem_search(query: "sdd-session/{project}/artifact-mode", project: "{project}")
+[probe-4] (if context7_resolve is in tool list → mark available; otherwise → unavailable)
+```
+
+Wait for all results, then:
+- probe-1 result: Engram = available if no error / unavailable if error
+- probe-2 result: NotebookLM configured = available if hit
+- probe-3 result: Artifact mode = use cached value if hit; otherwise ask user
+- probe-4 result: Context7 = available if tool present
+
+### Session State Cache
+
+At session start, check:
+```
+mem_search(query: "session-state/{project}/tools", project: "{project}")
+```
+
+If hit AND age < 30min → USE cached tool availability. Skip all probes.
+If miss OR stale → Run parallel probe batch above.
+After probe → save:
+```
+mem_save(
+  title: "session-state/{project}/tools",
+  topic_key: "session-state/{project}/tools",
+  type: "session-cache",
+  project: "{project}",
+  content: JSON({ engram, notebooklm, context7, timestamp })
+)
+```
+
+Record as: `tools = { engram: bool, notebooklm: bool, context7: bool }`
+Cache to session memory (do not re-probe within same session).
 
 Include in every sub-agent prompt:
 ```
+## Available Tools
+- mem_search, mem_save, mem_get_observation: {available|NOT available}
+- notebooklm_*: {available|NOT available}
+- context7_*: {available|NOT available}
+- [other MCP tools]: {per-tool status}
+
+## Context-Mode Routing Policy
+{content of _shared/context-mode-routing-policy.md}
+```
+
+### Forwarded Session State
+
+When the General Orchestrator forwards to SDD Orchestrator, it passes tool state:
+```
+## Forwarded Session State
+- Tools: {engram: true, notebooklm: false, context7: true}
+- Artifact Mode: [if already resolved]
+- Exec Mode: [if already resolved]
+```
+
+SDD Orchestrator MUST check for `## Forwarded Session State` before running its own probes. If forwarded state exists, skip all tool probes and use forwarded values directly.
+
+---
+
+## Parallel Dispatch Table (STATIC — check before delegating)
+
+Before delegating any phase, look up the phase in this table.
+If `Parallelizable=YES`, you MUST emit ALL task tool calls in the same response.
+
+| Phase | Parallelizable | Condition | Parallel Scope |
+|---|---|---|---|
+| sdd-explore | YES | Multiple topics or modules | One agent per topic/module |
+| sdd-spec | YES | Multiple unrelated features | One agent per feature |
+| sdd-verify | YES | Tests AND static analysis | test-runner + linter in parallel |
+| sdd-apply | CONDITIONAL | Tasks modifying different files | Group by target file set |
+| sdd-propose | NO | Single coherent proposal | — |
+| sdd-design | NO | Single architecture doc | — |
+| sdd-tasks | NO | Depends on design output | — |
+| sdd-archive | NO | Sequential: merge → move → commit | — |
+
+### Enforcement Mechanism
+After deciding to delegate a phase:
+1. Look up phase in table above.
+2. If `Parallelizable=YES`: count work items (topics, features, test types).
+3. If count > 1: MUST launch multiple task calls in same response. Verify by counting your tool calls — if count == 1 for a parallelizable phase, PAUSE and split.
+4. If `Parallelizable=CONDITIONAL`: check if target files overlap. If no overlap → parallel. If overlap → sequential.
+
+NEVER emit a single task call for a YES-parallelizable phase with multiple work items.
+
 ## Available Tools
 - mem_search, mem_save, mem_get_observation: {available|NOT available}
 - notebooklm_*: {available|NOT available}

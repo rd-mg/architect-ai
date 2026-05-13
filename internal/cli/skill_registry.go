@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
 	"github.com/rd-mg/architect-ai/internal/components/skills"
 	"github.com/rd-mg/architect-ai/internal/scope"
+	"golang.org/x/sync/errgroup"
 )
 
 type skillEntry struct {
@@ -38,6 +40,25 @@ type assetEntry struct {
 	Type    string
 	Overlay string
 	Path    string
+}
+
+// registryVersionMarker identifies the registry format version.
+const registryVersionMarker = "<!-- architect-ai:registry:version:2 -->"
+
+// buildQuickIndex creates a machine-readable Quick Index section that allows
+// agents to resolve skills by trigger without reading the full registry.
+func buildQuickIndex(skillsByKind map[string][]skillEntry) string {
+	var b strings.Builder
+	b.WriteString("## Quick Index\n\n")
+	b.WriteString("| Skill | Kind | Trigger | Anchor |\n")
+	b.WriteString("|-------|------|---------|--------|\n")
+	for _, kind := range []string{"System", "SharedRule", "Project", "Overlay", "User"} {
+		for _, s := range skillsByKind[kind] {
+			anchor := "#skill-" + strings.ToLower(strings.ReplaceAll(s.Name, " ", "-"))
+			b.WriteString(fmt.Sprintf("| %s | %s | %s | [link](%s) |\n", s.Name, kind, escapeTable(s.Trigger), anchor))
+		}
+	}
+	return b.String()
 }
 
 func RunSkillRegistry(args []string, stdout io.Writer) error {
@@ -96,28 +117,45 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 		return fmt.Errorf("resolve user home directory: %w", err)
 	}
 
-	// 1. Collect all entries
+	// 1. Collect all entries in parallel using errgroup
+	type collectionResult struct {
+		skills []skillEntry
+		assets []assetEntry
+		err    error
+		origin string
+	}
+
+	results := make([]collectionResult, 3)
+	g, _ := errgroup.WithContext(context.Background())
+
+	g.Go(func() error {
+		skills, err := collectUserSkills(homeDir)
+		results[0] = collectionResult{skills: skills, err: err, origin: "user"}
+		return nil // non-fatal: log and continue
+	})
+
+	g.Go(func() error {
+		skills, err := collectProjectSkills(projectRoot)
+		results[1] = collectionResult{skills: skills, err: err, origin: "project"}
+		return nil
+	})
+
+	g.Go(func() error {
+		skills, assets, err := collectOverlayContent(projectRoot)
+		results[2] = collectionResult{skills: skills, assets: assets, err: err, origin: "overlay"}
+		return nil
+	})
+
+	_ = g.Wait()
+
+	// Fan-in: merge results (now safe — all goroutines done)
 	var allSkills []skillEntry
-	var conventions []conventionEntry
 	var assets []assetEntry
-
-	// User skills
-	userSkills, err := collectUserSkills(homeDir)
-	if err == nil {
-		allSkills = append(allSkills, userSkills...)
-	}
-
-	// Project skills
-	projectSkills, err := collectProjectSkills(projectRoot)
-	if err == nil {
-		allSkills = append(allSkills, projectSkills...)
-	}
-
-	// Overlay content
-	overlaySkills, overlayAssets, err := collectOverlayContent(projectRoot)
-	if err == nil {
-		allSkills = append(allSkills, overlaySkills...)
-		assets = append(assets, overlayAssets...)
+	for _, r := range results {
+		if r.err == nil {
+			allSkills = append(allSkills, r.skills...)
+			assets = append(assets, r.assets...)
+		}
 	}
 
 	// Deduplicate skills by name: project/overlay overrides user
@@ -130,15 +168,18 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	}
 
 	// Project conventions
-	conventions = collectProjectConventions(projectRoot)
+	conventions := collectProjectConventions(projectRoot)
 
-	// 2. Build Markdown sections
+	// 2. Build Markdown sections with v2 section markers
 	registryPath := filepath.Join(projectRoot, ".atl", "skill-registry.md")
 	existingContent, _ := os.ReadFile(registryPath)
 	content := string(existingContent)
 	if content == "" {
-		content = "# Skill Registry\n\n**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.\n"
+		content = registryVersionMarker + "\n\n# Skill Registry\n\n**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.\n"
 	}
+
+	// Quick Index — machine-readable section for agent resolution
+	content = filemerge.InjectMarkdownSection(content, "registry:index", buildQuickIndex(skillsByKind))
 
 	kinds := []string{"System", "SharedRule", "Project", "Overlay", "User"}
 	for _, kind := range kinds {

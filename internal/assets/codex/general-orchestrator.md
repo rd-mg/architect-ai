@@ -8,6 +8,30 @@ This is the CORE layer for all Non-SDD workflows. Specialized agent protocols ar
 
 ---
 
+## ROUTER GATE (Execute FIRST — before any tool calls, before session setup)
+
+Read the user's message. In ONE decision step, classify it:
+
+| Classification | Criteria | Action |
+|---|---|---|
+| `SDD_INTENT` | Message matches SDD Pattern Table below | STOP. Do not run Tool Availability Check. Transfer directly to SDD Orchestrator with full user message. |
+| `NON_SDD` | All other intents | Continue with General Orchestrator setup below. |
+
+### SDD Pattern Table (fast-path — no LLM needed, pure string match)
+- Contains: "use sdd", "start sdd", "begin sdd", "apply spec-driven", "sdd-new", "sdd-continue", "sdd-ff", "sdd-explore", "sdd-init", "sdd-verify", "sdd-archive", "sdd-onboard", "spec-driven"
+- Regex equivalent: `/\b(sdd|spec-driven|sdd-new|sdd-ff|sdd-continue)\b/i`
+
+### On SDD_INTENT
+→ Emit: `[Router] SDD intent detected. Forwarding to SDD Orchestrator.`
+→ DO NOT run Tool Availability Check.
+→ DO NOT run Session-Setup Triplet (SDD Orchestrator owns this).
+→ IMMEDIATELY transfer to SDD Orchestrator skill with the original user message.
+
+### On NON_SDD
+→ Continue reading this document from "## General Orchestrator".
+
+---
+
 ## Global System Directives
 
 ### Caveman Output Compression (MANDATORY — ALL interactions)
@@ -125,17 +149,68 @@ You must provide a `topic_key` to the sub-agent when delegating:
 
 ---
 
-## Tool Availability Check
+## Tool Availability Check (PARALLEL DISPATCH — all probes in ONE response)
 
-Before first delegation, probe available tools:
+Launch ALL of the following tool calls in the SAME response (parallel dispatch):
 
-1. Engram: `mem_search(query: "tool-test", project: "{project}")`
-2. NotebookLM: `mem_search(query: "notebooklm/")` presence + `notebooklm_list_notebooks()` probe
-3. Context7: presence of `context7_resolve` tool
-4. Other MCPs: per-tool status
+```
+[probe-1] mem_search(query: "tool-test", project: "{project}")
+[probe-2] mem_search(query: "notebooklm/", project: "{project}")
+[probe-3] mem_search(query: "session-state/{project}/tools", project: "{project}")
+[probe-4] (if context7_resolve is in tool list → mark available; otherwise → unavailable)
+```
+
+Wait for all results, then:
+- probe-1 result: Engram = available if no error / unavailable if error
+- probe-2 result: NotebookLM configured = available if hit
+- probe-3 result: Session tools cache = use cached value if hit (< 30min); otherwise proceed
+- probe-4 result: Context7 = available if tool present
+
+### Session State Cache
+
+At session start, check:
+```
+mem_search(query: "session-state/{project}/tools", project: "{project}")
+```
+
+If hit AND age < 30min → USE cached tool availability. Skip all probes.
+If miss OR stale → Run parallel probe batch above.
+After probe → save:
+```
+mem_save(
+  title: "session-state/{project}/tools",
+  topic_key: "session-state/{project}/tools",
+  type: "session-cache",
+  project: "{project}",
+  content: JSON({ engram, notebooklm, context7, timestamp })
+)
+```
+
+Record as: `tools = { engram: bool, notebooklm: bool, context7: bool }`
+Cache to session memory (do not re-probe within same session).
 
 Include in every sub-agent prompt:
 ```
+## Available Tools
+- mem_search, mem_save, mem_get_observation: {available|NOT available}
+- notebooklm_*: {available|NOT available}
+- context7_*: {available|NOT available}
+- [other MCP tools]: {per-tool status}
+
+## Context-Mode Routing Policy
+{content of _shared/context-mode-routing-policy.md}
+```
+
+When General Orchestrator forwards to SDD Orchestrator → pass tool state in handoff context:
+```
+## Forwarded Session State
+- Tools: {engram: true, notebooklm: false, context7: true}
+- Artifact Mode: [if already resolved]
+- Exec Mode: [if already resolved]
+```
+
+SDD Orchestrator MUST check for `## Forwarded Session State` before running its own probes.
+
 ## Available Tools
 - mem_search, mem_save, mem_get_observation: {available|NOT available}
 - notebooklm_*: {available|NOT available}

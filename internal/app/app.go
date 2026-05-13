@@ -278,17 +278,20 @@ func tuiExecute(
 
 	execResult := orchestrator.Execute(stagePlan)
 	if execResult.Err == nil {
-		// Persist the user's agent selection and model assignments so that future
-		// `sync` runs target only the installed agents and preserve model choices.
-		agentIDs := make([]string, 0, len(selection.Agents))
-		for _, a := range selection.Agents {
-			agentIDs = append(agentIDs, string(a))
-		}
-		// Non-fatal: a state write failure must not break an otherwise successful install.
-		_ = state.Write(homeDir, state.InstallState{
-			InstalledAgents:        agentIDs,
-			ClaudeModelAssignments: claudeAliasesToStrings(selection.ClaudeModelAssignments),
-			ModelAssignments:       modelAssignmentsToState(selection.ModelAssignments),
+		// Persist agent selection and model assignments using mutex-protected
+		// Manager to prevent data loss under concurrent TUI actions.
+		// tuiExecute runs in a tea.Program goroutine — state writes MUST go
+		// through stateManager.Merge, NOT state.Write directly.
+		stateManager := state.NewManager(homeDir)
+		_ = stateManager.Merge(func(s state.InstallState) state.InstallState {
+			agentIDs := make([]string, 0, len(selection.Agents))
+			for _, a := range selection.Agents {
+				agentIDs = append(agentIDs, string(a))
+			}
+			s.InstalledAgents = agentIDs
+			s.ClaudeModelAssignments = claudeAliasesToStrings(selection.ClaudeModelAssignments)
+			s.ModelAssignments = modelAssignmentsToState(selection.ModelAssignments)
+			return s
 		})
 	}
 
@@ -396,11 +399,13 @@ func applyOverrides(selection *model.Selection, overrides *model.SyncOverrides) 
 }
 
 // loadPersistedAssignments reads previously-saved model assignments from
-// state.json and populates the selection when the corresponding maps are empty.
+// state.json (via mutex-protected Manager) and populates the selection when
+// the corresponding maps are empty.
 // This ensures a plain `sync` (no TUI overrides, no CLI flags) preserves the
 // user's last-known model choices.
 func loadPersistedAssignments(homeDir string, selection *model.Selection) {
-	s, err := state.Read(homeDir)
+	stateManager := state.NewManager(homeDir)
+	s, err := stateManager.Read()
 	if err != nil {
 		return
 	}
@@ -428,27 +433,26 @@ func loadPersistedAssignments(homeDir string, selection *model.Selection) {
 }
 
 // persistAssignments writes the model assignments from selection back to
-// state.json using a read-merge-write pattern so that other fields
-// (InstalledAgents) are not lost.
+// state.json using a mutex-protected Manager so that concurrent TUI actions
+// (e.g., sync running while another install completes) don't corrupt state.
+// Uses read-merge-write pattern to preserve InstalledAgents.
 func persistAssignments(homeDir string, selection model.Selection) {
 	if len(selection.ClaudeModelAssignments) == 0 && len(selection.KiroModelAssignments) == 0 && len(selection.ModelAssignments) == 0 {
 		return
 	}
-	current, err := state.Read(homeDir)
-	if err != nil {
-		// State file may not exist yet (e.g. pre-state users).
-		current = state.InstallState{}
-	}
-	if len(selection.ClaudeModelAssignments) > 0 {
-		current.ClaudeModelAssignments = claudeAliasesToStrings(selection.ClaudeModelAssignments)
-	}
-	if len(selection.KiroModelAssignments) > 0 {
-		current.KiroModelAssignments = claudeAliasesToStrings(selection.KiroModelAssignments)
-	}
-	if len(selection.ModelAssignments) > 0 {
-		current.ModelAssignments = modelAssignmentsToState(selection.ModelAssignments)
-	}
-	_ = state.Write(homeDir, current)
+	stateManager := state.NewManager(homeDir)
+	_ = stateManager.Merge(func(current state.InstallState) state.InstallState {
+		if len(selection.ClaudeModelAssignments) > 0 {
+			current.ClaudeModelAssignments = claudeAliasesToStrings(selection.ClaudeModelAssignments)
+		}
+		if len(selection.KiroModelAssignments) > 0 {
+			current.KiroModelAssignments = claudeAliasesToStrings(selection.KiroModelAssignments)
+		}
+		if len(selection.ModelAssignments) > 0 {
+			current.ModelAssignments = modelAssignmentsToState(selection.ModelAssignments)
+		}
+		return current
+	})
 }
 
 // claudeAliasesToStrings converts a typed ClaudeModelAlias map to plain strings

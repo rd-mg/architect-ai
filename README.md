@@ -2,7 +2,7 @@
 
 > A multi-agent framework that turns any supported IDE or CLI (Claude Code, Cursor, Gemini CLI, Codex, Antigravity, Kiro, OpenCode, VSCode, and more) into a Spec-Driven Development (SDD) workspace. One orchestrator, many agents, shared persistent memory via Engram, and curated research routing (ripgrep → local → Context7 → internet-by-permission).
 
-**Status**: V3.2.1 — Orchestrator directive improvements (Global System Directives, Orchestration & Fallback, SDD Pipeline Enforcement)
+**Status**: V3.3.0 — Parallel multi-agent architecture with pipeline parallelization, skill registry concurrency, orchestrator routing fork, context compression, and state hardening
 
 ---
 

@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 // OrchestratorOption configures the orchestrator.
 type OrchestratorOption func(*Orchestrator)
 
@@ -38,15 +40,17 @@ func NewOrchestrator(policy RollbackPolicy, opts ...OrchestratorOption) *Orchest
 }
 
 func (o *Orchestrator) Execute(plan StagePlan) ExecutionResult {
-	o.indexSteps(plan.Prepare)
-	o.indexSteps(plan.Apply)
+	ctx := context.Background()
 
-	prepareResult := o.runner.Run(StagePrepare, plan.Prepare)
+	o.indexGroupSteps(plan.Prepare)
+	o.indexGroupSteps(plan.Apply)
+
+	prepareResult := o.runner.RunGroups(ctx, StagePrepare, plan.Prepare)
 	if !prepareResult.Success {
 		return ExecutionResult{Prepare: prepareResult, Err: prepareResult.Err}
 	}
 
-	applyResult := o.runner.Run(StageApply, plan.Apply)
+	applyResult := o.runner.RunGroups(ctx, StageApply, plan.Apply)
 	result := ExecutionResult{Prepare: prepareResult, Apply: applyResult}
 	if applyResult.Success {
 		return result
@@ -63,8 +67,10 @@ func (o *Orchestrator) Execute(plan StagePlan) ExecutionResult {
 	return result
 }
 
-func (o *Orchestrator) indexSteps(steps []Step) {
-	for _, step := range steps {
-		o.stepByID[step.ID()] = step
+func (o *Orchestrator) indexGroupSteps(groups []StepGroup) {
+	for _, group := range groups {
+		for _, step := range group.Steps {
+			o.stepByID[step.ID()] = step
+		}
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/rd-mg/architect-ai/internal/agents"
@@ -335,7 +336,7 @@ type syncRuntime struct {
 	agentIDs     []model.AgentID
 	backupRoot   string
 	state        *runtimeState
-	filesChanged int // accumulates changed-file count across all component steps
+	fileCounter  atomic.Int64 // accumulates changed-file count across all component steps
 }
 
 func newSyncRuntime(homeDir string, selection model.Selection) (*syncRuntime, error) {
@@ -386,11 +387,14 @@ func (r *syncRuntime) stagePlan() pipeline.StagePlan {
 			workspaceDir: r.workspaceDir,
 			agents:       r.agentIDs,
 			selection:    r.selection,
-			filesChanged: &r.filesChanged,
+			filesChanged: &r.fileCounter,
 		})
 	}
 
-	return pipeline.StagePlan{Prepare: prepare, Apply: apply}
+	return pipeline.StagePlan{
+		Prepare: []pipeline.StepGroup{pipeline.SingleGroup(prepare...)},
+		Apply:   []pipeline.StepGroup{pipeline.SingleGroup(apply...)},
+	}
 }
 
 // syncBackupTargets returns the file paths that need to be backed up
@@ -414,8 +418,8 @@ func syncBackupTargets(homeDir string, selection model.Selection, adapters []age
 // Unlike componentApplyStep, it ONLY calls inject functions —
 // no binary install, no engram setup, no persona injection.
 //
-// filesChanged is a shared counter pointer. Each step increments it by the
-// number of files that were actually written (i.e., whose content changed).
+// filesChanged is a shared atomic counter. Each step increments it atomically
+// by the number of files that were actually written (content changed).
 // This lets RunSync detect a true no-op when all assets are already current.
 type componentSyncStep struct {
 	id           string
@@ -424,7 +428,7 @@ type componentSyncStep struct {
 	workspaceDir string
 	agents       []model.AgentID
 	selection    model.Selection
-	filesChanged *int
+	filesChanged *atomic.Int64
 }
 
 func (s componentSyncStep) ID() string {
@@ -576,10 +580,10 @@ func (s componentSyncStep) Run() error {
 	}
 }
 
-// countChanged adds n to the shared filesChanged counter (nil-safe).
+// countChanged atomically adds n to the shared filesChanged counter (nil-safe).
 func (s componentSyncStep) countChanged(n int) {
 	if s.filesChanged != nil && n > 0 {
-		*s.filesChanged += n
+		s.filesChanged.Add(int64(n))
 	}
 }
 
@@ -626,7 +630,7 @@ func RunSyncWithSelection(homeDir string, selection model.Selection) (SyncResult
 	}
 
 	// Capture how many managed assets were actually changed.
-	result.FilesChanged = rt.filesChanged
+	result.FilesChanged = int(rt.fileCounter.Load())
 
 	// True no-op: agents were discovered but all managed assets were already
 	// current — no file was written or updated. Per spec scenario:
