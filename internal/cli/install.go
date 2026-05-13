@@ -14,6 +14,7 @@ type InstallFlags struct {
 	Preset     string
 	SDDMode    string
 	DryRun     bool
+	Watch      bool
 }
 
 func ParseInstallFlags(args []string) (InstallFlags, error) {
@@ -31,6 +32,7 @@ func ParseInstallFlags(args []string) (InstallFlags, error) {
 	fs.StringVar(&opts.Preset, "preset", "", "preset to apply")
 	fs.StringVar(&opts.SDDMode, "sdd-mode", "", "SDD orchestrator mode: single or multi (default: single)")
 	fs.BoolVar(&opts.DryRun, "dry-run", false, "preview plan without executing")
+	fs.BoolVar(&opts.Watch, "watch", false, "watch skill directories for changes and auto-regenerate the registry")
 
 	if err := fs.Parse(args); err != nil {
 		return InstallFlags{}, err

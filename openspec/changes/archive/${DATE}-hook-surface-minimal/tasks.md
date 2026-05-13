@@ -1,2 +1,0 @@
-- [x] 1. Create docs/hooks.md.
-- [x] 2. Implement internal/components/hooks/hooks.go.

@@ -245,7 +245,7 @@ func TestWriteLocalSkillRegistryIncludesDashboardTrigger(t *testing.T) {
 		t.Fatalf("EnableOverlaySkill() error = %v", err)
 	}
 
-	if err := WriteLocalSkillRegistry(projectRoot); err != nil {
+	if err := WriteLocalSkillRegistry(projectRoot, false); err != nil {
 		t.Fatalf("WriteLocalSkillRegistry() error = %v", err)
 	}
 

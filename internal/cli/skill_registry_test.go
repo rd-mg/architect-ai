@@ -42,7 +42,7 @@ func TestLayeredSkillScanning(t *testing.T) {
 	osUserHomeDir = func() (string, error) { return homeDir, nil }
 	defer func() { osUserHomeDir = oldHomeDir }()
 	// We'll just test that it writes the file and contains expected markers
-	err := WriteLocalSkillRegistry(tmp)
+	err := WriteLocalSkillRegistry(tmp, false)
 	if err != nil {
 		t.Fatalf("WriteLocalSkillRegistry failed: %v", err)
 	}
@@ -94,7 +94,7 @@ func TestWriteLocalSkillRegistry_VersionGating(t *testing.T) {
 	// Create manifest
 	os.WriteFile(filepath.Join(overlayRoot, "manifest.json"), []byte(`{"name":"odoo-development-skill","activation_state":"active"}`), 0644)
 
-	err := WriteLocalSkillRegistry(tmp)
+	err := WriteLocalSkillRegistry(tmp, false)
 	if err != nil {
 		t.Fatalf("WriteLocalSkillRegistry failed: %v", err)
 	}
@@ -145,7 +145,7 @@ func TestWriteLocalSkillRegistryConcurrent(t *testing.T) {
 	osUserHomeDir = func() (string, error) { return homeDir, nil }
 	defer func() { osUserHomeDir = oldHomeDir }()
 
-	err := WriteLocalSkillRegistry(tmp)
+	err := WriteLocalSkillRegistry(tmp, false)
 	if err != nil {
 		t.Fatalf("WriteLocalSkillRegistry failed: %v", err)
 	}
@@ -183,7 +183,7 @@ func TestWriteLocalSkillRegistryRace(t *testing.T) {
 
 	// Run twice to exercise concurrent collection paths
 	for i := 0; i < 2; i++ {
-		if err := WriteLocalSkillRegistry(tmp); err != nil {
+		if err := WriteLocalSkillRegistry(tmp, false); err != nil {
 			t.Fatalf("WriteLocalSkillRegistry iteration %d failed: %v", i, err)
 		}
 	}
@@ -203,7 +203,7 @@ func TestRegistryIndexSectionPresent(t *testing.T) {
 	osUserHomeDir = func() (string, error) { return homeDir, nil }
 	defer func() { osUserHomeDir = oldHomeDir }()
 
-	err := WriteLocalSkillRegistry(tmp)
+	err := WriteLocalSkillRegistry(tmp, false)
 	if err != nil {
 		t.Fatalf("WriteLocalSkillRegistry failed: %v", err)
 	}
@@ -275,7 +275,7 @@ func TestWriteLocalSkillRegistryConcurrentCollection(t *testing.T) {
 	osUserHomeDir = func() (string, error) { return homeDir, nil }
 	defer func() { osUserHomeDir = oldHomeDir }()
 
-	err := WriteLocalSkillRegistry(tmp)
+	err := WriteLocalSkillRegistry(tmp, false)
 	if err != nil {
 		t.Fatalf("WriteLocalSkillRegistry failed: %v", err)
 	}

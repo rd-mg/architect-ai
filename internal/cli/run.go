@@ -25,6 +25,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/model"
 	"github.com/rd-mg/architect-ai/internal/pipeline"
 	"github.com/rd-mg/architect-ai/internal/planner"
+	skillwatch "github.com/rd-mg/architect-ai/internal/skills"
 	"github.com/rd-mg/architect-ai/internal/state"
 	"github.com/rd-mg/architect-ai/internal/system"
 	"github.com/rd-mg/architect-ai/internal/verify"
@@ -153,6 +154,10 @@ func RunInstall(args []string, detection system.DetectionResult) (InstallResult,
 		ClaudeModelAssignments: claudeAliasesToStrings(input.Selection.ClaudeModelAssignments),
 		ModelAssignments:       modelAssignmentsToState(input.Selection.ModelAssignments),
 	})
+
+	if flags.Watch {
+		startSkillWatcher(homeDir)
+	}
 
 	return result, nil
 }
@@ -1162,6 +1167,51 @@ func modelAssignmentsToState(m map[string]model.ModelAssignment) map[string]stat
 	}
 	return out
 }
+func startSkillWatcher(homeDir string) {
+	reg, err := agents.NewDefaultRegistry()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "skill watcher: %v\n", err)
+		return
+	}
+
+	projectRoot, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "skill watcher: cannot resolve project root: %v\n", err)
+		return
+	}
+
+	w, err := skillwatch.NewWatcher(func() {
+		fmt.Fprintf(os.Stderr, "Skill file changed — regenerating registry...\n")
+		if err := WriteLocalSkillRegistry(projectRoot, true); err != nil {
+			fmt.Fprintf(os.Stderr, "skill watcher: registry regeneration failed: %v\n", err)
+		} else {
+			fmt.Fprintf(os.Stderr, "Registry regenerated.\n")
+		}
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "skill watcher: %v\n", err)
+		return
+	}
+
+	// Watch project skill directory
+	w.AddSkillDir(filepath.Join(projectRoot, ".agent", "skills"))
+
+	// Watch all agent user skill directories
+	for _, id := range reg.SupportedAgents() {
+		adapter, ok := reg.Get(id)
+		if !ok || !adapter.SupportsSkills() {
+			continue
+		}
+		dir := adapter.SkillsDir(homeDir)
+		if dir != "" {
+			w.AddSkillDir(dir)
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "Watching skill directories for changes. Press Ctrl+C to stop.\n")
+	w.Start()
+}
+
 func notebookLMHealthChecks() []verify.Check {
 	return []verify.Check{
 		{

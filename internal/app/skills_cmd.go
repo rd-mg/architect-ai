@@ -159,6 +159,22 @@ func installOne(ctx context.Context, owner, repo, path, homeDir string, stdout i
 		InstalledAt: time.Now().UTC(),
 	})
 	_ = skills.SaveManifest(homeDir, m)
+
+	// Also update skills-lock.json in the current project directory if present.
+	if wd, err := os.Getwd(); err == nil {
+		if lockfile, lErr := skills.LoadLockfile(wd); lErr == nil {
+			lockfile.Add(skills.SkillManifestEntry{
+				ID:          id,
+				Source:      "community",
+				Path:        path,
+				SHA:         result.SHA,
+				Kind:        "Community",
+				InstalledAt: time.Now().UTC(),
+			})
+			_ = skills.SaveLockfile(wd, lockfile)
+		}
+	}
+
 	_, _ = fmt.Fprintf(stdout, "  [ok] %s installed\n", id)
 	return nil
 }
@@ -177,6 +193,16 @@ func runSkillsRemove(ctx context.Context, id string, stdout io.Writer) error {
 	}
 	m.Remove(id)
 	_ = skills.SaveManifest(homeDir, m)
+
+	// Also remove from skills-lock.json in the current project directory if present.
+	if wd, err := os.Getwd(); err == nil {
+		if lockfile, err := skills.LoadLockfile(wd); err == nil {
+			if lockfile.Remove(id) {
+				_ = skills.SaveLockfile(wd, lockfile)
+			}
+		}
+	}
+
 	_, _ = fmt.Fprintf(stdout, "[ok] %s removed\n", id)
 	return nil
 }
@@ -235,6 +261,18 @@ func runSkillsUpdate(ctx context.Context, stdout io.Writer) error {
 	}
 	if updated > 0 {
 		_ = skills.SaveManifest(homeDir, m)
+		// Also update skills-lock.json SHA entries.
+		if wd, err := os.Getwd(); err == nil {
+			if lockfile, err := skills.LoadLockfile(wd); err == nil {
+				for _, e := range m.Skills {
+					if entry := lockfile.FindByID(e.ID); entry != nil {
+						entry.SHA = e.SHA
+						entry.InstalledAt = time.Now().UTC()
+					}
+				}
+				_ = skills.SaveLockfile(wd, lockfile)
+			}
+		}
 	}
 	_, _ = fmt.Fprintf(stdout, "%d skill(s) updated.\n", updated)
 	return nil

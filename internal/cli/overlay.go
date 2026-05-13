@@ -258,7 +258,7 @@ func InstallOverlay(opts OverlayInstallOptions) (OverlayManifest, error) {
 		return OverlayManifest{}, err
 	}
 
-	if err := WriteLocalSkillRegistry(projectRoot); err != nil {
+	if err := WriteLocalSkillRegistry(projectRoot, false); err != nil {
 		return OverlayManifest{}, err
 	}
 
@@ -322,7 +322,7 @@ func RemoveOverlay(projectRoot string, overlayName string) error {
 	if err := os.RemoveAll(overlayRoot); err != nil {
 		return fmt.Errorf("remove overlay root: %w", err)
 	}
-	return WriteLocalSkillRegistry(projectRoot)
+	return WriteLocalSkillRegistry(projectRoot, false)
 }
 
 type OverlayBootstrapResult struct {
@@ -1280,7 +1280,7 @@ func EnableOverlaySkill(projectRoot string, overlayName string, skillName string
 		return OverlayManifest{}, err
 	}
 
-	if err := WriteLocalSkillRegistry(projectRoot); err != nil {
+	if err := WriteLocalSkillRegistry(projectRoot, false); err != nil {
 		return OverlayManifest{}, err
 	}
 

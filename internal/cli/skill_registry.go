@@ -3,6 +3,8 @@ package cli
 import (
 	"bufio"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -16,6 +18,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/agents"
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
 	"github.com/rd-mg/architect-ai/internal/components/skills"
+	skillslib "github.com/rd-mg/architect-ai/internal/skills"
 	"github.com/rd-mg/architect-ai/internal/scope"
 	"golang.org/x/sync/errgroup"
 )
@@ -25,8 +28,11 @@ type skillEntry struct {
 	Trigger      string
 	CompactRules string
 	Path         string
-	Origin       string // "user", "project", "overlay", "system", "shared"
-	Kind         string // "System", "User", "Project", "Overlay", "SharedRule"
+	Origin       string // "user", "project", "overlay", "system", "shared", "community"
+	Source       string // "project", "community", "overlay/{name}", "builtin"
+	Kind         string // "System", "User", "Project", "Overlay", "SharedRule", "Community"
+	SHA256       string
+	Deprecated   bool
 }
 
 type conventionEntry struct {
@@ -52,7 +58,7 @@ func buildQuickIndex(skillsByKind map[string][]skillEntry) string {
 	b.WriteString("## Quick Index\n\n")
 	b.WriteString("| Skill | Kind | Trigger | Anchor |\n")
 	b.WriteString("|-------|------|---------|--------|\n")
-	for _, kind := range []string{"System", "SharedRule", "Project", "Overlay", "User"} {
+	for _, kind := range []string{"System", "SharedRule", "Project", "Overlay", "User", "Community"} {
 		for _, s := range skillsByKind[kind] {
 			anchor := "#skill-" + strings.ToLower(strings.ReplaceAll(s.Name, " ", "-"))
 			b.WriteString(fmt.Sprintf("| %s | %s | %s | [link](%s) |\n", s.Name, kind, escapeTable(s.Trigger), anchor))
@@ -71,19 +77,19 @@ func RunSkillRegistry(args []string, stdout io.Writer) error {
 	fs.SetOutput(ioDiscard{})
 	refreshOverlays := fs.Bool("refresh-overlays", false, "refresh project-local overlays before regenerating the registry")
 	enterprisePath := fs.String("enterprise-repo", "", "local Odoo enterprise repository path")
+	force := fs.Bool("force", false, "force regeneration even if SHAs are unchanged")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 
 	if *refreshOverlays {
-		// If explicit refresh is requested, we bypass the "ensure" check and force a bootstrap.
 		_, err := BootstrapProjectLocalOverlays(projectRoot, true, *enterprisePath)
 		if err != nil {
 			return err
 		}
 	}
 
-	result, err := EnsureProjectRegistryReady(projectRoot)
+	result, err := EnsureProjectRegistryReady(projectRoot, *force || os.Getenv("ARCHITECT_AI_FORCE_REGISTRY") == "1")
 	if err != nil {
 		return err
 	}
@@ -111,7 +117,7 @@ func RunSkillRegistry(args []string, stdout io.Writer) error {
 	return nil
 }
 
-func WriteLocalSkillRegistry(projectRoot string) error {
+func WriteLocalSkillRegistry(projectRoot string, force bool) error {
 	homeDir, err := osUserHomeDir()
 	if err != nil {
 		return fmt.Errorf("resolve user home directory: %w", err)
@@ -125,7 +131,7 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 		origin string
 	}
 
-	results := make([]collectionResult, 3)
+	results := make([]collectionResult, 4)
 	g, _ := errgroup.WithContext(context.Background())
 
 	g.Go(func() error {
@@ -146,6 +152,12 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 		return nil
 	})
 
+	g.Go(func() error {
+		skills, err := collectCommunitySkills(projectRoot, homeDir)
+		results[3] = collectionResult{skills: skills, err: err, origin: "community"}
+		return nil
+	})
+
 	_ = g.Wait()
 
 	// Fan-in: merge results (now safe — all goroutines done)
@@ -160,6 +172,26 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 
 	// Deduplicate skills by name: project/overlay overrides user
 	allSkills = deduplicateSkills(allSkills)
+
+	// Hash-based invalidation: compare current SHAs with existing registry.
+	if !force {
+		registryPath := filepath.Join(projectRoot, ".atl", "skill-registry.md")
+		oldHashes := parseExistingRegistryHashes(registryPath)
+		allMatch := len(oldHashes) > 0
+		for _, s := range allSkills {
+			if s.SHA256 == "" {
+				continue
+			}
+			oldHash, exists := oldHashes[s.Name]
+			if !exists || oldHash != s.SHA256 {
+				allMatch = false
+				break
+			}
+		}
+		if allMatch {
+			return nil // No changes — skip writing.
+		}
+	}
 
 	// Group skills by Kind
 	skillsByKind := make(map[string][]skillEntry)
@@ -181,7 +213,7 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	// Quick Index — machine-readable section for agent resolution
 	content = filemerge.InjectMarkdownSection(content, "registry:index", buildQuickIndex(skillsByKind))
 
-	kinds := []string{"System", "SharedRule", "Project", "Overlay", "User"}
+	kinds := []string{"System", "SharedRule", "Project", "Overlay", "User", "Community"}
 	for _, kind := range kinds {
 		sectionID := "registry:" + strings.ToLower(kind)
 		entries := skillsByKind[kind]
@@ -216,6 +248,18 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 		}
 	}
 	content = filemerge.InjectMarkdownSection(content, "registry:compact-rules", rulesBuilder.String())
+
+	// Registry Hashes — for hash-based invalidation on next run.
+	var hashesBuilder strings.Builder
+	hashesBuilder.WriteString("## Registry Hashes\n\n")
+	hashesBuilder.WriteString("| Skill | SHA256 |\n")
+	hashesBuilder.WriteString("|-------|--------|\n")
+	for _, s := range allSkills {
+		if s.SHA256 != "" {
+			hashesBuilder.WriteString(fmt.Sprintf("| %s | %s |\n", s.Name, s.SHA256))
+		}
+	}
+	content = filemerge.InjectMarkdownSection(content, "registry:hashes", hashesBuilder.String())
 
 	// Project Conventions
 	var convBuilder strings.Builder
@@ -277,7 +321,7 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	var indexEntries []skills.SkillEntry
 	for _, s := range allSkills {
 		// Only include high-signal skills in the index
-		if s.Kind == "System" || s.Kind == "Project" || s.Kind == "Overlay" {
+		if s.Kind == "System" || s.Kind == "Project" || s.Kind == "Overlay" || s.Kind == "Community" {
 			relPath := s.Path
 			if rel, err := filepath.Rel(projectRoot, s.Path); err == nil && !strings.HasPrefix(rel, "..") {
 				relPath = rel
@@ -294,6 +338,114 @@ func WriteLocalSkillRegistry(projectRoot string) error {
 	}
 
 	return nil
+}
+
+func collectCommunitySkills(projectRoot, homeDir string) ([]skillEntry, error) {
+	lockfile, err := skillslib.LoadLockfile(projectRoot)
+	if err != nil {
+		lockfile = skillslib.SkillManifest{}
+	}
+
+	cmEntries, err := skillslib.LoadCommunityManifestAsEntries(homeDir)
+	if err != nil {
+		cmEntries = nil
+	}
+
+	idSet := make(map[string]bool)
+	var lookups []struct {
+		id     string
+		source string
+		sha    string
+	}
+
+	for _, e := range lockfile.Skills {
+		if e.Source == "community" && !idSet[e.ID] {
+			idSet[e.ID] = true
+			lookups = append(lookups, struct {
+				id     string
+				source string
+				sha    string
+			}{e.ID, e.Source, e.SHA})
+		}
+	}
+	for _, e := range cmEntries {
+		if !idSet[e.ID] {
+			idSet[e.ID] = true
+			lookups = append(lookups, struct {
+				id     string
+				source string
+				sha    string
+			}{e.ID, "community", e.SHA})
+		}
+	}
+
+	if len(lookups) == 0 {
+		return nil, nil
+	}
+
+	reg, err := agents.NewDefaultRegistry()
+	if err != nil {
+		return nil, nil
+	}
+
+	var entries []skillEntry
+	for _, l := range lookups {
+		found := false
+		for _, agentID := range reg.SupportedAgents() {
+			adapter, ok := reg.Get(agentID)
+			if !ok || !adapter.SupportsSkills() {
+				continue
+			}
+			dir := adapter.SkillsDir(homeDir)
+			if dir == "" {
+				continue
+			}
+			skillPath := filepath.Join(dir, l.id, "SKILL.md")
+			if _, err := os.Stat(skillPath); err == nil {
+				info := parseSkillFile(skillPath)
+				if info.Name == "" {
+					info.Name = l.id
+				}
+				info.Path = skillPath
+				info.Origin = "community"
+				info.Source = "community"
+				info.Kind = "Community"
+				entries = append(entries, info)
+				found = true
+				break
+			}
+		}
+		if !found {
+			entries = append(entries, skillEntry{
+				Name:   l.id,
+				Origin: "community",
+				Source: "community",
+				Kind:   "Community",
+				Path:   "(not downloaded — run architect-ai skills update)",
+				Trigger: fmt.Sprintf("Community skill %q (not yet downloaded)", l.id),
+			})
+		}
+	}
+	return entries, nil
+}
+
+// MergeLockfileIntoRegistry merges lockfile-managed community skills into registry scan results.
+func MergeLockfileIntoRegistry(projectRoot string, existing []skillEntry) []skillEntry {
+	homeDir, err := osUserHomeDir()
+	if err != nil {
+		return existing
+	}
+
+	community, err := collectCommunitySkills(projectRoot, homeDir)
+	if err != nil {
+		return existing
+	}
+
+	if len(community) == 0 {
+		return existing
+	}
+
+	return append(existing, community...)
 }
 
 func collectUserSkills(homeDir string) ([]skillEntry, error) {
@@ -358,6 +510,10 @@ func collectProjectSkills(projectRoot string) ([]skillEntry, error) {
 			info := parseSkillFile(path)
 			if info.Name == "" {
 				info.Name = skillName
+			}
+			// Skip deprecated and archived skills.
+			if info.Deprecated || strings.Contains(path, "_archived") {
+				return nil
 			}
 			info.Path = path
 			info.Origin = "project"
@@ -430,6 +586,9 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 				if info.Name == "" {
 					info.Name = re.Skill
 				}
+				if info.Deprecated || strings.Contains(re.Path, "_archived") {
+					continue
+				}
 				// Prioritize manifest trigger if present
 				if re.Trigger != "" {
 					info.Trigger = re.Trigger
@@ -464,6 +623,9 @@ func collectOverlayContent(projectRoot string) ([]skillEntry, []assetEntry, erro
 						info := parseSkillFile(skillPath)
 						if info.Name == "" {
 							info.Name = entry.Name()
+						}
+						if info.Deprecated || strings.Contains(skillPath, "_archived") || entry.Name() == "_archived" {
+							continue
 						}
 						info.Path = skillPath
 						info.Origin = "overlay"
@@ -558,6 +720,9 @@ func scanSkillsDir(dir string, origin string) []skillEntry {
 			if info.Name == "" {
 				info.Name = d.Name()
 			}
+			if info.Deprecated || d.Name() == "_archived" || strings.Contains(skillPath, "_archived") {
+				continue
+			}
 			info.Path = skillPath
 			info.Origin = origin
 			info.Kind = kind
@@ -567,15 +732,39 @@ func scanSkillsDir(dir string, origin string) []skillEntry {
 	return entries
 }
 
+// canonicalRuleHeadings is the ordered list of H2 headings whose body
+// we extract as compact rules. Earlier entries have higher priority.
+// Only lower-case normalized H2 text is compared against this list.
+var canonicalRuleHeadings = []string{
+	"compact rules",
+	"rules",
+	"patterns",
+	"critical rules",
+	"contract",
+	"convention",
+	"guidelines",
+	"mandates",
+	"standards",
+	"workflow",
+	"procedure",
+	"core behavior",
+	"essential patterns",
+	"required conventions",
+}
+
 func parseSkillFile(path string) skillEntry {
-	f, err := os.Open(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return skillEntry{}
 	}
-	defer f.Close()
 
 	var entry skillEntry
-	scanner := bufio.NewScanner(f)
+
+	// Compute SHA-256 of the entire file for hash-based invalidation.
+	h := sha256.Sum256(data)
+	entry.SHA256 = hex.EncodeToString(h[:])
+
+	scanner := bufio.NewScanner(strings.NewReader(string(data)))
 
 	inFrontmatter := false
 	frontmatterDone := false
@@ -583,8 +772,10 @@ func parseSkillFile(path string) skillEntry {
 	var descriptionBuffer strings.Builder
 	inDescription := false
 
-	var rulesLines []string
+	var rulesSections []string
+	var currentSection []string
 	inRules := false
+	bestHeadingMatch := -1 // -1 = no match, 0 = "compact rules", 1 = "rules", etc.
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -610,26 +801,24 @@ func parseSkillFile(path string) skillEntry {
 				// Handle multiline description with > operator
 				if strings.HasPrefix(val, ">") {
 					inDescription = true
-					// Check if there's text after > on the same line
 					remaining := strings.TrimSpace(strings.TrimPrefix(val, ">"))
 					if remaining != "" {
 						descriptionBuffer.WriteString(remaining)
 						descriptionBuffer.WriteString(" ")
 					}
 				} else {
-					// Single-line description
 					descriptionBuffer.WriteString(val)
 					descriptionBuffer.WriteString(" ")
 				}
 			} else if inDescription {
-				// Continue reading multiline description
 				if trimmedLine == "" || (!strings.HasPrefix(line, "  ") && !strings.HasPrefix(line, "\t")) {
-					// Description block ended
 					inDescription = false
 				} else {
 					descriptionBuffer.WriteString(trimmedLine)
 					descriptionBuffer.WriteString(" ")
 				}
+			} else if strings.TrimLeft(trimmedLine, "  \t") == "deprecated: true" || strings.TrimLeft(trimmedLine, "  \t") == "deprecated: True" {
+				entry.Deprecated = true
 			}
 			continue
 		}
@@ -639,65 +828,67 @@ func parseSkillFile(path string) skillEntry {
 			entry.Name = strings.TrimPrefix(trimmedLine, "# ")
 		}
 
-		// Extract compact rules
-		if strings.HasPrefix(trimmedLine, "## ") {
-			lower := strings.ToLower(trimmedLine)
-			if strings.Contains(lower, "rules") ||
-				strings.Contains(lower, "patterns") ||
-				strings.Contains(lower, "critical") ||
-				strings.Contains(lower, "contract") ||
-				strings.Contains(lower, "posture") ||
-				strings.Contains(lower, "convention") ||
-				strings.Contains(lower, "guideline") ||
-				strings.Contains(lower, "mandate") ||
-				strings.Contains(lower, "standard") ||
-				strings.Contains(lower, "logic") ||
-				strings.Contains(lower, "workflow") ||
-				strings.Contains(lower, "procedure") ||
-				strings.Contains(lower, "troubleshooting") ||
-				strings.Contains(lower, "core principle") ||
-				strings.Contains(lower, "key principle") ||
-				strings.Contains(lower, "key constraint") ||
-				strings.Contains(lower, "step-by-step") ||
-				strings.Contains(lower, "quick reference") ||
-				strings.Contains(lower, "discovery index") ||
-				strings.Contains(lower, "migration sequence") ||
-				strings.Contains(lower, "version-agnostic principle") ||
-				strings.Contains(lower, "how to use") ||
-				strings.Contains(lower, "core behavior") ||
-				strings.Contains(lower, "execution step") ||
-				strings.Contains(lower, "agent instruction") ||
-				strings.Contains(lower, "required action") ||
-				strings.Contains(lower, "usage") {
-				inRules = true
-				continue
-			} else {
-				inRules = false
+		// Heading-based section detection.
+		// When we encounter any heading (##, ###), we:
+		//  1. Save any previously active rules section.
+		//  2. Check if this heading matches a canonical one.
+		if strings.HasPrefix(trimmedLine, "## ") || strings.HasPrefix(trimmedLine, "### ") {
+			// Save previous section if active.
+			if inRules && len(currentSection) > 0 {
+				rulesSections = append(rulesSections, strings.Join(currentSection, "\n"))
+				currentSection = nil
 			}
+			inRules = false
+
+			if strings.HasPrefix(trimmedLine, "## ") {
+				lower := strings.TrimPrefix(strings.ToLower(trimmedLine), "## ")
+				// Check against canonical headings.
+				for idx, want := range canonicalRuleHeadings {
+					if strings.Contains(lower, want) {
+						// Only consider this a match if it improves on current best.
+						// Lower index = higher priority ("compact rules" at 0 beats "rules" at 1).
+						if bestHeadingMatch < 0 || idx < bestHeadingMatch {
+							bestHeadingMatch = idx
+							if len(currentSection) > 0 {
+								rulesSections = append(rulesSections, strings.Join(currentSection, "\n"))
+								currentSection = nil
+							}
+						}
+						inRules = true
+						break
+					}
+				}
+			}
+			continue
 		}
 
-		if inRules && len(rulesLines) < 40 {
-			rulesLines = append(rulesLines, line)
+		if inRules && len(currentSection) < 40 {
+			currentSection = append(currentSection, line)
 		}
 	}
+
+	// Save last section.
+	if inRules && len(currentSection) > 0 {
+		rulesSections = append(rulesSections, strings.Join(currentSection, "\n"))
+	}
+
+	// Join multiple sections with blank line separator.
+	entry.CompactRules = strings.TrimSpace(strings.Join(rulesSections, "\n\n"))
 
 	// Post-processing for triggers if missing from frontmatter
 	if entry.Trigger == "" && descriptionBuffer.Len() > 0 {
 		descText := strings.TrimSpace(descriptionBuffer.String())
 		if idx := strings.Index(descText, "Trigger:"); idx != -1 {
-			// Take only the first line of the trigger sentence
 			raw := strings.TrimSpace(descText[idx+len("Trigger:"):])
 			if nl := strings.IndexAny(raw, "\n\r"); nl != -1 {
 				raw = strings.TrimSpace(raw[:nl])
 			}
 			entry.Trigger = raw
 		} else {
-			// Use description as trigger: first sentence or first 300 chars
 			trigger := descText
 			if dot := strings.IndexAny(trigger, ".。"); dot > 0 && dot < 300 {
 				trigger = strings.TrimSpace(trigger[:dot])
 			} else if len(trigger) > 300 {
-				// Word-boundary truncation
 				trigger = trigger[:300]
 				if lastSpace := strings.LastIndexAny(trigger, " \t\n\r"); lastSpace > 250 {
 					trigger = strings.TrimSpace(trigger[:lastSpace])
@@ -707,7 +898,6 @@ func parseSkillFile(path string) skillEntry {
 		}
 	}
 
-	entry.CompactRules = strings.Join(rulesLines, "\n")
 	return entry
 }
 
@@ -723,8 +913,8 @@ func deduplicateSkills(skills []skillEntry) []skillEntry {
 			continue
 		}
 
-		// project > overlay > user > system > shared
-		priority := map[string]int{"project": 5, "overlay": 4, "user": 3, "system": 2, "shared": 1}
+		// community > project > overlay > user > system > shared
+		priority := map[string]int{"community": 6, "project": 5, "overlay": 4, "user": 3, "system": 2, "shared": 1}
 		if priority[s.Origin] > priority[existing.Origin] {
 			if s.Origin == "project" && existing.Origin == "overlay" {
 				fmt.Fprintf(os.Stderr, "Warning: project skill %q overrides overlay skill at %s\n", s.Name, existing.Path)
@@ -791,6 +981,35 @@ func probeNotebookLMState() (status string, count int, err error) {
 	return "FOUND", 0, nil
 }
 
+// parseExistingRegistryHashes reads the existing registry file and extracts
+// skill name → SHA256 mappings from the "## Registry Hashes" section.
+func parseExistingRegistryHashes(registryPath string) map[string]string {
+	data, err := os.ReadFile(registryPath)
+	if err != nil {
+		return nil
+	}
+	content := string(data)
+	// Locate the hashes section between the markers.
+	open := "<!-- architect-ai:registry:hashes -->"
+	close := "<!-- /architect-ai:registry:hashes -->"
+	openIdx := strings.Index(content, open)
+	closeIdx := strings.Index(content, close)
+	if openIdx < 0 || closeIdx < 0 || closeIdx <= openIdx {
+		return nil
+	}
+	section := content[openIdx+len(open) : closeIdx]
+	hashes := make(map[string]string)
+	for _, line := range strings.Split(section, "\n") {
+		line = strings.TrimSpace(strings.TrimPrefix(line, "| "))
+		line = strings.TrimSuffix(line, " |")
+		parts := strings.SplitN(line, " | ", 2)
+		if len(parts) == 2 && parts[0] != "Skill" && parts[0] != "" {
+			hashes[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+		}
+	}
+	return hashes
+}
+
 func parseYAMLField(line, fieldName string) (key, value string, ok bool) {
 	lower := strings.ToLower(line)
 	prefix := fieldName + ":"
@@ -803,7 +1022,7 @@ func parseYAMLField(line, fieldName string) (key, value string, ok bool) {
 // EnsureProjectRegistryReady performs the base initialization of a project for ATL/SDD.
 // It creates the .atl directory, bootstraps project-local overlays, builds the skill registry,
 // and ensures core project conventions (AGENTS.md, GEMINI.md) are present.
-func EnsureProjectRegistryReady(projectRoot string) (OverlayBootstrapResult, error) {
+func EnsureProjectRegistryReady(projectRoot string, force bool) (OverlayBootstrapResult, error) {
 	atlDir := filepath.Join(projectRoot, ".atl")
 	if err := os.MkdirAll(atlDir, 0o755); err != nil {
 		return OverlayBootstrapResult{}, fmt.Errorf("create .atl directory: %w", err)
@@ -830,7 +1049,7 @@ func EnsureProjectRegistryReady(projectRoot string) (OverlayBootstrapResult, err
 	}
 
 	// 2. Build/Update the registry markdown
-	if err := WriteLocalSkillRegistry(projectRoot); err != nil {
+	if err := WriteLocalSkillRegistry(projectRoot, force); err != nil {
 		return OverlayBootstrapResult{}, fmt.Errorf("write skill registry: %w", err)
 	}
 

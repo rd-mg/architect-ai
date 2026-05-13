@@ -38,7 +38,7 @@ func RunSddInit(args []string, stdout io.Writer) error {
 	// 1. Ensure the project registry and .atl folder are ready.
 	// This centralizes .atl creation, overlay discovery, skill indexing,
 	// and core project conventions (AGENTS.md, GEMINI.md).
-	if _, err := EnsureProjectRegistryReady(absProjectRoot); err != nil {
+	if _, err := EnsureProjectRegistryReady(absProjectRoot, false); err != nil {
 		return fmt.Errorf("ensure registry ready: %w", err)
 	}
 
