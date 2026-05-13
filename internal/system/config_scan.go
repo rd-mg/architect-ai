@@ -2,17 +2,25 @@ package system
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
 // ConfigState records the filesystem presence of an agent's global config directory.
 // All known registry agents are always represented — Exists=false for absent dirs.
 // This contract is consumed by the TUI detection screen and install/validate flows.
+//
+// For CLI agents, BinaryName and BinaryFound provide a second signal: a config
+// directory created solely by architect-ai should not count as "installed" unless
+// the binary is also on PATH. IDE agents (no binary) rely on directory presence
+// alone.
 type ConfigState struct {
 	Agent       string
 	Path        string
 	Exists      bool
 	IsDirectory bool
+	BinaryName  string // empty for IDE agents (no PATH check)
+	BinaryFound bool   // true when BinaryName is non-empty and exec.LookPath succeeds
 }
 
 // knownAgentConfigDirs enumerates the per-agent config roots used by ScanConfigs
@@ -29,17 +37,17 @@ type ConfigState struct {
 // agents.DiscoverInstalled.
 func knownAgentConfigDirs(homeDir string) []ConfigState {
 	return []ConfigState{
-		{Agent: "claude-code", Path: filepath.Join(homeDir, ".claude")},
-		{Agent: "opencode", Path: filepath.Join(homeDir, ".config", "opencode")},
-		{Agent: "kilocode", Path: filepath.Join(homeDir, ".config", "kilo")},
-		{Agent: "gemini-cli", Path: filepath.Join(homeDir, ".gemini")},
+		{Agent: "claude-code", Path: filepath.Join(homeDir, ".claude"), BinaryName: "claude"},
+		{Agent: "opencode", Path: filepath.Join(homeDir, ".config", "opencode"), BinaryName: "opencode"},
+		{Agent: "kilocode", Path: filepath.Join(homeDir, ".config", "kilo"), BinaryName: "kilo"},
+		{Agent: "gemini-cli", Path: filepath.Join(homeDir, ".gemini"), BinaryName: "gemini"},
 		{Agent: "cursor", Path: filepath.Join(homeDir, ".cursor")},
 		{Agent: "vscode-copilot", Path: vscodeCopilotGlobalConfigDir(homeDir)},
-		{Agent: "codex", Path: filepath.Join(homeDir, ".codex")},
+		{Agent: "codex", Path: filepath.Join(homeDir, ".codex"), BinaryName: "codex"},
 		{Agent: "antigravity", Path: filepath.Join(homeDir, ".gemini", "antigravity")},
 		{Agent: "windsurf", Path: filepath.Join(homeDir, ".codeium", "windsurf")},
-		{Agent: "qwen-code", Path: filepath.Join(homeDir, ".qwen")},
-		{Agent: "kiro-ide", Path: filepath.Join(homeDir, ".kiro")},
+		{Agent: "qwen-code", Path: filepath.Join(homeDir, ".qwen"), BinaryName: "qwen"},
+		{Agent: "kiro-ide", Path: filepath.Join(homeDir, ".kiro"), BinaryName: "kiro"},
 	}
 }
 
@@ -69,6 +77,14 @@ func ScanConfigs(homeDir string) []ConfigState {
 
 		states[idx].Exists = true
 		states[idx].IsDirectory = info.IsDir()
+
+		// For CLI agents, also check if the binary is on PATH.
+		// A config directory created by architect-ai alone is not
+		// sufficient evidence that the agent is actually installed.
+		if states[idx].BinaryName != "" {
+			_, err := exec.LookPath(states[idx].BinaryName)
+			states[idx].BinaryFound = err == nil
+		}
 	}
 
 	return states

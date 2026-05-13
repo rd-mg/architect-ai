@@ -174,6 +174,11 @@ func defaultAgentsFromDetection(detection system.DetectionResult) []model.AgentI
 			continue
 		}
 
+		// For CLI agents, also require the binary on PATH.
+		if state.BinaryName != "" && !state.BinaryFound {
+			continue
+		}
+
 		switch strings.TrimSpace(state.Agent) {
 		case string(model.AgentClaudeCode):
 			agents = append(agents, model.AgentClaudeCode)

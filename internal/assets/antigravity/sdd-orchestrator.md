@@ -406,6 +406,7 @@ proposal → specs → tasks → apply → verify → archive
          design ←────────────────────┘
 ```
 
+<!-- architect-ai:sdd-model-assignments -->
 ## Model Assignments
 
 Read once per session, cache, pass `model` parameter in every Agent tool call:
@@ -424,6 +425,7 @@ Read once per session, cache, pass `model` parameter in every Agent tool call:
 | default | sonnet | Non-SDD delegation |
 
 If lacking access to assigned model, substitute `sonnet` and continue.
+<!-- /architect-ai:sdd-model-assignments -->
 
 ## Progressive Phase Loading
 

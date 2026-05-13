@@ -2791,7 +2791,16 @@ func (m *Model) buildDependencyPlan() {
 func preselectedAgents(detection system.DetectionResult) []model.AgentID {
 	selected := []model.AgentID{}
 	for _, state := range detection.Configs {
+		// Config directory must exist.
 		if !state.Exists {
+			continue
+		}
+
+		// For CLI agents, also require the binary on PATH.
+		// A config directory created by architect-ai alone does not
+		// count as installed (e.g. ~/.codex after an install with
+		// no codex binary present).
+		if state.BinaryName != "" && !state.BinaryFound {
 			continue
 		}
 
@@ -2814,6 +2823,10 @@ func preselectedAgents(detection system.DetectionResult) []model.AgentID {
 			selected = append(selected, model.AgentWindsurf)
 		case string(model.AgentQwenCode):
 			selected = append(selected, model.AgentQwenCode)
+		case string(model.AgentKilocode):
+			selected = append(selected, model.AgentKilocode)
+		case string(model.AgentKiroIDE):
+			selected = append(selected, model.AgentKiroIDE)
 		}
 	}
 
