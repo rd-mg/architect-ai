@@ -10,13 +10,13 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/rd-mg/architect-ai/internal/agentbuilder"
 	"github.com/rd-mg/architect-ai/internal/agents"
 	"github.com/rd-mg/architect-ai/internal/assets"
 	"github.com/rd-mg/architect-ai/internal/components/filemerge"
 	"github.com/rd-mg/architect-ai/internal/model"
 	"github.com/rd-mg/architect-ai/internal/state"
 )
-
 type InjectionResult struct {
 	Changed    bool
 	DriftCount int
@@ -1207,6 +1207,17 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 	// Resolve placeholders in the orchestrator content
 	if len(options) > 0 {
 		opts := options[0]
+		
+		// Differential Context Injection: resolve relevant skills
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			skillRegistry := filepath.Join(projectRoot, ".atl", "skill-registry.md")
+			// Pass current promptPath as a path match
+			compactRules, _ := agentbuilder.ResolveMatchingSkills(skillRegistry, []string{promptPath})
+			if compactRules != "" {
+				content = strings.Replace(content, "## Available Tools", "## Available Tools\n" + compactRules, 1)
+			}
+		}
+
 		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
 		ctx := PromptContext{
 			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
@@ -1446,6 +1457,17 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 	// Resolve placeholders in the orchestrator content
 	if len(options) > 0 {
 		opts := options[0]
+		
+		// Differential Context Injection: resolve relevant skills
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			skillRegistry := filepath.Join(projectRoot, ".atl", "skill-registry.md")
+			// Pass current promptPath as a path match
+			compactRules, _ := agentbuilder.ResolveMatchingSkills(skillRegistry, []string{promptPath})
+			if compactRules != "" {
+				content = strings.Replace(content, "## Available Tools", "## Available Tools\n" + compactRules, 1)
+			}
+		}
+
 		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
 		ctx := PromptContext{
 			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
@@ -1721,6 +1743,17 @@ func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, mani
 	// Resolve placeholders in the orchestrator content
 	if len(options) > 0 {
 		opts := options[0]
+		
+		// Differential Context Injection: resolve relevant skills
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			skillRegistry := filepath.Join(projectRoot, ".atl", "skill-registry.md")
+			// Pass current promptPath as a path match
+			compactRules, _ := agentbuilder.ResolveMatchingSkills(skillRegistry, []string{promptPath})
+			if compactRules != "" {
+				content = strings.Replace(content, "## Available Tools", "## Available Tools\n" + compactRules, 1)
+			}
+		}
+
 		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
 		ctx := PromptContext{
 			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
