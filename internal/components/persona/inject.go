@@ -19,6 +19,7 @@ type InjectionResult struct {
 
 // outputStyleOverlayJSON is the settings.json overlay to enable the Architect output style.
 var outputStyleOverlayJSON = []byte("{\n  \"outputStyle\": \"Architect\"\n}\n")
+var gentlemanStyleOverlayJSON = []byte("{\n  \"outputStyle\": \"Gentleman\"\n}\n")
 
 // openCodeAgentOverlayJSON defines Tab-switchable agents for OpenCode.
 // \"architect\" is the primary agent, \"sdd-orchestrator\" is available via Tab.
@@ -42,6 +43,17 @@ func Inject(homeDir string, adapter agents.Adapter, persona model.PersonaID) (In
 	if content == "" {
 		return InjectionResult{}, nil
 	}
+
+	// Determine output style and overlay.
+	styleAsset := "claude/output-style-architect.md"
+	styleName := "Architect"
+	overlay := outputStyleOverlayJSON
+	if persona == model.PersonaGentleman {
+		styleAsset = "claude/output-style-gentleman.md"
+		styleName = "Gentleman"
+		overlay = gentlemanStyleOverlayJSON
+	}
+	_ = styleName // Used in path derivation via strings.ToLower(styleName)
 
 	// 1. Inject persona content based on system prompt strategy.
 	switch adapter.SystemPromptStrategy() {
@@ -252,7 +264,7 @@ func Inject(homeDir string, adapter agents.Adapter, persona model.PersonaID) (In
 		outputStyleDir := adapter.OutputStyleDir(homeDir)
 		if outputStyleDir != "" {
 			outputStylePath := outputStyleDir + "/architect.md"
-			outputStyleContent := assets.MustRead("claude/output-style-architect.md")
+			outputStyleContent := assets.MustRead(styleAsset)
 
 			styleResult, err := filemerge.WriteFileAtomic(outputStylePath, []byte(outputStyleContent), 0o644)
 			if err != nil {
@@ -265,7 +277,7 @@ func Inject(homeDir string, adapter agents.Adapter, persona model.PersonaID) (In
 		// Merge "outputStyle": "Architect" into settings.
 		settingsPath := adapter.SettingsPath(homeDir)
 		if settingsPath != "" {
-			settingsResult, err := mergeJSONFile(settingsPath, outputStyleOverlayJSON)
+			settingsResult, err := mergeJSONFile(settingsPath, overlay)
 			if err != nil {
 				return InjectionResult{}, err
 			}

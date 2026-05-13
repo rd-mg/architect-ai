@@ -86,6 +86,7 @@ type PersonaID string
 
 const (
 	PersonaArchitect PersonaID = "architect"
+	PersonaGentleman PersonaID = "gentleman"
 	PersonaNeutral   PersonaID = "neutral"
 	PersonaCustom    PersonaID = "custom"
 )
