@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-spec
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-spec
+Project: architect-ai
+Adapter: Gemini
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: proposal artifact
@@ -41,6 +46,12 @@ One spec entry per capability listed in proposal.md's Capabilities section.
 - **Sad-path BDD**: Required for any FMEA severity ≥ 3. Format: Given-When-Then for the failure case.
 - **UI & State Modeling**: Required for UI with async states. Use Mermaid `stateDiagram-v2` for FSM.
 - **Accessibility Contract**: Required for UI. Specify keyboard navigation, ARIA roles, and focus management.
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 
