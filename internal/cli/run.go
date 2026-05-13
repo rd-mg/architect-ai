@@ -233,8 +233,8 @@ func buildStagePlan(selection model.Selection, resolved planner.ResolvedPlan) pi
 	}
 
 	return pipeline.StagePlan{
-		Prepare: []pipeline.StepGroup{pipeline.SingleGroup(prepare...)},
-		Apply:   []pipeline.StepGroup{pipeline.SingleGroup(apply...)},
+		Prepare: prepare,
+		Apply:   apply,
 	}
 }
 
@@ -321,8 +321,8 @@ func (r *installRuntime) stagePlan() pipeline.StagePlan {
 	}
 
 	return pipeline.StagePlan{
-		Prepare: []pipeline.StepGroup{pipeline.SingleGroup(prepare...)},
-		Apply:   []pipeline.StepGroup{pipeline.SingleGroup(apply...)},
+		Prepare: prepare,
+		Apply:   apply,
 	}
 }
 

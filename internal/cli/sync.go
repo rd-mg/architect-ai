@@ -392,8 +392,8 @@ func (r *syncRuntime) stagePlan() pipeline.StagePlan {
 	}
 
 	return pipeline.StagePlan{
-		Prepare: []pipeline.StepGroup{pipeline.SingleGroup(prepare...)},
-		Apply:   []pipeline.StepGroup{pipeline.SingleGroup(apply...)},
+		Prepare: prepare,
+		Apply:   apply,
 	}
 }
 
