@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -15,9 +16,11 @@ type Runner struct {
 	StepTimeout  time.Duration
 	MaxRetries   int
 	RetryBackoff time.Duration
+
+	Nonce string // Session-unique UUID for State-Synchronized DAG
 }
 
-func (r Runner) Run(stage Stage, steps []Step) StageResult {
+func (r Runner) Run(ctx context.Context, stage Stage, steps []Step) StageResult {
 	if r.StepTimeout == 0 {
 		r.StepTimeout = 5 * time.Minute
 	}
@@ -36,6 +39,7 @@ func (r Runner) Run(stage Stage, steps []Step) StageResult {
 
 		var lastErr error
 		var stepResult StepResult
+		var status StepStatus = StepStatusFailed
 
 		// Retry loop
 		for attempt := 0; attempt <= r.MaxRetries; attempt++ {
@@ -54,14 +58,22 @@ func (r Runner) Run(stage Stage, steps []Step) StageResult {
 			// Simple timeout channel pattern
 			done := make(chan error, 1)
 			go func() {
-				done <- step.Run()
+				done <- step.Run(ctx)
 			}()
 
 			select {
 			case err := <-done:
 				lastErr = err
+				status = StepStatusFailed
+				if err == nil {
+					status = StepStatusSucceeded
+				}
+			case <-ctx.Done():
+				lastErr = ctx.Err()
+				status = StepStatusInterrupted
 			case <-time.After(r.StepTimeout):
 				lastErr = fmt.Errorf("step timed out after %v", r.StepTimeout)
+				status = StepStatusTerminated
 			}
 
 			finished := time.Now().UTC()
@@ -69,6 +81,8 @@ func (r Runner) Run(stage Stage, steps []Step) StageResult {
 				StepID:     step.ID(),
 				StartedAt:  started,
 				FinishedAt: finished,
+				Status:     status,
+				Err:        lastErr,
 			}
 
 			if lastErr == nil {
@@ -77,11 +91,9 @@ func (r Runner) Run(stage Stage, steps []Step) StageResult {
 		}
 
 		if lastErr != nil {
-			stepResult.Status = StepStatusFailed
-			stepResult.Err = lastErr
 			result.Steps = append(result.Steps, stepResult)
 
-			r.emitProgress(ProgressEvent{StepID: step.ID(), Stage: stage, Status: StepStatusFailed, Err: lastErr})
+			r.emitProgress(ProgressEvent{StepID: step.ID(), Stage: stage, Status: status, Err: lastErr})
 
 			errs = append(errs, lastErr)
 			result.Success = false
@@ -94,7 +106,6 @@ func (r Runner) Run(stage Stage, steps []Step) StageResult {
 			continue
 		}
 
-		stepResult.Status = StepStatusSucceeded
 		result.Steps = append(result.Steps, stepResult)
 		r.emitProgress(ProgressEvent{StepID: step.ID(), Stage: stage, Status: StepStatusSucceeded})
 	}
@@ -108,6 +119,7 @@ func (r Runner) Run(stage Stage, steps []Step) StageResult {
 
 func (r Runner) emitProgress(event ProgressEvent) {
 	if r.OnProgress != nil {
+		event.Nonce = r.Nonce
 		r.OnProgress(event)
 	}
 }

@@ -131,7 +131,7 @@ func RunInstall(args []string, detection system.DetectionResult) (InstallResult,
 	result.Plan = stagePlan
 
 	orchestrator := pipeline.NewOrchestrator(pipeline.DefaultRollbackPolicy())
-	result.Execution = orchestrator.Execute(stagePlan)
+	result.Execution = orchestrator.Execute(context.Background(), stagePlan)
 	if result.Execution.Err != nil {
 		return result, fmt.Errorf("execute install pipeline: %w", result.Execution.Err)
 	}
@@ -357,7 +357,7 @@ func (s prepareBackupStep) ID() string {
 	return s.id
 }
 
-func (s prepareBackupStep) Run() error {
+func (s prepareBackupStep) Run(ctx context.Context) error {
 	// Deduplication: skip snapshot creation when content is identical to the
 	// most recent backup. Only active when backupRoot is set.
 	if s.backupRoot != "" {
@@ -414,11 +414,11 @@ func (s rollbackRestoreStep) ID() string {
 	return s.id
 }
 
-func (s rollbackRestoreStep) Run() error {
+func (s rollbackRestoreStep) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s rollbackRestoreStep) Rollback() error {
+func (s rollbackRestoreStep) Rollback(ctx context.Context) error {
 	if len(s.state.getManifest().Entries) == 0 {
 		return nil
 	}
@@ -437,7 +437,7 @@ func (s agentInstallStep) ID() string {
 	return s.id
 }
 
-func (s agentInstallStep) Run() error {
+func (s agentInstallStep) Run(ctx context.Context) error {
 	adapter, err := agents.NewAdapter(s.agent)
 	if err != nil {
 		return fmt.Errorf("create adapter for %q: %w", s.agent, err)
@@ -447,7 +447,7 @@ func (s agentInstallStep) Run() error {
 		return nil
 	}
 
-	installed, _, _, _, err := adapter.Detect(context.Background(), s.homeDir)
+	installed, _, _, _, err := adapter.Detect(ctx, s.homeDir)
 	if err != nil {
 		return fmt.Errorf("detect agent %q: %w", s.agent, err)
 	}
@@ -490,7 +490,7 @@ func resolveAdapters(agentIDs []model.AgentID) []agents.Adapter {
 	return adapters
 }
 
-func (s componentApplyStep) Run() error {
+func (s componentApplyStep) Run(ctx context.Context) error {
 	adapters := resolveAdapters(s.agents)
 
 	switch s.component {
@@ -1120,13 +1120,13 @@ func (s checkDependenciesStep) ID() string {
 	return s.id
 }
 
-func (s checkDependenciesStep) Run() error {
+func (s checkDependenciesStep) Run(ctx context.Context) error {
 	// Run detection but do NOT write to stdout/stderr — this step runs
 	// inside the Bubble Tea alternate screen in TUI mode, so any raw
 	// output corrupts the display (see issue #2). Missing deps are
 	// surfaced on the TUI complete screen and by the actual install steps
 	// failing with real error messages.
-	_ = system.DetectDependencies(context.Background(), s.profile)
+	_ = system.DetectDependencies(ctx, s.profile)
 	return nil
 }
 
@@ -1138,7 +1138,7 @@ func (s noopStep) ID() string {
 	return s.id
 }
 
-func (s noopStep) Run() error {
+func (s noopStep) Run(ctx context.Context) error {
 	return nil
 }
 

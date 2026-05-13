@@ -11,6 +11,9 @@ const (
 	StepStatusFailed     StepStatus = "failed"
 	StepStatusRolledBack StepStatus = "rolled-back"
 	StepStatusSkipped    StepStatus = "skipped"
+	StepStatusTerminated StepStatus = "terminated" // Watchdog timeout
+	StepStatusCancelled  StepStatus = "cancelled"  // Observer cancellation
+	StepStatusInterrupted StepStatus = "interrupted" // External interrupt
 )
 
 type StepResult struct {
@@ -29,8 +32,9 @@ type StageResult struct {
 }
 
 type ExecutionResult struct {
-	Prepare  StageResult
-	Apply    StageResult
-	Rollback StageResult
-	Err      error
+	Prepare               StageResult
+	Apply                 StageResult
+	Rollback              StageResult
+	Err                   error
+	NextRecommendedStage  Stage // For Recursive Reasoning Gates
 }

@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-archive
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-archive
+Project: architect-ai
+Adapter: OpenCode
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: all artifacts for the change
@@ -52,6 +57,12 @@ Task: Close out the change "{change-name}". This is a mechanical phase.
 4. **Persistence (Learned Patterns)**: Save lessons and patterns to `project/{project}/lessons`. Search `knowledge/_global/skill/{skill-name}/learned-patterns`. If found, `mem_update` with appended patterns and incremented version. If not, `mem_save` new patterns.
 4. If OpenSpec mode: move change directory to archive/ folder
 5. Update DAG state to "archived"
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 

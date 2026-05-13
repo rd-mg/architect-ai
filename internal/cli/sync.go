@@ -435,7 +435,7 @@ func (s componentSyncStep) ID() string {
 	return s.id
 }
 
-func (s componentSyncStep) Run() error {
+func (s componentSyncStep) Run(ctx context.Context) error {
 	adapters := resolveAdapters(s.agents)
 
 	switch s.component {
@@ -624,7 +624,7 @@ func RunSyncWithSelection(homeDir string, selection model.Selection) (SyncResult
 	result.Plan = stagePlan
 
 	orchestrator := pipeline.NewOrchestrator(pipeline.DefaultRollbackPolicy())
-	result.Execution = orchestrator.Execute(stagePlan)
+	result.Execution = orchestrator.Execute(context.Background(), stagePlan)
 	if result.Execution.Err != nil {
 		return result, fmt.Errorf("execute sync pipeline: %w", result.Execution.Err)
 	}

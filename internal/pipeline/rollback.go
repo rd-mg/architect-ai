@@ -1,6 +1,9 @@
 package pipeline
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type RollbackPolicy struct {
 	OnApplyFailure bool
@@ -18,7 +21,7 @@ func (p RollbackPolicy) ShouldRollback(stage Stage, err error) bool {
 	return stage == StageApply && p.OnApplyFailure
 }
 
-func ExecuteRollback(steps []StepResult, stepIndex map[string]Step) StageResult {
+func ExecuteRollback(ctx context.Context, steps []StepResult, stepIndex map[string]Step) StageResult {
 	result := StageResult{Stage: StageRollback, Success: true}
 
 	for i := len(steps) - 1; i >= 0; i-- {
@@ -37,7 +40,7 @@ func ExecuteRollback(steps []StepResult, stepIndex map[string]Step) StageResult 
 			continue
 		}
 
-		err := rollbackStep.Rollback()
+		err := rollbackStep.Rollback(ctx)
 		item := StepResult{StepID: rollbackStep.ID(), Status: StepStatusRolledBack}
 		if err != nil {
 			item.Status = StepStatusFailed

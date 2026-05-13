@@ -113,22 +113,45 @@ Return result inline only. Do not write any files or call `mem_save`.
 
 ## D. Return Envelope
 
-Every phase MUST return a structured envelope to the orchestrator:
+Every phase MUST return a structured envelope to the orchestrator.
+
+### D1. Human-Readable Summary
+
+Provide a concise summary of the work done:
 
 - `status`: `success`, `partial`, or `blocked`
-- `executive_summary`: 1-3 sentence summary of what was done (LITE caveman style, user-facing)
-- `detailed_report`: (optional) full phase output, or omit if already inline
+- `executive_summary`: 1-3 sentence summary (LITE caveman style, user-facing)
 - `artifacts`: list of artifact keys/paths written
+- `risks`: risks discovered, or "None"
+- `next_recommended`: the next SDD phase to run, or "none"
+- `cognitive_posture`: the posture applied, e.g., `+++Socratic` or `none` (NEW in v2)
+
+### D2. Unified Handshake Schema (JSON-in-Markdown)
+
+**MANDATORY**: You MUST include the following JSON block at the very end of your response. This is used by the **Observer Agent ("Gentleman Angel")** for automated monitoring and state-sync.
+
+```json
+{
+  "status": "success|partial|blocked",
+  "change": "{change-name}",
+  "phase": "{current-phase}",
+  "artifacts": ["path/to/artifact1", "key:topic/key/2"],
+  "defects_found": 0,
+  "empirical_proof": "Brief description of test result, log entry, or evidence",
+  "estimated_tokens": 1200,
+  "nonce": "{session-uuid-if-provided}"
+}
+```
+
+### D3. Detailed Metrics & Triage (Internal)
+
+- `detailed_report`: (optional) full phase output
 - `findings_triage`: (mandatory for sdd-verify) summary object `{ blocking: N, warning: M, suggestion: K }`
 - `pre_mortem`: (mandatory for sdd-propose) summary of top risks and viability score
-- `next_recommended`: the next SDD phase to run, or "none"
-- `risks`: risks discovered, or "None"
-- `skill_resolution`: how skills were loaded — `injected` (received Project Standards from orchestrator), `fallback-registry` (self-loaded from registry), `fallback-path` (loaded via SKILL: Load path), or `none` (no skills loaded)
-- `cognitive_posture`: the posture applied, e.g., `+++Socratic` or `none` (NEW in v2)
-- `estimated_tokens`: rough token count consumed by this phase, for observability (NEW in v2)
+- `skill_resolution`: how skills were loaded — `injected`, `fallback-registry`, `fallback-path`, or `none`
 
 ### Size Budget (NEW in v2)
-
+...
 The `executive_summary` MUST be under 100 words. The full artifact MUST respect the phase-specific word limit:
 
 | Phase | Word Budget |

@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-design
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-design
+Project: architect-ai
+Adapter: OpenCode
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: proposal artifact, spec artifact (if exists)
@@ -45,6 +50,12 @@ and spec (if present), produce a design document covering:
 - **YAGNI Gate**: Table of proposed abstractions. For each, state: (1) Current need (2) Anticipated implementations (3) Cost of direct implementation. If only 1 implementation exists, abstraction is REJECTED.
 - Alternative designs considered and why rejected
 - Open questions (if any remain)
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 

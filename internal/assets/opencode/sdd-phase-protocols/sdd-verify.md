@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-verify
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-verify
+Project: architect-ai
+Adapter: OpenCode
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: proposal, spec, design, tasks, apply-progress
@@ -60,6 +65,12 @@ and design. Determine if the change meets acceptance criteria.
 - [ ] Tests exist for each capability
 - [ ] Test runner passes (or matches baseline failures)
 - [ ] **WCAG Compliance Check**: Verify aria-labels, contrast ratios, and keyboard accessibility.
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 

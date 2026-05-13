@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 type Stage string
 
 const (
@@ -10,12 +12,12 @@ const (
 
 type Step interface {
 	ID() string
-	Run() error
+	Run(ctx context.Context) error
 }
 
 type RollbackStep interface {
 	Step
-	Rollback() error
+	Rollback(ctx context.Context) error
 }
 
 // FailurePolicy controls how the runner behaves when a step fails.
@@ -35,6 +37,7 @@ type ProgressEvent struct {
 	Status StepStatus
 	Notes  string
 	Err    error
+	Nonce  string // Session-unique UUID for State-Synchronized DAG
 }
 
 // ProgressFunc is a callback invoked for every step lifecycle event.
@@ -43,4 +46,5 @@ type ProgressFunc func(ProgressEvent)
 type StagePlan struct {
 	Prepare []Step
 	Apply   []Step
+	Nonce   string // Injected into all progress events
 }

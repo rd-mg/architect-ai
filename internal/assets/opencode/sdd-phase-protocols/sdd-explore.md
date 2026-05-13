@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-explore
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-explore
+Project: architect-ai
+Adapter: OpenCode
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: nothing (optional: prior context)
@@ -40,6 +45,12 @@ Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 5. **Pattern Comparison**: Compare found implementation with established project patterns.
 
 Do NOT `cat` entire files unless they are under 50 lines. Identify constraints. Do NOT modify code.
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 

@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -10,7 +11,7 @@ func TestOrchestratorRunsPrepareThenApply(t *testing.T) {
 	order := []string{}
 	orchestrator := NewOrchestrator(DefaultRollbackPolicy())
 
-	result := orchestrator.Execute(StagePlan{
+	result := orchestrator.Execute(context.Background(), StagePlan{
 		Prepare: []Step{
 			newTestStep("prepare-1", &order),
 		},
@@ -36,7 +37,7 @@ func TestOrchestratorRollsBackApplyStepsOnFailure(t *testing.T) {
 	order := []string{}
 	orchestrator := NewOrchestrator(DefaultRollbackPolicy())
 
-	result := orchestrator.Execute(StagePlan{
+	result := orchestrator.Execute(context.Background(), StagePlan{
 		Apply: []Step{
 			newRollbackStep("apply-1", &order, nil),
 			newRollbackStep("apply-2", &order, errors.New("boom")),
@@ -65,7 +66,7 @@ func TestOrchestratorSkipsRollbackWhenPolicyDisabled(t *testing.T) {
 	order := []string{}
 	orchestrator := NewOrchestrator(RollbackPolicy{OnApplyFailure: false})
 
-	result := orchestrator.Execute(StagePlan{
+	result := orchestrator.Execute(context.Background(), StagePlan{
 		Apply: []Step{
 			newRollbackStep("apply-1", &order, errors.New("boom")),
 		},
@@ -94,7 +95,7 @@ func TestRunnerContinueOnErrorExecutesAllSteps(t *testing.T) {
 		newRollbackStep("step-3", &order, nil),
 	}
 
-	result := runner.Run(StageApply, steps)
+	result := runner.Run(context.Background(), StageApply, steps)
 
 	wantOrder := []string{"run:step-1", "run:step-2", "run:step-3"}
 	if !reflect.DeepEqual(order, wantOrder) {
@@ -134,7 +135,7 @@ func TestRunnerStopOnErrorHaltsExecution(t *testing.T) {
 		newRollbackStep("step-3", &order, nil),
 	}
 
-	result := runner.Run(StageApply, steps)
+	result := runner.Run(context.Background(), StageApply, steps)
 
 	wantOrder := []string{"run:step-1", "run:step-2"}
 	if !reflect.DeepEqual(order, wantOrder) {
@@ -166,7 +167,7 @@ func TestRunnerProgressCallbackEmitsEvents(t *testing.T) {
 		newTestStep("step-b", &order),
 	}
 
-	result := runner.Run(StageApply, steps)
+	result := runner.Run(context.Background(), StageApply, steps)
 
 	if result.Err != nil {
 		t.Fatalf("unexpected error: %v", result.Err)
@@ -207,7 +208,7 @@ func TestRunnerProgressCallbackEmitsFailedEvents(t *testing.T) {
 		newRollbackStep("bad-step", &order, errors.New("oops")),
 	}
 
-	result := runner.Run(StageApply, steps)
+	result := runner.Run(context.Background(), StageApply, steps)
 
 	if result.Success {
 		t.Fatalf("expected failure")
@@ -230,7 +231,7 @@ func TestOrchestratorContinueOnErrorWithRollback(t *testing.T) {
 		WithFailurePolicy(ContinueOnError),
 	)
 
-	result := orchestrator.Execute(StagePlan{
+	result := orchestrator.Execute(context.Background(), StagePlan{
 		Apply: []Step{
 			newRollbackStep("apply-1", &order, nil),
 			newRollbackStep("apply-2", &order, errors.New("boom")),
@@ -270,7 +271,7 @@ func TestOrchestratorWithProgressFunc(t *testing.T) {
 		}),
 	)
 
-	result := orchestrator.Execute(StagePlan{
+	result := orchestrator.Execute(context.Background(), StagePlan{
 		Prepare: []Step{newTestStep("prep", &order)},
 		Apply:   []Step{newTestStep("act", &order)},
 	})
@@ -311,12 +312,12 @@ func (s *testStep) ID() string {
 	return s.id
 }
 
-func (s *testStep) Run() error {
+func (s *testStep) Run(ctx context.Context) error {
 	*s.order = append(*s.order, "run:"+s.id)
 	return s.runErr
 }
 
-func (s *testStep) Rollback() error {
+func (s *testStep) Rollback(ctx context.Context) error {
 	*s.order = append(*s.order, "rollback:"+s.id)
 	return s.rollErr
 }

@@ -1,5 +1,10 @@
 package pipeline
 
+import (
+	"context"
+	"fmt"
+)
+
 // OrchestratorOption configures the orchestrator.
 type OrchestratorOption func(*Orchestrator)
 
@@ -17,10 +22,13 @@ func WithProgressFunc(fn ProgressFunc) OrchestratorOption {
 	}
 }
 
+type QualityCheckFunc func(StageResult) bool
+
 type Orchestrator struct {
-	runner   Runner
-	policy   RollbackPolicy
-	stepByID map[string]Step
+	runner       Runner
+	policy       RollbackPolicy
+	stepByID     map[string]Step
+	QualityCheck QualityCheckFunc // Returns true if quality threshold is met
 }
 
 func NewOrchestrator(policy RollbackPolicy, opts ...OrchestratorOption) *Orchestrator {
@@ -37,24 +45,34 @@ func NewOrchestrator(policy RollbackPolicy, opts ...OrchestratorOption) *Orchest
 	return o
 }
 
-func (o *Orchestrator) Execute(plan StagePlan) ExecutionResult {
+func (o *Orchestrator) Execute(ctx context.Context, plan StagePlan) ExecutionResult {
 	o.indexSteps(plan.Prepare)
 	o.indexSteps(plan.Apply)
 
-	prepareResult := o.runner.Run(StagePrepare, plan.Prepare)
+	o.runner.Nonce = plan.Nonce
+
+	prepareResult := o.runner.Run(ctx, StagePrepare, plan.Prepare)
 	if !prepareResult.Success {
 		return ExecutionResult{Prepare: prepareResult, Err: prepareResult.Err}
 	}
 
-	applyResult := o.runner.Run(StageApply, plan.Apply)
+	applyResult := o.runner.Run(ctx, StageApply, plan.Apply)
 	result := ExecutionResult{Prepare: prepareResult, Apply: applyResult}
+
+	// Recursive Reasoning Gate
+	if o.QualityCheck != nil && !o.QualityCheck(applyResult) {
+		result.NextRecommendedStage = "design" // Recursive Gate trigger
+		result.Err = fmt.Errorf("quality threshold not met in %s stage", StageApply)
+		return result
+	}
+
 	if applyResult.Success {
 		return result
 	}
 
 	result.Err = applyResult.Err
 	if o.policy.ShouldRollback(StageApply, applyResult.Err) {
-		result.Rollback = ExecuteRollback(applyResult.Steps, o.stepByID)
+		result.Rollback = ExecuteRollback(ctx, applyResult.Steps, o.stepByID)
 		if !result.Rollback.Success {
 			result.Err = result.Rollback.Err
 		}
