@@ -1,7 +1,7 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-onboard
 Project: architect-ai
-Adapter: Claude
+Adapter: Vscode
 Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
