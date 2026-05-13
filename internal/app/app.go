@@ -276,7 +276,7 @@ func tuiExecute(
 		pipeline.WithProgressFunc(onProgress),
 	)
 
-	execResult := orchestrator.Execute(stagePlan)
+	execResult := orchestrator.Execute(context.Background(), stagePlan)
 	if execResult.Err == nil {
 		// Persist agent selection and model assignments using mutex-protected
 		// Manager to prevent data loss under concurrent TUI actions.
