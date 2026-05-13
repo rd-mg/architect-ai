@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-init
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-init
+Project: architect-ai
+Adapter: Antigravity
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: project files for detection
@@ -58,6 +63,12 @@ Identify entry points and public APIs affected by this change:
 - **Data Entry Points**: DB schemas, message queues, file watchers.
 
 Record in the sdd-init artifact.
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 

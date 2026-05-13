@@ -1,4 +1,4 @@
-# Agent Teams Lite — General Orchestrator Core (Antigravity)
+# Agent Teams Lite — General Orchestrator Core (Opencode)
 
 Bind this to the dedicated `general-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `solver`, `ideator`, or `researcher`.
 
@@ -160,17 +160,15 @@ When multiple tasks can proceed **independently** (no data dependencies), you **
 | User phrase (EN + ES) | Workflow | Target Agent | Required Postures |
 |-----------------------|----------|--------------|-------------------|
 | "use sdd", "start sdd", "apply spec-driven" | `/sdd-new` | **SDD Orchestrator** | N/A |
-| "fix this", "why is X crashing", "solve" | `/solve` | **Solver** | +++Forensic, +++Systemic |
-| "debug", "trace" | `/debug` | **Solver** | +++Forensic, +++Adversarial |
+| "fix this", "why is X crashing", "solve", "debug", "research", "investigate" | `/analyze` | **Analyst** | +++Forensic, +++Systemic, +++Critical |
 | "give me ideas for", "brainstorm", "ideate" | `/brainstorm`| **Ideator** | +++Divergent, +++Lateral, +++Diamond |
-| "research", "how does library Y work", "investigate" | `/investigate`| **Researcher** | +++Socratic, +++Empirical |
 | "build a quick", "prototype" | `/prototype` | **Generalist** | +++Pragmatic |
 | Other general tasks | (implicit) | **Generalist** | Auto-detected (D1-D4) |
 
 ### On Match
 
 1. **Confirm interpretation in LITE caveman**:
-   > `Detected intent: /solve. Delegating to Solver. Proceed? (yes / adjust)`
+   > `Detected intent: /analyze. Delegating to Analyst. Proceed? (yes / adjust)`
    *(If Execution Mode is Automatic, skip the confirmation and proceed immediately).*
 2. Delegate to the matched agent, injecting the required posture.
 
@@ -180,9 +178,8 @@ Unlike SDD, Non-SDD workflows DO NOT use file-based tracking in `openspec/change
 All specialized agents MUST persist their output to Engram.
 
 You must provide a `topic_key` to the sub-agent when delegating:
-- Solver: `solve/{slug}` or `debug/{slug}`
+- Analyst: `analyze/{slug}`
 - Ideator: `brainstorm/{slug}`
-- Researcher: `research/{slug}`
 - Generalist: `task/{slug}`
 
 ## Tool Availability Check (PARALLEL DISPATCH — all probes in ONE response)
@@ -287,9 +284,8 @@ Regardless of task matcher, these skills are ALWAYS injected into every sub-agen
 | Agent Type | Model | Reason |
 |------------|-------|--------|
 | orchestrator | opus | Coordinates, routes intents |
-| solver | opus | Complex debugging, architectural reasoning |
+| analyst | opus | Deep research, complex debugging, architectural reasoning |
 | ideator | sonnet | Creative generation, lateral connections |
-| researcher | sonnet | Synthesis, broad context extraction |
 | generalist | sonnet | Execution, mechanical tasks |
 
 If lacking access to assigned model, substitute `sonnet` and continue.

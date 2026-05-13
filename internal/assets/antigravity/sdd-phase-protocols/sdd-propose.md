@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-propose
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-propose
+Project: architect-ai
+Adapter: Antigravity
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: exploration artifact (optional)
@@ -41,6 +46,12 @@ success criteria, capabilities section.
 - **Pre-mortem**: Address: (1) What is most likely to break? (2) What dependency is the weakest link? (3) How will we detect failure in production? (4) Who is affected if this fails?
 - **Open Assumptions**: Table with ≥ 2 rows (Assumption | Impact if False). If 0 assumptions, justify why.
 - **Viability Score**: Score 1-15 (Sum of 3 dimensions: 1-5 Complexity, 1-5 Clarity, 1-5 Tooling). If score < 8, initialization is BLOCKED.
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 

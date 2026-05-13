@@ -1,4 +1,9 @@
-# Phase Protocol: sdd-apply
+<!-- architect-ai:prompt-caching-anchor:start -->
+# SDD Phase Protocol: sdd-apply
+Project: architect-ai
+Adapter: Antigravity
+Version: 1.1
+<!-- architect-ai:prompt-caching-anchor:end -->
 
 ## Dependencies
 - **Reads**: tasks artifact, spec (if exists), design (if exists), apply-progress (if continuation)
@@ -60,6 +65,12 @@ Tasks to complete in this batch: {list from tasks artifact}
 - Follow the compact rules in Project Standards EXACTLY
 - Do not modify files outside the scope of assigned tasks
 - Do not start new tasks until assigned ones are done or blocked
+
+
+## Empirical Verification Loop (+++Empirical)
+- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
+- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
+- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 
