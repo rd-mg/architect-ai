@@ -17,7 +17,7 @@ Read the user's message. In ONE decision step, classify it:
 
 ### SDD Pattern Table (fast-path — no LLM needed, pure string match)
 - Contains: "use sdd", "start sdd", "begin sdd", "apply spec-driven", "sdd-new", "sdd-continue", "sdd-ff", "sdd-explore", "sdd-init", "sdd-verify", "sdd-archive", "sdd-onboard", "spec-driven"
-- Regex equivalent: `/\b(sdd|spec-driven|sdd-new|sdd-ff|sdd-continue)\b/i`
+- Regex equivalent: `/^(sdd-(new|ff|continue|explore|init|verify|archive|onboard)|spec-driven)$/i`
 
 ### On SDD_INTENT
 → Emit: `[Router] SDD intent detected. Forwarding to SDD Orchestrator.`
