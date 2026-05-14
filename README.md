@@ -150,9 +150,12 @@ Nine agents receive orchestrator assets. All are SDD-capable (`sdd-orchestrator.
 | Codex | CLI |  |  |
 | Cursor | IDE |  |  (provider-dependent) |
 | Gemini CLI | CLI |  |  |
+| Kilocode | IDE |  |  |
 | Kiro | IDE |  |  |
 | OpenCode | CLI |  |  (per profile) |
+| Qwen | CLI |  |  |
 | VSCode | IDE |  inline-only |  |
+| Windsurf | IDE |  |  |
 
 **Template** (not an agent):
 
@@ -246,33 +249,29 @@ On match, the orchestrator confirms the interpretation before acting.
 
 ### CLI Utility Commands
 
-**1. Initialization (`sdd-init`)**
-You can manually bootstrap the SDD project conventions (`.atl/` directory, registries, and overlays) before opening an agent by using the CLI.
+**1. Installation & Updates**
+- `architect-ai install`: Configure AI coding agents on this machine.
+- `architect-ai sync`: Sync agent configs and skills to current version.
+- `architect-ai update`: Check for available updates for managed tools.
+- `architect-ai upgrade`: Apply updates to managed tools (architect-ai, engram, gga).
 
-- **For a general local folder:**
+**2. SDD Lifecycle (`sdd-init`, `sdd-status`)**
+- `architect-ai sdd-init`: Initialize SDD context in the current project.
   ```bash
-  cd your-project
   architect-ai sdd-init --mode engram
   ```
+- `architect-ai sdd-status`: View active SDD change state and progress.
+- `architect-ai sdd-archive-preflight`: Check if a change is ready for archival.
 
-- **For an Odoo folder:**
-  If an Odoo environment is detected, the command automatically discovers specialist overlays and sets up the correct Odoo conventions.
-  ```bash
-  cd your-odoo-repo
-  architect-ai sdd-init --mode hybrid
-  ```
+**3. Project Maintenance**
+- `architect-ai skill-registry`: Generate or refresh the project's `.atl/skill-registry.md`.
+- `architect-ai overlay`: Manage specialist project overlays (e.g. Odoo).
+- `architect-ai skills`: Manage community skills and project-specific learned patterns.
 
-**2. Skill Registry (`skill-registry`)**
-Generates or refreshes the `.atl/skill-registry.md` file in your project. This file indexes all available skills and their trigger conditions so the agent knows when to load them.
-```bash
-architect-ai skill-registry
-```
-
-**3. Sync (`sync`)**
-Synchronizes global agent configurations and skills to the latest version. Use this after updating Architect-AI to ensure your agents have the latest system prompts.
-```bash
-architect-ai sync
-```
+**4. System & Recovery**
+- `architect-ai cleanup`: Deep clean of temporary files and logs.
+- `architect-ai restore`: Restore a configuration backup from `~/.architect-ai/backups/`.
+- `architect-ai uninstall`: Remove Architect AI managed files from this machine.
 
 ---
 
@@ -307,6 +306,18 @@ When working in an Odoo repository (detected via `sdd-init`), specialized Odoo s
 **2. Debugging Odoo**
 > "find why the tax calculation is failing on invoices"
 *(The agent uses Odoo-specific debugging strategies, checking `account.move` overrides and server logs)*
+
+### Analyst Skill Profile
+
+The **Analyst** is a hybrid researcher-solver profile used for complex troubleshooting. It combines forensic evidence gathering with systemic problem-solving.
+
+**1. Diagnosing a crash**
+> "Analyze this stack trace and find the root cause in the local source"
+*(Loads the `analyst` skill; uses `ripgrep` to trace paths and `Engram` to check for similar known bugs)*
+
+**2. API Research & Integration**
+> "How do I integrate the new Context7 telemetry in our backend?"
+*(The Analyst queries documentation via `Context7` and proposes a low-blast-radius implementation)*
 
 ### Odoo 19 Spreadsheet Dashboard Architect (`available`)
 
@@ -366,10 +377,11 @@ context-mode MCP can be installed and configured outside Architect-AI. By defaul
 
 ## Mandatory skills
 
-Two skills are marked `bridge: always` in their frontmatter and injected into **every** sub-agent prompt, regardless of task matcher:
+Four skills are marked `bridge: always` in their frontmatter and injected into **every** sub-agent prompt, regardless of task matcher:
 
 - **`ripgrep`** — all code search must use `rg`, not `grep -r`
 - **`bash-expert`** — strict-mode shell discipline
+- **`architecture-guardrails`** — enforces system boundaries and state flow
 - **`context-guardian`** — auto-invoked at > 50% window usage
 - **`mcp-notebooklm-orchestrator`** — optional research source (query-only)
 
@@ -431,43 +443,31 @@ Root hidden directories such as `.agent/`, `.agents/`, `.atl/`, `.claude/`, `.ge
 architect-ai/
 ├── cmd/architect-ai/               # CLI entry point
 ├── docs/                           # User-facing documentation
-│   ├── cognitive-modes.md
-│   ├── caveman-integration.md
-│   ├── adaptive-reasoning-v1.md
-│   └── antigravity-sdd-workaround.md
 ├── internal/
-│   ├── agents/                     # Per-agent adapters
-│   │   ├── claude/  antigravity/  codex/  cursor/
-│   │   ├── gemini/  kilocode/  kiro/  opencode/
-│   │   ├── qwen/  vscode/  windsurf/
-│   │   └── interface.go            # shared contracts + MeteringCapable
+│   ├── agentbuilder/               # Dynamic agent generation
+│   ├── agents/                     # Per-agent adapters (Claude, Gemini, etc.)
+│   ├── app/                        # Application entry and command routing
 │   ├── assets/                     # Prompts, skills, personas, overlays
-│   │   ├── claude/ antigravity/ codex/ cursor/ gemini/ generic/ kiro/ opencode/
-│   │   ├── skills/                 # Cross-cutting skills
-│   │   │   ├── ripgrep/            (V3.1, bridge: always)
-│   │   │   ├── bash-expert/        (V3.1, bridge: always)
-│   │   │   ├── mcp-notebooklm-orchestrator/  (V3.1 optional)
-│   │   │   ├── mcp-context7-skill/ (V3.1 tertiary)
-│   │   │   ├── context-guardian/
-│   │   │   ├── cognitive-mode/
-│   │   │   ├── adaptive-reasoning/
-│   │   │   ├── _shared/
-│   │   │   └── _archived/
-│   │   └── overlays/
-│   │       └── odoo-development-skill/
+│   │   ├── skills/                 # Cross-cutting skills (ripgrep, bash-expert, etc.)
+│   │   └── overlays/               # Specialist project overlays (Odoo, etc.)
+│   ├── backup/                     # Config snapshot and restore logic
+│   ├── catalog/                    # Registry of available agents and components
 │   ├── cli/                        # CLI command implementations
-│   ├── components/
-│   │   ├── skills/                 # Skill resolver (respects bridge: always)
-│   │   ├── sdd/                    # SDD state management
-│   │   ├── gga/  theme/  filemerge/
-│   │   └── uninstall/              # Managed uninstall + DeepPurge (V3.1)
-│   ├── installcmd/
-│   ├── metering/                   # (V3.1) session stats + pricing + hook
-│   ├── model/
-│   └── tui/
-│       ├── model.go  router.go
-│       ├── screens/                # welcome, install, purge*, ...
-│       └── styles/
+│   ├── components/                 # Shared logic (GGA, SDD, hooks, etc.)
+│   ├── installcmd/                 # Installation pipeline stages
+│   ├── metering/                   # Session stats and token pricing
+│   ├── model/                      # Shared domain models and types
+│   ├── opencode/                   # OpenCode-specific multi-mode logic
+│   ├── pipeline/                   # Sequential execution orchestrator
+│   ├── planner/                    # Install/Sync dependency resolver
+│   ├── process/                    # Bounded subprocess runner
+│   ├── scope/                      # Context boundary management
+│   ├── skills/                     # Skill resolution and loading logic
+│   ├── state/                      # Local state persistence (state.json)
+│   ├── system/                     # OS/Platform detection and validation
+│   ├── tui/                        # Bubbletea-based interactive UI
+│   ├── update/                     # Update check and self-update logic
+│   └── verify/                     # Installation verification reports
 ├── openspec/                       # (optional) file-based artifacts
 │   └── changes/
 └── README.md
