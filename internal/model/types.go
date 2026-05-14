@@ -80,6 +80,7 @@ const (
 	SkillIdeator       SkillID = "ideator"
 	SkillResearcher    SkillID = "researcher"
 	SkillGeneralist    SkillID = "generalist"
+	SkillArchitectureGuardrails SkillID = "architecture-guardrails"
 )
 
 type PersonaID string

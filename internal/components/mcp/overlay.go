@@ -12,6 +12,7 @@ const (
 	ServerContext7   ServerKind = "context7"
 	ServerEngram     ServerKind = "engram"
 	ServerNotebookLM ServerKind = "notebooklm-mcp"
+	ServerSequentialThinking ServerKind = "sequential-thinking"
 )
 
 type Options struct{}
@@ -22,8 +23,78 @@ func OverlayFor(agent model.AgentID, server ServerKind, opts Options) ([]byte, e
 		return context7Overlay(agent)
 	case ServerNotebookLM:
 		return notebookLMOverlay(agent)
+	case ServerSequentialThinking:
+		return sequentialThinkingOverlay(agent)
 	default:
 		return nil, fmt.Errorf("unsupported MCP server: %s", server)
+	}
+}
+
+func sequentialThinkingOverlay(agent model.AgentID) ([]byte, error) {
+	switch agent {
+	case model.AgentGeminiCLI:
+		return []byte(`{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "timeout": 30000,
+      "trust": true
+    }
+  }
+}`), nil
+	case model.AgentOpenCode, model.AgentKilocode:
+		return []byte(`{
+  "mcp": {
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "enabled": true
+    }
+  }
+}`), nil
+	case model.AgentVSCodeCopilot, model.AgentCursor:
+		return []byte(`{
+  "servers": {
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    }
+  }
+}`), nil
+	case model.AgentAntigravity, model.AgentWindsurf, model.AgentQwenCode, model.AgentKiroIDE:
+		return []byte(`{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    }
+  }
+}`), nil
+	case model.AgentClaudeCode:
+		return []byte(`{
+  "command": "npx",
+  "args": [
+    "-y",
+    "@modelcontextprotocol/server-sequential-thinking"
+  ]
+}`), nil
+	default:
+		return nil, fmt.Errorf("unsupported agent for sequential-thinking: %s", agent)
 	}
 }
 

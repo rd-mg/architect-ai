@@ -579,6 +579,9 @@ func (s componentApplyStep) Run(ctx context.Context) error {
 			if _, err := sdd.Inject(s.homeDir, adapter, s.selection.SDDMode, opts); err != nil {
 				return fmt.Errorf("inject sdd for %q: %w", adapter.Agent(), err)
 			}
+			if _, err := mcp.InjectSequentialThinking(s.homeDir, adapter); err != nil {
+				return fmt.Errorf("inject sequential-thinking for %q: %w", adapter.Agent(), err)
+			}
 		}
 		return nil
 	case model.ComponentSkills:

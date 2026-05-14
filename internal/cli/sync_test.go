@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -403,7 +404,7 @@ func TestComponentSyncStepSkipsEngramBinaryInstall(t *testing.T) {
 		selection: model.Selection{SDDMode: model.SDDModeSingle},
 	}
 
-	if err := step.Run(); err != nil {
+	if err := step.Run(context.Background()); err != nil {
 		t.Fatalf("componentSyncStep.Run() error = %v", err)
 	}
 
@@ -431,7 +432,7 @@ func TestComponentSyncStepSkipsPersonaByDefault(t *testing.T) {
 		selection: model.Selection{},
 	}
 
-	err := step.Run()
+	err := step.Run(context.Background())
 	if err == nil {
 		t.Fatalf("componentSyncStep.Run() with ComponentPersona should return error (out of sync scope)")
 	}
@@ -448,7 +449,7 @@ func TestComponentSyncStepRunsSDDInject(t *testing.T) {
 		selection: model.Selection{SDDMode: model.SDDModeSingle},
 	}
 
-	if err := step.Run(); err != nil {
+	if err := step.Run(context.Background()); err != nil {
 		t.Fatalf("componentSyncStep.Run() SDD error = %v", err)
 	}
 
@@ -490,7 +491,7 @@ func TestComponentSyncStepRunsGGAInjectWithoutBinaryInstall(t *testing.T) {
 		selection: model.Selection{},
 	}
 
-	if err := step.Run(); err != nil {
+	if err := step.Run(context.Background()); err != nil {
 		t.Fatalf("componentSyncStep.Run() GGA error = %v", err)
 	}
 

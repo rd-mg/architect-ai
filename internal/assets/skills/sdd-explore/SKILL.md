@@ -35,6 +35,9 @@ Follow the retrieval rules in Step 1 of `_shared/mode-branching.md`.
 
 ## What to Do
 
+## Step 0: Deep Code Exploration (Sequential Thinking)
+- **MANDATORY**: Call `sequential_thinking` to map the target modules and identify dependencies BEFORE running any search tools.
+
 ### Step 1: Load Skills
 Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 

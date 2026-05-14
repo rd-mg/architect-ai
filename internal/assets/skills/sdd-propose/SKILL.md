@@ -34,6 +34,9 @@ Follow `_shared/mode-branching.md` for artifact-store branching.
 
 ## What to Do
 
+## Step 0: Hypothesis Branching (Sequential Thinking)
+- **MANDATORY**: Call `sequential_thinking` with at least 2 branches (using `branchId`) to explore alternative architectural approaches before committing to one in the proposal.
+
 ### Step 1: Load Skills
 Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 

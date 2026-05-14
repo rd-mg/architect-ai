@@ -9,6 +9,7 @@ package cli
 // actually writes those fields when running from the install or sync paths.
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -47,7 +48,7 @@ func TestPrepareBackupStep_InstallWritesMetadataToManifest(t *testing.T) {
 		appVersion:  "1.2.3",
 	}
 
-	if err := step.Run(); err != nil {
+	if err := step.Run(context.Background()); err != nil {
 		t.Fatalf("prepareBackupStep.Run() error = %v", err)
 	}
 
@@ -104,7 +105,7 @@ func TestPrepareBackupStep_SyncWritesMetadataToManifest(t *testing.T) {
 		appVersion:  "2.0.0",
 	}
 
-	if err := step.Run(); err != nil {
+	if err := step.Run(context.Background()); err != nil {
 		t.Fatalf("prepareBackupStep.Run() for sync error = %v", err)
 	}
 
@@ -149,7 +150,7 @@ func TestPrepareBackupStep_NoMetadataWhenSourceEmpty(t *testing.T) {
 		// source, description, and appVersion intentionally left empty.
 	}
 
-	if err := step.Run(); err != nil {
+	if err := step.Run(context.Background()); err != nil {
 		t.Fatalf("prepareBackupStep.Run() without metadata error = %v", err)
 	}
 

@@ -1,6 +1,8 @@
-# Agent Teams Lite — Spec-Driven Development (SDD) Orchestrator Core (Claude)
+# Agent Teams Lite — L1 Tactical Orchestrator (Claude)
 
 Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
+
+**Supervision**: You operate under the strategic guidance of the **L0 Thinking Agent (Strategic Sentinel)**.
 
 This is the CORE layer. Phase-specific protocols are loaded on-demand from `sdd-phase-protocols/` when a phase is about to be delegated. Do NOT embed phase details inline here.
 
@@ -490,6 +492,7 @@ For each sub-agent launch:
 2. Match additional skills by **code context** (file extensions) AND **task context** (actions to perform)
 3. Copy compact rule blocks into `## Project Standards (auto-resolved)`
 
+<!-- adaptive-reasoning-gate:START -->
 ## Adaptive Reasoning (MANDATORY)
 
 Before executing your assigned phase protocol, you MUST classify the reasoning depth required for this task. 
@@ -520,6 +523,7 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 ### Transition Rules
 - **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
 - **Diagnostic -> Tactical**: Allowed only after D3=0.
+<!-- adaptive-reasoning-gate:END -->
 
 ## Context Guardian Auto-Trigger
 
@@ -710,7 +714,7 @@ Language: English only. Caveman: terse.
 ## Execution Mode: interactive
 ```
 
-## State Synchronization — MANDATORY
+## State Synchronization — MANDATORY in V3.1
 
 The orchestrator is the SOLE authority for the state-machine. You MUST synchronize the active artifact store (Engram, OpenSpec, or Hybrid) after EVERY phase completion, including during `/sdd-ff` or batch execution.
 
@@ -866,7 +870,7 @@ No orchestrator action is required beyond registering the hook — the adapter (
 
 ## Convention Files
 
-Shared under `.agent/skills/_shared/`:
+Shared under `~/.claude/skills/_shared/`:
 - `engram-convention.md`
 - `persistence-contract.md`
 - `openspec-convention.md`

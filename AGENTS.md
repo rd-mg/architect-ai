@@ -16,6 +16,7 @@ When working on this project, load the relevant skill(s) BEFORE writing any code
 |-------|---------|------|
 | _archived | Container for archived skills that were absorbed into other skills or deprecated | `internal/assets/skills/_archived/SKILL.md` |
 | adaptive-reasoning | Single-entry classifier and cross-agent reasoning engine | `internal/assets/skills/adaptive-reasoning/SKILL.md` |
+| architecture-guardrails | Global architecture guardrails and sandbox security standards | `internal/assets/skills/architecture-guardrails/SKILL.md` |
 | autoreason-lite | bounded competitive refinement for code and non-code artifacts using an incumbent state or draft, one plausible competing alternative, and one synthesis candidate | `internal/assets/skills/_archived/autoreason-lite/SKILL.md` |
 | bash-expert | Safe, portable shell scripting | `internal/assets/skills/bash-expert/SKILL.md` |
 | branch-pr | When creating a pull request, opening a PR, or preparing changes for review. | `internal/assets/skills/branch-pr/SKILL.md` |

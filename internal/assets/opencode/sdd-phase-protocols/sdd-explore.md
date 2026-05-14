@@ -32,6 +32,9 @@ in the request. Reveal what has NOT been said.
 
 Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 
+## Step 0: Deep Code Exploration (Sequential Thinking)
+- **MANDATORY**: Call `sequential_thinking` to map the target modules and identify dependencies BEFORE running any search tools.
+
 ## ADR Pre-check (MANDATORY)
 **BEFORE** performing any code search, check for existing Architecture Decision Records:
 - `mem_search(query: "arch/_global/decision", project: "{project}")`

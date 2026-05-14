@@ -29,7 +29,17 @@
 ### All platforms
 
 - Go 1.24+ (for building from source).
-- Node.js / npm if installing Claude Code (agent is installed via `npm install -g`).
+- Node.js / npm for agent installations and MCP servers.
+
+### Sequential Thinking MCP (MANDATORY)
+
+The **L0 Thinking Agent** requires the official Sequential Thinking MCP server. To install it globally for your agents:
+
+```bash
+npx -y @modelcontextprotocol/server-sequential-thinking
+```
+
+Ensure your agent configuration (e.g., `~/.claude/settings.json`, `opencode.json`, etc.) includes this MCP server in its process list.
 
 ## Run
 

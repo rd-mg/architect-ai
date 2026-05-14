@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -75,7 +76,7 @@ func TestGGAFixInstallErrorWhenAlreadyAvailable(t *testing.T) {
 		profile:      profile,
 	}
 
-	err := step.Run()
+	err := step.Run(context.Background())
 
 	// Verify: no error should be returned (fix: error swallowed when GGA available)
 	if err != nil {
@@ -140,7 +141,7 @@ func TestGGAFixInstallErrorWhenNotAvailable(t *testing.T) {
 		profile:      profile,
 	}
 
-	err := step.Run()
+	err := step.Run(context.Background())
 
 	// Verify: error should be returned (not swallowed)
 	if err == nil {

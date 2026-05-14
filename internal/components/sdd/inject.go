@@ -1144,19 +1144,19 @@ func sddOrchestratorAsset(agent model.AgentID) string {
 func generalOrchestratorAsset(agent model.AgentID) string {
 	switch agent {
 	case model.AgentGeminiCLI:
-		return "gemini/general-orchestrator.md"
+		return "gemini/thinking-agent.md"
 	case model.AgentCodex:
-		return "codex/general-orchestrator.md"
+		return "codex/thinking-agent.md"
 	case model.AgentAntigravity:
-		return "antigravity/general-orchestrator.md"
+		return "antigravity/thinking-agent.md"
 	case model.AgentWindsurf:
-		return "windsurf/general-orchestrator.md"
+		return "windsurf/thinking-agent.md"
 	case model.AgentCursor:
-		return "cursor/general-orchestrator.md"
+		return "cursor/thinking-agent.md"
 	case model.AgentClaudeCode:
-		return "claude/general-orchestrator.md"
+		return "claude/thinking-agent.md"
 	default:
-		return "generic/general-orchestrator.md"
+		return "generic/thinking-agent.md"
 	}
 }
 

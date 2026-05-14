@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rd-mg/architect-ai/internal/agents"
 	"github.com/rd-mg/architect-ai/internal/model"
 	"github.com/rd-mg/architect-ai/internal/state"
 )
@@ -210,5 +211,115 @@ func TestInjectOpenCodeMultiModeIdempotentWithPromptFiles(t *testing.T) {
 	}
 	if second.Changed {
 		t.Fatal("Inject(multi) second changed = true — should be idempotent with prompt files")
+	}
+}
+
+// TestL0ThinkingAgentMindsetInjected verifies that the L0 Thinking Agent mindset
+// is injected into the general-orchestrator (Thinking Agent) prompt.
+func TestL0ThinkingAgentMindsetInjected(t *testing.T) {
+	home := t.TempDir()
+	mockNoPackageManager(t)
+
+	// We use gemini as a representative adapter for L0/L1 topology
+	geminiAdapter, _ := agents.NewAdapter("gemini-cli")
+	
+	_, err := Inject(home, geminiAdapter, "")
+	if err != nil {
+		t.Fatalf("Inject() error = %v", err)
+	}
+
+	promptPath := geminiAdapter.SystemPromptFile(home)
+	data, _ := os.ReadFile(promptPath)
+	content := string(data)
+
+	// Check for L0 Thinking Agent header and Sentinel mindset
+	if !strings.Contains(content, "# Thinking Agent (L0 Strategic Sentinel)") {
+		t.Error("System prompt missing L0 Thinking Agent header")
+	}
+	if !strings.Contains(content, "## Mindset & Strategic Supervision") {
+		t.Error("System prompt missing Sentinel mindset section")
+	}
+	if !strings.Contains(content, "## Intention Gate (MANDATORY)") {
+		t.Error("System prompt missing Intention Gate section")
+	}
+}
+
+// TestArchitectureGuardrailsInjected verifies that the Architecture Guardrails
+// skill content is injected into the Thinking Agent prompt.
+func TestArchitectureGuardrailsInjected(t *testing.T) {
+	home := t.TempDir()
+	mockNoPackageManager(t)
+
+	geminiAdapter, _ := agents.NewAdapter("gemini-cli")
+	_, err := Inject(home, geminiAdapter, "")
+	if err != nil {
+		t.Fatalf("Inject() error = %v", err)
+	}
+
+	promptPath := geminiAdapter.SystemPromptFile(home)
+	data, _ := os.ReadFile(promptPath)
+	content := string(data)
+
+	// Check for Guardrails markers and key content
+	if !strings.Contains(content, "<!-- architect-ai:architecture-guardrails:START -->") {
+		t.Error("System prompt missing Architecture Guardrails start marker")
+	}
+	if !strings.Contains(content, "## Core Guardrails (REQUIRED)") {
+		t.Error("System prompt missing Core Guardrails heading")
+	}
+	if !strings.Contains(content, "Thin Adapters") {
+		t.Error("System prompt missing 'Thin Adapters' guardrail")
+	}
+}
+
+// TestSequentialThinkingHarmonizationInjected verifies that the harmonization
+// instructions for sequential_thinking are present in the system prompts.
+func TestSequentialThinkingHarmonizationInjected(t *testing.T) {
+	home := t.TempDir()
+	mockNoPackageManager(t)
+
+	// We use gemini as a representative adapter for L0/L1 topology
+	adapter, _ := agents.NewAdapter("gemini-cli")
+	_, err := Inject(home, adapter, "")
+	if err != nil {
+		t.Fatalf("Inject() error = %v", err)
+	}
+
+	promptPath := adapter.SystemPromptFile(home)
+	data, _ := os.ReadFile(promptPath)
+	content := string(data)
+
+	// Check for Intention Gate using sequential_thinking in L0
+	if !strings.Contains(content, "## Intention Gate (MANDATORY)") {
+		t.Error("Thinking Agent prompt missing Intention Gate section")
+	}
+	if !strings.Contains(content, "use the `sequential_thinking` tool (if available) to analyze the user request") {
+		t.Error("Thinking Agent prompt missing Sequential Thinking mandate")
+	}
+}
+
+
+// TestL1TacticalOrchestratorHeaderInjected verifies that the SDD orchestrator
+// prompt contains the L1 Tactical Orchestrator header.
+func TestL1TacticalOrchestratorHeaderInjected(t *testing.T) {
+	home := t.TempDir()
+	mockNoPackageManager(t)
+
+	geminiAdapter, _ := agents.NewAdapter("gemini-cli")
+	_, err := Inject(home, geminiAdapter, "")
+	if err != nil {
+		t.Fatalf("Inject() error = %v", err)
+	}
+
+	promptPath := geminiAdapter.SystemPromptFile(home)
+	data, _ := os.ReadFile(promptPath)
+	content := string(data)
+
+	// Check for L1 Tactical Orchestrator header and supervision note
+	if !strings.Contains(content, "# Agent Teams Lite — L1 Tactical Orchestrator") {
+		t.Error("System prompt missing L1 Tactical Orchestrator header")
+	}
+	if !strings.Contains(content, "You operate under the strategic guidance of the **L0 Thinking Agent (Strategic Sentinel)**") {
+		t.Error("System prompt missing supervision link to L0 Sentinel")
 	}
 }

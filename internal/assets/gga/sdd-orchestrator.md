@@ -1,6 +1,8 @@
-# Agent Teams Lite — Spec-Driven Development (SDD) Orchestrator Core (Gga)
+# Agent Teams Lite — L1 Tactical Orchestrator (Gga)
 
 Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
+
+**Supervision**: You operate under the strategic guidance of the **L0 Thinking Agent (Strategic Sentinel)**.
 
 This is the CORE layer. Phase-specific protocols are loaded on-demand from `sdd-phase-protocols/` when a phase is about to be delegated. Do NOT embed phase details inline here.
 

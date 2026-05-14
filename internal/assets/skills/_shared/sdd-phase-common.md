@@ -36,6 +36,15 @@ If multiple postures are present (e.g., Critical + Systemic for sdd-design), app
 
 If no posture is present, proceed with default analytical behavior.
 
+## A4. Sequential Thinking Harmonization (NEW in v3)
+
+You MUST use the `sequential_thinking` tool (if available) to execute your assigned Cognition Mode and formulate your Adaptive Reasoning evaluation.
+
+1. **Hierarchy**: `sequential_thinking` is the mechanical engine.
+   - **Cognition Modes (The Lens)**: Postures like `+++Divergent` dictate *how* you think. Use `branchId` in sequential thoughts to explore alternative hypotheses when in divergent postures.
+   - **Adaptive Reasoning (The Structure)**: Dictates the final output depth and formatting. Use thoughts to silently evaluate D1-D4 and formulate your response strategy.
+2. **Supplement, Not Replace**: Sequential thinking steps are for your internal logic. You MUST still produce the final, synthesized response (e.g., `[MODE N | ...]` and the return envelope) as required by this protocol.
+
 ## A3. Tool Availability Check (NEW in v2)
 
 Check for an `## Available Tools` block in your launch prompt. If present, it lists the tools the orchestrator has verified are operational:

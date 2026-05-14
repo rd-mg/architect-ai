@@ -15,6 +15,7 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"claude/engram-protocol.md",
 		"claude/persona-architect.md",
 		"claude/sdd-orchestrator.md",
+		"claude/thinking-agent.md",
 
 		// OpenCode agent files
 		"opencode/persona-architect.md",
@@ -32,12 +33,15 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 
 		// Gemini agent files
 		"gemini/sdd-orchestrator.md",
+		"gemini/thinking-agent.md",
 
 		// Codex agent files
 		"codex/sdd-orchestrator.md",
+		"codex/thinking-agent.md",
 
 		// Cursor agent files
 		"cursor/sdd-orchestrator.md",
+		"cursor/thinking-agent.md",
 		"cursor/agents/sdd-init.md",
 		"cursor/agents/sdd-explore.md",
 		"cursor/agents/sdd-propose.md",
@@ -59,6 +63,7 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"skills/sdd-tasks/SKILL.md",
 		"skills/sdd-verify/SKILL.md",
 		"skills/skill-registry/SKILL.md",
+		"skills/architecture-guardrails/SKILL.md",
 		"skills/_shared/persistence-contract.md",
 		"skills/_shared/engram-convention.md",
 		"skills/_shared/openspec-convention.md",
@@ -155,9 +160,9 @@ func TestEmbeddedAssetCount(t *testing.T) {
 		}
 	}
 
-	// We expect 30 skill directories (10 SDD + judgment-day + foundation + _shared + generalist + ideator + researcher + solver + others).
-	if skillDirs != 30 {
-		t.Fatalf("expected 30 skill directories, got %d", skillDirs)
+	// We expect 32 skill directories (10 SDD + judgment-day + foundation + _shared + generalist + ideator + researcher + solver + architecture-guardrails + others).
+	if skillDirs != 32 {
+		t.Fatalf("expected 32 skill directories, got %d", skillDirs)
 	}
 
 	// Verify each skill directory has a SKILL.md.

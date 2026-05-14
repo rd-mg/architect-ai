@@ -4,6 +4,7 @@ package cli
 // and prunes old backups after a successful snapshot (BKUP-T16, BKUP-T27).
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -42,8 +43,8 @@ func TestPrepareBackupStep_SkipsDuplicateBackup(t *testing.T) {
 		description: "first snapshot",
 		appVersion:  "1.0.0",
 	}
-	if err := firstStep.Run(); err != nil {
-		t.Fatalf("first prepareBackupStep.Run() error = %v", err)
+	if err := firstStep.Run(context.Background()); err != nil {
+		t.Fatalf("first prepareBackupStep.Run(context.Background()) error = %v", err)
 	}
 
 	// Second run with the SAME config content — should be a duplicate.
@@ -60,8 +61,8 @@ func TestPrepareBackupStep_SkipsDuplicateBackup(t *testing.T) {
 		description: "second snapshot",
 		appVersion:  "1.0.0",
 	}
-	if err := secondStep.Run(); err != nil {
-		t.Fatalf("second prepareBackupStep.Run() error = %v", err)
+	if err := secondStep.Run(context.Background()); err != nil {
+		t.Fatalf("second prepareBackupStep.Run(context.Background()) error = %v", err)
 	}
 
 	// The second snapshot directory must NOT have been created.
@@ -106,8 +107,8 @@ func TestPrepareBackupStep_ProceedsWhenContentChanged(t *testing.T) {
 		description: "first snapshot",
 		appVersion:  "1.0.0",
 	}
-	if err := firstStep.Run(); err != nil {
-		t.Fatalf("first prepareBackupStep.Run() error = %v", err)
+	if err := firstStep.Run(context.Background()); err != nil {
+		t.Fatalf("first prepareBackupStep.Run(context.Background()) error = %v", err)
 	}
 
 	// Change the file content.
@@ -128,8 +129,8 @@ func TestPrepareBackupStep_ProceedsWhenContentChanged(t *testing.T) {
 		description: "second snapshot",
 		appVersion:  "1.0.0",
 	}
-	if err := secondStep.Run(); err != nil {
-		t.Fatalf("second prepareBackupStep.Run() error = %v", err)
+	if err := secondStep.Run(context.Background()); err != nil {
+		t.Fatalf("second prepareBackupStep.Run(context.Background()) error = %v", err)
 	}
 
 	// The second snapshot directory MUST exist (content changed).
@@ -200,8 +201,8 @@ func TestPrepareBackupStep_PrunesOldBackups(t *testing.T) {
 		description: "new snapshot",
 		appVersion:  "1.0.0",
 	}
-	if err := step.Run(); err != nil {
-		t.Fatalf("prepareBackupStep.Run() error = %v", err)
+	if err := step.Run(context.Background()); err != nil {
+		t.Fatalf("prepareBackupStep.Run(context.Background()) error = %v", err)
 	}
 
 	// After creating 1 new backup (total = DefaultRetentionCount+1), prune should
@@ -242,8 +243,8 @@ func TestPrepareBackupStep_NoPruneWhenBackupRootEmpty(t *testing.T) {
 		description: "first ever snapshot",
 		appVersion:  "1.0.0",
 	}
-	if err := step.Run(); err != nil {
-		t.Fatalf("prepareBackupStep.Run() error = %v", err)
+	if err := step.Run(context.Background()); err != nil {
+		t.Fatalf("prepareBackupStep.Run(context.Background()) error = %v", err)
 	}
 
 	// The backup should have been created.

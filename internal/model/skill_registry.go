@@ -94,6 +94,7 @@ func init() {
 	RegisterSkill(SkillRegistration{ID: SkillIdeator, Name: "ideator", Category: "specialist", Priority: "p0", Preset: "full"})
 	RegisterSkill(SkillRegistration{ID: SkillResearcher, Name: "researcher", Category: "specialist", Priority: "p0", Preset: "full"})
 	RegisterSkill(SkillRegistration{ID: SkillGeneralist, Name: "generalist", Category: "specialist", Priority: "p0", Preset: "full"})
+	RegisterSkill(SkillRegistration{ID: SkillArchitectureGuardrails, Name: "architecture-guardrails", Category: "specialist", Priority: "p0", Preset: "full"})
 	RegisterSkill(SkillRegistration{ID: SkillGoTesting, Name: "go-testing", Category: "testing", Priority: "p0", Preset: "ecosystem"})
 	RegisterSkill(SkillRegistration{ID: SkillCreator, Name: "skill-creator", Category: "workflow", Priority: "p0", Preset: "ecosystem"})
 	RegisterSkill(SkillRegistration{ID: SkillBranchPR, Name: "branch-pr", Category: "workflow", Priority: "p0", Preset: "ecosystem"})

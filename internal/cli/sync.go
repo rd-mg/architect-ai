@@ -516,6 +516,13 @@ func (s componentSyncStep) Run(ctx context.Context) error {
 				return fmt.Errorf("sync sdd for %q: %w", adapter.Agent(), err)
 			}
 			s.countChanged(boolToInt(res.Changed))
+
+			// Synchronize Sequential Thinking MCP as it's mandatory for the L0/L1 topology.
+			mcpRes, err := mcp.InjectSequentialThinking(s.homeDir, adapter)
+			if err != nil {
+				return fmt.Errorf("sync sequential-thinking for %q: %w", adapter.Agent(), err)
+			}
+			s.countChanged(boolToInt(mcpRes.Changed))
 		}
 		return nil
 

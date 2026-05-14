@@ -496,8 +496,8 @@ func TestInjectFileAppendMigratesLegacyHeading(t *testing.T) {
 	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
 		t.Fatal("missing close marker after migration")
 	}
-	if strings.Count(text, "## Agent Teams Orchestrator") != 1 {
-		t.Fatal("agent teams heading duplicated after migration")
+	if strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator") != 1 {
+		t.Fatal("orchestrator heading should exist exactly once after migration")
 	}
 	if !strings.Contains(text, "## Project Standards (auto-resolved)") {
 		t.Fatal("SDD orchestrator was not refreshed to current compact-rules format")
@@ -548,7 +548,7 @@ func TestInjectFileAppendMigratesFullLegacyOrchestratorBlock(t *testing.T) {
 	if strings.Contains(text, "SKILL: Load `{skill-path}` before starting.") {
 		t.Fatal("legacy sub-agent launch content survived after migration")
 	}
-	if !strings.Contains(text, "## Sub-Agent Result Validation — NEW in V3.1") {
+	if !strings.Contains(text, "## Sub-Agent Result Validation") {
 		t.Fatal("Sub-Agent Result Validation section missing")
 	}
 	if !strings.Contains(text, "`skill_resolution`") {
@@ -597,7 +597,7 @@ func TestInjectFileAppendRemovesLegacyBlockWhenMarkedSectionAlreadyExists(t *tes
 	if strings.Contains(text, "Legacy duplicate block.") {
 		t.Fatal("legacy duplicate block survived even with marked section present")
 	}
-	if strings.Count(text, "## Agent Teams Orchestrator") != 1 {
+	if strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator") != 1 {
 		t.Fatal("orchestrator heading should exist exactly once after cleanup")
 	}
 }
@@ -1026,8 +1026,8 @@ func TestInjectFileAppendSkipsAgentTeamsHeading(t *testing.T) {
 	}
 
 	text := string(content)
-	if strings.Count(text, "## Agent Teams Orchestrator") != 1 {
-		t.Fatal("agent teams heading duplicated")
+	if strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator") != 1 {
+		t.Fatal("orchestrator heading duplicated or missing")
 	}
 }
 
@@ -1059,9 +1059,9 @@ func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 
 	text := string(content)
 
-	// Must have exactly ONE "## Agent Teams Orchestrator" heading — no duplication.
-	if count := strings.Count(text, "## Agent Teams Orchestrator"); count != 1 {
-		t.Fatalf("expected 1 Agent Teams Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
+	// Must have exactly ONE orchestrator heading — no duplication.
+	if count := strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator"); count != 1 {
+		t.Fatalf("expected 1 L1 Tactical Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
 	}
 
 	// The injected marked version must be present.
@@ -1114,8 +1114,8 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtEndOfFile(t *testing.T) {
 
 	text := string(content)
 
-	if count := strings.Count(text, "## Agent Teams Orchestrator"); count != 1 {
-		t.Fatalf("expected 1 Agent Teams Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
+	if count := strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator"); count != 1 {
+		t.Fatalf("expected 1 L1 Tactical Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
 	}
 	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
 		t.Fatal("missing open marker after injection")
@@ -1893,8 +1893,8 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 	}
 	text := string(content)
 
-	if count := strings.Count(text, "## Agent Teams Orchestrator"); count != 1 {
-		t.Fatalf("expected 1 Agent Teams Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
+	if count := strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator"); count != 1 {
+		t.Fatalf("expected 1 L1 Tactical Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
 	}
 	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
 		t.Fatal("missing open marker after injection")
@@ -1936,8 +1936,8 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 	text := string(content)
 
 	// Should have exactly one orchestrator heading (the injected one).
-	if count := strings.Count(text, "## Agent Teams Orchestrator"); count != 1 {
-		t.Fatalf("expected 1 Agent Teams Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
+	if count := strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator"); count != 1 {
+		t.Fatalf("expected 1 L1 Tactical Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
 	}
 	// Must have markers.
 	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
@@ -1988,8 +1988,8 @@ func TestInjectClaudeDeduplicatesBareOrchestratorIsIdempotent(t *testing.T) {
 	}
 	text := string(content)
 
-	if count := strings.Count(text, "## Agent Teams Orchestrator"); count != 1 {
-		t.Fatalf("expected 1 Agent Teams Orchestrator heading after 2 injects, got %d\n\ncontent:\n%s", count, text)
+	if count := strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator"); count != 1 {
+		t.Fatalf("expected 1 L1 Tactical Orchestrator heading after 2 injects, got %d\n\ncontent:\n%s", count, text)
 	}
 }
 
@@ -3405,7 +3405,7 @@ func TestInjectOpenCode_Alignment(t *testing.T) {
 		t.Error("AGENTS.md missing Persona")
 	}
 	// OpenCode uses the generic orchestrator instructions
-	if !strings.Contains(text, "# Agent Teams Lite — Spec-Driven Development (SDD) Orchestrator Core (Generic)") {
+	if !strings.Contains(text, "# Agent Teams Lite — L1 Tactical Orchestrator (Generic)") {
 		t.Error("AGENTS.md missing SDD Orchestrator Instructions (Generic)")
 	}
 

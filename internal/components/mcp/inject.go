@@ -91,6 +91,62 @@ func InjectNotebookLM(homeDir string, adapter agents.Adapter) (InjectionResult, 
 	}
 }
 
+func InjectSequentialThinking(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
+	if !adapter.SupportsMCP() {
+		return InjectionResult{}, nil
+	}
+
+	switch adapter.MCPStrategy() {
+	case model.StrategySeparateMCPFiles:
+		path := adapter.MCPConfigPath(homeDir, string(ServerSequentialThinking))
+		overlay, err := OverlayFor(adapter.Agent(), ServerSequentialThinking, Options{})
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		writeResult, err := filemerge.WriteFileAtomic(path, overlay, 0o644)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: writeResult.Changed, Files: []string{path}}, nil
+
+	case model.StrategyMergeIntoSettings:
+		settingsPath := adapter.SettingsPath(homeDir)
+		if settingsPath == "" {
+			return InjectionResult{}, nil
+		}
+		overlay, err := OverlayFor(adapter.Agent(), ServerSequentialThinking, Options{})
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		settingsWrite, err := mergeJSONFile(settingsPath, overlay)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: settingsWrite.Changed, Files: []string{settingsPath}}, nil
+
+	case model.StrategyMCPConfigFile:
+		path := adapter.MCPConfigPath(homeDir, string(ServerSequentialThinking))
+		if path == "" {
+			return InjectionResult{}, nil
+		}
+		overlay, err := OverlayFor(adapter.Agent(), ServerSequentialThinking, Options{})
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		settingsWrite, err := mergeJSONFile(path, overlay)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: settingsWrite.Changed, Files: []string{path}}, nil
+
+	case model.StrategyTOMLFile:
+		return InjectionResult{}, nil
+
+	default:
+		return InjectionResult{}, fmt.Errorf("sequential-thinking injector does not support MCP strategy %d for agent %q", adapter.MCPStrategy(), adapter.Agent())
+	}
+}
+
 // injectSeparateFile writes a standalone JSON file per MCP server (Claude Code pattern).
 func injectSeparateFile(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
 	path := adapter.MCPConfigPath(homeDir, string(ServerContext7))

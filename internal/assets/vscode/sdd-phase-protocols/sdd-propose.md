@@ -36,6 +36,9 @@ Task: Create a change proposal for "{change-name}". Read exploration (if any).
 Produce: proposal.md with scope, approach, affected areas, rollback plan,
 success criteria, capabilities section.
 
+## Step 0: Hypothesis Branching (Sequential Thinking)
+- **MANDATORY**: Call `sequential_thinking` with at least 2 branches (using `branchId`) to explore alternative architectural approaches before committing to one in the proposal.
+
 ## Mandatory Sections
 - Scope (what's in, what's out)
 - Approach (high-level strategy)
