@@ -1,0 +1,32 @@
+{
+  "architect": {
+    "mode": "primary",
+    "model": "claude-opus-4-5",
+    "instructions": "path:internal/assets/opencode/architect.md",
+    "description": "L0 Super-Orchestrator — routes to SDD or General workflows",
+    "permissions": {
+      "allow": ["Bash", "Read", "Write", "mcp__engram__*"],
+      "deny": []
+    }
+  },
+  "sdd-orchestrator": {
+    "mode": "primary",
+    "model": "claude-sonnet-4-5", 
+    "instructions": "path:internal/assets/opencode/sdd-orchestrator.md",
+    "description": "L1a SDD Orchestrator — manages SDD lifecycle phases",
+    "permissions": {
+      "allow": ["Bash", "Read", "Write", "Task", "mcp__engram__*", "mcp__sequential_thinking__*"],
+      "deny": []
+    }
+  },
+  "general-orchestrator": {
+    "mode": "primary",
+    "model": "claude-sonnet-4-5",
+    "instructions": "path:internal/assets/opencode/general-orchestrator.md",
+    "description": "L1b General Orchestrator — manages non-SDD tasks",
+    "permissions": {
+      "allow": ["Bash", "Read", "Task", "mcp__engram__*"],
+      "deny": []
+    }
+  }
+}
