@@ -182,3 +182,17 @@ When you need a specific pattern, consult `skills/patterns-agnostic/SKILL.md`
 for the discovery index. Version-specific syntax is in `skills/patterns-{version}/`.
 
 Do NOT guess. Always verify against the installed version bundle before writing code.
+
+## External References Policy [MANDATORY]
+
+NEVER reference external repositories by URL or SSH path in skill manifests.
+REMOVED: git@github.com:unclecatvn/agent-skills.git
+REMOVED: file://~/gitproj/Gentleman-Skills-Extended/...
+
+All external resources accessed through:
+1. Engram knowledge nodes (pre-indexed during skill-registry)
+2. Context7 MCP: `context7.resolve_library_id("odoo")`
+3. researcher agent: scope_hint="docs", max_depth="standard"
+
+OCA module search: delegate to researcher → Tier 3 (Context7) → Tier 5 (web if deep)
+

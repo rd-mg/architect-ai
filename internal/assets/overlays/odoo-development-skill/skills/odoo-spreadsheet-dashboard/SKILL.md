@@ -86,3 +86,18 @@ python3 scripts/osheet_validate.py monthly-sales.osheet.json --strict
 5. **Dashboard + Data layout**: Use a two-sheet pattern by default — `Dashboard` (presentation) + `Data` (backing formulas, hidden areas).
 6. **Safety**: Generate native Odoo data sources. Let Odoo enforce runtime access rights and record rules. Do not generate raw SQL dashboards by default.
 7. **Unknown keys**: Preserve unknown top-level keys; warn, do not delete.
+
+## Odoo Research Priority [MANDATORY]
+
+All research query flows MUST respect the Local-First Fallback Chain:
+1. Engram: `mem_search("odoo ${ODOO_VERSION} <topic>")`
+2. rg in Local Workspace (`${ODOO_COMMUNITY}/addons/`, etc.)
+3. Context7 MCP: `context7.resolve_library_id("odoo")`
+4. researcher agent: `scope_hint="docs"`, `max_depth="standard"`
+5. Web Search (Google/GitHub): ONLY if all local sources are exhausted or fail.
+
+## Recovery Strategies [MANDATORY in every Odoo SKILL.md]
+- Pivot formulaId mismatch → fallback to checking UUID key mapping in the pivot dictionary
+- Chart global filter breakage → verify that `fieldMatching` specifies a matching field for each data source
+- Workspace source missing → use Engram knowledge nodes and Context7 docs
+

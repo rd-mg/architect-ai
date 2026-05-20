@@ -2,6 +2,16 @@
 name: odoo-minimax-xlsx-o-spreadsheets
 description: "Open, create, read, analyze, edit, or validate spreadsheets in Odoo 19 format (.osps json) and XLSX format (.xlsx, .xlsm, .csv). Use when the user asks to integrate with Odoo Documents, Dashboards, or Pivot tables. Supports dual generation: Native Odoo o-spreadsheet JSON (with PIVOT formulas) and strict-compatibility XLSX for Odoo import. Triggers on 'odoo spreadsheet', 'o-spreadsheet', 'dashboard', 'sales report', '.osps', or any Odoo-specific tabular data request."
 license: MIT
+bridge: false
+on-demand: true
+risk_level: high
+destructive: true
+security_warning: >
+  XLSX files from untrusted sources may contain XXE attacks or Zip Bombs.
+  NEVER process .xlsx from external/untrusted sources without validation.
+  Always run: python3 scripts/odoo_sheet_tool.py xlsx --action validate --file {input}
+max_file_size_mb: 10
+requires_user_confirmation: true
 metadata:
   version: "2.0"
   category: odoo-productivity
@@ -154,17 +164,38 @@ pip install -r requirements.txt
 python3 scripts/formula_check.py output.xlsx --report
 ```
 
-## Architecture Patterns
+## Odoo Research Priority [MANDATORY]
 
-Refer to [advanced-json-patterns](file://~/gitproj/Gentleman-Skills-Extended/skills/10-general/advanced-json-patterns/SKILL.md) for handling complex JSON transformations without spaghetti code.
+All research query flows MUST respect the Local-First Fallback Chain:
+1. Engram: `mem_search("odoo ${ODOO_VERSION} <topic>")`
+2. rg in Local Workspace (`${ODOO_COMMUNITY}/addons/`, etc.)
+3. Context7 MCP: `context7.resolve_library_id("odoo")`
+4. researcher agent: `scope_hint="docs"`, `max_depth="standard"`
+5. Web Search (Google/GitHub): ONLY if all local sources are exhausted or fail.
 
+## Pre-Flight Safety [MANDATORY before any xlsx operation]
 ```bash
-python3 SKILL_DIR/scripts/xlsx_reader.py input.xlsx                 # structure discovery
-python3 SKILL_DIR/scripts/formula_check.py file.xlsx --json         # formula validation
-python3 SKILL_DIR/scripts/formula_check.py file.xlsx --report      # standardized report
-python3 SKILL_DIR/scripts/xlsx_unpack.py in.xlsx /tmp/work/         # unpack for XML editing
-python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/work/ out.xlsx          # repack after editing
-python3 SKILL_DIR/scripts/xlsx_shift_rows.py /tmp/work/ insert 5 1  # shift rows for insertion
-python3 SKILL_DIR/scripts/xlsx_add_column.py /tmp/work/ --col G ... # add column with formulas
-python3 SKILL_DIR/scripts/xlsx_insert_row.py /tmp/work/ --at 6 ...  # insert row with data
+# 1. Validate file is genuine XLSX
+python3 scripts/odoo_sheet_tool.py xlsx --action validate --file "${INPUT}"
+
+# 2. Size check (reject > 10MB)
+FILE_SIZE=$(stat -c%s "${INPUT}" 2>/dev/null || stat -f%z "${INPUT}" 2>/dev/null || echo 0)
+[ "${FILE_SIZE}" -gt 10485760 ] && {
+  echo "BLOCKED: file > 10MB — potential Zip Bomb" >&2; exit 1
+}
+
+# 3. Decompressed size check
+python3 -c "
+import zipfile, sys
+with zipfile.ZipFile(sys.argv[1]) as z:
+    total = sum(i.file_size for i in z.infolist())
+    if total > 100 * 1024 * 1024:
+        print('BLOCKED: decompressed > 100MB')
+        sys.exit(1)
+" "${INPUT}" || exit 1
 ```
+
+## Recovery Strategies [MANDATORY in every Odoo SKILL.md]
+- xlsx_unpack fails → file corrupt; do NOT attempt repair; report to user
+- sharedStrings.xml corrupt → HALT; restore from git; do not write back
+- Any unhandled exception → preserve original; report full traceback

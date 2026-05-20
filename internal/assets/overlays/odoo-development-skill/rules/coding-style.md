@@ -2,6 +2,9 @@
 
 **Apply these rules when writing or editing code in any project.**
 
+> [!IMPORTANT]
+> **ENGLISH LANGUAGE ONLY**: All code, comments, manifest fields, variable names, classes, database schemas, and developer communication must be exclusively in ENGLISH. Spanish or other language translations/comments are strictly prohibited.
+
 ---
 
 ## Rule 1: Dependencies at the Top
