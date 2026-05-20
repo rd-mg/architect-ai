@@ -20,4 +20,19 @@ You should generally apply `+++Forensic` to analyze the failure, and `+++Systemi
 4. **Resolution**: Apply the fix. Keep changes as minimal and localized as possible to avoid side-effects.
 5. **Verification**: If applicable, run a test or command to prove the fix works.
 
+## Sequential Thinking Universal Rule
+
+IF (D1 + D2) >= 5 OR (D1 + D2 >= 3 AND D5 >= 2):
+  MANDATORY: use sequential_thinking MCP BEFORE proposing solution
+  MIN_BRANCHES = 2
+  REQUIRE: at least 1 thought challenges initial hypothesis
+
+### Sequential Thinking Fallback (inline)
+When MCP not available AND (D1+D2) >= 5:
+MANDATORY BRANCH ANALYSIS before proceeding:
+Branch A: {approach + tradeoffs + risk}
+Branch B: {approach + tradeoffs + risk}
+Decision: Branch {X} — {rationale}
+
 {{ template "skills/_shared/general-phase-common.md" . }}
+

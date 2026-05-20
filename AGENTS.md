@@ -14,11 +14,10 @@ When working on this project, load the relevant skill(s) BEFORE writing any code
 <!-- architect-ai:skills-index:start -->
 | Skill | Trigger | Path |
 |-------|---------|------|
-| _archived | Container for archived skills that were absorbed into other skills or deprecated | `internal/assets/skills/_archived/SKILL.md` |
+| Analyst Agent Profile |  | `internal/assets/skills/analyst/SKILL.md` |
 | adaptive-reasoning | Single-entry classifier and cross-agent reasoning engine | `internal/assets/skills/adaptive-reasoning/SKILL.md` |
-| architecture-guardrails | Global architecture guardrails and sandbox security standards | `internal/assets/skills/architecture-guardrails/SKILL.md` |
-| autoreason-lite | bounded competitive refinement for code and non-code artifacts using an incumbent state or draft, one plausible competing alternative, and one synthesis candidate | `internal/assets/skills/_archived/autoreason-lite/SKILL.md` |
-| bash-expert | Safe, portable shell scripting | `internal/assets/skills/bash-expert/SKILL.md` |
+| architecture-guardrails | Any change that affects system boundaries, state flow, or cross-package responsibilities. | `internal/assets/skills/architecture-guardrails/SKILL.md` |
+| bash-expert | Safe, portable shell scripting for bash AND fish | `internal/assets/skills/bash-expert/SKILL.md` |
 | branch-pr | When creating a pull request, opening a PR, or preparing changes for review. | `internal/assets/skills/branch-pr/SKILL.md` |
 | cognitive-mode | Defines ten cognitive postures that can be injected as a prompt prefix to shape how an agent approaches a task | `internal/assets/skills/cognitive-mode/SKILL.md` |
 | context-guardian | Context assembly contract and automated compaction hook | `internal/assets/skills/context-guardian/SKILL.md` |
@@ -26,10 +25,9 @@ When working on this project, load the relevant skill(s) BEFORE writing any code
 | go-testing | When writing Go tests, using teatest, or adding test coverage. | `internal/assets/skills/go-testing/SKILL.md` |
 | ideator | "Delegated by General Orchestrator for /brainstorm intents." | `internal/assets/skills/ideator/SKILL.md` |
 | issue-creation | When creating a GitHub issue, reporting a bug, or requesting a feature. | `internal/assets/skills/issue-creation/SKILL.md` |
-| judgment-day | perform adaptive two-pass adversarial reasoning and synthesis for code, architecture, diffs, specifications, implementation plans, research questions, and technical decisions | `internal/assets/skills/_archived/judgment-day/SKILL.md` |
 | mcp-context7-skill | Tertiary research source | `internal/assets/skills/mcp-context7-skill/SKILL.md` |
 | mcp-notebooklm-orchestrator | OPTIONAL research source | `internal/assets/skills/mcp-notebooklm-orchestrator/SKILL.md` |
-| researcher | "Delegated by General Orchestrator for /investigate intents." | `internal/assets/skills/researcher/SKILL.md` |
+| researcher | Universal investigation agent | `internal/assets/skills/researcher/SKILL.md` |
 | ripgrep | Fast, correct pattern search in code | `internal/assets/skills/ripgrep/SKILL.md` |
 | sdd-apply | When the orchestrator launches you to implement one or more tasks from a change. | `.agent/skills/sdd-apply/SKILL.md` |
 | sdd-archive | When the orchestrator launches you to archive a change after implementation and verification. | `.agent/skills/sdd-archive/SKILL.md` |

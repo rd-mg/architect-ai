@@ -23,4 +23,19 @@ You should use `+++Socratic` to identify knowledge gaps and question assumptions
 3. **Synthesis**: Compile the findings. Do not just paste raw documentation; synthesize it into an actionable answer or tutorial relative to the user's project context.
 4. **Citation**: Explicitly mention where you found the information (e.g. "According to the Context7 Next.js docs...").
 
+## Sequential Thinking Universal Rule
+
+IF (D1 + D2) >= 5 OR (D1 + D2 >= 3 AND D5 >= 2):
+  MANDATORY: use sequential_thinking MCP BEFORE proposing solution
+  MIN_BRANCHES = 2
+  REQUIRE: at least 1 thought challenges initial hypothesis
+
+### Sequential Thinking Fallback (inline)
+When MCP not available AND (D1+D2) >= 5:
+MANDATORY BRANCH ANALYSIS before proceeding:
+Branch A: {approach + tradeoffs + risk}
+Branch B: {approach + tradeoffs + risk}
+Decision: Branch {X} — {rationale}
+
 {{ template "skills/_shared/general-phase-common.md" . }}
+

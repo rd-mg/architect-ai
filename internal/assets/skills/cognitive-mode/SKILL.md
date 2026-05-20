@@ -1,7 +1,7 @@
 ---
 name: cognitive-mode
 description: >
-  Defines ten cognitive postures that can be injected as a prompt prefix to 
+  Defines eleven cognitive postures that can be injected as a prompt prefix to 
   shape how an agent approaches a task. Maps each SDD phase to its default posture.
   The orchestrator injects the matching posture block before delegating to a
   sub-agent. This is a REFERENCE skill — the injection logic lives in the
@@ -9,7 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: rd-mg
-  version: "2.0"
+  version: "3.0"
 ---
 
 # Cognitive Mode
@@ -100,24 +100,25 @@ Prefer reversible decisions over optimal-but-irreversible ones.
 
 ### 4. Adversarial (+++Adversarial)
 
-**Use when**: Goal is to find what's wrong. Default for `sdd-verify`. Also used by `adaptive-reasoning` in adversarial-review mode.
+**Use when**: Goal is to find what's wrong. Security threat modeling and robust verification. Default for `sdd-verify`. Automatically triggered for D5>=2.
 
 **Behavior**:
-- Actively try to BREAK the artifact
-- Find the failure mode the author missed
-- Assume nothing is correct until proven
-- Construct counterexamples, edge cases, hostile inputs
+- Actively try to BREAK the artifact or compromise security
+- Find the failure mode or vulnerability the author missed
+- Assume nothing is correct or secure until proven
+- Construct counterexamples, edge cases, hostile inputs, privilege escalation scenarios
 
 **Example prefix**:
 ```
 +++Adversarial
-Try to break the artifact under review. Find the failure modes the author
-missed. Assume nothing is correct until proven. Construct:
+Try to break the artifact under review and identify potential security risks.
+Find the failure modes and vulnerabilities the author missed. Assume nothing is
+correct or secure until proven. Construct:
 - Counterexamples that violate stated invariants
 - Edge cases the happy path ignores
-- Hostile inputs that exploit assumptions
-- Race conditions in concurrent execution
-- Upgrade paths that corrupt existing data
+- Hostile inputs that exploit assumptions or input validation
+- Race conditions, environment manipulation, and secrets leakage risks
+- Upgrade paths that corrupt existing data or bypass access controls
 ```
 
 ---
@@ -167,47 +168,43 @@ as [unverified] and note what evidence would resolve it.
 
 ---
 
----
-
 ### 7. Economic (+++Economic)
 
-**Use when**: the task requires tradeoff analysis under resource
-constraints — token budget, latency SLA, dollar cost, developer-hours.
+**Use when**: tradeoff analysis under resource constraints — token budget, latency SLA, dollar cost, developer-hours. Default for sdd-tasks and sdd-propose under budget constraints.
 
 **Behavior**:
-- Quantify cost/value for all options
-- Reject options whose cost exceeds the declared budget
-- Recommend the Pareto-optimal choice
+- Evaluate options through cost lens (time, API tokens, long-term maintenance)
+- Reject options technically superior but economically infeasible
+- Prefer reuse over reimplementation when ROI favors it
+- Surface hidden costs (N+1 queries, per-request API calls, egress costs)
 
 **Example prefix**:
 ```
 +++Economic
-Budget constraints: {tokens|time|cost — state the limit}. Enumerate 2–3
-options. For each: estimate cost in the constrained dimension and value
-delivered. Recommend the Pareto-optimal choice. Reject options that
-exceed budget, stating which constraint they violate.
+Evaluate options through cost lens. For each approach:
+(1) Token cost estimate (2) Latency impact (3) Maintenance overhead (4) Reversibility cost.
+Reject technically superior options if economic cost is disproportionate.
+Surface hidden costs (API quotas, N+1, egress).
 ```
 
 ---
 
 ### 8. Empirical (+++Empirical)
 
-**Use when**: the task requires measurement-first reasoning —
-benchmarks, A/B prototypes, data-driven design decisions,
-performance regression verification.
+**Use when**: measurement-first reasoning — benchmarks, prototypes, data-driven decisions. Default for researcher, sdd-explore (D2>=1), and sdd-archive.
 
 **Behavior**:
-- No claim without a measurement plan (metric, method, threshold)
-- Mark numbers without plans as PROVISIONAL
+- No claim without a measurement/experimentation plan (metric, method, threshold)
+- Mark numbers or speculative claims without evidence as PROVISIONAL
 - Propose the smallest experiment for validation
 
 **Example prefix**:
 ```
 +++Empirical
-For every design claim, state: (a) the metric, (b) how to collect it,
-(c) the acceptance threshold. If measurement hasn't happened, mark
-the claim PROVISIONAL and propose the smallest experiment to validate
-it. Numbers without a measurement plan are PROVISIONAL by default.
+For every design or behavior claim, state: (a) the metric/evidence source,
+(b) how to collect or verify it, (c) the acceptance threshold. If verification
+has not occurred, mark the claim PROVISIONAL. Numbers/speculations without a
+measurement or proof plan are PROVISIONAL by default.
 ```
 
 ---
@@ -284,36 +281,30 @@ Output: Top 3 options ranked with rationale.
 
 ---
 
-## Phase → Posture Mapping
+## Phase → Posture Mapping v3
 
 | SDD Phase | Default Posture(s) | Alternative (user override or conditional) |
 |-----------|--------------------|---------------------------------------------|
-| sdd-init | (none) | — |
+| sdd-init | +++Pragmatic | — |
 | sdd-onboard | +++Socratic | — |
-| sdd-explore | +++Socratic | — |
-| sdd-propose | +++Critical | — |
-| sdd-spec | +++Systemic | — |
-| sdd-design | +++Critical + +++Systemic | +++Critical + +++Empirical (numeric SLAs) |
+| sdd-explore | +++Socratic + +++Empirical | Default +++Empirical when D2>=1 |
+| sdd-propose | +++Critical + +++Economic | Default +++Economic when budget/quota mentioned |
+| sdd-spec | +++Systemic + +++Critical | — |
+| sdd-design | +++Systemic + +++Adversarial | ALWAYS adversarial for D1>=2 |
 | sdd-tasks | +++Pragmatic + +++Economic | — |
-| sdd-apply | +++Pragmatic | — |
-| sdd-verify | +++Adversarial | +++Adversarial + +++Empirical (numeric SLAs) |
-| sdd-archive | (none) | — |
-
-## Non-SDD Task → Posture Mapping
-
-| Task Type | Required Postures |
-|-----------|------------------|
-| /brainstorm | +++Divergent, +++Diamond |
-| /solve | +++Forensic, +++Systemic |
-| /investigate | +++Socratic, +++Empirical |
-| /debug | +++Forensic, +++Adversarial |
-| /prototype | +++Pragmatic |
+| sdd-apply | +++Pragmatic | +++Forensic +++Pragmatic when CB triggered |
+| sdd-verify | +++Critical + +++Adversarial | If D3>=1 |
+| sdd-archive | +++Empirical | — |
 
 ## Selection Rule for Empirical
 
 Add +++Empirical when the task contains any numeric acceptance
 criterion: latency target, throughput target, memory budget,
 p99 threshold, coverage percentage, error rate ceiling.
+
+## Selection Rule for Adversarial
+
+Add +++Adversarial ALWAYS when D5>=2 is resolved for the current task.
 
 ## Maximum Postures Per Phase
 
