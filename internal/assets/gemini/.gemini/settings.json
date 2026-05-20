@@ -1,0 +1,32 @@
+{
+  "general": { "defaultApprovalMode": "auto_edit" },
+  "ide": { "enabled": true },
+  "mcpServers": {
+    "context7": {
+      "httpUrl": "https://mcp.context7.com/mcp",
+      "timeout": 30000,
+      "trust": false
+    },
+    "context-mode": {
+      "command": "npx",
+      "args": ["-y", "@mksglu/context-mode"],
+      "timeout": 15000
+    },
+    "engram": {
+      "command": "${ENGRAM_BIN:-engram}",
+      "args": ["mcp", "--tools=agent"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "timeout": 30000,
+      "trust": true
+    }
+  },
+  "model": { "name": "" },
+  "security": { "auth": { "selectedType": "oauth-personal" } },
+  "ui": {
+    "hideFooter": true, "showCitations": true,
+    "showMemoryUsage": true, "showModelInfoInChat": true
+  }
+}
