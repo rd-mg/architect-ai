@@ -75,6 +75,11 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"skills/go-testing/SKILL.md",
 		"skills/skill-creator/SKILL.md",
 		"skills/_shared/adaptive-reasoning-gate.md",
+
+		// GGA v2 assets
+		"gga/AGENTS.md",
+		"gga/pre-commit.bash.tpl",
+		"gga/pre-commit.ps1.tpl",
 	}
 
 	for _, path := range expectedFiles {
