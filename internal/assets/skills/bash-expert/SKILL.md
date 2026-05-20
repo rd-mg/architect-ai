@@ -1,217 +1,199 @@
 ---
 name: bash-expert
 description: >
-  Safe, portable shell scripting. Every sub-agent that runs bash MUST
-  follow these patterns: strict mode, quoting discipline, error handling,
-  POSIX-vs-bashism awareness. Protects against classic pitfalls
-  (unquoted globs, word splitting, trap handling, signal propagation).
-license: MIT
-bridge: always
-applies-when: "any delegation that runs bash/sh scripts, uses pipes, or chains commands"
-metadata:
-  author: rd-mg
-  version: "1.0"
+  Safe, portable shell scripting for bash AND fish.
+  Every sub-agent running shell MUST follow these patterns.
+  Prefers rg over grep. Handles fish-specific syntax.
+  Part of foundation (Tier 1) — always injected.
+bridge: true
+tier: foundation
+version: "2.0"
 ---
 
-# Bash Expert — Mandatory Skill
+# Shell Expert (bash + fish) v2.0
 
-## Why this is `bridge: always`
+## Shell Detection (MANDATORY first step in any script)
+```bash
+ACTIVE_SHELL=$(basename "${SHELL:-bash}")
+# Use appropriate section below based on result
+```
 
-Shell mistakes are silent. A script runs, exits 0, and deletes the wrong directory. We force this skill into every sub-agent to make the common traps explicit before they happen.
+## BASH Expert Rules
 
----
-
-## Compact Rules (injected into sub-agent prompts)
-
-### Strict mode — always
-
+### Strict mode header (every script, no exceptions)
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 ```
 
-- `-e` — exit on any error
-- `-u` — error on unset variable
-- `-o pipefail` — propagate errors from pipes
-- `IFS=$'\n\t'` — stop word-splitting on spaces
-
-### Quote every variable
-
+### Variable quoting (always)
 ```bash
 # WRONG
 rm -rf $TMPDIR
+echo $MY_VAR
 
 # RIGHT
-rm -rf "$TMPDIR"
+rm -rf "${TMPDIR}"
+echo "${MY_VAR}"
 ```
 
-If `$TMPDIR` is empty or has spaces, the unquoted version can `rm -rf /` or fail weirdly. Always double-quote unless you specifically need word-splitting.
-
-### Check for required tools first
-
+### rg instead of grep (MANDATORY — grep -r forbidden)
 ```bash
-for cmd in jq rg fd; do
-  command -v "$cmd" >/dev/null || { echo "missing: $cmd" >&2; exit 127; }
-done
+# WRONG — slow, ignores .gitignore
+grep -r "pattern" .
+find . -name "*.go" -exec grep "pattern" {} \;
+
+# RIGHT — fast, .gitignore-aware
+rg "pattern" --type go
+rg -l "pattern" .                          # file list only
+rg -c "pattern" --type py                  # count per file
+rg -w "exactFunction" --type go            # word boundary
+rg -C 3 "pattern" --type go               # 3 lines context
+rg --json "pattern" . | jq '.data.lines.text'  # for parsing
+rg -U "multi.*\nline" --type go            # multi-line
+rg -l "pattern" -g "!vendor/" -g "!node_modules/"  # exclude dirs
 ```
 
-### Capture stdout AND stderr when debugging
-
+### Error handling
 ```bash
-out=$(command 2>&1) || { echo "command failed: $out" >&2; exit 1; }
-```
-
-### Temp files — cleanup with trap
-
-```bash
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT INT TERM
-# ...use $tmp...
-```
-
-### Avoid backticks — use `$()`
-
-```bash
-# WRONG
-version=`git describe`
-
-# RIGHT
-version=$(git describe)
-```
-
-### Test conditions — use `[[ ]]`, not `[ ]` (in bash)
-
-```bash
-if [[ "$var" == *substr* ]]; then ...
-```
-
-`[[ ]]` is safer: doesn't word-split, supports pattern matching, no escape-the-regex pain.
-
-### Check exit status explicitly
-
-```bash
-if ! command; then
-  echo "command failed" >&2
-  exit 1
-fi
-```
-
----
-
-## POSIX vs bashism awareness
-
-If the script must run in `sh` (Alpine, Dash, busybox), avoid:
-
-- `[[ ]]` → use `[ ]`
-- Arrays `arr=(a b c)` → use positional params or multiple vars
-- `$'\n'` → use printf
-- `read -r -a` → use `while read` loop
-- `<<<` here-strings → use `echo | cmd`
-
-Mark scripts explicitly with the right shebang:
-- `#!/usr/bin/env bash` for bashisms (must have bash)
-- `#!/bin/sh` for POSIX (portable)
-
----
-
-## Pipes and subshells
-
-### `set -e` doesn't cross pipe boundaries without `pipefail`
-
-```bash
-set -e
-false | true
-echo "reached"  # YES, because `true` succeeded
-```
-
-Fix: `set -o pipefail` — exit status of pipe is rightmost non-zero.
-
-### Subshell variable changes don't propagate
-
-```bash
-count=0
-echo "a b c" | while read word; do count=$((count+1)); done
-echo "$count"  # 0, NOT 3 — while runs in a subshell
-```
-
-Fix: use process substitution:
-```bash
-while read word; do count=$((count+1)); done < <(echo "a b c")
-echo "$count"  # 3
-```
-
----
-
-## Signal handling
-
-When the user hits ctrl+c, your script needs to clean up:
-
-```bash
-cleanup() {
-  rm -rf "$tmp" 2>/dev/null
-  [[ -n "${child_pid:-}" ]] && kill "$child_pid" 2>/dev/null
-}
+# Trap for cleanup
+cleanup() { local e=$?; rm -f "${TMPFILE:-}"; exit "${e}"; }
 trap cleanup EXIT INT TERM
+
+# Check command availability
+for cmd in rg jq; do
+  command -v "${cmd}" > /dev/null || { echo "ERROR: ${cmd} not found" >&2; exit 127; }
+done
+
+# Capture stdout + stderr
+output=$(some_command 2>&1) || { echo "Failed: ${output}" >&2; exit 1; }
 ```
 
-For long-running subprocesses, propagate the signal:
-
+### Safe file operations
 ```bash
-long_running_cmd &
-child_pid=$!
-wait "$child_pid"
+# Atomic write
+tmp=$(mktemp)
+cat > "${tmp}" << 'EOF'
+content
+EOF
+mv "${tmp}" "${target}"
+
+# Check existence before read
+[ -f "${file}" ] || { echo "Missing: ${file}" >&2; exit 1; }
+
+# Never: rm -rf without quoting and validation
+[ -n "${DIR}" ] && [ -d "${DIR}" ] && rm -rf "${DIR}"
 ```
 
----
+## FISH Expert Rules
 
-## Common anti-patterns
+### NO set -euo pipefail in fish
+```fish
+#!/usr/bin/env fish
+# Fish handles errors differently — use explicit checks
+```
 
-** Parsing `ls`**
+### Error handling (fish style)
+```fish
+function check_cmd
+    if not command -q $argv[1]
+        echo "ERROR: $argv[1] not found" >&2
+        exit 127
+    end
+end
+check_cmd rg
+check_cmd jq
+```
+
+### Variable syntax (fish)
+```fish
+# WRONG (bash style in fish)
+export MY_VAR="value"
+echo "$MY_VAR"
+
+# RIGHT (fish style)
+set -x MY_VAR "value"    # export
+set MY_VAR "value"       # local
+echo $MY_VAR             # no quotes needed in fish
+set -e MY_VAR            # unset
+```
+
+### Conditionals and loops (fish)
+```fish
+if test -f file.txt
+    echo "exists"
+else if test -d dir/
+    echo "directory"
+else
+    echo "not found"
+end
+
+for file in *.go
+    echo $file
+end
+
+# Command substitution
+set files (rg -l "pattern" .)
+```
+
+### Error propagation (fish)
+```fish
+# Fish doesn't propagate pipe errors like bash
+# Use explicit checks
+rg "pattern" . ; or begin
+    echo "rg failed or no results" >&2
+    exit 1
+end
+```
+
+### rg in fish (same patterns, fish quoting)
+```fish
+rg "pattern" --type go
+rg -l "pattern" .
+rg --json "pattern" . | python3 -c "
+import sys, json
+for line in sys.stdin:
+    try:
+        o = json.loads(line)
+        if o.get('type') == 'match':
+            print(o['data']['path']['text'])
+    except: pass
+"
+```
+
+## Cross-Shell rg Optimization Patterns
+
+### Pattern 1: Domain-specific search
 ```bash
-for f in $(ls); do ...
+# Backend code only (no tests, no vendor)
+rg "pattern" --type go -g "!*_test.go" -g "!vendor/"
+
+# Odoo Python models only
+rg "pattern" --type py -g "models/*.py" -g "!tests/"
+
+# XML views only (Odoo)
+rg "pattern" --type xml -g "views/*.xml"
 ```
-Breaks on filenames with spaces. Use:
+
+### Pattern 2: Negative assertion (security)
 ```bash
-for f in *; do ...
+# MUST NOT exist — violation detection
+rg -l "forbidden_pattern" . \
+  && echo "SECURITY VIOLATION" \
+  || echo "CLEAN"
 ```
-or `find ... -print0 | xargs -0`.
 
-** `cat file | grep`**
+### Pattern 3: Count to estimate scope
 ```bash
-cat log.txt | grep ERROR
+# Before starting work, estimate file count
+AFFECTED=$(rg -l "old_function_name" --type go | wc -l)
+echo "Estimated ${AFFECTED} files to change"
+[ "${AFFECTED}" -gt 10 ] && echo "WARN: large scope — consider splitting"
 ```
-Useless use of cat:
+
+### Pattern 4: JSON structured output for agent parsing
 ```bash
-grep ERROR log.txt
+rg --json "function_name" --type go \
+  | jq -r 'select(.type=="match") | "\(.data.path.text):\(.data.line_number)"'
 ```
-
-** `(( $var > 5 ))` without quotes on empty**
-If `$var` is empty, `(( > 5 ))` is a syntax error. Guard:
-```bash
-if [[ -n "$var" && "$var" -gt 5 ]]; then ...
-```
-
-** Silent failures**
-```bash
-some_command 2>/dev/null
-```
-If you redirect stderr to `/dev/null`, you lose the error message forever. Log it:
-```bash
-some_command 2>>/tmp/myscript.log
-```
-
----
-
-## When the orchestrator should NOT delegate to bash
-
-- Data manipulation with structure (JSON, XML, YAML) → use `jq`, `yq`, or Python, not sed/awk.
-- Cross-platform scripts needed on Windows → write a Go tool or Python script, not a bash script.
-- Long-running services → not a shell job. Use systemd / launchd / supervisord.
-
----
-
-## See also
-
-- `ripgrep/SKILL.md` — the `rg` command is preferred over grep
-- `_shared/research-routing.md` — how shell fits in the research priority
