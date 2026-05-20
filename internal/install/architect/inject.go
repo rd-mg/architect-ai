@@ -67,8 +67,34 @@ func InjectArchitect(platform string, assetsDir string, outputDir string) error 
         return fmt.Errorf("unknown platform: %s", platform)
     }
 
+    tmpl := template.New("architect.md")
+
+    sharedDir := filepath.Join(assetsDir, "_shared")
+    sharedFiles, err := os.ReadDir(sharedDir)
+    if err == nil {
+        for _, file := range sharedFiles {
+            if file.IsDir() {
+                continue
+            }
+            content, err := os.ReadFile(filepath.Join(sharedDir, file.Name()))
+            if err != nil {
+                return fmt.Errorf("read shared template %s: %w", file.Name(), err)
+            }
+            name := "_shared/" + file.Name()
+            _, err = tmpl.New(name).Parse(string(content))
+            if err != nil {
+                return fmt.Errorf("parse shared template %s: %w", file.Name(), err)
+            }
+        }
+    }
+
     templatePath := filepath.Join(assetsDir, platform, "architect.md")
-    tmpl, err := template.ParseFiles(templatePath)
+    mainContent, err := os.ReadFile(templatePath)
+    if err != nil {
+        return fmt.Errorf("read architect template for %s: %w", platform, err)
+    }
+
+    tmpl, err = tmpl.Parse(string(mainContent))
     if err != nil {
         return fmt.Errorf("parse architect template for %s: %w", platform, err)
     }

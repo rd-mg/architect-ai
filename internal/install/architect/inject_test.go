@@ -70,3 +70,25 @@ func TestValidateHierarchy_Complete(t *testing.T) {
         }
     }
 }
+
+func TestInjectArchitect(t *testing.T) {
+    platforms := []string{"opencode", "claude", "cursor", "antigravity", "gemini"}
+    assetsDir := filepath.Join("..", "..", "assets")
+    
+    for _, platform := range platforms {
+        t.Run(platform, func(t *testing.T) {
+            tmpDir := t.TempDir()
+            err := InjectArchitect(platform, assetsDir, tmpDir)
+            if err != nil {
+                t.Fatalf("InjectArchitect(%q) failed: %v", platform, err)
+            }
+            
+            cfg := PlatformConfigs[platform]
+            outPath := filepath.Join(tmpDir, cfg.EntryFile)
+            if _, err := os.Stat(outPath); err != nil {
+                t.Fatalf("expected output file %s to be created: %v", outPath, err)
+            }
+        })
+    }
+}
+
