@@ -1,7 +1,16 @@
 <!-- architect-ai:context-mode-routing:start -->
-## context-mode Routing Policy
+## context-mode Routing Policy (v3)
 
 context-mode is an external runtime capability. Use it to avoid flooding the model context with raw tool output.
+
+### Auto-Trigger Threshold
+If any command/tool output is estimated to be > 10KB (e.g. `git log`, large project-wide `ripgrep`, full test suites, `npm install`), redirect to `ctx_execute()` or `ctx_batch_execute()` instead of executing raw commands.
+
+### Graceful Fallback
+If context-mode server/tools are unavailable, DO NOT block execution. 
+- For large outputs, truncate/pipe to `head -50` and add a warning: `[TRUNCATED - context-mode unavailable]`.
+- For web fetching, fallback to search snippets rather than raw HTML.
+- Gracefully log/WARN and proceed.
 
 Do:
 - Use native direct reads only for small, exact files.
@@ -17,6 +26,9 @@ Do not:
 - Use context-mode as durable architecture memory; use Engram/OpenSpec for that.
 - Call context-mode tools speculatively.
 - Modify dot-directory config during source refactoring.
+- NEVER use `ctx_index` as a substitute for `mem_save`.
+- NEVER use `ctx_search` as a substitute for `mem_search` (no cross-session).
 
 Stop when enough evidence exists.
 <!-- architect-ai:context-mode-routing:end -->
+

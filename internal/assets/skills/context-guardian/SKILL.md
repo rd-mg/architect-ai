@@ -10,10 +10,10 @@ description: >
 license: MIT
 metadata:
   author: rd-mg
-  version: "2.0"
+  version: "3.0"
 ---
 
-# Context Guardian v2.0
+# Context Guardian v3.0
 
 ## Purpose
 
@@ -25,9 +25,7 @@ sources and makes curation decisions explainable. You do not dump the full
 monolithic history. Instead, you filter, mask, and prioritize facts according
 to bounded disclosure and semantic priority.
 
-In v2.0, the orchestrator invokes this skill AUTOMATICALLY under three
-conditions (see "Auto-Trigger Rules" below). You are no longer a passive
-skill that must be explicitly called.
+In v3.0, the orchestrator invokes this skill AUTOMATICALLY under five conditions (see "Auto-Trigger Rules" below). You are no longer a passive skill that must be explicitly called.
 
 ## Cognitive Posture
 
@@ -41,17 +39,31 @@ This skill always operates under **+++Forensic** posture:
 
 The orchestrator MUST invoke this skill when ANY of these conditions holds:
 
-1. **Token threshold**: Estimated token usage exceeds 50% of the context
-   window (heuristic: character count in conversation ≥ ~100K for a 200K
-   context window).
+1. **Token threshold (Trigger 1)**: Estimated token usage exceeds 50% of the context window (heuristic: character count in conversation ≥ ~100K for a 200K context window).
+2. **Compaction detected (Trigger 2)**: The orchestrator observes that recent context has been summarized or truncated (e.g., a sub-agent reports `skill_resolution: fallback-registry` or `fallback-path`, indicating the cache was lost).
+3. **Sub-agent reports context loss (Trigger 3)**: Sub-agent explicitly reports context loss in their Result Contract.
+4. **Adaptive Reasoning Gate pressure (Trigger 4)**: The Adaptive Reasoning Gate assessment returns a D4 (context pressure) value >= 2.
+5. **Long-session exploration (Trigger 5)**: 3+ exploratory file/knowledge reads occur within the same context window.
+6. **Explicit invocation**: User requests "compact context", "reset context", "what's my current state", or similar.
 
-2. **Compaction detected**: The orchestrator observes that recent context
-   has been summarized or truncated (e.g., a sub-agent reports
-   `skill_resolution: fallback-registry` or `fallback-path`, indicating the
-   cache was lost).
+On trigger, the orchestrator executes the **Branch A/B Unified Strategy**:
 
-3. **Explicit invocation**: User requests "compact context", "reset context",
-   "what's my current state", or similar.
+### Branch A: Engram Persistence (PRIMARY)
+Goal: Durable cross-session memory. Zero information loss. LCM-compliant.
+1. Generate a checkpoint BEFORE compress via `mem_save(title: "session/context-pack/{project}/{timestamp}", topic_key: "session/context-pack/{project}/{timestamp}", type: "architecture", content: "{Context Pack}")`.
+2. Execute the platform-native compress command (e.g., `/compact` or `/compress`).
+3. Reload working memory via `mem_context(limit: 3)`.
+*If Branch A fails (Engram down), WARN and attempt Branch B.*
+
+### Branch B: context-mode MCP Buffer (SECONDARY)
+Goal: Transparent session buffering for large outputs.
+Scope: Session only.
+Use `ctx_execute()` or `ctx_batch_execute()` for any command output > 10KB (e.g. large git logs, unfiltered ripgrep, large test suites). Do NOT use for architectural decisions.
+
+### Manual Summary Fallback (VSCode Copilot / Antigravity)
+When no platform-native compress command is available AND the Engram checkpoint is saved:
+1. Emit a LITE status update instructing the user: `"Context limit approaching. I have saved a persistent checkpoint. Please start a new chat session and say: 'resume {change_name} from Engram'"`.
+2. Halt the active session.
 
 On trigger, the orchestrator:
 1. Reads this skill

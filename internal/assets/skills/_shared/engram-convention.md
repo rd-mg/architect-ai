@@ -139,3 +139,49 @@ Same `topic_key` + `project` + `scope` → UPDATE (overwrite), not INSERT. Previ
 - `sdd/` prefix → namespaces all SDD artifacts
 - Two-step recovery → search previews are always truncated; `mem_get_observation` is the only way to get full content
 - Lineage → archive-report includes all observation IDs for complete traceability
+
+## Engram Tool Distribution v3.0 [MANDATORY for all agents]
+
+### Tool Distribution Matrix
+
+| Tool | L0 architect | L1 sdd-orch | L1 gen-orch | L2 SDD phases | L2 non-SDD | Justification |
+|---|---|---|---|---|---|---|
+| `mem_search` | ✅ | ✅ | ✅ | ✅ | ✅ | Base universal — no exceptions |
+| `mem_save` | ✅ | ✅ | ✅ | ✅ | ✅ | Base universal |
+| `mem_get_observation` | ✅ | ✅ | ✅ | ✅ | ✅ | Base universal — always after search |
+| `mem_suggest_topic_key` | ✅ | ✅ | ✅ | ✅ only sdd-archive/sdd-design | ✅ researcher | Prevents key drift — low cost |
+| `mem_session_summary` | ✅ | ✅ | ✅ | ✅ sdd-archive ONLY | ❌ | Structured session close |
+| `mem_timeline` | ❌ | ✅ sdd-orch | ❌ | ✅ sdd-verify, sdd-archive | ❌ | Chronological change audit |
+| `mem_update` | ❌ | ✅ | ❌ | ✅ sdd-apply (progress) | ❌ | In-place update without new key |
+| `mem_context` | ✅ L0 ONLY | ❌ | ❌ | ❌ | ❌ | Compact resume for session start |
+| `mem_current_project` | ✅ | ✅ | ✅ | ❌ | ❌ | Project identity at orchestrator level |
+| `mem_delete` | ❌ NEVER | ❌ | ❌ | ❌ | ❌ | Risk of irreversible data loss |
+| `mem_judge` | ❌ | ❌ | ❌ | ❌ | ❌ | CLI only — never in agents |
+| `mem_compare` | ❌ | ❌ | ❌ | ❌ | ❌ | CLI only — never in agents |
+| `mem_merge_projects` | ❌ | ❌ | ❌ | ❌ | ❌ | CLI only — never in agents |
+
+### Universal (all agents receive these in every prompt)
+- `mem_search` — find relevant knowledge
+- `mem_save` — persist findings
+- `mem_get_observation` — read full document (always call after search)
+- `mem_suggest_topic_key` — prevent key drift (call BEFORE every new mem_save)
+
+### Orchestrators only (L0 and L1)
+- `mem_current_project` — establish project identity
+- `mem_session_summary` — structured session close
+- `mem_context(limit: 5)` — compact resume for L0 only
+- `mem_timeline` — L1a sdd-orchestrator + sdd-verify + sdd-archive
+- `mem_update` — L1a sdd-orchestrator + sdd-apply (progress update only)
+
+### NEVER in any agent (CLI only)
+- `mem_delete` — irreversible, CLI-only
+- `mem_judge` — CLI-only
+- `mem_compare` — CLI-only
+- `mem_merge_projects` — CLI-only
+
+### ByteRover Loading Order
+- **Level 1 — Working Memory (session scope)**: `mem_context(limit: 5)` at session start
+- **Level 2 — Episodic Memory (project scope)**: `mem_search("sdd/{change_name}/spec")` → load only what current phase needs
+- **Level 3 — Semantic Memory (knowledge scope)**: NEVER load Odoo guides eagerly. Lazy load via `mem_search('odoo {version} {topic}')`
+- **Level 4 — Archive Memory (historical scope)**: `sdd/{change}/archive`
+
