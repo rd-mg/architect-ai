@@ -736,6 +736,8 @@ Every sub-agent response MUST be validated for the Adaptive Reasoning Mode decla
 3. **Double Failure**: If the second response also lacks the mode, record `chosen_mode: "1"` (fallback) and `mode_rationale: "Automated fallback after missing declaration"` in Engram and proceed.
 4. **Transition Enforcement**: The orchestrator MUST check `D3` (Error Pressure). If `D3 >= 2` in the response, the next delegation to this sub-agent MUST be in **Mode 3 (Diagnostic)**.
 5. **Result Envelope**: Inject the extracted `chosen_mode`, `mode_rationale` into the result contract before synthesizing the summary for the user.
+6. **Result Contract Validation**: After each phase, validate the JSON block Result Contract emitted as the last output using `.atl/scripts/validate-result-contract.sh`. If validation fails, increment the phase's attempt count in `.atl/sdd-state.yaml` and retry.
+7. **Circuit Breaker Exit Code 2**: If the phase agent fails all 3 attempts, it exits with Exit Code 2 (ABANDONED). The orchestrator must handle Exit Code 2 by saving the state and logs, emitting a diagnostic message, and halting execution. Do not proceed to the next phase.
 
 ## Engram Topic Keys
 
