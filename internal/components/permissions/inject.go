@@ -38,12 +38,19 @@ var openCodeOverlayJSON = []byte(`{
   "permission": {
     "bash": {
       "*": "allow",
-      "git commit *": "ask",
-      "git push *": "ask",
+      "curl *|*bash": "deny",
+      "curl *|*sh": "deny",
+      "wget *|*bash": "deny",
+      "eval *": "deny",
+      "exec *": "deny",
+      "git commit ": "ask",
       "git push": "ask",
-      "git push --force *": "ask",
-      "git rebase *": "ask",
-      "git reset --hard *": "ask"
+      "git push ": "ask",
+      "git push --force ": "ask",
+      "rm -rf ": "ask",
+      "sudo ": "ask",
+      "> /dev/": "deny",
+      "mkfs": "deny"
     },
     "read": {
       "*": "allow",

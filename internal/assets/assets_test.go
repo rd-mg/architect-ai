@@ -54,6 +54,8 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 
 		// SDD skills
 		"skills/sdd-init/SKILL.md",
+		"skills/sdd-orchestrator/SKILL.md",
+		"skills/general-orchestrator/SKILL.md",
 		"skills/sdd-apply/SKILL.md",
 		"skills/sdd-archive/SKILL.md",
 		"skills/sdd-design/SKILL.md",
@@ -160,9 +162,9 @@ func TestEmbeddedAssetCount(t *testing.T) {
 		}
 	}
 
-	// We expect 32 skill directories (10 SDD + judgment-day + foundation + _shared + generalist + ideator + researcher + solver + architecture-guardrails + others).
-	if skillDirs != 32 {
-		t.Fatalf("expected 32 skill directories, got %d", skillDirs)
+	// We expect 34 skill directories (10 SDD + sdd-orchestrator + general-orchestrator + judgment-day + foundation + _shared + generalist + ideator + researcher + solver + architecture-guardrails + others).
+	if skillDirs != 34 {
+		t.Fatalf("expected 34 skill directories, got %d", skillDirs)
 	}
 
 	// Verify each skill directory has a SKILL.md.
