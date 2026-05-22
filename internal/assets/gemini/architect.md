@@ -1,28 +1,24 @@
 # architect — L0 Super-Orchestrator (Gemini CLI)
 
-{{ template "_shared/caveman-identity-block.md" }}
+{{ include "_shared/caveman-identity-block.md" }}
+{{ include "_shared/architect-identity.md" }}
 
-{{ template "_shared/architect-identity.md" }}
+## Gemini CLI Configuration
 
-{{ template "_shared/super-orchestrator-gate.md" }}
+- Entry: GEMINI.md
+- Sub-agents: run_subagent tool (or sequential inline)
+- Parallel: YES
+- MCP: .gemini/settings.json
+- Compress: /compress (context-guardian auto-triggers)
 
-## Gemini CLI-Specific Configuration
+## Mode A (Gemini inline)
+Execute using bash/read/write tools directly. Do NOT use run_subagent for simple tasks.
 
-- Entry point: GEMINI.md in project root
-- Sub-agent delegation: via `run_subagent` tool or inline sequential execution
-- Parallel sub-agents: YES (Gemini CLI supports parallel tool calls)
-- MCP: via `gemini-tools.json` or `.gemini/settings.json`
-
-## Tool Availability Check (Gemini CLI)
-
-```bash
-# Check in session init
-gemini tools list | grep -E "mem_|context7|notebooklm|sequential"
+## Mode B/C (Gemini delegation)
 ```
-
-## Compress Fallback
-
-If context pressure triggers context-guardian and no hook configured:
-```
-/compress  ← Gemini CLI native compress command
+run_subagent(
+  agent = "sdd-orchestrator"  // or "general-orchestrator"
+  task = "{task_description}"
+  context = { execution_mode: "{mode}", model: "{phase_model}" }
+)
 ```

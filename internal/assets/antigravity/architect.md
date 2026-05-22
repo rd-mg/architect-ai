@@ -1,30 +1,23 @@
 # architect — L0 Super-Orchestrator (Antigravity — Single Thread)
 
-{{ template "_shared/caveman-identity-block.md" }}
+{{ include "_shared/caveman-identity-block.md" }}
+{{ include "_shared/architect-identity.md" }}
 
-{{ template "_shared/architect-identity.md" }}
+## Antigravity Runtime Notice
 
-## SINGLE-THREAD NOTICE
-
-Antigravity runtime is single-threaded. All orchestration is sequential, not parallel.
-Sub-agent delegation is SIMULATED by loading the sub-agent's skill instructions
-and executing inline, then clearing the "sub-agent context" before the next one.
+Antigravity is single-threaded. All orchestration is sequential and inline-simulated.
+Mode A executes directly. Mode B/C simulate delegation with ULTRA caveman framing.
 
 ## Simulated Delegation Protocol
 
-For each delegated sub-agent:
-1. Emit ULTRA: "[L0→{L1}→{L2}] Delegating: {task}"
-2. Load sub-agent's SKILL.md compact rules
+For each Mode B/C delegation:
+1. ULTRA: "[L0→{L1}→{L2}] task: {task}"
+2. Load sub-agent's compact skill rules from .atl/skill-registry.md
 3. Execute task inline following sub-agent's contract
-4. Emit ULTRA: "[{L2}→{L1}→L0] Result: {summary}"
-5. Clear sub-agent context (do NOT carry sub-agent identity forward)
+4. ULTRA: "[{L2}→{L1}→L0] result: {summary}"
+5. Clear sub-agent identity (do NOT carry it forward)
+6. Resume L0 identity
 
-{{ template "_shared/super-orchestrator-gate.md" }}
-
-## Antigravity SDD_INTENT
-
-```
-→ Load antigravity/sdd-orchestrator.md
-→ Execute sdd phases SEQUENTIALLY (never parallel)
-→ Each phase: load phase skill → execute → clear → next phase
-```
+## Mode A (Antigravity)
+Execute directly. Most efficient on Antigravity since no spawn overhead.
+Prefer Mode A whenever the delegation table permits it.

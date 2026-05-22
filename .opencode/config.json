@@ -1,0 +1,99 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    ".atl/plugins/background-agents.ts",
+    "opencode-gemini-auth@latest"
+  ],
+  "permission": {
+    "bash": {
+      "*": "allow",
+      "git commit ": "ask",
+      "git push": "ask",
+      "git push ": "ask",
+      "git push --force ": "ask",
+      "git rebase ": "ask",
+      "git reset --hard ": "ask",
+      "rm -rf ": "ask",
+      "sudo ": "ask"
+    },
+    "read": {
+      "*": "allow",
+      "**/.env": "deny",
+      "**/.env.*": "deny",
+      "**/credentials.json": "deny",
+      "**/secrets/**": "deny"
+    }
+  },
+  "agent": {
+    "architect": {
+      "description": "L0 Super-Orchestrator — inline execution + routes to SDD or General",
+      "mode": "primary",
+      "model": "anthropic:claude-opus-4-5",
+      "prompt": "{file:.atl/agents/architect.md}",
+      "tools": {
+        "bash": true,
+        "read": true,
+        "edit": true,
+        "write": true,
+        "delegate": true,
+        "delegation_list": true,
+        "delegation_read": true
+      }
+    },
+    "sdd-orchestrator": {
+      "description": "L1a SDD Orchestrator — coordinates all SDD phases",
+      "mode": "primary",
+      "model": "anthropic:claude-opus-4-5",
+      "prompt": "{file:.atl/agents/sdd-orchestrator.md}",
+      "permission": {
+        "task": { "*": "deny", "sdd-*": "allow" }
+      },
+      "tools": {
+        "bash": true,
+        "read": true,
+        "edit": true,
+        "write": true,
+        "delegate": true,
+        "delegation_list": true,
+        "delegation_read": true
+      }
+    },
+    "general-orchestrator": {
+      "description": "L1b General Orchestrator — non-SDD complex tasks",
+      "mode": "primary",
+      "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/general-orchestrator.md}",
+      "permission": {
+        "task": { "*": "deny", "researcher": "allow", "solver": "allow",
+                  "ideator": "allow", "generalist": "allow" }
+      },
+      "tools": {
+        "bash": true,
+        "read": true,
+        "delegate": true,
+        "delegation_list": true,
+        "delegation_read": true
+      }
+    },
+    "sdd-init":    { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5", "prompt": "{file:.atl/agents/sdd/sdd-init.md}", "tools": { "bash": true, "read": true, "write": true } },
+    "sdd-onboard": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-onboard.md}", "tools": { "bash": true, "read": true, "write": true } },
+    "sdd-explore": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-explore.md}", "tools": { "bash": true, "read": true } },
+    "sdd-propose": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",   "prompt": "{file:.atl/agents/sdd/sdd-propose.md}", "tools": { "bash": true, "read": true, "write": true } },
+    "sdd-spec":    { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-spec.md}", "tools": { "bash": true, "read": true, "write": true } },
+    "sdd-design":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",   "prompt": "{file:.atl/agents/sdd/sdd-design.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } },
+    "sdd-tasks":   { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-tasks.md}", "tools": { "bash": true, "read": true, "write": true } },
+    "sdd-apply":   { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-apply.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } },
+    "sdd-verify":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-verify.md}", "tools": { "bash": true, "read": true } },
+    "sdd-archive": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",  "prompt": "{file:.atl/agents/sdd/sdd-archive.md}", "tools": { "read": true, "write": true } },
+    "researcher":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",  "prompt": "{file:.atl/agents/researcher.md}", "tools": { "bash": true, "read": true } },
+    "solver":      { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/solver.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } },
+    "ideator":     { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/ideator.md}", "tools": { "read": true } },
+    "generalist":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",  "prompt": "{file:.atl/agents/generalist.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } }
+  },
+  "mcp": {
+    "context7":           { "type": "remote", "url": "https://mcp.context7.com/mcp", "enabled": true },
+    "context-mode":       { "type": "local", "command": ["npx", "-y", "@mksglu/context-mode"], "enabled": true },
+    "engram":             { "type": "local", "command": ["${ENGRAM_BIN}", "mcp", "--tools=agent"] },
+    "sequential-thinking": { "type": "local", "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"], "enabled": true }
+  }
+}

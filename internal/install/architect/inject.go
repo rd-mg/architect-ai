@@ -4,6 +4,7 @@ import (
     "fmt"
     "os"
     "path/filepath"
+    "strings"
     "text/template"
 )
 
@@ -67,7 +68,17 @@ func InjectArchitect(platform string, assetsDir string, outputDir string) error 
         return fmt.Errorf("unknown platform: %s", platform)
     }
 
-    tmpl := template.New("architect.md")
+    var tmpl *template.Template
+    tmpl = template.New("architect.md").Funcs(template.FuncMap{
+        "include": func(name string) (string, error) {
+            if tmpl == nil {
+                return "", nil
+            }
+            var buf strings.Builder
+            err := tmpl.ExecuteTemplate(&buf, name, nil)
+            return buf.String(), err
+        },
+    })
 
     sharedDir := filepath.Join(assetsDir, "_shared")
     sharedFiles, err := os.ReadDir(sharedDir)
