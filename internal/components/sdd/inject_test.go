@@ -50,10 +50,10 @@ func TestInjectClaudeWritesSectionMarkers(t *testing.T) {
 
 	text := string(content)
 
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
 		t.Fatal("instructions.md missing open marker for sdd-orchestrator")
 	}
-	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- /architect-ai:L1a -->") {
 		t.Fatal("instructions.md missing close marker for sdd-orchestrator")
 	}
 	if !strings.Contains(text, "sub-agent") {
@@ -90,7 +90,7 @@ func TestInjectClaudePreservesExistingSections(t *testing.T) {
 	if !strings.Contains(text, "Some user content.") {
 		t.Fatal("Existing user content was clobbered")
 	}
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
 		t.Fatal("SDD section was not injected")
 	}
 }
@@ -490,10 +490,10 @@ func TestInjectFileAppendMigratesLegacyHeading(t *testing.T) {
 	if strings.Contains(text, "Already present.") {
 		t.Fatal("legacy SDD orchestrator content survived after migration")
 	}
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
-		t.Fatal("missing open marker after migration")
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
+		t.Fatalf("missing open marker after migration. Text:\n%s", text)
 	}
-	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- /architect-ai:L1a -->") {
 		t.Fatal("missing close marker after migration")
 	}
 	if strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator") != 1 {
@@ -577,7 +577,7 @@ func TestInjectFileAppendRemovesLegacyBlockWhenMarkedSectionAlreadyExists(t *tes
 
 	canonical := assets.MustRead("generic/sdd-orchestrator.md")
 	existing := "## Agent Teams Orchestrator\n\nLegacy duplicate block.\n\n" +
-		"<!-- architect-ai:sdd-orchestrator -->\n" + canonical + "\n<!-- /architect-ai:sdd-orchestrator -->\n"
+		"<!-- architect-ai:L1a -->\n" + canonical + "\n<!-- /architect-ai:L1a -->\n"
 
 	if err := os.WriteFile(promptPath, []byte(existing), 0o644); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
@@ -623,7 +623,7 @@ You are a COORDINATOR, not an executor.
 | No inline work | Reading/writing code → delegate to sub-agent |
 <!-- END:agent-teams-lite -->`
 
-	sddSection := "<!-- architect-ai:sdd-orchestrator -->\nYou are a COORDINATOR.\n<!-- /architect-ai:sdd-orchestrator -->\n"
+	sddSection := "<!-- architect-ai:L1a -->\nYou are a COORDINATOR.\n<!-- /architect-ai:L1a -->\n"
 	existing := legacyATLBlock + "\n\n" + sddSection
 
 	if err := os.WriteFile(promptPath, []byte(existing), 0o644); err != nil {
@@ -648,10 +648,10 @@ You are a COORDINATOR, not an executor.
 	if strings.Contains(text, "<!-- END:agent-teams-lite -->") {
 		t.Fatal("ATL close marker should have been stripped during inject")
 	}
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
 		t.Fatal("sdd-orchestrator section must be present after ATL strip")
 	}
-	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- /architect-ai:L1a -->") {
 		t.Fatal("sdd-orchestrator close marker must be present after ATL strip")
 	}
 }
@@ -1065,10 +1065,10 @@ func TestInjectClaudeDeduplicatesBareOrchestratorSection(t *testing.T) {
 	}
 
 	// The injected marked version must be present.
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
 		t.Fatal("missing open marker after injection")
 	}
-	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- /architect-ai:L1a -->") {
 		t.Fatal("missing close marker after injection")
 	}
 
@@ -1117,7 +1117,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtEndOfFile(t *testing.T) {
 	if count := strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator"); count != 1 {
 		t.Fatalf("expected 1 L1 Tactical Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
 	}
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
 		t.Fatal("missing open marker after injection")
 	}
 	if !strings.Contains(text, "Be excellent.") {
@@ -1697,7 +1697,7 @@ func TestStripBareOrchestratorSection_NoOpWhenNoSection(t *testing.T) {
 // stripBareOrchestratorSection (the markers are handled by InjectMarkdownSection).
 // This ensures the migration guard in injectMarkdownSections() is correct.
 func TestStripBareOrchestratorSection_DoesNotStripIfMarkersPresent(t *testing.T) {
-	input := "# My Rules\n\n<!-- architect-ai:sdd-orchestrator -->\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n<!-- /architect-ai:sdd-orchestrator -->\n"
+	input := "# My Rules\n\n<!-- architect-ai:L1a -->\n## Agent Teams Orchestrator\n\nYou are a COORDINATOR.\n<!-- /architect-ai:L1a -->\n"
 
 	// The function sees "## Agent Teams Orchestrator" and would normally strip it.
 	// But the caller (injectMarkdownSections) is supposed to check for markers
@@ -1708,7 +1708,7 @@ func TestStripBareOrchestratorSection_DoesNotStripIfMarkersPresent(t *testing.T)
 
 	// Because stripBareOrchestratorSection does not check for markers itself,
 	// calling it on marked content would damage the file. The real protection is
-	// the `!strings.Contains(existing, "<!-- architect-ai:sdd-orchestrator -->")` guard
+	// the `!strings.Contains(existing, "<!-- architect-ai:L1a -->")` guard
 	// in injectMarkdownSections(). This test confirms that guard works end-to-end.
 	_ = result
 }
@@ -1896,7 +1896,7 @@ func TestInjectClaudeDeduplicatesBareOrchestratorAtBeginning(t *testing.T) {
 	if count := strings.Count(text, "# Agent Teams Lite — L1 Tactical Orchestrator"); count != 1 {
 		t.Fatalf("expected 1 L1 Tactical Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
 	}
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
 		t.Fatal("missing open marker after injection")
 	}
 	if !strings.Contains(text, "## Other Rules") {
@@ -1940,10 +1940,10 @@ func TestInjectClaudeDeduplicatesFileWithOnlyBareOrchestrator(t *testing.T) {
 		t.Fatalf("expected 1 L1 Tactical Orchestrator heading, got %d\n\ncontent:\n%s", count, text)
 	}
 	// Must have markers.
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- architect-ai:L1a -->") {
 		t.Fatal("missing open marker")
 	}
-	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(text, "<!-- /architect-ai:L1a -->") {
 		t.Fatal("missing close marker")
 	}
 	// The unique legacy phrase must be gone — the bare section was stripped.
@@ -2014,7 +2014,7 @@ func TestInjectClaudeDoesNotStripMarkedSection(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
-	if !strings.Contains(string(after1), "<!-- architect-ai:sdd-orchestrator -->") {
+	if !strings.Contains(string(after1), "<!-- architect-ai:L1a -->") {
 		t.Fatal("markers not present after first inject — test precondition failed")
 	}
 

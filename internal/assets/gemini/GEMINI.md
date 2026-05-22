@@ -3,8 +3,8 @@
 
 # architect-ai — Gemini CLI
 
-<!-- architect-ai:L0:start -->
-<!-- architect-ai:L0:end -->
+<!-- architect-ai:L0 -->
+<!-- /architect-ai:L0 -->
 
 ## Gemini CLI Specifics
 
@@ -50,11 +50,11 @@ run_subagent(
 ```
 Fallback if server unavailable: inline Hypothesis Branching template.
 
-<!-- architect-ai:L1a:start -->
-<!-- architect-ai:L1a:end -->
+<!-- architect-ai:L1a -->
+<!-- /architect-ai:L1a -->
 
-<!-- architect-ai:L1b:start -->
-<!-- architect-ai:L1b:end -->
+<!-- architect-ai:L1b -->
+<!-- /architect-ai:L1b -->
 
-<!-- architect-ai:foundation:start -->
-<!-- architect-ai:foundation:end -->
+<!-- architect-ai:foundation -->
+<!-- /architect-ai:foundation -->

@@ -54,8 +54,8 @@ STATE=".atl/sdd-state.yaml"
 [ -f "${STATE}" ] || { echo "BLOCKED: sdd-init required first"; exit 1; }
 ```
 
-<!-- architect-ai:L0:start -->
-<!-- architect-ai:L0:end -->
+<!-- architect-ai:L0 -->
+<!-- /architect-ai:L0 -->
 
-<!-- architect-ai:foundation:start -->
-<!-- architect-ai:foundation:end -->
+<!-- architect-ai:foundation -->
+<!-- /architect-ai:foundation -->
