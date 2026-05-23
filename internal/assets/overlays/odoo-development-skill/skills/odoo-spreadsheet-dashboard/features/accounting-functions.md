@@ -2,8 +2,8 @@
 
 ## Odoo 19 Accounting Functions
 
-These are Odoo-specific spreadsheet functions for querying journal entry aggregates.
-They require `account.move.line` data access and respect Odoo domain and record-rule filtering.
+Odoo-specific spreadsheet functions for querying journal entry aggregates.
+Require `account.move.line` data access and respect Odoo domain and record-rule filtering.
 
 | Formula | Purpose | Observed count (13 samples) |
 |---------|---------|------|
@@ -25,23 +25,23 @@ They require `account.move.line` data access and respect Odoo domain and record-
 ## Usage patterns
 
 - Use `IFERROR(..., 0)` to handle accounts with no entries.
-- These functions are best placed in the `Data` sheet and referenced by scorecard `keyValue`.
-- The `Accounting.osheet(1).json` sample uses 403 formulas, mostly `ODOO.BALANCE` and
+- Best placed in `Data` sheet and referenced by scorecard `keyValue`.
+- `Accounting.osheet(1).json` sample uses 403 formulas, mostly `ODOO.BALANCE` and
   `ODOO.ACCOUNT.GROUP`, to power 5 scorecard figures with 0 pivots and 0 lists.
-- Accounting dashboards commonly use a `line` (spreadsheet-range) chart backed by a grid of
-  `ODOO.BALANCE` cells across months — not an Odoo chart — because account groupings do not
+- Accounting dashboards commonly use `line` (spreadsheet-range) chart backed by grid of
+  `ODOO.BALANCE` cells across months — not Odoo chart — because account groupings do not
   map cleanly to pivot `groupBy` semantics.
 
 ## Key rules
 
-1. Do NOT use accounting functions in a live cell on the `Dashboard` sheet — back them in `Data`.
-2. Always wrap in `IFERROR` — accounts without entries return an error, not zero.
-3. Respect the Odoo date range API; do not pass raw timestamps without testing.
-4. These functions execute under Odoo's current user record rules — no bypass is possible or desired.
+1. Do NOT use accounting functions in live cell on `Dashboard` sheet — back them in `Data`.
+2. Always wrap in `IFERROR` — accounts without entries return error, not zero.
+3. Respect Odoo date range API; do not pass raw timestamps without testing.
+4. These functions execute under Odoo's current user record rules — no bypass possible or desired.
 
 ## Security note
 
-`ODOO.BALANCE` and friends query `account.move.line`. A user without accounting access will get
-a permission error at dashboard open time. This is intentional Odoo behaviour.
-Generate dashboards with accounting functions only for audiences that have accounting read access,
-or gate the dashboard with the appropriate access group in Odoo.
+`ODOO.BALANCE` and friends query `account.move.line`. User without accounting access gets
+permission error at dashboard open time. Intentional Odoo behaviour.
+Generate dashboards with accounting functions only for audiences with accounting read access,
+or gate dashboard with appropriate access group in Odoo.

@@ -92,8 +92,6 @@
 
 ## Brief Template
 
-For quick reviews, use this condensed format:
-
 ```markdown
 ##  Skill Review: {skill-name}
 
@@ -157,32 +155,15 @@ Example:
 ## Review Comments Guidelines
 
 ### Strengths
-
-Focus on:
-- What the skill does well
-- Good practices followed
-- Notable design decisions
-
+Focus on what the skill does well, good practices followed, notable design decisions.
 Keep each point to 1-2 sentences.
 
 ### Improvements
-
-Focus on:
-- Items marked  or 
-- Prioritize by impact
-- Provide actionable suggestions
-
+Focus on items marked  or , prioritize by impact, provide actionable suggestions.
 Keep each point to 1-2 sentences with clear action.
 
 ### Best Practice Alignment
-
-Compare against these principles:
-- Progressive disclosure (L1 → L2 → L3)
-- Composability (works with other skills)
-- Portability (works across environments)
-- Description pattern (WHAT + WHEN + triggers)
-- Standard structure (SKILL.md + scripts/ + references/ + assets/)
-
+Compare against: Progressive disclosure (L1 → L2 → L3), Composability, Portability, Description pattern (WHAT + WHEN + triggers), Standard structure (SKILL.md + scripts/ + references/ + assets/).
 Use // markers for quick visual scan.
 
 ---

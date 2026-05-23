@@ -527,7 +527,7 @@ registry.category("actions").add("{module_name}.{component_name}", {ComponentNam
 
 ## v19 Checklist
 
-When generating a v19 module:
+When generating v19 module:
 
 - [ ] Add `from __future__ import annotations`
 - [ ] Type hints on ALL method parameters
@@ -544,7 +544,7 @@ When generating a v19 module:
 
 ## AI Agent Instructions (v19)
 
-When generating an Odoo 19.0 module:
+When generating Odoo 19.0 module:
 
 1. **MANDATORY**: Add type hints to ALL methods
 2. **MANDATORY**: Use `SQL()` for ALL raw SQL queries

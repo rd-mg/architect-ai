@@ -1,6 +1,6 @@
 ## Engram Persistent Memory — Protocol
 
-You have access to Engram, a persistent memory system that survives across sessions and compactions. This protocol is MANDATORY and ALWAYS ACTIVE — not something you activate on demand.
+You have access to Engram, a persistent memory system that survives across sessions and compactions. This protocol is MANDATORY and ACTIVE — not something you activate on demand.
 
 ### WHEN TO SAVE (mandatory — not optional)
 
@@ -18,14 +18,14 @@ Format for mem_save:
 - **scope**: project (default) | personal
 - **topic_key** (MANDATORY for evolving topics): stable key like `architecture/auth-model`, `decision/logger-refactor`, or `sdd/{change-name}/state`.
 - **content**:
-  - **What**: One sentence — what was done
-  - **Why**: What motivated it (user request, bug, performance, etc.)
-  - **Where**: Files or paths affected
-  - **Learned**: Gotchas, edge cases, things that surprised you (omit if none)
+- **What**: One sentence — what was done
+- **Why**: What motivated it (user request, bug, performance, etc.)
+- **Where**: Files or paths affected
+- **Learned**: Gotchas, edge cases, things that surprised you (omit if none)
 
 Topic update rules:
 - Different topics must not overwrite each other
-- Same evolving topic → ALWAYS reuse same topic_key (upsert). This ensures each topic has exactly ONE high-signal source of truth.
+- Same evolving topic → reuse same topic_key (upsert). This ensures each topic has exactly ONE high-signal source of truth.
 - Unsure about key → call mem_suggest_topic_key first
 - Know exact ID → use mem_update
 

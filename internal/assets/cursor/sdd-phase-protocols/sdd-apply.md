@@ -65,11 +65,11 @@ Tasks to complete in this batch: {list from tasks artifact}
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd/{change-name}/apply-progress",
-  topic_key: "sdd/{change-name}/apply-progress",
-  type: "implementation-state",
-  project: "{project}",
-  content: "{batch progress with status per task}"
+ title: "sdd/{change-name}/apply-progress",
+ topic_key: "sdd/{change-name}/apply-progress",
+ type: "implementation-state",
+ project: "{project}",
+ content: "{batch progress with status per task}"
 )
 
 ## Size Budget: 400 words (progress report). Code changes themselves are separate.
@@ -89,4 +89,4 @@ mem_save(
 - If sub-agent reports errors in file operations → return `blocked`, escalate
 - If tests fail in STRICT TDD mode → sub-agent must stop and report (do NOT force green)
 - If apply-progress merge conflicts with previous state → return `blocked`, route to context-guardian
-- If tasks.md cannot be found → return `blocked`, state integrity broken
+- If tasks.md can't be found → return `blocked`, state integrity broken

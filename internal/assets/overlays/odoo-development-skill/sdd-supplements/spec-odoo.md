@@ -2,7 +2,7 @@
 
 ## Acceptance Criteria Format (Odoo)
 
-Every AC in an Odoo spec MUST be verifiable by `sdd-verify`. Use this template:
+Every AC in Odoo spec MUST be verifiable by `sdd-verify`. Use this template:
 
 ### AC Template
 - **Given**: {state of Odoo database / records / config}
@@ -12,7 +12,7 @@ Every AC in an Odoo spec MUST be verifiable by `sdd-verify`. Use this template:
 - **Verifiable by**: {rg pattern | test method | manual step}
 
 ### Mandatory ACs for Schema Changes
-If ANY model field is added/removed/renamed, the spec MUST include:
+If ANY model field is added/removed/renamed, spec MUST include:
 - AC: migration script exists at `migrations/{version}/`
 - AC: required fields have default values or post-migrate population
 - AC: `ir.model.access.csv` entry added for any new model
@@ -27,16 +27,16 @@ If ANY model field is added/removed/renamed, the spec MUST include:
 - AC: sudo() calls documented with justification comment
 
 ## Odoo FMEA Patterns
-For Odoo-specific capabilities, the FMEA table MUST consider these common failure modes:
+For Odoo-specific capabilities, FMEA table MUST consider these common failure modes:
 1. **Concurrency**: Record locking during heavy compute or multi-user writes.
-2. **Migration**: Data loss when changing field types (e.g., Char -> Integer) without a pre-migrate script.
-3. **ACL Leaks**: Record rules not being restricted enough, allowing cross-user/cross-company access.
-4. **Performance**: O(N) queries (e.g., inside an `@api.depends` loop without pre-fetching).
-5. **Environment**: Registry inconsistencies when a module fails to load but database schema was updated.
+2. **Migration**: Data loss when changing field types (e.g., Char -> Integer) without pre-migrate script.
+3. **ACL Leaks**: Record rules not restricted enough, allowing cross-user/cross-company access.
+4. **Performance**: O(N) queries (e.g., inside `@api.depends` loop without pre-fetching).
+5. **Environment**: Registry inconsistencies when module fails to load but DB schema was updated.
 
 ## Spec Size Budget
 ≤ 300 words for Odoo-specific section.
-The spec supplement is SHORT — Odoo adds precision, not volume.
+Spec supplement is SHORT — Odoo adds precision, not volume.
 
 ## Manifest Spec Entry
 Every spec MUST declare:

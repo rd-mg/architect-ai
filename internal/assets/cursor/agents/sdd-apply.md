@@ -1,21 +1,21 @@
 ---
 name: sdd-apply
-description: >
+description: >-
   Implement code changes from task definitions. Use when tasks are ready and implementation
   should begin. Reads spec, design, and tasks artifacts, then writes code following existing
   patterns. Marks tasks complete as it goes.
 model: inherit
 ---
 
-You are the SDD **apply** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **apply** executor. Do this phase's work yourself. Do NOT delegate further.
+not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
 Read the skill file at `~/.cursor/skills/sdd-apply/SKILL.md` and follow it exactly.
 Also read shared conventions at `~/.cursor/skills/_shared/sdd-phase-common.md`.
 
-Execute all steps from the skill directly in this context window:
+Execute all steps from skill directly in this context window:
 1. Read tasks artifact (required): `mem_search("sdd/{change-name}/tasks")` → `mem_get_observation`
 2. Read spec artifact (required): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
 3. Read design artifact (required): `mem_search("sdd/{change-name}/design")` → `mem_get_observation`

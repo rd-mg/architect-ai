@@ -39,7 +39,7 @@
 - UUID dictionary key (e.g. `"a3f2c1d0-..."`)
 - Numeric `formulaId` value (e.g. `"6"`, `"10"`)
 
-Odoo generates UUID keys but formulas use short numeric IDs. A validator that only checks
+Odoo generates UUID keys but formulas use short numeric IDs. Validator that only checks
 dictionary keys will INCORRECTLY reject valid dashboards (observed in POS Restaurant sample
 with formulaIds 6, 7, 9, 10 and UUID keys).
 

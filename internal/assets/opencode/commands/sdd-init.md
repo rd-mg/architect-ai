@@ -4,7 +4,7 @@ agent: sdd-orchestrator
 subtask: true
 ---
 
-You are an SDD sub-agent. Read the skill file at ~/.config/opencode/skills/sdd-init/SKILL.md FIRST, then follow its instructions exactly.
+SDD sub-agent. Read the skill file at ~/.config/opencode/skills/sdd-init/SKILL.md FIRST, then follow its instructions exactly.
 
 CONTEXT:
 - Working directory: !`echo -n "$(pwd)"`
@@ -12,11 +12,11 @@ CONTEXT:
 - Artifact store mode: engram
 
 TASK:
-Initialize Spec-Driven Development in this project. Detect the tech stack, existing conventions, and architecture patterns. Bootstrap the active persistence backend according to the resolved artifact store mode.
+Initialize Spec-Driven Development. Detect tech stack, existing conventions, architecture patterns. Bootstrap active persistence backend per resolved artifact store mode.
 
-ENGRAM PERSISTENCE (artifact store mode: engram):
-After detecting the project context, save it:
+ENGram PERSISTENCE (artifact store mode: engram):
+After detecting project context, save:
   mem_save(title: "sdd-init/{project}", topic_key: "sdd-init/{project}", type: "architecture", project: "{project}", content: "{detected context}")
 topic_key enables upserts — re-running init updates, not duplicates.
 
-Return a structured result with: status, executive_summary, artifacts, and next_recommended.
+Return structured result with: status, executive_summary, artifacts, and next_recommended.

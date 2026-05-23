@@ -5,7 +5,7 @@
 - **Writes**: `apply-progress` artifact (updated after each batch)
 
 ## Cognitive Posture
-+++Pragmatic — Execute the spec. Don't freelance.
++++Pragmatic — Execute spec. Don't freelance.
 
 ## Model
 sonnet — implementation work
@@ -14,8 +14,8 @@ sonnet — implementation work
 
 ```
 +++Pragmatic
-Execute the task with the minimum viable approach. Ship the smallest correct
-change that satisfies the spec. Do exactly what was asked — no scope creep,
+Execute task with minimum viable approach. Ship smallest correct
+change that satisfies spec. Do exactly what was asked — no scope creep,
 no speculative additions.
 
 ## Project Standards (auto-resolved)
@@ -31,12 +31,12 @@ Follow strict-tdd.md procedure. Do NOT fall back to Standard Mode.
 Write failing test → verify red → implement → verify green → refactor.
 
 ## Execution Graph Awareness (MANDATORY)
-**BEFORE** starting implementation, read `sdd/{change-name}/tasks` and verify the **Execution Graph**. 
+**BEFORE** starting implementation, read `sdd/{change-name}/tasks` and verify **Execution Graph**. 
 - Identify parallel-safe tasks vs sequence-locked tasks.
 - If current batch violates graph order, STOP and report.
 
 ## Atomic Commit Protocol
-- **MANDATORY**: Each [x] task MUST be accompanied by a clean commit (if using Git).
+- **MANDATORY**: Each [x] task MUST be accompanied by clean commit (if using Git).
 - Format: `type(scope): message` (Conventional Commits).
 - No attribution or "Co-authored-by" allowed.
 
@@ -47,8 +47,8 @@ Task: Implement batch {N} of tasks for "{change-name}". Batch size: {size}.
 {if apply-progress exists:}
 ## Previous Progress
 Topic key `sdd/{change-name}/apply-progress` contains prior state.
-READ it via mem_search + mem_get_observation, MERGE with new progress,
-SAVE the combined state. DO NOT overwrite — MERGE.
+READ via mem_search + mem_get_observation, MERGE with new progress,
+SAVE combined state. DO NOT overwrite — MERGE.
 
 ## Batch Scope
 Tasks to complete in this batch: {list from tasks artifact}
@@ -56,10 +56,10 @@ Tasks to complete in this batch: {list from tasks artifact}
 ## Constraints
 - **Atomic Commits**: Verify each task has its own commit.
 - Update tasks.md: mark each completed task with [x]
-- If a task cannot be completed, mark as BLOCKED and note reason
-- Follow the compact rules in Project Standards EXACTLY
-- Do not modify files outside the scope of assigned tasks
-- Do not start new tasks until assigned ones are done or blocked
+- If task cannot be completed, mark as BLOCKED and note reason
+- Follow compact rules in Project Standards EXACTLY
+- Do not modify files outside scope of assigned tasks
+- Do not start new tasks until assigned ones done or blocked
 
 ## Artifact Store: {mode}
 
@@ -72,14 +72,14 @@ mem_save(
   content: "{batch progress with status per task}"
 )
 
-## Size Budget: 400 words (progress report). Code changes themselves are separate.
+## Size Budget: 400 words (progress report). Code changes separate.
 
 ## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 ```
 
 ## Result Processing
 
-- Check that tasks.md was updated (completed tasks marked [x])
+- Check tasks.md updated (completed tasks marked [x])
 - Verify blocked tasks have reason + next action
 - Update state: `tasks-ready` → `applying`
 - Next recommended: `sdd-verify` (if all tasks done) or `sdd-apply` (next batch)

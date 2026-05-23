@@ -44,6 +44,7 @@ func TestSync_DistributesGeneralOrchestrator(t *testing.T) {
 		".vscode",
 		".gemini",
 		filepath.Join(".config", "github-copilot"),
+		filepath.Join(".gemini", "antigravity"),
 	}
 
 	for _, a := range adapters {
@@ -55,11 +56,12 @@ func TestSync_DistributesGeneralOrchestrator(t *testing.T) {
 	// Use agents with well-supported sync paths to avoid verification failures
 	// from incomplete mock setup for agents with special directory requirements.
 	sel := BuildSyncSelection(SyncFlags{
-		Agents: []string{"claude-code", "opencode", "cursor", "windsurf", "vscode-copilot", "codex", "kiro-ide"},
+		Agents: []string{"claude-code", "opencode", "cursor", "windsurf", "vscode-copilot", "codex", "kiro-ide", "antigravity", "gemini-cli", "qwen-code"},
 	}, []model.AgentID{
 		model.AgentClaudeCode, model.AgentOpenCode,
 		model.AgentCursor, model.AgentWindsurf,
 		model.AgentVSCodeCopilot, model.AgentCodex, model.AgentKiroIDE,
+		model.AgentAntigravity, model.AgentGeminiCLI, model.AgentQwenCode,
 	})
 	
 	// Windsurf workflows require a project root (e.g. .git) to be detected

@@ -13,4 +13,4 @@ Ask me to attach `#debugEventsSnapshot` and then:
 - Identify which workspace instructions, `.instructions.md`, prompts, and custom agents were loaded
 - Check for conflicts (multiple instruction sources, overly broad `applyTo: "**"`, YAML frontmatter parse issues)
 - Remind about agent permission levels (Default Approvals vs Bypass vs Autopilot)
-- Provide a minimal set of steps to fix discovery/loading issues
+- Provide minimal steps to fix discovery/loading issues

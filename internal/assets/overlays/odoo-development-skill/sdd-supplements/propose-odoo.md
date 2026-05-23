@@ -1,9 +1,9 @@
 # SDD Propose — Odoo Context
 
-When proposing a change in an Odoo project, follow this protocol IN ADDITION to the standard sdd-propose behavior.
+Follow IN ADDITION to standard sdd-propose.
 
 ## Odoo Version
-{See shared preamble — version already cached from sdd-init.}
+{See shared preamble — version cached from sdd-init.}
 
 ## Scope Framing
 
@@ -16,7 +16,7 @@ Every Odoo proposal MUST specify:
 
 ## Module Naming
 
-If a NEW module is being proposed, follow the naming convention:
+If NEW module proposed, follow naming convention:
 
 ### Client Modules
 Format: `{client_prefix}_{core_app}_{descriptive_name}`
@@ -28,12 +28,12 @@ Example: `cudio_api_connector` (Cudio-specific — see cudio-dod-addendum)
 
 Rules:
 - Only lowercase letters, numbers, underscores
-- Folder name MUST match the technical name
+- Folder name MUST match technical name
 - Manifest `name` field: "{Customer} | {Human Title}"
 
 ## Manifest Planning
 
-In the proposal, specify what the `__manifest__.py` will contain:
+In proposal, specify what `__manifest__.py` will contain:
 
 ```markdown
 ## Manifest Plan
@@ -48,7 +48,7 @@ In the proposal, specify what the `__manifest__.py` will contain:
 
 ## Don't-Reinvent-the-Wheel Validation
 
-Before proposing new code, cite the exploration findings:
+Before proposing new code, cite exploration findings:
 
 ```markdown
 ## Reuse Analysis
@@ -58,18 +58,18 @@ Before proposing new code, cite the exploration findings:
 - Justification: {1-2 sentences}
 ```
 
-If proposing new-from-scratch without a reuse analysis, REJECT and return to sdd-explore.
+If proposing new-from-scratch without reuse analysis, REJECT and return to sdd-explore.
 
 ## Rollback Plan
 
 In Odoo, rollback is trickier than "git revert" because of:
-- Database migrations that have already run
-- Data created by the new feature
+- Database migrations already run
+- Data created by new feature
 - User-configured settings
 
-Your rollback plan MUST address:
-1. **Code rollback**: how to undo the code deployment
-2. **Data rollback**: what migration scripts need to run in reverse
+Rollback plan MUST address:
+1. **Code rollback**: how to undo code deployment
+2. **Data rollback**: what migration scripts run in reverse
 3. **Setting rollback**: which `ir.config_parameter` entries to clean up
 4. **Module uninstall behavior**: does uninstall leave orphan data?
 
@@ -91,10 +91,10 @@ Define capabilities with Odoo-specific precision:
 
 ## Size Budget
 
-Respect the 450-word limit from the standard sdd-propose protocol. Odoo proposals tend to sprawl — compress aggressively.
+Respect 450-word limit from standard sdd-propose protocol. Odoo proposals tend to sprawl — compress aggressively.
 
 ## Boundaries
 
 - Do NOT propose implementation code in this phase (that's sdd-apply's job)
 - Do NOT commit to specific migration SQL (that's sdd-design's detail)
-- Do NOT skip the reuse analysis section
+- Do NOT skip reuse analysis section

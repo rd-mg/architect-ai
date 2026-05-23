@@ -119,7 +119,7 @@
 ## Constraints
 
 - `version` MUST be `"19.1.2"` for Odoo 19 import.
-- `pivotNextId` MUST be >= the count of pivots + 1.
-- `listNextId` MUST be >= the count of lists + 1.
+- `pivotNextId` MUST be >= count of pivots + 1.
+- `listNextId` MUST be >= count of lists + 1.
 - All figure IDs MUST appear in `uniqueFigureIds`.
 - Style/format/border references are 0-indexed arrays.

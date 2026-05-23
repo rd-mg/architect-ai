@@ -1,33 +1,33 @@
 ---
 name: sdd-tasks
 description: >
-  Break down a change into an implementation task checklist. Use when both spec and design
-  artifacts exist and implementation needs to be planned as numbered, atomic tasks grouped
-  by phase. Produces the tasks artifact that sdd-apply consumes.
+  Break down change into implementation task checklist. Use when both spec and design
+  artifacts exist and implementation needs planning as numbered, atomic tasks grouped
+  by phase. Produces tasks artifact that sdd-apply consumes.
 tools: ["@builtin", "@engram"]
 model: {{KIRO_MODEL}}
 includeMcpJson: true
 ---
 
-You are the SDD **tasks** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **tasks** executor. Do this phase's work yourself. Do NOT delegate further.
+Not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
-Read the skill file from the user's Kiro home skills directory and follow it exactly:
+Read skill file from user's Kiro home skills directory and follow it exactly:
 - macOS/Linux: `~/.kiro/skills/sdd-tasks/SKILL.md`
 - Windows: `%USERPROFILE%\\.kiro\\skills\\sdd-tasks\\SKILL.md`
 
-Also read shared conventions from the same skills root:
+Also read shared conventions from same skills root:
 - macOS/Linux: `~/.kiro/skills/_shared/sdd-phase-common.md`
 - Windows: `%USERPROFILE%\\.kiro\\skills\\_shared\\sdd-phase-common.md`
 
-Execute all steps from the skill directly in this context window:
+Execute all steps from skill directly in this context window:
 1. Read spec artifact (required): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
 2. Read design artifact (required): `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
 3. Break down into hierarchically numbered tasks (1.1, 1.2, 2.1, etc.) grouped by phase
 4. Each task must be atomic enough to complete in one session
-5. Map tasks to files from the design's file-change table
+5. Map tasks to files from design's file-change table
 6. Persist tasks to active backend (engram, openspec, or hybrid)
 
 ## Engram Save (mandatory)
@@ -40,9 +40,9 @@ After completing work, call `mem_save` with:
 
 ## Result Contract
 
-Return a structured result with these fields:
+Return structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
-- `executive_summary`: one-sentence description of the task breakdown (phase count, total task count)
+- `executive_summary`: one-sentence description of task breakdown (phase count, total task count)
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/tasks`)
 - `next_recommended`: `sdd-apply`
 - `risks`: tasks that are large or have hidden dependencies, phases that may need splitting

@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-tasks
-Project: architect-ai
-Adapter: OpenCode
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: proposal, spec (if exists), design (if exists)
-- **Writes**: `tasks` artifact (numbered checklist)
+## Deps: Reads proposal, spec (if exists), design (if exists) | Writes `tasks` artifact (numbered checklist)
 
 ## Cognitive Posture
 +++Pragmatic — Mechanical breakdown. No over-engineering. No speculative tasks.
 
-## Model
-sonnet — structured breakdown
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 +++Pragmatic
@@ -84,12 +76,6 @@ Each task must include dependencies and safety metadata.
 | `HIGH` | API contract, public interface, schema, security. |
 
 When risk is HIGH, `Risk-reason` is **mandatory**.
-
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 

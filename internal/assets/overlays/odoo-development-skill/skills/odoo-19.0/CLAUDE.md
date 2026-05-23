@@ -36,60 +36,60 @@ skills/odoo-19.0/
 
 ## Which Guide to Use
 
-| Task                                  | Guide                                     |
+| Task | Guide |
 | ------------------------------------- | ----------------------------------------- |
-| Creating actions, menus, cron jobs    | `references/odoo-19-actions-guide.md`     |
-| Creating a new module                 | `references/odoo-19-development-guide.md` |
-| Configuring **manifest**.py           | `references/odoo-19-manifest-guide.md`    |
-| Creating XML/CSV data files           | `references/odoo-19-data-guide.md`        |
-| Writing ORM queries/search            | `references/odoo-19-model-guide.md`       |
-| Defining model fields                 | `references/odoo-19-field-guide.md`       |
-| Using @api decorators                 | `references/odoo-19-decorator-guide.md`   |
-| Writing XML views                     | `references/odoo-19-view-guide.md`        |
-| Fixing slow code/N+1 queries          | `references/odoo-19-performance-guide.md` |
-| Handling database errors              | `references/odoo-19-transaction-guide.md` |
-| Creating HTTP endpoints               | `references/odoo-19-controller-guide.md`  |
-| Building OWL components               | `references/odoo-19-owl-guide.md`         |
-| Upgrading modules/migrating data      | `references/odoo-19-migration-guide.md`   |
-| Using mail.thread, activities, mixins | `references/odoo-19-mixins-guide.md`      |
-| Creating QWeb reports                 | `references/odoo-19-reports-guide.md`     |
-| Configuring security (ACL, rules)     | `references/odoo-19-security-guide.md`    |
-| Writing tests                         | `references/odoo-19-testing-guide.md`     |
-| Adding translations/localization      | `references/odoo-19-translation-guide.md` |
+| Creating actions, menus, cron jobs | `references/odoo-19-actions-guide.md` |
+| Creating new module | `references/odoo-19-development-guide.md` |
+| Configuring **manifest**.py | `references/odoo-19-manifest-guide.md` |
+| Creating XML/CSV data files | `references/odoo-19-data-guide.md` |
+| Writing ORM queries/search | `references/odoo-19-model-guide.md` |
+| Defining model fields | `references/odoo-19-field-guide.md` |
+| Using @api decorators | `references/odoo-19-decorator-guide.md` |
+| Writing XML views | `references/odoo-19-view-guide.md` |
+| Fixing slow code/N+1 queries | `references/odoo-19-performance-guide.md` |
+| Handling database errors | `references/odoo-19-transaction-guide.md` |
+| Creating HTTP endpoints | `references/odoo-19-controller-guide.md` |
+| Building OWL components | `references/odoo-19-owl-guide.md` |
+| Upgrading modules/migrating data | `references/odoo-19-migration-guide.md` |
+| Using mail.thread, activities, mixins | `references/odoo-19-mixins-guide.md` |
+| Creating QWeb reports | `references/odoo-19-reports-guide.md` |
+| Configuring security (ACL, rules) | `references/odoo-19-security-guide.md` |
+| Writing tests | `references/odoo-19-testing-guide.md` |
+| Adding translations/localization | `references/odoo-19-translation-guide.md` |
 
 ## Key Odoo 19 Changes
 
-| Change             | Old (Odoo 17-)                 | New (Odoo 19)                              |
+| Change | Old (Odoo 17-) | New (Odoo 19) |
 | ------------------ | ------------------------------ | ------------------------------------------ |
-| List view tag      | `<tree>`                       | `<list>`                                   |
-| Dynamic attributes | `attrs="{'invisible': [...]}"` | `invisible="..."` (direct)                 |
-| Delete validation  | Override `unlink()`            | `@api.ondelete(at_uninstall=False)`        |
-| Field aggregation  | `group_operator=`              | `aggregator=`                              |
-| SQL queries        | `cr.execute()`                 | `SQL` class with `execute_query_dict()`    |
-| Batch create       | Single dict                    | List of dicts (`create([{...}, {...}])`)   |
-| SQL constraints    | `_sql_constraints = [...]`     | `models.Constraint(...)`                   |
-| DB indexes         | `index=True` only              | `models.Index(...)` declarative            |
-| Kanban template    | `t-name="kanban-box"`          | `t-name="card"`                            |
-| QWeb output        | `t-esc`                        | `t-out` (t-esc deprecated)                 |
-| Security groups    | `category_id` on `res.groups`  | `privilege_id` + `res.groups.privilege`    |
-| Private methods    | `_` prefix convention          | `@api.private` decorator (enforced)        |
-| Model naming       | `_name = 'res.users'` required | CamelCase class → auto-derive `_name`      |
-| read_group         | `read_group()`                 | `_read_group()` / `formatted_read_group()` |
+| List view tag | `<tree>` | `<list>` |
+| Dynamic attributes | `attrs="{'invisible': [...]}"` | `invisible="..."` (direct) |
+| Delete validation | Override `unlink()` | `@api.ondelete(at_uninstall=False)` |
+| Field aggregation | `group_operator=` | `aggregator=` |
+| SQL queries | `cr.execute()` | `SQL` class with `execute_query_dict()` |
+| Batch create | Single dict | List of dicts (`create([{...}, {...}])`) |
+| SQL constraints | `_sql_constraints = [...]` | `models.Constraint(...)` |
+| DB indexes | `index=True` only | `models.Index(...)` declarative |
+| Kanban template | `t-name="kanban-box"` | `t-name="card"` |
+| QWeb output | `t-esc` | `t-out` (t-esc deprecated) |
+| Security groups | `category_id` on `res.groups` | `privilege_id` + `res.groups.privilege` |
+| Private methods | `_` prefix convention | `@api.private` decorator (enforced) |
+| Model naming | `_name = 'res.users'` required | CamelCase class → auto-derive `_name` |
+| read_group | `read_group()` | `_read_group()` / `formatted_read_group()` |
 
 ## Critical Anti-Patterns
 
-| Anti-Pattern                                                   | Why Bad                      | Correct Approach                                   |
+| Anti-Pattern | Why Bad | Correct Approach |
 | -------------------------------------------------------------- | ---------------------------- | -------------------------------------------------- |
-| `attrs="{'invisible': [...]}"`                                 | Deprecated in Odoo 18        | Use `invisible="..."` direct attribute             |
-| `@api.depends('partner_id')` then accessing `partner_id.email` | N queries per record         | Add `@api.depends('partner_id.email')`             |
-| `search()` inside loop                                         | N+1 queries                  | Use `search()` with `IN` domain or `_read_group()` |
-| `create()` in loop                                             | N INSERT statements          | Batch: `create([{...}, {...}])`                    |
-| Overriding `unlink()` for validation                           | Breaks module uninstall      | Use `@api.ondelete(at_uninstall=False)`            |
-| Using `<tree>` in Odoo 19                                      | Deprecated tag               | Use `<list>` instead                               |
-| Using `_sql_constraints`                                       | **Not supported in Odoo 19** | Use `models.Constraint(...)`                       |
-| Using `t-esc` in templates                                     | Deprecated directive         | Use `t-out` instead                                |
-| Using `category_id` in `res.groups`                            | Removed in Odoo 19           | Use `privilege_id` + `res.groups.privilege`        |
-| Using `read_group()`                                           | Deprecated                   | Use `_read_group()` or `formatted_read_group()`    |
+| `attrs="{'invisible': [...]}"` | Deprecated in Odoo 18 | Use `invisible="..."` direct attribute |
+| `@api.depends('partner_id')` then accessing `partner_id.email` | N queries per record | Add `@api.depends('partner_id.email')` |
+| `search()` inside loop | N+1 queries | Use `search()` with `IN` domain or `_read_group()` |
+| `create()` in loop | N INSERT statements | Batch: `create([{...}, {...}])` |
+| Overriding `unlink()` for validation | Breaks module uninstall | Use `@api.ondelete(at_uninstall=False)` |
+| Using `<tree>` in Odoo 19 | Deprecated tag | Use `<list>` instead |
+| Using `_sql_constraints` | **Not supported in Odoo 19** | Use `models.Constraint(...)` |
+| Using `t-esc` in templates | Deprecated directive | Use `t-out` instead |
+| Using `category_id` in `res.groups` | Removed in Odoo 19 | Use `privilege_id` + `res.groups.privilege` |
+| Using `read_group()` | Deprecated | Use `_read_group()` or `formatted_read_group()` |
 
 ## @api Decorator Decision Tree
 

@@ -63,11 +63,11 @@ Record in the sdd-init artifact.
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd-init/{project}",
-  topic_key: "sdd-init/{project}",
-  type: "project-context",
-  project: "{project}",
-  content: "Project: {name}\nLanguage: {lang}\nFramework: {framework}\nTest runner: {cmd}\nArtifact mode: {mode}\nStrict TDD: {true|false}\nActive overlays: {list}\nPre-flight: {report summary}\nInit date: {date}"
+ title: "sdd-init/{project}",
+ topic_key: "sdd-init/{project}",
+ type: "project-context",
+ project: "{project}",
+ content: "Project: {name}\nLanguage: {lang}\nFramework: {framework}\nTest runner: {cmd}\nArtifact mode: {mode}\nStrict TDD: {true|false}\nActive overlays: {list}\nPre-flight: {report summary}\nInit date: {date}"
 )
 
 ## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
@@ -75,12 +75,12 @@ mem_save(
 
 ## Result Processing
 
-- Cache project context for the session
+- Cache project context for session
 - Orchestrator uses this for all subsequent phase delegations
 - Update state: `uninitialized` → `idle`
 
 ## Failure Handling
 
-- If project root cannot be determined → return `blocked`, ask user to run from project root
+- If project root can't be determined → return `blocked`, ask user to run from project root
 - If detection is ambiguous → return `partial`, ask user specific questions
 - If Engram is unavailable → fall back to `none` mode silently, note in return envelope

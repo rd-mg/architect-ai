@@ -94,6 +94,11 @@ const maxAncestorDepth = 20
 // In a JS/TS monorepo, every package has package.json, so we must not stop at
 // the first one — we keep walking to find the highest ancestor with package.json
 // (or a monorepo root marker above it).
+// FindProjectRoot is an exported wrapper around findProjectRoot.
+func FindProjectRoot(dir string) (string, bool) {
+	return findProjectRoot(dir)
+}
+
 func findProjectRoot(dir string) (string, bool) {
 	if dir == "" {
 		return "", false
@@ -681,6 +686,47 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 			}
 		}
 
+		// Write L1a (SDD Orchestrator) and L1b (General Orchestrator) as independent sub-agents
+		orchestrators := []struct {
+			name  string
+			asset string
+		}{
+			{"sdd-orchestrator.md", sddOrchestratorAsset(adapter.Agent())},
+			{"general-orchestrator.md", generalOrchestratorAsset(adapter.Agent())},
+		}
+
+		for _, orch := range orchestrators {
+			content := assets.MustRead(orch.asset)
+
+			overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+			ctx := PromptContext{
+				SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+				OverlayActive:   overlayActive,
+				OverlayName:     overlayName,
+				OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+				Phase:           strings.TrimSuffix(orch.name, ".md"),
+			}
+			if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+				ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+			}
+			if resolved, err := resolvePromptTemplate(content, ctx); err == nil {
+				content = resolved
+			}
+
+			outPath := filepath.Join(agentsDir, orch.name)
+			writeResult, err := filemerge.WriteFileAtomicWithOptions(outPath, []byte(content), filemerge.WriteOptions{
+				Perm:  0o644,
+				Force: opts.Force,
+			})
+			if err != nil {
+				return InjectionResult{}, fmt.Errorf("write orchestrator agent %s: %w", orch.name, err)
+			}
+			changed = changed || writeResult.Changed
+			if writeResult.Changed {
+				files = append(files, outPath)
+			}
+		}
+
 		// Post-check: verify critical agent files exist
 		for _, phase := range []string{"sdd-apply", "sdd-verify"} {
 			checkPath := filepath.Join(agentsDir, phase+".md")
@@ -1144,19 +1190,19 @@ func sddOrchestratorAsset(agent model.AgentID) string {
 func generalOrchestratorAsset(agent model.AgentID) string {
 	switch agent {
 	case model.AgentGeminiCLI:
-		return "gemini/thinking-agent.md"
+		return "gemini/general-orchestrator.md"
 	case model.AgentCodex:
-		return "codex/thinking-agent.md"
+		return "codex/general-orchestrator.md"
 	case model.AgentAntigravity:
-		return "antigravity/thinking-agent.md"
+		return "antigravity/general-orchestrator.md"
 	case model.AgentWindsurf:
-		return "windsurf/thinking-agent.md"
+		return "windsurf/general-orchestrator.md"
 	case model.AgentCursor:
-		return "cursor/thinking-agent.md"
+		return "cursor/general-orchestrator.md"
 	case model.AgentClaudeCode:
-		return "claude/thinking-agent.md"
+		return "claude/general-orchestrator.md"
 	default:
-		return "generic/thinking-agent.md"
+		return "generic/general-orchestrator.md"
 	}
 }
 
@@ -1241,9 +1287,14 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 		existing = stripBareOrchestratorForFilePrompt(existing)
 	}
 
-	updated := filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", content)
+	// Clean up legacy sections and newly separated L1 markers to isolate L0 in the root prompt
+	existing = filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "general-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1a", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1b", "")
 
-	genContent := assets.MustRead(generalOrchestratorAsset(adapter.Agent()))
+	// 1. Inject L0 (Thinking Agent)
+	l0Content := assets.MustRead("_shared/architect-identity.md")
 	if len(options) > 0 {
 		opts := options[0]
 		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
@@ -1252,16 +1303,17 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 			OverlayActive:   overlayActive,
 			OverlayName:     overlayName,
 			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
-			Phase:           "orchestrator",
+			Phase:           "architect",
 		}
 		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
 			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
 		}
-		if resolved, err := resolvePromptTemplate(genContent, ctx); err == nil {
-			genContent = resolved
+		if resolved, err := resolvePromptTemplate(l0Content, ctx); err == nil {
+			l0Content = resolved
 		}
 	}
-	updated = filemerge.InjectMarkdownSection(updated, "general-orchestrator", genContent)
+	updated := filemerge.InjectMarkdownSection(existing, "L0", l0Content)
+
 
 	writeResult, err := filemerge.WriteFileAtomicWithOptions(promptPath, []byte(updated), filemerge.WriteOptions{
 		Perm:  0o644,
@@ -1272,8 +1324,9 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 	}
 
 	if writeResult.Changed {
-		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "sdd-orchestrator")
-		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "general-orchestrator")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L0")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L1a")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L1b")
 	}
 
 	return InjectionResult{Changed: writeResult.Changed, Files: []string{promptPath}}, nil
@@ -1452,7 +1505,13 @@ func stripBareOrchestratorSection(content string) string {
 
 func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments map[string]model.ClaudeModelAlias, force bool, manifest *state.ManagedManifest, options ...InjectOptions) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
-	content := assets.MustRead("claude/sdd-orchestrator.md")
+	
+	// Determine which sdd-orchestrator asset to use
+	sddOrchestratorAsset := "generic/sdd-orchestrator.md"
+	if adapter.Agent() == model.AgentClaudeCode {
+		sddOrchestratorAsset = "claude/sdd-orchestrator.md"
+	}
+	content := assets.MustRead(sddOrchestratorAsset)
 
 	// Resolve placeholders in the orchestrator content
 	if len(options) > 0 {
@@ -1504,13 +1563,18 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 	// If bare (un-marked) orchestrator content exists but the HTML markers are
 	// not present, strip the bare block first. This migrates legacy files to the
 	// canonical marker-based state without duplicating the section.
-	if hasSDDOrchestrator(existing) && !strings.Contains(existing, "<!-- architect-ai:sdd-orchestrator -->") {
+	if hasSDDOrchestrator(existing) && !strings.Contains(existing, "<!-- architect-ai:L1a -->") {
 		existing = stripBareOrchestratorSection(existing)
 	}
 
-	updated := filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", content)
+	// Clean up legacy sections and newly separated L1 markers to isolate L0 in the root prompt
+	existing = filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "general-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1a", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1b", "")
 
-	genContent := assets.MustRead(generalOrchestratorAsset(adapter.Agent()))
+	// 1. Inject L0 (Thinking Agent)
+	l0Content := assets.MustRead("_shared/architect-identity.md")
 	if len(options) > 0 {
 		opts := options[0]
 		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
@@ -1519,16 +1583,17 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 			OverlayActive:   overlayActive,
 			OverlayName:     overlayName,
 			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
-			Phase:           "orchestrator",
+			Phase:           "architect",
 		}
 		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
 			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
 		}
-		if resolved, err := resolvePromptTemplate(genContent, ctx); err == nil {
-			genContent = resolved
+		if resolved, err := resolvePromptTemplate(l0Content, ctx); err == nil {
+			l0Content = resolved
 		}
 	}
-	updated = filemerge.InjectMarkdownSection(updated, "general-orchestrator", genContent)
+	updated := filemerge.InjectMarkdownSection(existing, "L0", l0Content)
+
 
 	writeResult, err := filemerge.WriteFileAtomicWithOptions(promptPath, []byte(updated), filemerge.WriteOptions{
 		Perm:  0o644,
@@ -1539,8 +1604,9 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 	}
 
 	if writeResult.Changed {
-		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "sdd-orchestrator")
-		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "general-orchestrator")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L0")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L1a")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L1b")
 	}
 
 	return InjectionResult{Changed: writeResult.Changed, Files: []string{promptPath}}, nil
@@ -1776,10 +1842,31 @@ func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, mani
 		return InjectionResult{}, err
 	}
 
-	// For steering files, the orchestrator is the PRIMARY content.
-	// We inject it into the "sdd-orchestrator" section.
-	updated := filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", content)
+	// 1. Inject L0 (Thinking Agent)
+	l0Content := assets.MustRead("generic/thinking-agent.md")
+	if len(options) > 0 {
+		opts := options[0]
+		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+		ctx := PromptContext{
+			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+			OverlayActive:   overlayActive,
+			OverlayName:     overlayName,
+			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+			Phase:           "thinking-agent",
+		}
+		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+		}
+		if resolved, err := resolvePromptTemplate(l0Content, ctx); err == nil {
+			l0Content = resolved
+		}
+	}
+	updated := filemerge.InjectMarkdownSection(existing, "L0", l0Content)
 
+	// 2. Inject L1a (SDD Orchestrator)
+	updated = filemerge.InjectMarkdownSection(updated, "L1a", content)
+
+	// 3. Inject L1b (General Orchestrator)
 	genContent := assets.MustRead(generalOrchestratorAsset(adapter.Agent()))
 	if len(options) > 0 {
 		opts := options[0]
@@ -1798,7 +1885,7 @@ func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, mani
 			genContent = resolved
 		}
 	}
-	updated = filemerge.InjectMarkdownSection(updated, "general-orchestrator", genContent)
+	updated = filemerge.InjectMarkdownSection(updated, "L1b", genContent)
 
 	writeResult, err := filemerge.WriteFileAtomicWithOptions(promptPath, []byte(updated), filemerge.WriteOptions{
 		Perm:  0o644,
@@ -1809,8 +1896,9 @@ func injectSteeringFile(homeDir string, adapter agents.Adapter, force bool, mani
 	}
 
 	if writeResult.Changed {
-		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "sdd-orchestrator")
-		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "general-orchestrator")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L0")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L1a")
+		state.RecordManagedSection(manifest, model.ComponentSDD, promptPath, "L1b")
 	}
 
 	return InjectionResult{Changed: writeResult.Changed, Files: []string{promptPath}}, nil

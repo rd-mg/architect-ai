@@ -9,29 +9,29 @@ description: >
 
 # Odoo Patterns — Version-Agnostic
 
-These patterns apply across Odoo versions 14-19. Syntax differences between
+patterns apply across Odoo versions 14-19. Syntax differences between
 versions live in `patterns-{version}/` bundles. When in doubt, consult BOTH
-this bundle (for the concept) AND the version-specific bundle (for the exact
+this bundle (for concept) AND version-specific bundle (for exact
 syntax).
 
 ## Pattern Discovery Index
 
-When you need a specific pattern, consult the matching file:
-See `discovery-index.md` for the full mapping of intents to files.
+When you need specific pattern, consult matching file:
+See `discovery-index.md` for full mapping of intents to files.
 
 ## Loading Protocol
 
-This index is always bridged. Individual domain files are NOT pre-loaded.
+index is always bridged. Individual domain files are NOT pre-loaded.
 
-When you need a specific domain pattern:
-1. Check this index for the matching file
-2. Read that file directly: cat .agent/skills/patterns-agnostic/{file}
+When you need specific domain pattern:
+1. Check this index for matching file
+2. Read file directly: cat .agent/skills/patterns-agnostic/{file}
 3. Apply patterns. Do NOT load files you don't need.
 
 Exception: sdd-verify always needs models-fields.md and views-widgets.md.
 Pre-load those for verify phases only.
 
-## Don't Reinvent the Wheel — Key OCA Repos
+## Don't Reinvent Wheel — Key OCA Repos
 
 When searching for existing modules, start here:
 
@@ -50,16 +50,16 @@ When searching for existing modules, start here:
 
 ## Version-Agnostic Principles
 
-These apply regardless of version:
+apply regardless of version:
 
 1. **ORM first**: use Odoo ORM methods (`search`, `create`, `write`, `unlink`) — NEVER raw SQL unless absolutely necessary
 2. **Inheritance, don't replace**: use `_inherit` to extend; use `replace` position in XML sparingly
 3. **Security by default**: every new model gets `ir.model.access.csv`
 4. **Respect Multi-Company**: every query on shareable records respects `company_ids`
 5. **Don't bypass user_id checks**: use `sudo()` only with documented justification
-6. **Prefer computed over stored**: store only what's needed for search/sort; compute the rest
+6. **Prefer computed over stored**: store only what's needed for search/sort; compute rest
 7. **Test in TransactionCase**: rollback between tests ensures isolation
-8. **Version-aware syntax**: ALWAYS check the version-specific pattern file before writing
+8. **Version-aware syntax**: ALWAYS check version-specific pattern file before writing
 
 ## Resources
 

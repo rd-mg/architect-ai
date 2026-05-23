@@ -1,6 +1,6 @@
 # Purchase & Procurement Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `purchase-order-patterns.md` (architect-fix)
 - `vendor-bill-patterns.md` (architect-fix)
 - `procurement-rule-patterns.md` (architect-fix)

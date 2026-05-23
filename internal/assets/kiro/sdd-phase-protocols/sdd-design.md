@@ -20,7 +20,7 @@ Evaluate objectively based on evidence. For each claim made or implied:
 
 +++Systemic
 Analyze 2nd and 3rd order effects. What breaks elsewhere? What new
-dependencies are created? What becomes harder to change later?
+dependencies created? What becomes harder to change later?
 
 ## Project Standards (auto-resolved)
 {matching compact rules}
@@ -30,10 +30,9 @@ dependencies are created? What becomes harder to change later?
 
 ## Phase: sdd-design
 
-Task: Produce the architecture design for "{change-name}". Based on proposal
-and spec (if present), produce a design document covering:
+Task: Produce architecture design for "{change-name}". Based on proposal
+and spec (if present), produce design document covering:
 
-## Mandatory Sections
 ## Mandatory Sections
 - Architecture diagram (ASCII or Mermaid)
 - Module/component boundaries
@@ -65,9 +64,9 @@ mem_save(
 ## Result Processing
 
 - Validate all mandatory sections present
-- **Decision Check**: Reject if `Alternative designs considered` is empty.
+- **Decision Check**: Reject if `Alternative designs considered` empty.
 - **Simplicity Check**: Reject if `YAGNI Gate` shows premature abstractions.
-- **Poka-Yoke Check**: Ensure checklist is filled and items with  have justification.
+- **Poka-Yoke Check**: Ensure checklist filled and items with  have justification.
 - Update state: `specifying` → `designing`
 - Next recommended: `sdd-tasks`
 
@@ -75,4 +74,4 @@ mem_save(
 
 - If sub-agent cannot identify integration points → return `partial`, suggest sdd-explore round
 - If design conflicts with active constraints in Context Pack → return `blocked`, escalate to user
-- If Open Questions is non-empty → present to user, wait for resolution before sdd-tasks
+- If Open Questions non-empty → present to user, wait for resolution before sdd-tasks

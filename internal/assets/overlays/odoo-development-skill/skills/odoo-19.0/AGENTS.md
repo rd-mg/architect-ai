@@ -58,7 +58,7 @@ skills/odoo-19.0/
 
 | File | Purpose | When to Use |
 |------|---------|-------------|
-| `SKILL.md` | Master index for all guides | Find the right guide for your task |
+| `SKILL.md` | Master index for all guides | Find right guide for your task |
 | `references/odoo-19-actions-guide.md` | Actions (window, URL, server, cron) | Creating actions, menus, scheduled jobs |
 | `references/odoo-19-controller-guide.md` | HTTP controllers, routing | Writing endpoints |
 | `references/odoo-19-data-guide.md` | XML/CSV data files, records | Creating data files |
@@ -140,7 +140,7 @@ Claude Code reads:
 
 ## Cursor / Claude Skills Folder
 
-After installing via `npx skills add unclecatvn/agent-skills`, the skill is placed at:
+After installing via `npx skills add unclecatvn/agent-skills`, skill is placed at:
 
 ```
 .cursor/skills/
@@ -149,7 +149,7 @@ After installing via `npx skills add unclecatvn/agent-skills`, the skill is plac
 
 .claude/skills/
 └── odoo-19/
-    └── SKILL.md
+ └── SKILL.md
 ```
 
 ---

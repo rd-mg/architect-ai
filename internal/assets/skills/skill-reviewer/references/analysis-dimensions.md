@@ -100,10 +100,10 @@ L2 Checklist
 1. Extract step list from SKILL.md
 2. Find corresponding execution in trace one by one
 3. Mark status:
-    Fully executed
-   △ Partially executed
-    Skipped
-   ? Cannot determine
+     Fully executed
+    △ Partially executed
+     Skipped
+    ? Cannot determine
 ```
 
 ---
@@ -113,8 +113,6 @@ L2 Checklist
 **Execution Rule**: All [MUST] dimensions must be checked and reported in output.
 
 ### [MUST] Efficiency Optimization
-
-### Checklist
 
 ```
 L3 Checklist
@@ -152,8 +150,6 @@ L3 Checklist
 | One-by-one processing | Loop tool calls | Batch script |
 
 ### [MUST] Tool/Implementation Optimization
-
-### Suggestion Categories
 
 ```
 Optimization Suggestions
@@ -196,13 +192,13 @@ Conciseness Check
 ```
 
 **When to Flag**:
-- If redundancy found → **Must fix**
-- If exceeds thresholds →  **Warning**, check if simplifiable
-- If unclear → **Clarity over brevity**
+- Redundancy found → **Must fix**
+- Exceeds thresholds →  **Warning**, check if simplifiable
+- Unclear → **Clarity over brevity**
 
 ### [OPTIONAL] Execution Plan Generation (When user adopts suggestions)
 
-When user adopts suggestions, generate execution plan with:
+Generate execution plan with:
 
 **Required Components:**
 - [ ] Context loading map (L0-L3 progressive loading)
@@ -224,8 +220,8 @@ When user adopts suggestions, generate execution plan with:
 - [ ] Documentation synchronization planned
 
 **Execution Guidance Quality:**
-- [ ] Steps are specific (file paths, line numbers, exact locations)
-- [ ] Rationale provided for each step
+- [ ] Steps specific (file paths, line numbers, exact locations)
+- [ ] Rationale provided per step
 - [ ] Examples included where helpful
 - [ ] Tone shifted to imperative (second person)
 

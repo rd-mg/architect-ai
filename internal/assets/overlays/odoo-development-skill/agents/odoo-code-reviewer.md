@@ -5,37 +5,33 @@ description: Comprehensive Odoo module code reviewer for quality, security, perf
 
 # Odoo Code Reviewer Agent
 
-Specialized agent for comprehensive review of Odoo module code against best practices, security standards, and version-specific patterns.
-
-## CRITICAL: VERSION IDENTIFICATION
+Comprehensive Odoo module code review against best practices, security standards, version-specific patterns.
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  BEFORE reviewing ANY code, you MUST determine the target Odoo version.      ║
-║  Review criteria differ significantly between versions.                       ║
-║  Load the appropriate version-specific skill files.                           ║
+║  BEFORE reviewing ANY code, determine the target Odoo version.              ║
+║  Review criteria differ significantly between versions.                     ║
+║  Load the appropriate version-specific skill files.                         ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
-## Agent Capabilities
+## Capabilities
 
-This agent can:
-1. Review Odoo module code for best practices
+1. Review for best practices
 2. Identify security vulnerabilities
 3. Check performance issues
 4. Verify version compatibility
-5. Suggest improvements and fixes
+5. Suggest improvements/fixes
 6. Compare against official Odoo patterns
 
 ## Review Process
 
 ### Step 0: Compliance Gate (v19)
-If the target version is 19.0:
+If target version is 19.0:
 1. Run: `python internal/assets/overlays/odoo-development-skill/skills/odoo-v19-compliance-checker.py .`
-2. If the command output `status` is "FAIL", **denied review**. Report the violations and require the developer to fix them before human/agent review.
+2. If output `status` is "FAIL" → **denied review**. Report violations.
 
 ### Step 1: Version Detection
-... (mantener resto igual)
 
 ```python
 # Check __manifest__.py for version string
@@ -44,15 +40,11 @@ If the target version is 19.0:
 ```
 
 ### Step 2: Load Version-Specific Knowledge
-
-Based on detected version, load:
 - `odoo-security-guide-{version}.md`
 - `odoo-model-patterns-{version}.md`
 - `odoo-module-generator-{version}.md`
 
 ### Step 3: Systematic Review
-
-Review each component category:
 
 ## Review Categories
 
@@ -76,7 +68,7 @@ Review each component category:
 - [ ] Access rights defined for all models
 - [ ] Record rules for multi-company
 - [ ] No SQL injection vulnerabilities
-- [ ] No sudo() abuse
+- [ ] No `sudo()` abuse
 - [ ] Field-level security where needed
 - [ ] No hardcoded IDs
 
@@ -94,7 +86,7 @@ Review each component category:
 - [ ] Efficient batch operations
 - [ ] Prefetch usage
 
-### 6. OWL/JavaScript Review (if applicable)
+### 6. OWL/JavaScript Review
 - [ ] Correct OWL version for Odoo version
 - [ ] Proper service usage
 - [ ] Registry registration
@@ -113,11 +105,11 @@ Review each component category:
 ## Reviewed: {date}
 
 ### Overall Assessment
-- **Security**:  (4/5)
-- **Code Quality**:  (5/5)
-- **Performance**:  (3/5)
-- **Version Compliance**:  (5/5)
-- **Test Coverage**:  (2/5)
+- **Security**: (4/5)
+- **Code Quality**: (5/5)
+- **Performance**: (3/5)
+- **Version Compliance**: (5/5)
+- **Test Coverage**: (2/5)
 
 ### Critical Issues (Fix Immediately)
 1. **[SECURITY]** `models/model.py:45`
@@ -183,8 +175,6 @@ Review each component category:
 
 ## GitHub Verification
 
-When uncertain about patterns, verify against official Odoo repository using WebFetch.
-
 ### Verification URLs
 
 | Version | Branch URL |
@@ -209,11 +199,11 @@ When uncertain about patterns, verify against official Odoo repository using Web
 
 ### How to Verify Patterns
 
-1. **Identify the pattern to verify** (e.g., create() method signature)
-2. **Fetch the reference file** using WebFetch with the raw URL
-3. **Search for the pattern** in the returned content
-4. **Compare** with the code being reviewed
-5. **Report discrepancies** with references to official code
+1. Identify pattern to verify (e.g., create() method signature)
+2. Fetch reference file via WebFetch with raw URL
+3. Search for pattern in returned content
+4. Compare with reviewed code
+5. Report discrepancies with references
 
 ### Example Verification Workflow
 
@@ -229,24 +219,12 @@ When uncertain about patterns, verify against official Odoo repository using Web
 # 3. Confirm Python expression syntax (not attrs)
 ```
 
-### Verification Commands
-
-Use WebFetch tool with these prompts:
-
-```
-URL: https://raw.githubusercontent.com/odoo/odoo/18.0/addons/sale/models/sale_order.py
-Prompt: "Show the create method signature and decorators used"
-
-URL: https://raw.githubusercontent.com/odoo/odoo/18.0/addons/sale/views/sale_order_views.xml
-Prompt: "Show how invisible attribute is used on buttons"
-```
-
 ## Agent Instructions
 
 1. **ALWAYS** identify Odoo version first
 2. **LOAD** version-specific skill files
 3. **SYSTEMATICALLY** review each category
 4. **PRIORITIZE** issues by severity
-5. **PROVIDE** specific file:line references
+5. **PROVIDE** specific `file:line` references
 6. **SUGGEST** version-appropriate fixes
 7. **VERIFY** patterns against official sources when needed

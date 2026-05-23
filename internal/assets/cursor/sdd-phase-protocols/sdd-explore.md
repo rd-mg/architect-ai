@@ -48,11 +48,11 @@ Do NOT `cat` entire files unless they are under 50 lines. Identify constraints. 
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd/{change-name}/explore",
-  topic_key: "sdd/{change-name}/explore",
-  type: "architecture",
-  project: "{project}",
-  content: "{your exploration markdown}"
+ title: "sdd/{change-name}/explore",
+ topic_key: "sdd/{change-name}/explore",
+ type: "architecture",
+ project: "{project}",
+ content: "{your exploration markdown}"
 )
 
 ## Size Budget: 600 words max
@@ -70,4 +70,4 @@ mem_save(
 ## Failure Handling
 
 - If sub-agent returns `status: blocked` with unanswered questions → present to user, wait
-- If sub-agent cannot find enough information → record as `partial`, suggest next steps
+- If sub-agent can't find enough information → record as `partial`, suggest next steps

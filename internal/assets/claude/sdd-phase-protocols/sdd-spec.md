@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-spec
-Project: architect-ai
-Adapter: Claude
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: proposal artifact
-- **Writes**: `spec` artifact (detailed specifications per capability)
+## Deps: Reads proposal artifact | Writes `spec` artifact (detailed specifications per capability)
 
 ## Cognitive Posture
 +++Systemic — Detect cross-domain dependencies, 2nd/3rd order effects.
 
-## Model
-opus → sonnet (for writing the structured output)
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 +++Systemic
@@ -47,12 +39,6 @@ One spec entry per capability listed in proposal.md's Capabilities section.
 - **UI & State Modeling**: Required for UI with async states. Use Mermaid `stateDiagram-v2` for FSM.
 - **Accessibility Contract**: Required for UI. Specify keyboard navigation, ARIA roles, and focus management.
 
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
-
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
@@ -70,14 +56,12 @@ mem_save(
 ```
 
 ## Result Processing
-
 - Validate one capability per spec section
 - Check each capability has mandatory fields
 - **Validation Gate**: Verify presence of FMEA and Sad-path BDD if I/O or User Input detected.
 - **UI Gate**: Verify FSM and A11y contract if UI capabilities are present.
 - Update state: `proposing` → `specifying`
 - Next recommended: `sdd-design` or `sdd-tasks`
-
 ## Failure Handling
 
 - If proposal's Capabilities section was "unclear" → return `blocked` with reason

@@ -1,21 +1,21 @@
 ---
 name: sdd-propose
-description: >
+description: >-
   Create a change proposal with intent, scope, and approach. Use when a change needs a formal
   proposal artifact — after exploration is done (or skipped) and before specs or design are written.
   Produces proposal.md or the engram proposal artifact.
 model: inherit
 ---
 
-You are the SDD **propose** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **propose** executor. Do this phase's work yourself. Do NOT delegate further.
+not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
 Read the skill file at `~/.cursor/skills/sdd-propose/SKILL.md` and follow it exactly.
 Also read shared conventions at `~/.cursor/skills/_shared/sdd-phase-common.md`.
 
-Execute all steps from the skill directly in this context window:
+Execute all steps from skill directly in this context window:
 1. Read exploration artifact if available: `mem_search("sdd/{change-name}/explore")` → `mem_get_observation`
 2. Draft the proposal: intent, scope, approach, rollback plan, affected modules
 3. Persist to active backend (engram, openspec, or hybrid)
@@ -32,7 +32,7 @@ After completing work, call `mem_save` with:
 
 Return a structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
-- `executive_summary`: one-sentence description of the proposed change and its approach
+- `executive_summary`: one-sentence description of proposed change and its approach
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/proposal`)
 - `next_recommended`: `sdd-spec` and `sdd-design` (can run in parallel)
 - `risks`: architectural risks or open questions identified during proposal

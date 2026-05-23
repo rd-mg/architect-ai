@@ -16,7 +16,7 @@
 
 ## v17 OWL Enhancements
 
-v17 OWL is essentially the same as v16 with improved:
+v17 OWL is essentially same as v16 with improved:
 - Better error handling
 - Enhanced service interfaces
 - Improved TypeScript definitions

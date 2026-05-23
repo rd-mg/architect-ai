@@ -7,159 +7,147 @@ description: bounded competitive refinement for code and non-code artifacts usin
 
 ## Overview
 
-Use this skill to structure reasoning for one bounded comparison round over a target that may be code or non-code.
+Use to structure reasoning for one bounded comparison round over a target (code or non-code).
 
-Treat it as a support protocol, not as an artifact owner, workflow owner, router, validator, execution phase, or gate. It may assist work that happens inside SDD-like flows, but it must not assume that such a flow exists and it must not create, rename, or replace phases.
+Support protocol, not artifact owner, workflow owner, router, validator, execution phase, or gate. May assist inside SDD-like flows, but must not assume such flow exists, must not create/rename/replace phases.
 
 ## Operating Contract
 
 Apply these rules first:
 
-1. Confirm that the target is concrete enough to compare meaningfully.
-2. Confirm that there is an incumbent `A` and one plausible competing alternative `B`.
-3. Confirm that the task involves real ambiguity, tradeoffs, or competing structures.
-4. Confirm that the goal is refinement, remediation planning, or conservative solution selection rather than open-ended ideation.
+1. Confirm target concrete enough to compare meaningfully.
+2. Confirm incumbent `A` and one plausible competing alternative `B`.
+3. Confirm task involves real ambiguity, tradeoffs, or competing structures.
+4. Confirm goal is refinement, remediation planning, or conservative solution selection rather than open-ended ideation.
 
-If any condition is false, do not use this skill. Fall back to the host workflow or the agent's normal reasoning.
+If any condition false, do not use. Fall back to host workflow or agent's normal reasoning.
 
 ## Hard Boundaries
 
-Never use this skill to do any of the following:
-
+Never use to:
 - replace deterministic acceptance evidence
-- treat tests, builds, linters, parsers, AST checks, type checks, or compilers as subordinate to preference-based reasoning
-- declare merge approval, release approval, or workflow advancement unless the user explicitly asks for that interpretation
+- treat tests, builds, linters, parsers, AST checks, type checks, compilers as subordinate to preference-based reasoning
+- declare merge approval, release approval, workflow advancement unless user explicitly asks
 - claim ownership of persistence, task decomposition, routing, or phase control
 - expand into unbounded brainstorming tournaments
 
-If deterministic validators exist, they outrank this skill for runtime or code decisions.
+Deterministic validators outrank this skill for runtime/code decisions.
 
 ## Target Types
 
-This skill may be used for any of these targets when bounded comparison is the right reasoning shape:
+May use for any of these targets when bounded comparison is right shape:
+- current code vs competing fix/refactor
+- existing patch vs alternative patch
+- incumbent approach vs different one
+- proposal, specification, requirement set, task plan, technical design
 
-- current code versus a competing fix or refactor
-- an existing patch versus an alternative patch
-- an incumbent implementation approach versus a different one
-- a proposal, specification, requirement set, task plan, or technical design
-
-Do not use this skill for broad adversarial defect-hunting when there is no real competing option to compare. Use a review-oriented method for that.
+Do NOT use for broad adversarial defect-hunting when no real competing option. Use review-oriented method instead.
 
 ## Candidate Model
 
-Use exactly one bounded comparison round with these candidates:
+Exactly one bounded comparison round:
 
 - `A`: incumbent state, artifact, implementation, patch, or approach
 - `B`: one serious competing alternative that challenges omissions, structure, sequencing, scope, constraints, correctness, or risk distribution
-- `AB`: one synthesis candidate that preserves the strongest material traits of `A` and `B`
+- `AB`: one synthesis candidate preserving strongest material traits of `A` and `B`
 
-Do not create tournaments, brackets, or repeated generations of alternatives unless the user explicitly asks for another round.
+No tournaments, brackets, or repeated generations unless user explicitly asks.
 
 ## Evaluation Rubric
 
-Compare `A`, `B`, and `AB` against the smallest useful set of criteria for the target.
+Compare `A`, `B`, `AB` against smallest useful criteria set.
 
-For code or implementation problems, prioritize:
-
-- correctness against the stated behavior
-- safety of state transitions, side effects, and failure handling
+For code/implementation:
+- correctness against stated behavior
+- safety of state transitions, side effects, failure handling
 - contract compatibility and invariant preservation
-- blast radius, rollback difficulty, and change surface
-- operability, readability, and maintainability
-- simplicity relative to the problem being solved
+- blast radius, rollback difficulty, change surface
+- operability, readability, maintainability
+- simplicity relative to problem
 - testability and validator alignment
 
-For non-code artifacts, prioritize:
-
-- completeness against the stated goal
-- clarity and testability of the claims
-- internal consistency and absence of contradiction
-- alignment with already-approved constraints and neighboring artifacts
-- blast radius, rollback difficulty, and change surface
-- simplicity relative to the problem being solved
+For non-code artifacts:
+- completeness against stated goal
+- clarity and testability of claims
+- internal consistency, absence of contradiction
+- alignment with approved constraints, neighboring artifacts
+- blast radius, rollback difficulty, change surface
+- simplicity relative to problem
 
 Prefer material improvements over stylistic churn.
 
 ## Conservative Selection Rule
 
-Treat "no change" as a valid and often preferable outcome.
+"No change" is valid and often preferable.
 
-- Keep `A` if it is already strongest overall.
+- Keep `A` if already strongest overall.
 - Keep `A` on ties.
-- Prefer the option that introduces the least unnecessary churn.
-- Adopt `B` or `AB` only when the gain is substantive, not cosmetic.
-- If `AB` wins, carry forward only the material deltas that improve the target.
+- Prefer option introducing least unnecessary churn.
+- Adopt `B` or `AB` only when gain is substantive, not cosmetic.
+- If `AB` wins, carry forward only material deltas improving the target.
 
 ## Comparison Procedure
 
-Follow this sequence:
-
-1. Restate the decision target, constraints, and success condition.
-2. Normalize `A` and `B` to the same comparison frame.
+1. Restate decision target, constraints, success condition.
+2. Normalize `A` and `B` to same comparison frame.
 3. Produce one synthesis candidate `AB`.
-4. Compare `A`, `B`, and `AB` using the rubric above.
-5. Select one winner using the conservative selection rule.
-6. Return the chosen option plus a brief rationale and explicit delta summary.
+4. Compare `A`, `B`, `AB` using rubric above.
+5. Select one winner using conservative selection rule.
+6. Return chosen option + brief rationale + explicit delta summary.
 
-Do not let the comparison expand into open-ended brainstorming.
+Do not expand into open-ended brainstorming.
 
 ## Action Policy
 
-By default, this skill produces **analysis first**.
-It does **not** authorize edits, refactors, commits, pushes, workflow transitions, or gate decisions by itself.
+By default, produces **analysis first**. Does **not** authorize edits, refactors, commits, pushes, workflow transitions, or gate decisions.
 
-If the user explicitly asks for remediation after analysis:
+If user explicitly asks for remediation:
 
 1. address confirmed `CRITICAL` findings first
 2. then address confirmed `WARNING (real)` findings
-3. treat `WARNING (theoretical)` as informational unless hardening is requested
+3. treat `WARNING (theoretical)` as informational unless hardening requested
 4. handle `SUGGESTION` items only if trivial or explicitly requested
 
-If a fix addresses a repeated pattern, check the same pattern across the analyzed scope so the correction is consistent.
+If fix addresses repeated pattern, check same pattern across analyzed scope for consistency.
 
 ## Re-review Policy
 
-Re-review is optional and context-driven.
-Use it when:
+Re-review is optional, context-driven. Use when:
+- confirmed critical issues fixed
+- confirmed real warnings fixed in paths with ripple effects
+- user explicitly asks for second pass
+- initial synthesis had low confidence
 
-- confirmed critical issues were fixed
-- confirmed real warnings were fixed in paths with ripple effects
-- the user explicitly asks for a second pass
-- the initial synthesis had low confidence
-
-Do not require a fixed number of rounds.
-Do not force escalation loops.
-Do not bind the review to merge gates, release gates, or phase gates unless the user explicitly asks for that interpretation.
+No fixed number of rounds. No forced escalation loops. No binding to merge/release/phase gates unless user explicitly asks.
 
 ## Output Contract
 
-When surfacing results, organize them in this order:
+Organize results in this order:
 
 1. applicability check
-2. summary of `A`, `B`, and `AB`
+2. summary of `A`, `B`, `AB`
 3. comparison findings by criterion
 4. decision: keep `A`, adopt `B`, or adopt `AB`
 5. minimal delta list
 6. unresolved risks or assumptions
 
-Keep the explanation concise and decision-oriented.
+Keep explanation concise and decision-oriented.
 
 ## Relationship To Other Systems
 
-This skill only shapes how the agent thinks.
+Shapes only how agent thinks.
 
-- If a host workflow has named SDD phases, let that workflow keep phase ownership.
-- If a host workflow has artifact owners, let those owners keep authorship and persistence.
-- If an adaptive router exists, let it decide when to invoke this skill; do not assume one exists.
-- If a defect-review skill exists, reserve that skill for adversarial review rather than bounded synthesis.
+- Host workflow with named SDD phases → let workflow keep phase ownership.
+- Host workflow with artifact owners → let owners keep authorship/persistence.
+- Adaptive router exists → let it decide when to invoke; don't assume one exists.
+- Defect-review skill exists → reserve for adversarial review, not bounded synthesis.
 
 ## Anti-Patterns
 
-Avoid these failure modes:
-
-- using this skill when there is no real competing alternative
+Avoid:
+- using when no real competing alternative
 - generating many alternatives just because ambiguity exists
 - preferring novelty over stability
 - rewriting accepted structure without material gain
-- using reasoning preference as a substitute for deterministic code evidence
-- turning an analytical decision into an implicit merge, release, or phase gate
+- using reasoning preference as substitute for deterministic code evidence
+- turning analytical decision into implicit merge/release/phase gate

@@ -1,35 +1,30 @@
 # architect — L0 Super-Orchestrator (Claude Code)
 
-{{ template "_shared/caveman-identity-block.md" }}
-
-{{ template "_shared/architect-identity.md" }}
-
-{{ template "_shared/super-orchestrator-gate.md" }}
+{{ include "_shared/caveman-identity-block.md" }}
+{{ include "_shared/architect-identity.md" }}
 
 ## Claude Code-Specific Configuration
 
-- Entry point: AGENTS.md or CLAUDE.md in project root
-- Sub-agent delegation: via `Task` tool (Claude Code native)
-- Parallel sub-agents: YES — Claude Code supports real parallel Task execution
-- MCP: via `.claude/settings.json` mcp_servers
+- Entry: CLAUDE.md L0 section
+- Sub-agent delegation: Task tool (native)
+- Parallel: YES — Task tool supports parallel execution
+- MCP: .claude/settings.json
+- Compress: /compact (context-guardian auto-triggers)
 
-## On SDD_INTENT (Claude Code specific)
+## Mode A (Claude Code inline)
+Use Read, Write, Edit, Bash tools from main agent context. Do NOT spawn Task tool for simple ops.
 
+## Mode B (Claude Code SDD delegation)
 ```
-→ Task(description="SDD orchestration: {user_message}", agent="sdd-orchestrator")
-→ Await result
-→ Present result to user
+Task(
+  description = "SDD orchestration: {user_message}",
+  // Claude Code routes to sdd-orchestrator via agent name in .claude/settings.json
+)
 ```
+Pass in description: execution_mode={mode}, model_routing_table={JSON of phase→model}
 
-## On NON_SDD (Claude Code specific)
-
+## Mode C (Claude Code General delegation)
 ```
-→ Task(description="General task: {user_message}", agent="general-orchestrator")  
-→ Await result
-→ Present result to user
+Task(description = "General: {user_message}")
+// Routes to general-orchestrator
 ```
-
-## Engram Integration
-
-Claude Code uses MCP servers defined in `.claude/settings.json`.
-Engram tools: `mem_current_project`, `mem_context`, `mem_search`, `mem_get_observation`, `mem_session_summary`, `mem_save`.

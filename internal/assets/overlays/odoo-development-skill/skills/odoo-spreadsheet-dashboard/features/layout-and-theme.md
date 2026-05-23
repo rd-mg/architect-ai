@@ -2,7 +2,7 @@
 
 ## Default two-sheet layout
 
-All 13 validated samples use a `Dashboard` + `Data` two-sheet pattern (one uses three sheets).
+All 13 validated samples use `Dashboard` + `Data` two-sheet pattern (one uses three sheets).
 
 ```
 Sheet 1: "Dashboard"  — figures only (scorecards, charts)
@@ -11,7 +11,7 @@ Sheet 2: "Data"       — backing formulas (PIVOT.VALUE, ODOO.LIST, ODOO.BALANCE
 
 Rationale:
 - Separates presentation from data plumbing.
-- Allows hiding the Data sheet in Odoo's dashboard view.
+- Allows hiding Data sheet in Odoo's dashboard view.
 - Makes formula auditing tractable.
 - Mirrors what Odoo's native dashboard builder generates.
 
@@ -52,7 +52,7 @@ Rationale:
 
 ## Global style dictionaries
 
-Styles, formats, and borders are defined globally and referenced by index.
+Styles, formats, and borders defined globally and referenced by index.
 
 ```json
 {
@@ -89,11 +89,11 @@ Style reference by index: `"style": 1` = bold, 14pt, dark-blue.
 ## Figure positioning
 
 - Columns and rows are 0-indexed in figure `col` and `row`.
-- Width/height are in pixels; typical scorecard: 240×120, chart: 480×280.
+- Width/height in pixels; typical scorecard: 240×120, chart: 480×280.
 - `offset.x` and `offset.y` adjust sub-cell placement (usually 0).
-- Do not place figures on the `Data` sheet.
+- Do not place figures on `Data` sheet.
 
 ## `isNotSquishable`
 
-12 of 13 samples have `"isNotSquishable": true` at the top level. Set this flag on dashboards
-to prevent Odoo from auto-collapsing columns when the dashboard is viewed in a narrow panel.
+12 of 13 samples have `"isNotSquishable": true` at top level. Set this flag on dashboards
+to prevent Odoo from auto-collapsing columns when dashboard viewed in narrow panel.

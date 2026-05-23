@@ -826,7 +826,20 @@ func backupTargets(homeDir string, selection model.Selection, resolved planner.R
 
 func componentPaths(homeDir string, selection model.Selection, adapters []agents.Adapter, component model.ComponentID) []string {
 	paths := []string{}
+	var projectRoot string
+	if cwd, err := os.Getwd(); err == nil {
+		projectRoot, _ = sdd.FindProjectRoot(cwd)
+	}
+
 	for _, adapter := range adapters {
+		if wa, ok := adapter.(agents.WorkspaceAware); ok {
+			if component == model.ComponentSDD && projectRoot != "" {
+				wa.SetWorkspaceRoot(projectRoot)
+			} else {
+				wa.SetWorkspaceRoot("")
+			}
+		}
+
 		switch component {
 		case model.ComponentEngram:
 			switch adapter.MCPStrategy() {
@@ -854,8 +867,12 @@ func componentPaths(homeDir string, selection model.Selection, adapters []agents
 			}
 		if adapter.SupportsSlashCommands() {
 			if cmdDir := adapter.CommandsDir(homeDir); cmdDir != "" {
+				ext := ".md"
+				if adapter.Agent() == model.AgentGeminiCLI {
+					ext = ".toml"
+				}
 				for _, command := range sdd.OpenCodeCommands() {
-					paths = append(paths, filepath.Join(cmdDir, command.Name+".md"))
+					paths = append(paths, filepath.Join(cmdDir, command.Name+ext))
 				}
 			}
 		}
@@ -899,6 +916,9 @@ func componentPaths(homeDir string, selection model.Selection, adapters []agents
 			}
 		case model.ComponentSkills:
 			for _, skillID := range selectedSkillIDs(selection) {
+				if strings.HasPrefix(string(skillID), "sdd-") {
+					continue
+				}
 				path := skills.SkillPathForAgent(homeDir, adapter, skillID)
 				if path != "" {
 					paths = append(paths, path)
@@ -950,8 +970,10 @@ func componentPaths(homeDir string, selection model.Selection, adapters []agents
 				}
 			}
 		case model.ComponentPermission:
-			if p := adapter.SettingsPath(homeDir); p != "" {
-				paths = append(paths, p)
+			if permissions.AgentSupportsInjection(adapter.Agent()) {
+				if p := adapter.SettingsPath(homeDir); p != "" {
+					paths = append(paths, p)
+				}
 			}
 		case model.ComponentGGA:
 			paths = append(paths, gga.ConfigPath(homeDir))

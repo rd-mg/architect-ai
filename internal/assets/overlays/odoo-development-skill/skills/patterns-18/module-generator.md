@@ -637,7 +637,7 @@ class Test{ModelName}(TransactionCase):
 
 ## v18 Checklist
 
-When generating a v18 module, ensure:
+When generating v18 module, ensure:
 
 - [ ] `_check_company_auto = True` on multi-company models
 - [ ] `check_company=True` on relational fields
@@ -652,7 +652,7 @@ When generating a v18 module, ensure:
 
 ## AI Agent Instructions
 
-When generating an Odoo 18.0 module:
+When generating Odoo 18.0 module:
 
 1. **Always add** `_check_company_auto = True` to models with `company_id`
 2. **Always add** `check_company=True` to relational fields

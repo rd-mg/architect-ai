@@ -6,14 +6,14 @@ project_scope: cudio
 
 ## Cudio Coding Standards Appendix
 
-Additional coding standards enforced on Cudio Inc. projects. These EXTEND the base coding-style rules above.
+Additional standards for Cudio Inc. projects. EXTEND base coding-style rules.
 
 ### Hardcoded Values
 
-NEVER hardcode values that should be configurable. Use:
+NEVER hardcode configurable values. Use:
 - `res.config.settings` for user-facing global settings
 - `ir.config_parameter` for technical/system settings
-- Model-level configuration (e.g., `product.template` default values)
+- Model-level configuration (e.g., `product.template` defaults)
 - Module-level Python constants for values that NEVER change between deployments
 
 Anti-pattern:
@@ -35,7 +35,7 @@ if order.amount_total > threshold:
 
 ### XPath Class Selectors
 
-ALWAYS use `hasclass()` for class-based selectors. NEVER use `contains(@class, ...)`.
+ALWAYS use `hasclass()` for class-based selectors. NEVER `contains(@class, ...)`.
 
 Anti-pattern:
 ```xml
@@ -49,7 +49,7 @@ Correct:
 
 ### Super() Calls
 
-Use modern Python 3 `super()` syntax. Do NOT use `super(MyClass, self)`.
+Use Python 3 `super()` syntax. NOT `super(MyClass, self)`.
 
 Anti-pattern:
 ```python
@@ -65,13 +65,13 @@ def create(self, vals_list):
 
 ### Python Encoding Declaration
 
-Do NOT include `# -*- coding: utf-8 -*-` at the top of Python files. It is obsolete in Python 3.
+Do NOT include `# -*- coding: utf-8 -*-`. Obsolete in Python 3.
 
 ### Field Ordering in Model Definitions
 
-Within a model class, order fields consistently:
-1. Constant fields (Selection options as constants at class level)
-2. Inherited fields (modifications to parent fields)
+Within model class, order fields:
+1. Constant fields (Selection options as class-level constants)
+2. Inherited fields (parent field modifications)
 3. New Char/Text/Html fields
 4. New Integer/Float/Monetary fields
 5. New Boolean fields
@@ -94,11 +94,11 @@ Within a model class, order fields consistently:
 6. Onchange methods (`@api.onchange`)
 7. CRUD overrides (`create`, `write`, `unlink`, `copy`)
 8. Action methods (`action_*`)
-9. Business methods (private methods with `_` prefix, then public)
+9. Business methods (private `_` prefix first, then public)
 
 ### Docstrings
 
-Every public method MUST have a docstring. Format:
+Every public method MUST have docstring:
 
 ```python
 def action_approve(self):
@@ -115,7 +115,7 @@ def action_approve(self):
 
 ### String Formatting
 
-Use f-strings for simple interpolation, `.format()` for complex cases:
+Use f-strings for simple interpolation, `.format()` for complex:
 
 ```python
 # Simple: f-string
@@ -132,7 +132,7 @@ report = "Total: {amount:,.2f} {currency}".format(
 
 ### Module-Level Constants
 
-Place module-level constants in UPPER_SNAKE_CASE at the top of the file, after imports:
+UPPER_SNAKE_CASE at top of file, after imports:
 
 ```python
 from odoo import models, fields, api
@@ -153,15 +153,15 @@ class ApprovalRequest(models.Model):
 
 ### Version-Specific Syntax Enforcement
 
-For code targeting Odoo 17+:
-- Use direct `invisible=`, `readonly=`, `required=` on fields, NEVER `attrs=`
-- Avoid `name_get` override — use `_compute_display_name` instead
+Odoo 17+:
+- Direct `invisible=`, `readonly=`, `required=` on fields, NEVER `attrs=`
+- Avoid `name_get` override — use `_compute_display_name`
 
-For code targeting Odoo 18+:
-- Use `<list>` instead of `<tree>` in XML views
-- Use `<chatter/>` instead of manual chatter structure
+Odoo 18+:
+- `<list>` not `<tree>` in XML views
+- `<chatter/>` not manual chatter structure
 
-For code targeting Odoo 19+:
-- Use `SQL()` builder for any raw SQL (mandatory)
+Odoo 19+:
+- `SQL()` builder mandatory for raw SQL
 - Type hints required on all public methods
 - OWL 3.x patterns (no OWL 2.x deprecated syntax)

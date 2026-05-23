@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-verify
-Project: architect-ai
-Adapter: OpenCode
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: proposal, spec, design, tasks, apply-progress
-- **Writes**: `verify-report` artifact
+## Deps: Reads proposal, spec, design, tasks, apply-progress | Writes `verify-report` artifact
 
 ## Cognitive Posture
 +++Adversarial — Find defects. Assume nothing is correct until proven.
 
-## Model
-sonnet — systematic validation
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 +++Adversarial
@@ -66,12 +58,6 @@ and design. Determine if the change meets acceptance criteria.
 - [ ] Test runner passes (or matches baseline failures)
 - [ ] **WCAG Compliance Check**: Verify aria-labels, contrast ratios, and keyboard accessibility.
 
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
-
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
@@ -98,14 +84,12 @@ mem_save(
 | **WARNING-REAL** | Set verdict to `CONDITIONALLY APPROVED`. Ask user. |
 | **WARNING-THEO** | Note in report. Maintain `APPROVED`. |
 | **SUGGESTION** | Note in report. Maintain `APPROVED`. |
-
 - Verdict field is AUTHORITATIVE for orchestrator decision:
-  - `APPROVED` → next recommended `sdd-archive`
-  - `CONDITIONALLY APPROVED` → present to user for manual decision
-  - `NEEDS CHANGES` → back to `sdd-apply` with new batch
-  - `UNRESOLVED` → escalate to user
+- `APPROVED` → next recommended `sdd-archive`
+- `CONDITIONALLY APPROVED` → present to user for manual decision
+- `NEEDS CHANGES` → back to `sdd-apply` with new batch
+- `UNRESOLVED` → escalate to user
 - Update state: `applying` → `verified` (or `verify-failed`)
-
 ## Failure Handling
 
 - Never treat `APPROVED` as merge permission without human sign-off

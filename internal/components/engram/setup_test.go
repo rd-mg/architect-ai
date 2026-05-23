@@ -53,9 +53,9 @@ func TestSetupAgentSlug(t *testing.T) {
 		{model.AgentClaudeCode, "claude-code", true},
 		{model.AgentGeminiCLI, "gemini-cli", true},
 		{model.AgentCodex, "codex", true},
-		{model.AgentAntigravity, "antigravity", true},
 		{model.AgentWindsurf, "windsurf", true},
 		{model.AgentQwenCode, "qwen-code", true},
+		{model.AgentAntigravity, "", false},
 		{model.AgentCursor, "", false},
 		{model.AgentVSCodeCopilot, "", false},
 	}

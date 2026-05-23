@@ -182,4 +182,4 @@ class BookReportMixin(models.AbstractModel):
         }
 ```
 
-The model name must be `report.<report_name>` matching the `report_name` field in the report action.
+model name must be `report.<report_name>` matching the `report_name` field in the report action.

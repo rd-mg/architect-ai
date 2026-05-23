@@ -4,19 +4,20 @@ Use this format for Odoo Documents, Dashboards, and any native Odoo 19 spreadshe
 
 ## Key Principles
 
-1. **JSON Structure**: The final output must be a single `.json` (or `.osps`) file following the o-spreadsheet schema.
-2. **Formula Sign**: All formulas in the `content` field **MUST** start with `=`.
+1. **JSON Structure**: Final output must be single `.json` (or `.osps`) file following o-spreadsheet schema.
+2. **Formula Sign**: All formulas in `content` field **MUST** start with `=`.
    - Correct: `"content": "=SUM(A1:A10)"`
    - Incorrect: `"content": "SUM(A1:A10)"`
-3. **Styles & Formats**: Use indices to refer to the global `styles` and `formats` dictionaries.
+3. **Styles & Formats**: Use indices to refer to global `styles` and `formats` dictionaries.
 4. **Pivots & Lists (Odoo 19 / v20)**: 
    - **Pivot Type**: Must be uppercase `"ODOO"`.
-   - **Formulas**: Legacy `=ODOO.PIVOT()` is deprecated. Use `=PIVOT.VALUE("1", ...)`. Lists remain `=ODOO.LIST()`.
-   - **Explicit IDs (CRITICAL)**: Both `pivots` and `lists` objects **must** contain `"id"` and `"formulaId"` explicitly inside their definition objects. Missing these causes data to silently fail to bind (blank cells).
+   - **Formulas**: Legacy `=ODOO.PIVOT()` deprecated. Use `=PIVOT.VALUE("1", ...)`. Lists remain `=ODOO.LIST()`.
+   - **Explicit IDs (CRITICAL)**: Both `pivots` and `lists` objects **must** contain `"id"` and `"formulaId"` explicitly inside definition objects. Missing these causes data to silently fail to bind (blank cells).
+
 ## Script Usage
 
 ```bash
-# Generate a base JSON structure with Pydantic validation
+# Generate base JSON structure with Pydantic validation
 python3 scripts/json_builder.py > report.json
 ```
 

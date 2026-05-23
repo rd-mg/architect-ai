@@ -402,7 +402,7 @@ def test_file_read(self):
 
 ### Basic Form Creation
 
-The `Form` class provides server-side form view simulation with onchange support.
+`Form` class provides server-side form view simulation with onchange support.
 
 ```python
 from odoo.tests import Form

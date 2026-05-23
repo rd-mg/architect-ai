@@ -14,8 +14,8 @@ sonnet — structured breakdown
 
 ```
 +++Pragmatic
-Execute the task with the minimum viable approach. No gold-plating. No
-over-engineering. Break down ONLY what the spec and design require — do not
+Execute task with minimum viable approach. No gold-plating. No
+over-engineering. Break down ONLY what spec and design require — do not
 add speculative tasks.
 
 ## Project Standards (auto-resolved)
@@ -26,14 +26,14 @@ add speculative tasks.
 
 ## Phase: sdd-tasks
 
-Task: Break down the approved proposal + spec + design for "{change-name}"
-into an ordered, numbered checklist of implementable tasks.
+Task: Break down approved proposal + spec + design for "{change-name}"
+into ordered, numbered checklist of implementable tasks.
 
 ## Format
 - Use hierarchical numbering: 1.1, 1.2, 1.3, 2.1, ...
-- Each top-level group corresponds to a domain or file area
-- Each task is atomic (one developer can complete in < 30 minutes)
-- Each task has a clear acceptance criterion
+- Each top-level group corresponds to domain or file area
+- Each task atomic (one developer can complete in < 30 minutes)
+- Each task has clear acceptance criterion
 
 ## Mandatory Structure
 1. **Setup** (new files, configs, dependencies)
@@ -53,10 +53,10 @@ into an ordered, numbered checklist of implementable tasks.
 5.2 Post-migrate script for data Y
 
 ## Execution Graph Summary (MANDATORY ≥ 5 tasks)
-Use Mermaid `graph TD` to visualize the task sequence. This ensures dependencies are clear before starting implementation.
+Use Mermaid `graph TD` to visualize task sequence. Ensures dependencies clear before starting implementation.
 
 ## Vertical Slice Organization (Recommended ≥ 3 capabilities)
-Group tasks by functional capability (vertical slices) rather than technical layer (horizontal slices). This enables incremental delivery of value.
+Group tasks by functional capability (vertical slices) rather than technical layer (horizontal slices). Enables incremental delivery of value.
 
 ## Task Format
 Each task must include dependencies and safety metadata.
@@ -78,7 +78,7 @@ Each task must include dependencies and safety metadata.
 | `MEDIUM` | Multi-file, new logic, no external contract change. |
 | `HIGH` | API contract, public interface, schema, security. |
 
-When risk is HIGH, `Risk-reason` is **mandatory**.
+When risk is HIGH, `Risk-reason` **mandatory**.
 
 ## Artifact Store: {mode}
 
@@ -100,7 +100,7 @@ mem_save(
 
 - Validate tasks are atomic (reject tasks that say "implement entire feature X")
 - Check each task has acceptance criterion
-- Check numbering is sequential and consistent
+- Check numbering sequential and consistent
 - Update state: `designing` → `tasks-ready`
 - Next recommended: `sdd-apply`
 

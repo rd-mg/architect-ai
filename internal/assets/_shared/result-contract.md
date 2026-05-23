@@ -1,6 +1,6 @@
 # Result Contract Protocol
 
-Every SDD phase agent MUST emit a validated JSON block as its last output to the orchestrator.
+Every SDD phase agent MUST emit validated JSON block as last output to orchestrator.
 
 ## JSON Schema
 
@@ -25,7 +25,7 @@ Every SDD phase agent MUST emit a validated JSON block as its last output to the
 
 ## Validation Rules
 
-1. The block must be valid JSON syntax.
-2. All keys listed above are required.
-3. The `status` field must be one of: `completed`, `failed`, `blocked`, or `abandoned`.
-4. The orchestrator validates this JSON using `.atl/scripts/validate-result-contract.sh`. If validation fails, the attempt count is incremented and the phase is retried.
+1. Valid JSON syntax required.
+2. All keys above required.
+3. `status` field must be one of: `completed`, `failed`, `blocked`, `abandoned`.
+4. Orchestrator validates via `.atl/scripts/validate-result-contract.sh`. On failure: increment attempt, retry phase.

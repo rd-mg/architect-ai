@@ -584,7 +584,7 @@ class Test{ModelName}(TransactionCase):
 
 ## v17 Checklist
 
-When generating a v17 module, ensure:
+When generating v17 module, ensure:
 
 - [ ] **NO `attrs` in any view** - use direct `invisible`/`readonly`/`required`
 - [ ] `@api.model_create_multi` for ALL create methods
@@ -596,7 +596,7 @@ When generating a v17 module, ensure:
 
 ## AI Agent Instructions (v17)
 
-When generating an Odoo 17.0 module:
+When generating Odoo 17.0 module:
 
 1. **NEVER use** `attrs` attribute in views (removed in v17)
 2. **ALWAYS use** direct `invisible`, `readonly`, `required` with Python expressions

@@ -1,9 +1,9 @@
 # SDD Design — Odoo Context
 
-When designing in an Odoo project, follow this protocol IN ADDITION to the standard sdd-design behavior.
+Follow IN ADDITION to standard sdd-design.
 
 ## Odoo Version
-{See shared preamble — version already cached from sdd-init.}
+{See shared preamble — version cached from sdd-init.}
 
 ## Architecture Layers
 
@@ -18,13 +18,13 @@ Every Odoo design MUST explicitly address these layers:
 
 ## Global Collision Check (MANDATORY — BEFORE_MODEL HOOK)
 
-Before starting the design, you MUST verify that your approach does not collide with established global decisions or existing patterns for the target models. This is your `before_model` requirement.
+Before starting design, verify approach does not collide with established global decisions or existing patterns for target models.
 
-1. **Search Engram**: Call `mem_search` with the target model name and "decision" or "pattern" as keywords.
-2. **Detect Collision**: If an Engram exists that contradicts your proposed design (e.g., "NEVER modify res.partner directly"), you MUST:
+1. **Search Engram**: `mem_search` with target model name + "decision" or "pattern" keywords.
+2. **Detect Collision**: If Engram contradicts proposed design (e.g., "NEVER modify res.partner directly"):
    - Transition to **+++Autoreason-lite** posture.
-   - Address the collision in the design rationale.
-   - Adjust the implementation strategy to comply with the global mandate.
+   - Address collision in design rationale.
+   - Adjust implementation strategy to comply with global mandate.
 
 ## Domain Bounded Contexts
 
@@ -39,15 +39,15 @@ Before starting the design, you MUST verify that your approach does not collide 
 | CRM | CRMContext | crm.lead | crm.stage |
 | Website/Portal | PortalContext | website.visitor | portal.mixin |
 
-**Rule**: A change that spans 2+ bounded contexts REQUIRES an explicit anti-corruption layer
-(a model or method that bridges, not direct cross-domain writes).
+**Rule**: Change spanning 2+ bounded contexts REQUIRES explicit anti-corruption layer
+(model or method that bridges, not direct cross-domain writes).
 
 Full domain map: `sdd-supplements/domain-map.md`
 
 ## DDD Tactical Patterns
 
-When implementing complex domain logic, use the tactical patterns defined in `skills/patterns-ddd/SKILL.md`:
-1. **Aggregate Roots**: Enforce invariants using `@api.constrains`.
+When implementing complex domain logic, use tactical patterns from `skills/patterns-ddd/SKILL.md`:
+1. **Aggregate Roots**: Enforce invariants via `@api.constrains`.
 2. **Value Objects**: Use compute fields + `@api.depends` for domain logic.
 3. **Domain Services**: Use `models.AbstractModel` for orchestration.
 4. **Specifications**: Use `@api.model` returning `Domain` objects (Odoo 19+) or lists.
@@ -58,7 +58,7 @@ In your design, state:
 ## Domain Placement
 Primary domain: {Sales | Inventory | Accounting | Purchase | MRP | HR | CRM | Website | POS | Project}
 Secondary domains touched: {list}
-Anti-corruption layer: {model or method that bridges domains, if applicable}
+Anti-corruption layer: {model or method bridging domains, if applicable}
 ```
 
 Rule: **Never let one domain's code directly write to another domain's tables.** Use Odoo's standard inheritance mechanisms (`_inherit`, `_inherits`) or method calls, not direct SQL.
@@ -69,8 +69,8 @@ Pick ONE inheritance strategy per model and justify:
 
 | Strategy | When to Use | Syntax |
 |----------|-------------|--------|
-| Classical inheritance | Extending a model in place (adding fields/methods) | `_inherit = 'existing.model'` |
-| Prototypal inheritance | Creating a new model that copies another's structure | `_inherit = [...], _name = 'new.model'` |
+| Classical inheritance | Extending model in place (adding fields/methods) | `_inherit = 'existing.model'` |
+| Prototypal inheritance | Creating new model copying another's structure | `_inherit = [...], _name = 'new.model'` |
 | Delegation inheritance | Composing models where new model "is a" existing model | `_inherits = {'base.model': 'base_id'}` |
 | New abstract mixin | Reusable fields/methods across models | `_name = 'mixin.name', _inherit = ['mail.thread']` |
 
@@ -87,7 +87,7 @@ Design section format:
 
 ## View Inheritance
 
-For every view modification, specify the exact XPath/position:
+For every view modification, specify exact XPath/position:
 
 ```markdown
 ## Views
@@ -103,7 +103,7 @@ For every view modification, specify the exact XPath/position:
 Rules:
 - Use `hasclass()` NOT `contains(@class, ...)`
 - Never use `replace` unless absolutely necessary; prefer `after`/`before`/`inside`
-- Always verify XML IDs exist in the base view before designing the inheritance
+- Always verify XML IDs exist in base view before designing inheritance
 
 ## Security Design
 
@@ -163,20 +163,20 @@ If schema changes, include migration design:
 
 ## Size Budget
 
-Respect the 800-word limit from the standard sdd-design protocol. If the design exceeds it:
+Respect 800-word limit from standard sdd-design protocol. If exceeded:
 - Split by layer (data design, business logic design, view design) across multiple artifacts
-- Move large migration SQL blocks to a separate artifact referenced by topic_key
+- Move large migration SQL blocks to separate artifact referenced by topic_key
 
 ## Odoo YAGNI Patterns
-When applying the **YAGNI Gate**, reject these common Odoo over-engineering patterns:
-1. **Premature Abstract Models**: Do not create a `models.AbstractModel` unless it is used by ≥ 3 active models in this project.
-2. **Over-Inheritance**: Avoid inheriting from `mail.thread` or `mail.activity.mixin` for internal utility models with low churn.
-3. **Irrelevant Multi-company**: Do not add `company_id` fields or domain rules unless the project has explicit multi-company requirements.
+When applying **YAGNI Gate**, reject these common Odoo over-engineering patterns:
+1. **Premature Abstract Models**: Don't create `models.AbstractModel` unless used by ≥ 3 active models in this project.
+2. **Over-Inheritance**: Avoid inheriting `mail.thread` or `mail.activity.mixin` for internal utility models with low churn.
+3. **Irrelevant Multi-company**: Don't add `company_id` fields or domain rules unless project has explicit multi-company requirements.
 4. **Excessive Config Parameters**: Avoid creating `ir.config_parameter` entries for simple constants that can be module attributes.
-5. **Generic Views**: Do not create complex inherited views with extensive XPaths for views that have only 1-2 small changes.
+5. **Generic Views**: Don't create complex inherited views with extensive XPaths for views with only 1-2 small changes.
 
 ## Boundaries
 - Do NOT include implementation code
-- Do NOT decide file paths beyond the module root (that's sdd-tasks)
-- Do NOT skip the security section, EVEN for internal-only modules
-- Do NOT design for "all versions" — pick the target and design for it
+- Do NOT decide file paths beyond module root (that's sdd-tasks)
+- Do NOT skip security section, EVEN for internal-only modules
+- Do NOT design for "all versions" — pick target and design for it

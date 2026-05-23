@@ -2,14 +2,14 @@
 
 ## When to Generate
 
-Generate execution plan when user:
+Generate when user:
 - Explicitly adopts L3 suggestions
 - Asks "How do I implement this?"
 - Requests execution steps
 
 ## Context Loading Map Template
 
-Progressive loading strategy (L0 → L3):
+Progressive loading (L0 → L3):
 
 | Level | Context Type | Load Timing | Example |
 |-------|-------------|-------------|---------|
@@ -26,7 +26,7 @@ Progressive loading strategy (L0 → L3):
 
 ### Modular Design
 - [ ] Single responsibility maintained
-- [ ] Content is composable and reusable
+- [ ] Content composable and reusable
 - [ ] No tight coupling introduced
 
 ### Progressive Disclosure
@@ -53,7 +53,7 @@ Progressive loading strategy (L0 → L3):
 
 ## Execution Steps Template (Trackable Format)
 
-Use imperative tone (second person) and trackable check-boxes:
+Imperative tone (second person), trackable check-boxes:
 
 ```markdown
 ### Execution Steps
@@ -84,12 +84,12 @@ Use imperative tone (second person) and trackable check-boxes:
 
 ### Execution Rules (MUST FOLLOW)
 
-1. **Execute IN ORDER**: Steps must be performed sequentially. Do not skip or reorder.
+1. **Execute IN ORDER**: Sequential. Do not skip or reorder.
 2. **Progress Output**: 
-   - Before each step: Output "→ Executing Step N: {title}"
-   - After each step: Output "[DONE] Step N" + verification result
-3. **Fail-Safe**: If a step fails or produces unexpected results, STOP immediately and report to the user. Do not proceed with subsequent steps.
-4. **Completion Summary**: After all steps are completed, provide a final summary listing all actions taken and verification results.
+   - Before each step: "→ Executing Step N: {title}"
+   - After each step: "[DONE] Step N" + verification result
+3. **Fail-Safe**: If step fails, STOP immediately, report to user. Do not proceed.
+4. **Completion Summary**: After all steps, provide final summary of actions + verification results.
 
 ---
 
@@ -169,7 +169,7 @@ Use imperative tone (second person) and trackable check-boxes:
 ### Execution Rules (MUST FOLLOW)
 
 1. Execute IN ORDER (1 → 2 → 3 → 4)
-2. Output status for each step: "→ Executing Step N" and "[DONE] Step N"
+2. Output status: "→ Executing Step N" + "[DONE] Step N"
 3. Stop if any step fails
 
 ### Verification Checklist
@@ -199,7 +199,7 @@ Ask: "Ready to execute?"
      ↓
 User confirms
      ↓
-Execute with progress output:
+Execute with progress:
   → Executing Step 1: Load Core Context
   [DONE] Step 1 
   
@@ -207,7 +207,7 @@ Execute with progress output:
   [DONE] Step 2 
   ...
      ↓
-Output completion summary
+Completion summary
 ```
 
 **Tone Shift**: Before adoption (analytical) → After adoption (imperative)

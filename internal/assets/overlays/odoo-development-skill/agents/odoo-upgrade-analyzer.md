@@ -5,7 +5,7 @@ description: Specialized agent for analyzing Odoo module upgrade compatibility b
 
 # Odoo Upgrade Analyzer Agent
 
-Specialized agent for analyzing Odoo module upgrade compatibility and generating comprehensive migration plans.
+Analyze Odoo module upgrade compatibility. Generate comprehensive migration plans.
 
 ## CRITICAL: VERSION IDENTIFICATION
 
@@ -37,9 +37,8 @@ Specialized agent for analyzing Odoo module upgrade compatibility and generating
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
-## Agent Capabilities
+## Capabilities
 
-This agent can:
 1. Analyze module compatibility for version upgrades
 2. Identify breaking changes
 3. Detect deprecated patterns
@@ -50,15 +49,10 @@ This agent can:
 ## Analysis Process
 
 ### Step 1: Identify Version Jump
-
-Determine:
-- Source version (current)
-- Target version (desired)
-- Jump span (single or multi-version)
+Determine source version, target version, jump span (single or multi-version).
 
 ### Step 2: Load Migration Guides
-
-For the upgrade path, load relevant guides:
+Load relevant guides for upgrade path:
 
 ```
 # For 17.0 → 18.0
@@ -74,37 +68,36 @@ Read: odoo-*-17-18.md
 ```
 
 ### Step 3: Systematic Analysis
-
 Analyze each module component against migration guides.
 
 ## Analysis Categories
 
-### 1. Python Code Analysis
+### 1. Python Code
 - Decorator changes (`@api.multi`, `@api.model_create_multi`)
 - Method signature changes
 - Import changes
 - New required parameters
 - Removed APIs
 
-### 2. XML/View Analysis
+### 2. XML/View
 - `attrs` syntax changes (v16→v17)
 - Visibility attribute changes
 - Widget changes
 - Menu structure changes
 
-### 3. Security Analysis
+### 3. Security
 - Record rule variable changes (`company_ids` → `allowed_company_ids`)
 - New security features (`_check_company_auto`, `check_company`)
 - Group definition changes
 
-### 4. JavaScript/OWL Analysis
+### 4. JavaScript/OWL
 - OWL version changes
 - Module system changes
 - Service API changes
 - Registry changes
 
-### 5. Data File Analysis
-- Data file ordering requirements
+### 5. Data Files
+- Ordering requirements
 - XML ID format changes
 - Reference validity
 
@@ -292,29 +285,29 @@ Use WebFetch to verify patterns against official Odoo repository.
 
 ### How to Compare Versions
 
-1. **Fetch source version file** using WebFetch
-2. **Fetch target version file** using WebFetch
-3. **Compare patterns** for breaking changes
-4. **Document differences** in migration plan
+1. Fetch source version file via WebFetch
+2. Fetch target version file via WebFetch
+3. Compare patterns for breaking changes
+4. Document differences in migration plan
 
 ### WebFetch Commands for Comparison
 
 ```
-# To compare create() method between v17 and v18:
+# Compare create() between v17 and v18:
 URL: https://raw.githubusercontent.com/odoo/odoo/17.0/addons/sale/models/sale_order.py
 Prompt: "Show the create method signature and decorators"
 
 URL: https://raw.githubusercontent.com/odoo/odoo/18.0/addons/sale/models/sale_order.py
 Prompt: "Show the create method signature and decorators"
 
-# To compare view visibility syntax:
+# Compare view visibility syntax:
 URL: https://raw.githubusercontent.com/odoo/odoo/16.0/addons/sale/views/sale_order_views.xml
 Prompt: "Show how attrs is used for visibility"
 
 URL: https://raw.githubusercontent.com/odoo/odoo/17.0/addons/sale/views/sale_order_views.xml
 Prompt: "Show how invisible attribute is used on buttons"
 
-# To check for SQL builder usage:
+# Check for SQL builder usage:
 URL: https://raw.githubusercontent.com/odoo/odoo/18.0/addons/sale/models/sale_order.py
 Prompt: "Show any usage of SQL() builder or raw SQL queries"
 ```
@@ -325,7 +318,7 @@ Check release notes and upgrade guides:
 - `https://github.com/odoo/odoo/releases` - Release notes
 - `https://www.odoo.com/documentation/{version}/developer/reference/upgrades/` - Upgrade guides
 
-## Agent Instructions
+## Instructions
 
 1. **IDENTIFY** source and target versions
 2. **CALCULATE** version jump span

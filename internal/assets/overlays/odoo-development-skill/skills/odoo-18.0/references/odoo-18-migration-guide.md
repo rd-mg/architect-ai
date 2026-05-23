@@ -91,7 +91,7 @@ def migrate(cr, version):
 
 ### Version Format
 
-The migration system supports these version formats:
+migration system supports these version formats:
 
 ```python
 # VERSION_RE pattern from odoo/modules/migration.py

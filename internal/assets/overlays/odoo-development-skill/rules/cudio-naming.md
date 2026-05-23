@@ -5,8 +5,7 @@ project_scope: cudio
 
 # Cudio Module Naming & Manifest Convention
 
-Organization-specific rules for modules developed at Cudio Inc. Extends the
-generic `odoo-development-skill` overlay.
+Organization-specific rules for Cudio Inc. modules. Extends `odoo-development-skill` overlay.
 
 ## Module Naming
 
@@ -14,11 +13,11 @@ generic `odoo-development-skill` overlay.
 Format: `{client_prefix}_{core_app}_{descriptive_name}`
 
 Rules:
-- `client_prefix`: client's name in lowercase, followed by underscore
-- `core_app`: if the module extends an Odoo core application, include its technical name (sale, stock, account, hr, etc.)
-- `descriptive_name`: short description of the functionality
-- Characters: lowercase letters, numbers, and underscores ONLY
-- Avoid generic names — names MUST reflect both the client AND the purpose
+- `client_prefix`: client name lowercase, underscore suffix
+- `core_app`: if extending Odoo core app, include technical name (sale, stock, account, hr, etc.)
+- `descriptive_name`: short functionality description
+- Characters: lowercase letters, numbers, underscores ONLY
+- Avoid generic names — MUST reflect client AND purpose
 
 Examples:
 - `acme_account_invoice_report`
@@ -27,7 +26,7 @@ Examples:
 - `acme_sale_custom_approval`
 
 ### Internal Cudio Modules
-For modules that are not client-specific:
+Non-client-specific modules:
 
 Format: `cudio_{core_app}_{descriptive_name}`
 
@@ -37,12 +36,12 @@ Examples:
 - `cudio_stock_customization`
 
 ### Notes
-- The **folder name** (technical name) MUST follow this convention
-- The **name field** in `__manifest__.py` can be a user-friendly title: `"Acme | Invoice Report"`
+- **Folder name** (technical name) MUST follow convention
+- **`__manifest__.py` name field** can be user-friendly: `"Acme | Invoice Report"`
 
 ## __manifest__.py Required Fields
 
-Follow the official Odoo Manifest guidelines, plus these Cudio-specific values:
+Follow official Odoo Manifest guidelines, plus Cudio-specific values:
 
 ### Required Fields
 
@@ -52,7 +51,7 @@ Follow the official Odoo Manifest guidelines, plus these Cudio-specific values:
 | `category` | Clear category aligned with Odoo's existing categories |
 | `version` | `X.Y.Z.W` where `X.Y` = Odoo major version |
 | `summary` | Short one-line summary |
-| `description` | Multi-line string describing purpose, features, and main components |
+| `description` | Multi-line string describing purpose, features, main components |
 | `author` | `"Cudio Inc."` |
 | `company` | `"Cudio Inc."` |
 | `maintainer` | `"Cudio Inc."` |
@@ -103,25 +102,25 @@ Follow the official Odoo Manifest guidelines, plus these Cudio-specific values:
 
 ## Version Bump Rule
 
-Every change that modifies behavior MUST increment the version:
+Every behavior-modifying change MUST increment version:
 
-- `X.Y` = Odoo major version (stays constant: 18.0, 19.0, etc.)
+- `X.Y` = Odoo major version (constant: 18.0, 19.0, etc.)
 - `Z` = incremented for major updates (new features, model/view changes)
 - `W` = incremented for minor updates (bug fixes, small improvements)
 
-Agent enforcement: the verify-odoo phase will flag if code changed but version didn't increment.
+Agent enforcement: verify-odoo phase flags code change without version increment.
 
 ## Module Icon
 
-- `icon.png` MUST be present in `static/description/` directory
-- Use the standard Cudio icon when applicable
-- Verify-odoo will flag if missing
+- `icon.png` MUST be present in `static/description/`
+- Use standard Cudio icon when applicable
+- verify-odoo flags if missing
 
 ## Documentation Language
 
-All descriptions in `__manifest__.py` and code comments: **English only**.
+All `__manifest__.py` descriptions and code comments: **English only**.
 
-`README.rst` and `index.html` can be in the client's preferred language (but the agent defaults to English).
+`README.rst` and `index.html` can be client's preferred language (agent defaults to English).
 
 ## Validation Regex (for automation)
 

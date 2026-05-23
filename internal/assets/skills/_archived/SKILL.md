@@ -14,36 +14,36 @@ metadata:
 
 # Archived Skills Container
 
-This directory holds skills that were absorbed or deprecated. It is NOT a skill itself — the orchestrator should never match, invoke, or inject this. The frontmatter `deprecated: true` marks it as filtered by the resolver.
+Holds skills that were absorbed or deprecated. NOT a skill itself — orchestrator should never match, invoke, or inject this. Frontmatter `deprecated: true` marks it as filtered by resolver.
 
 ## Contents
 
-Each subdirectory under `_archived/` holds the full original text of a deprecated skill, preserved for reference and rollback:
+Each subdirectory under `_archived/` holds full original text of deprecated skill, preserved for reference and rollback:
 
 - `_archived/judgment-day/` — absorbed into `adaptive-reasoning` v1.0 as Mode 2 (adversarial-review)
 - `_archived/autoreason-lite/` — absorbed into `adaptive-reasoning` v1.0 as Mode 3 (bounded-synthesis)
 
-If more skills are deprecated in future versions, they land here.
+Future deprecated skills land here.
 
 ## Why this file exists
 
-`internal/assets/assets_test.go` contains `TestEmbeddedAssetCount` which walks every directory under `skills/` and asserts each has a `SKILL.md`. Without this stub, the test fails:
+`internal/assets/assets_test.go` contains `TestEmbeddedAssetCount` which walks every directory under `skills/` and asserts each has `SKILL.md`. Without this stub:
 
 ```
 skill directory "_archived" missing SKILL.md: open skills/_archived/SKILL.md: file does not exist
 ```
 
-The stub satisfies the structural check without being a real skill.
+Stub satisfies structural check without being real skill.
 
 ## Rollback
 
-To restore any archived skill, copy its directory from `_archived/` back to `skills/`:
+To restore any archived skill, copy directory from `_archived/` back to `skills/`:
 
 ```bash
 cp -r internal/assets/skills/_archived/judgment-day internal/assets/skills/judgment-day
 ```
 
-Then re-run the skill-registry generator:
+Then re-run skill-registry generator:
 
 ```bash
 architect-ai skill-registry

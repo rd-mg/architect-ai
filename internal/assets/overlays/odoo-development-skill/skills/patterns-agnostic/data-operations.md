@@ -1,6 +1,6 @@
 # Data Operations Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `import-export-patterns.md` (architect-ai)
 - `data-migration-patterns.md` (architect-ai)
 - `sequence-numbering-patterns.md` (architect-ai)

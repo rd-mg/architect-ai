@@ -28,8 +28,8 @@ Standardize how to create, update, read, or delete "Quote Calculators" (Odoo Spr
 
 ## Steps
 1. Review the brand required by the user.
-2. Execute `python3 skills/40-odoo/odoo-quote-calculator/assets/adapt_spreadsheet.py --input skills/40-odoo/odoo-quote-calculator/assets/jsons/odoo19_quotation_canonical.json --output skills/40-odoo/odoo-quote-calculator/assets/jsons/deploy.txt --brand "Brand"`
-3. Extract the returned Base64 string: `PAYLOAD=$(cat skills/40-odoo/odoo-quote-calculator/assets/jsons/deploy.txt)` *(remember to use local `read_file` for yourself)*.
+2. Execute `python3 SKILL_DIR/assets/adapt_spreadsheet.py --input SKILL_DIR/assets/jsons/odoo19_quotation_canonical.json --output SKILL_DIR/assets/jsons/deploy.txt --brand "Brand"`
+3. Extract the returned Base64 string: `PAYLOAD=$(cat SKILL_DIR/assets/jsons/deploy.txt)` *(remember to use local `read_file` for yourself)*.
 4. Use the `mcp_odoo_create_record` tool on the `sale.order.spreadsheet` model defining: `{"name": "...", "spreadsheet_binary_data": "<collected_base64>"}`.
 5. To link to the quote, use `mcp_odoo_update_record` on the `sale.order.template` model changing the integer in the `spreadsheet_template_id` field.
 
@@ -40,7 +40,7 @@ Positive example (Deploy agnóstico vía MCP):
   "model": "sale.order.spreadsheet",
   "values": {
     "name": "Marca Logistics Calculator",
-    "spreadsheet_binary_data": "eyJ2ZXJzaW..." // Extraido desde JSons/deploy.txt
+    "spreadsheet_binary_data": "eyJ2ZXJzaW..."
   }
 }
 ```
@@ -58,9 +58,9 @@ Negative example (hand-crafted JSON with plain text):
 ## Commands
 ```bash
 # Adapt and Generate Payload
-python3 skills/40-odoo/odoo-quote-calculator/assets/adapt_spreadsheet.py \
-  --input skills/40-odoo/odoo-quote-calculator/assets/jsons/odoo19_quotation_canonical.json \
-  --output skills/40-odoo/odoo-quote-calculator/assets/jsons/payload.b64.txt \
+python3 SKILL_DIR/assets/adapt_spreadsheet.py \
+  --input SKILL_DIR/assets/jsons/odoo19_quotation_canonical.json \
+  --output SKILL_DIR/assets/jsons/payload.b64.txt \
   --brand "MyCustomBrand"
 ```
 
@@ -69,8 +69,22 @@ python3 skills/40-odoo/odoo-quote-calculator/assets/adapt_spreadsheet.py \
 - **Adapter**: Script puente agnóstico a credenciales en `assets/adapt_spreadsheet.py`
 
 ## Guardrails
-- Only use `spreadsheet_binary_data` in the MCP tool. Never directly write a string to the `spreadsheet_data` field unless you are testing hotfix patches.
+- Only use `spreadsheet_binary_data` in the MCP tool. Never directly write a string to the `spreadsheet_data` field unless hotfix patches.
 - Verify if the API rejects the M2O link of `sale.order.template`; if the MCP API returns integer List `[ID]` use only `ID`.
 
 ## Checklist
 - [ ] M2O alphanumeric extraction respects ID references.
+
+## Odoo Research Priority [MANDATORY]
+
+All research query flows MUST respect the Local-First Fallback Chain:
+1. Engram: `mem_search("odoo ${ODOO_VERSION} <topic>")`
+2. rg in Local Workspace (`${ODOO_COMMUNITY}/addons/`, etc.)
+3. Context7 MCP: `context7.resolve_library_id("odoo")`
+4. researcher agent: `scope_hint="docs"`, `max_depth="standard"`
+5. Web Search (Google/GitHub): ONLY if all local sources are exhausted or fail.
+
+## Recovery Strategies [MANDATORY in every Odoo SKILL.md]
+- M2O link rejection → query schema via `mcp_odoo_get_model_fields` to find active fields
+- Base64 encoding fails → verify string is utf-8 before applying standard `base64.b64encode()`
+- Workspace source missing → use Engram knowledge nodes and Context7 docs

@@ -59,10 +59,10 @@ Main specs: openspec/specs/{domain}/spec.md
 ## Writing Rules
 
 - Changes are Atomic: one `openspec/changes/{name}` directory per feature/bugfix
-- Audit traces are optional and policy-gated; do not create `audit/` for routine planning work
-- Always create the change directory before writing artifacts
-- If a file already exists, READ it first and UPDATE it (don't overwrite blindly)
-- If the change directory already exists with artifacts, the change is being CONTINUED
+- Audit traces optional and policy-gated; do not create `audit/` for routine planning
+- Always create change directory before writing artifacts
+- If file already exists, READ it first and UPDATE it (don't overwrite blindly)
+- If change directory already exists with artifacts, change is being CONTINUED
 - Use `openspec/config.yaml` `rules` section for project-specific constraints per phase
 
 ## Config File Reference
@@ -103,21 +103,18 @@ rules:
 
 ## Archive Structure
 
-When archiving, the change folder moves to:
+When archiving, change folder moves to:
 ```
 openspec/changes/archive/YYYY-MM-DD-{change-name}/
 ```
 
-Use today's date in ISO format. The archive is an AUDIT TRAIL — never delete or modify archived changes.
+Use today's date in ISO format. Archive is AUDIT TRAIL — never delete or modify archived changes.
 
 ---
 
 ## `state.yaml` Schema (V1)
 
-This file is the authoritative phase-level state for an active change. The
-orchestrator reads it on session resume. `sdd-archive` reads it for the
-archive report. **Agents must validate with** `architect-ai sdd-status
-{change-name}` **after every write.**
+Authoritative phase-level state for active change. Orchestrator reads it on session resume. `sdd-archive` reads it for archive report.
 
 ### Canonical example
 
@@ -156,7 +153,7 @@ metering:           # optional, appended by sdd-archive
 | `created_at` | RFC 3339 UTC | Set once at change creation. |
 | `updated_at` | RFC 3339 UTC | Updated on every write. `>= created_at`. |
 | `artifact_store` | enum | `engram | openspec | hybrid | none`. |
-| `phases` | map | Keys in the phase enum below. |
+| `phases` | map | Keys in phase enum below. |
 
 ### Phase enum
 
@@ -173,14 +170,13 @@ metering:           # optional, appended by sdd-archive
 
 ### Atomicity
 
-Writes MUST be atomic. Write to `state.yaml.tmp` in the same directory,
-`fsync`, then `rename` to `state.yaml`. This prevents a crashed agent
-from leaving a truncated file that then fails validation permanently.
+Writes MUST be atomic. Write to `state.yaml.tmp` in same directory,
+`fsync`, then `rename` to `state.yaml`. Prevents truncated file from crashed agent.
 
 ### Hybrid mode authority
 
-In `artifact_store: hybrid`, `state.yaml` on disk is the **authoritative**
-record of phase status. Engram is advisory. If the two disagree, file wins.
+In `artifact_store: hybrid`, `state.yaml` on disk is **authoritative**
+record of phase status. Engram is advisory. If disagree, file wins.
 
 ### Validation Invariants (I1..I12)
 
@@ -194,14 +190,13 @@ record of phase status. Engram is advisory. If the two disagree, file wins.
 | I6 | Status Enum | Status in `{pending, in_progress, completed, skipped, failed}` |
 | I7 | Completeness | If `status == completed`, `completed_at` MUST be present |
 | I8 | Liveness | If `status == in_progress`, `started_at` MUST be present |
-| I9 | Dependency | `depends_on` phase names must exist in the `phases` map |
+| I9 | Dependency | `depends_on` phase names must exist in `phases` map |
 | I10| DAG | No cycles in the phase graph |
 | I11| Atomicity | Write to `.tmp` then rename |
 | I12| Authority | In hybrid mode, `state.yaml` file wins over Engram metadata |
 
 ### Validation
 
-Before trusting the file, call `architect-ai sdd-status {change-name}`.
-Non-zero exit means the file is invalid — refuse to proceed and follow
+Before trusting file, call `architect-ai sdd-status {change-name}`.
+Non-zero exit means invalid — refuse to proceed and follow
 `docs/openspec-state-recovery.md`.
-

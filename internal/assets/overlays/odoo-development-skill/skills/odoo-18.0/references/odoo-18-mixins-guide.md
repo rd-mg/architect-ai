@@ -39,7 +39,7 @@ Complete reference for Odoo 18 mixins: messaging, email, activities, tracking, w
 
 ### Basic Messaging Integration
 
-The `mail.thread` mixin provides full messaging capabilities: chatter, followers, messages, and field tracking.
+`mail.thread` mixin provides full messaging capabilities: chatter, followers, messages, and field tracking.
 
 #### Minimal Setup
 
@@ -492,7 +492,7 @@ class BusinessTrip(models.Model):
 
 ### Activity Methods
 
-The mixin provides these methods:
+mixin provides these methods:
 
 | Method | Description |
 |--------|-------------|
@@ -683,7 +683,7 @@ class ProjectTask(models.Model):
 
 #### Behavior
 
-The mixin automatically:
+mixin automatically:
 - Links `rating.rating` records to `partner_id` field (if exists)
 - Links to `user_id` partner (if exists)
 - Displays rating events in chatter (if inherits `mail.thread`)

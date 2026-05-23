@@ -35,6 +35,16 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"gemini/sdd-orchestrator.md",
 		"gemini/thinking-agent.md",
 
+		// Antigravity agent files
+		"antigravity/sdd-orchestrator.md",
+		"antigravity/thinking-agent.md",
+		"antigravity/architect.md",
+
+		// VSCode agent files
+		"vscode/sdd-orchestrator.md",
+		"vscode/thinking-agent.md",
+		"vscode/general-orchestrator.md",
+
 		// Codex agent files
 		"codex/sdd-orchestrator.md",
 		"codex/thinking-agent.md",
@@ -54,6 +64,8 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 
 		// SDD skills
 		"skills/sdd-init/SKILL.md",
+		"skills/sdd-orchestrator/SKILL.md",
+		"skills/general-orchestrator/SKILL.md",
 		"skills/sdd-apply/SKILL.md",
 		"skills/sdd-archive/SKILL.md",
 		"skills/sdd-design/SKILL.md",
@@ -73,6 +85,11 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"skills/go-testing/SKILL.md",
 		"skills/skill-creator/SKILL.md",
 		"skills/_shared/adaptive-reasoning-gate.md",
+
+		// GGA v2 assets
+		"gga/AGENTS.md",
+		"gga/pre-commit.bash.tpl",
+		"gga/pre-commit.ps1.tpl",
 	}
 
 	for _, path := range expectedFiles {
@@ -160,9 +177,9 @@ func TestEmbeddedAssetCount(t *testing.T) {
 		}
 	}
 
-	// We expect 32 skill directories (10 SDD + judgment-day + foundation + _shared + generalist + ideator + researcher + solver + architecture-guardrails + others).
-	if skillDirs != 32 {
-		t.Fatalf("expected 32 skill directories, got %d", skillDirs)
+	// We expect 34 skill directories (10 SDD + sdd-orchestrator + general-orchestrator + judgment-day + foundation + _shared + generalist + ideator + researcher + solver + architecture-guardrails + others).
+	if skillDirs != 34 {
+		t.Fatalf("expected 34 skill directories, got %d", skillDirs)
 	}
 
 	// Verify each skill directory has a SKILL.md.
@@ -268,6 +285,9 @@ func TestSDDOrchestratorAssetsScopedToDedicatedAgent(t *testing.T) {
 		"gemini/sdd-orchestrator.md",
 		"codex/sdd-orchestrator.md",
 		"cursor/sdd-orchestrator.md",
+		"opencode/sdd-orchestrator.md",
+		"antigravity/sdd-orchestrator.md",
+		"vscode/sdd-orchestrator.md",
 	} {
 		t.Run(assetPath, func(t *testing.T) {
 			content := MustRead(assetPath)
@@ -301,6 +321,7 @@ func TestAdaptiveReasoningGateInjected(t *testing.T) {
 		"windsurf/sdd-orchestrator.md",
 		"cursor/sdd-orchestrator.md",
 		"opencode/sdd-orchestrator.md",
+		"vscode/sdd-orchestrator.md",
 	}
 
 	for _, path := range orchestrators {
@@ -361,6 +382,7 @@ func TestCognitivePosturesElevenNotTenOrTwelve(t *testing.T) {
 		"generic/sdd-orchestrator.md",
 		"windsurf/sdd-orchestrator.md",
 		"qwen/sdd-orchestrator.md",
+		"vscode/sdd-orchestrator.md",
 	}
 	for _, rel := range orchestrators {
 		t.Run(rel, func(t *testing.T) {

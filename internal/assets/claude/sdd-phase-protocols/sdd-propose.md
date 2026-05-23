@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-propose
-Project: architect-ai
-Adapter: Claude
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: exploration artifact (optional)
-- **Writes**: `proposal` artifact
+## Deps: Reads exploration artifact (optional) | Writes `proposal` artifact
 
 ## Cognitive Posture
 +++Critical — Evaluate feasibility with rigor. Identify biases and unproven assumptions before committing.
 
-## Model
-opus — architectural decisions
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 +++Critical
@@ -37,7 +29,7 @@ Produce: proposal.md with scope, approach, affected areas, rollback plan,
 success criteria, capabilities section.
 
 ## Step 0: Hypothesis Branching (Sequential Thinking)
-- **MANDATORY**: Call `sequential_thinking` with at least 2 branches (using `branchId`) to explore alternative architectural approaches before committing to one in the proposal.
+- Call `sequential_thinking` with at least 2 branches (using `branchId`) to explore alternative architectural approaches before committing to one in the proposal.
 
 ## Mandatory Sections
 - Scope (what's in, what's out)
@@ -49,12 +41,6 @@ success criteria, capabilities section.
 - **Pre-mortem**: Address: (1) What is most likely to break? (2) What dependency is the weakest link? (3) How will we detect failure in production? (4) Who is affected if this fails?
 - **Open Assumptions**: Table with ≥ 2 rows (Assumption | Impact if False). If 0 assumptions, justify why.
 - **Viability Score**: Score 1-15 (Sum of 3 dimensions: 1-5 Complexity, 1-5 Clarity, 1-5 Tooling). If score < 8, initialization is BLOCKED.
-
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 
@@ -73,14 +59,12 @@ mem_save(
 ```
 
 ## Result Processing
-
 - Check `executive_summary` length — must be < 100 words
 - Validate `Capabilities` section is filled (not "TODO")
 - **Viability Gate**: If Viability Score < 8, set status to `blocked` and recommend `sdd-explore`.
 - **Pre-mortem Check**: Reject if Pre-mortem section is missing or incomplete.
 - Update state: `exploring` → `proposing`
 - Next recommended: `sdd-spec` or `sdd-design`
-
 ## Failure Handling
 
 - If proposal lacks rollback plan → return `partial`, ask sub-agent to complete

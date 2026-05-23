@@ -1,10 +1,9 @@
 # Odoo Domain Map (DDD Reference)
 
-This map defines the bounded contexts for Odoo's core domains. Use it during
-`sdd-propose` and `sdd-design` to:
+Bounded contexts for Odoo's core domains. Use during `sdd-propose` and `sdd-design` to:
 - Identify which domain(s) a change touches
 - Detect cross-domain impacts
-- Specify the anti-corruption layer when a change crosses domains
+- Specify anti-corruption layer when crossing domains
 
 ## The Ten Core Domains
 
@@ -23,7 +22,7 @@ This map defines the bounded contexts for Odoo's core domains. Use it during
 
 ## Cross-Domain Bridges (Anti-Corruption Layers)
 
-The following are the standard bridges. When a change needs to cross domains, route through these, NOT direct database writes:
+Standard bridges. When crossing domains, route through these, NOT direct database writes:
 
 | Bridge | Source → Target | Mechanism |
 |--------|----------------|-----------|
@@ -40,30 +39,30 @@ The following are the standard bridges. When a change needs to cross domains, ro
 ## Rules for SDD Phases
 
 ### sdd-propose
-Identify which domain(s) the change touches. List them. If cross-domain:
+Identify which domain(s) change touches. List them. If cross-domain:
 - Explain WHY cross-domain is necessary
-- Identify the appropriate bridge (from the table above)
+- Identify appropriate bridge (from table above)
 - Do NOT propose direct SQL writes across domains
 
 ### sdd-design
 If change crosses domains:
-- Identify the anti-corruption layer model, method, or event
+- Identify anti-corruption layer model, method, or event
 - Preserve existing bridge semantics — don't reimplement standard Odoo flows
 - Document all side effects on other domains
 
 ### sdd-spec
-Write specs per-domain. Each domain = one spec section. Cross-domain effects go in a separate "Integration Effects" section.
+Write specs per-domain. Each domain = one spec section. Cross-domain effects go in separate "Integration Effects" section.
 
 ### sdd-apply
 - Never let one domain's code directly write to another domain's tables
 - Use standard Odoo inheritance (`_inherit`) and method calls
-- When adding a new cross-domain bridge, prefer events (`mail.message` post) or computed fields over direct manipulation
+- When adding new cross-domain bridge, prefer events (`mail.message` post) or computed fields over direct manipulation
 
 ### sdd-verify
-Validate that:
+Validate:
 - Cross-domain interactions use documented bridges
 - No raw SQL writes target another domain's tables
-- Existing bridge behavior is preserved (regression test other domains)
+- Existing bridge behavior preserved (regression test other domains)
 
 ## Anti-Pattern Examples
 
@@ -95,7 +94,7 @@ def action_compute_timesheet_billing(self):
     ...
 ```
 
-###  GOOD: Use a method exposed by the target domain
+###  GOOD: Use method exposed by target domain
 ```python
 # In hr.employee.py
 def action_compute_timesheet_billing(self):
@@ -105,10 +104,10 @@ def action_compute_timesheet_billing(self):
 
 ## When to Create a New Bridge
 
-Create a new bridge ONLY when:
+Create new bridge ONLY when:
 1. No existing bridge covers the flow
-2. The integration is durable (not a one-off)
-3. The semantics are well-defined
+2. Integration is durable (not one-off)
+3. Semantics are well-defined
 
 Prefer:
 - Events (mail.message, bus notifications) for loose coupling
@@ -122,7 +121,7 @@ Avoid:
 
 ## High-Risk Models & Conflict Checklist
 
-The following models are central to Odoo's core integrity. Any modification MUST be audited with extreme care during `sdd-design` and `sdd-verify`.
+These models are central to Odoo's core integrity. Any modification MUST be audited with extreme care during `sdd-design` and `sdd-verify`.
 
 | Model | Primary Risks | Mandatory Verification |
 |-------|---------------|------------------------|
@@ -133,9 +132,9 @@ The following models are central to Odoo's core integrity. Any modification MUST
 | **account.payment** | Payment reconciliation breakage, orphan payments | CHECK \`payment_state\` transition logic. |
 
 ### Mandatory Conflict Protocol (ALL PHASES)
-The following protocol is NOT optional and must be executed in `sdd-propose`, `sdd-design`, `sdd-apply`, and `sdd-verify`:
+NOT optional — must be executed in `sdd-propose`, `sdd-design`, `sdd-apply`, and `sdd-verify`:
 
-1. **Identify** if the change touches any high-risk model.
+1. **Identify** if change touches any high-risk model.
 2. **Scan** Engram for "archived-decisions" related to these models.
 3. **Audit** for "Anti-Patterns" (direct SQL, missing `ondelete`, N+1).
 4. **Pass** Judgement Day Gate explicitly focusing on these models during verification.

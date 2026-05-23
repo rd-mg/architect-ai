@@ -1,111 +1,137 @@
 ---
 name: adaptive-reasoning
 description: >
-  Single-entry classifier and cross-agent reasoning engine.
-  Quantifies task depth across 4 dimensions (D1-D4) and routes to
-  Strategic, Tactical, or Diagnostic modes. Enforces deterministic
-  mode transitions based on error and context pressure.
-license: Apache-2.0
-metadata:
-  author: rd-mg
-  version: "2.0"
+  Single-entry classifier and cross-agent reasoning engine v3.0.
+  Scores D1-D5 dimensions, routes to Mode 1/2/3, selects postures explicitly,
+  triggers sequential thinking for complex tasks, integrates with circuit breaker.
+  Part of foundation (Tier 1) — always injected in every agent.
+tier: foundation
+version: "3.0"
 ---
 
-# Adaptive Reasoning v2.0
+# Adaptive Reasoning Gate v3.0
 
-## Operating Contract
+<!-- architect-ai:caveman:identity-start -->
+## Output Register [MANDATORY]
+Language: English. Caveman: LITE for user output. ULTRA for Gate header and internal reasoning.
+<!-- architect-ai:caveman:identity-end -->
 
-1. **Self-Classification**: You MUST score D1-D4 (0-3) before every response.
-2. **Response Header**: The very first line MUST match: `[MODE N | D1=X, D2=X, D3=X, D4=X]`.
-3. **Cross-Agent Parity**: This logic is identical across CLI (Clause Code, Gemini CLI, OpenCode) and IDE (Cursor/Windsurf/VSCode/Antigravity).
-4. **Deterministic Routing**: Modes are dictated by scores, not heuristics.
-5. **Mode Degradation**: If D3 (Error Pressure) >= 2, you MUST drop into Mode 3.
+## Contract
 
-## Dimensions (D1-D4)
+1. **Self-Classification FIRST**: Score D1-D5 before EVERY response. No exceptions.
+2. **Response Header MANDATORY**: First line of every response MUST match:
+   `[MODE N | D1=X D2=X D3=X D4=X D5=X | POSTURE: +++P1 [+++P2]]`
+3. **Deterministic Routing**: Mode AND postures decided by table, not LLM intuition.
+4. **Hard Ceiling**: MAX 2 active postures simultaneously.
+5. **D5 Ambiguity Rule**: If D5 uncertain AND task touches authentication / credentials / user data → assume D5=2.
+6. **Circuit Breaker Integration**: Check .atl/sdd-state.yaml attempt_count. If >= 2, escalate to Mode 3 automatically.
 
-| Dimension | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
-|-----------|---------|---------|----------|--------------|
-| **D1: Complexity** | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
-| **D2: Uncertainty** | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
-| **D3: Error Pressure** | Clean Run | Recent Bug | Repeated Failure | Production Down |
-| **D4: Context Pressure** | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
+## Dimensions (D1-D5)
 
-## Routing Matrix
+| Dim | Label | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
+|---|---|---|---|---|---|
+| **D1** | Complexity | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
+| **D2** | Uncertainty | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
+| **D3** | Error Pressure | Clean Run | Recent Bug | Repeated Failure | Production Down |
+| **D4** | Context Pressure | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
+| **D5** | Security/Risk | No credentials/PII | User data (normal) | Auth/tokens/env secrets | Crypto/PII/Prod live |
 
-| Condition | Chosen Mode | Focus |
-|-----------|-------------|-------|
-| D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | Direct Execution |
-| D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | Adversarial Review |
-| D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | Bounded Synthesis / Compression |
+## D5 Ambiguity Resolution (MANDATORY)
 
----
+Before assigning D5=0, verify:
+```
+IF task description contains ANY of:
+  login, auth, token, password, secret, key, credential, session, cookie,
+  oauth, jwt, user_id, role, permission, admin, sudo, encrypt, hash, salt
+→ D5 >= 1
 
-## Mode 1: Strategic (Fast/Pragmatic)
+IF agent will READ or WRITE files containing above keywords:
+→ D5 >= 2
 
-**Goal**: Direct execution with minimal overhead.
-**Action**: Proceed with the owning skill or phase. No extra reasoning overlay.
-**Boundaries**: Do not use when defect discovery is the goal (use Mode 2). Do not use when two competing drafts exist (use Mode 3).
+IF still ambiguous:
+→ D5 = 2 (conservative default)
+```
 
----
+## Routing Matrix v3
 
-## Mode 2: Tactical (Adversarial Review)
+| Condition | Mode | Focus | Postures |
+|---|---|---|---|
+| D1+D2 ≤ 2 AND D3+D4 ≤ 2 AND D5 = 0 | **Mode 1: Strategic** | Direct Execution | +++Pragmatic |
+| D1+D2 ≥ 3 OR D3 = 1 | **Mode 2: Tactical** | Adversarial Review | +++Critical [++++Systemic if D1=3] |
+| D3 ≥ 2 OR D4 ≥ 3 | **Mode 3: Diagnostic** | Bounded Synthesis | +++Forensic [++++Pragmatic for recovery] |
+| D5 = 2 | **Force Mode 2 minimum** | + Security Review | Add +++Adversarial (replace 2nd posture) |
+| D5 = 3 | **Force Mode 3** | + Parallel Review | +++Adversarial + parallel sub-agent review MANDATORY |
+| attempt_count ≥ 2 | **Force 3** | Diagnostic fallback | +++Forensic +++Pragmatic |
 
-**Goal**: Systematic implementation with architectural alignment and defect discovery.
+## Posture Decision Table
 
-### Procedure (execute inline)
+| Mode | D1 | D2 | D3 | D5 | Posture 1 | Posture 2 | Notes |
+|---|---|---|---|---|---|---|---|
+| 1 | 0-1 | 0-1 | 0 | 0 | +++Pragmatic | — | Direct execution |
+| 1 | 0-1 | 0-1 | 0 | 1 | +++Pragmatic | — | Note data handling |
+| 2 | 2-3 | any | any | 0-1 | +++Critical | +++Systemic | Cross-domain evaluation |
+| 2 | any | 2-3 | any | 0-1 | +++Socratic | +++Critical | Clarify before act |
+| 2 | any | any | 1 | 0-1 | +++Forensic | +++Critical | Bug under investigation |
+| 2 | any | any | any | 2 | +++Adversarial | +++Critical | Security-sensitive |
+| 3 | any | any | 2+ | any | +++Forensic | +++Pragmatic | Minimize blast radius |
+| 3 | 3 | any | any | any | +++Systemic | +++Adversarial | Paradigm-level change |
+| 3 | any | any | any | 3 | +++Adversarial | +++Forensic | + parallel review agent |
 
-**Step 1: Confirm target and scope**
-Proceed with the most defensible interpretation and state your assumption.
+## Sequential Thinking Trigger (D1+D2 ≥ 5)
 
-**Step 2: Run Pass A (Local Correctness)**
-Build one serious analysis. Capture: Main conclusion, evidence, assumptions, reasoning steps, gaps.
+IF (D1 + D2) >= 5:
+  MANDATORY: Use sequential_thinking MCP BEFORE any code/design generation.
+  MIN_BRANCHES = 2
+  MIN_THOUGHTS = 5
+  REQUIRE: at least 1 "revisit" thought challenging previous assumption
 
-**Step 3: Run Pass B (System Impact)**
-Use a materially different lens. Expose: Contradictory evidence, missing assumptions, overconfident claims, alternative explanations, edge cases.
+IF sequential_thinking MCP unavailable:
+  INJECT inline branching template below
 
-**Step 4: Agreement Trap Check**
-If passes converge, identify shared assumptions or framing errors that could make both wrong.
+## Sequential Thinking Fallback (inline)
 
-**Step 5: Synthesis & Verdict**
-- **APPROVED**: No confirmed CRITICAL or WARNING (real).
-- **CONDITIONALLY APPROVED**: Only SUGGESTION or WARNING (theoretical).
-- **NEEDS CHANGES**: Confirmed CRITICAL or WARNING (real).
+When MCP not available AND (D1+D2) >= 5:
 
----
+MANDATORY BRANCH ANALYSIS before proceeding:
 
-## Mode 3: Diagnostic (Synthesis / Compression)
+Branch A: [approach_name]
+- Implementation: [how]
+- Tradeoffs: [pros/cons]
+- Risk: [what could go wrong]
 
-**Goal**: Root cause analysis and context compression under high pressure (Error/Context).
+Branch B: [alternative_approach_name]
+- Implementation: [how]
+- Tradeoffs: [pros/cons]
+- Risk: [what could go wrong]
 
-### Procedure (execute inline)
+[If D1=3 or D5>=2, add Branch C]
+Branch C: [adversarial_approach or do-nothing option]
 
-**Step 1: Restate target & Constraints**
-State decision target, constraints, and success condition.
+Decision: Branch [X] chosen because [specific rationale].
+Rejected branches: [brief why not]
 
-**Step 2: Normalize candidates**
-- `A`: incumbent state/approach.
-- `B`: one serious competing alternative.
+## Circuit Breaker Integration
 
-**Step 3: Produce synthesis candidate AB**
-Create one synthesis combining the strongest material traits of A and B.
+At START of every response (after reading sdd-state.yaml):
+```bash
+PHASE="${current_phase}"
+ATTEMPTS=$(grep -A5 "  ${PHASE}:" .atl/sdd-state.yaml | grep -o "attempt_counts.*[0-9]" | grep -o "[0-9]" | tail -1)
+ATTEMPTS=${ATTEMPTS:-0}
 
-**Step 4: Evaluate against rubric**
-Assess correctness, safety, contract compatibility, blast radius, and testability.
+if [ "${ATTEMPTS}" -ge 2 ]; then
+  # Force Mode 3 regardless of D-scores
+  echo "CIRCUIT BREAKER ACTIVE: ${PHASE} has ${ATTEMPTS} prior attempts."
+  echo "Forcing Mode 3 + +++Forensic to break the pattern."
+fi
+```
 
-**Step 5: Conservative Selection**
-Keep A if strongest or tied. Adopt B or AB only if gain is substantive and introduces minimal churn.
+## Ralph Loop Prevention (exit code 2)
 
----
-
-## State Transitions
-
-| From | To | Trigger |
-|------|----|---------|
-| Strategic | Tactical | D1+D2 >= 3 |
-| Tactical | Diagnostic | D3 >= 2 (Persistent Failure) |
-| Diagnostic | Tactical | D3 = 0 (Resolution) |
-
-## Output Record (Mandatory)
-```text
-[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}
+If Mode 3 triggered by circuit breaker AND attempt 3:
+```
+DO NOT choose another approach. Instead:
+1. Emit: "RALPH LOOP PREVENTION: 3 attempts in Mode 3. Aborting."
+2. Return Result Contract with status: "abandoned"
+3. Exit code 2
+4. Record in sdd-state.yaml: abandoned_phases += [current_phase]
 ```

@@ -29,25 +29,25 @@
 
 ```
 =PIVOT(formulaId)
-  → Inserts the full pivot table starting at this cell
+  → Inserts full pivot table starting at this cell
 
 =PIVOT.VALUE(formulaId, "measure" [, "groupBy", value, ...])
-  → Returns a single aggregated value
+  → Returns single aggregated value
 
 =PIVOT.HEADER(formulaId, "groupBy", value [, ...])
-  → Returns a pivot row/column header label
+  → Returns pivot row/column header label
 ```
 
-`formulaId` is the numeric string from the pivot's `formulaId` field, NOT the UUID key.
+`formulaId` is numeric string from pivot's `formulaId` field, NOT UUID key.
 
 ### List functions
 
 ```
 =ODOO.LIST(listId, rowIndex, "fieldName")
-  → Returns a single field value from list row rowIndex (1-based)
+  → Returns single field value from list row rowIndex (1-based)
 
 =ODOO.LIST.HEADER(listId, "fieldName")
-  → Returns the display label for a list column
+  → Returns display label for list column
 ```
 
 ### Accounting functions
@@ -76,12 +76,12 @@ Note: `CONTRACTION` and `EXPANSION` are Odoo-specific functions for subscription
 - `YEAR(date)` — extract year from date cell
 - `LEFT(text, n)`, `RIGHT(text, n)` — string truncation for labels
 - `CONCATENATE(a, b, ...)` — label construction
-- `CHOOSECOLS(array, col1, col2, ...)` — select columns from a PIVOT-expanded range
+- `CHOOSECOLS(array, col1, col2, ...)` — select columns from PIVOT-expanded range
 - `ROUND(value, n)` — rounding before display
 
 ## Best practices
 
 1. Always wrap `PIVOT.VALUE` and `ODOO.LIST` in `IFERROR(..., 0)` or `IFERROR(..., "")`.
 2. Use `=_t("...")` for any user-visible string that may need translation.
-3. Use `FORMAT.LARGE.NUMBER` in the `Data` sheet; reference the cell from scorecard `keyValue`.
-4. Never hard-code a number in a scorecard `keyValue` — always use a formula.
+3. Use `FORMAT.LARGE.NUMBER` in `Data` sheet; reference cell from scorecard `keyValue`.
+4. Never hard-code number in scorecard `keyValue` — always use formula.

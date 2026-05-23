@@ -1,4 +1,4 @@
-# Typical Analysis Scenarios Guide
+# Typical Analysis Scenarios
 
 ## Default Mode: Definition Review
 
@@ -19,14 +19,11 @@
 
 **Input:** Skill folder path
 
-**Applicable:**
-- About to publish a new Skill
-- Want to verify it meets standards
-- Quick quality check
+**Applicable:** About to publish new Skill, want to verify standards, quick quality check.
 
 **Workflow:**
 ```
-Step 1: Read Skill folder structure
+Step 1: Read folder structure
         ls -la ${SKILL_PATH}/
         
 Step 2: Check Structure (S1-S4)
@@ -48,7 +45,7 @@ Step 5: Check Trigger (T1-T3)
         - Trigger phrases clear?
         - Scope appropriate?
         
-Step 6: Output report with Summary + Details + Comments
+Step 6: Output report
 ```
 
 > See `references/definition-checklist.md` for complete checklist
@@ -60,10 +57,7 @@ Step 6: Output report with Summary + Details + Comments
 
 **Input:** Skill folder path + Change context
 
-**Applicable:**
-- Just modified a Skill
-- Want to ensure changes don't break things
-- Regression check
+**Applicable:** Just modified a Skill, want to ensure changes don't break things, regression check.
 
 **Workflow:**
 ```
@@ -79,17 +73,14 @@ Step 4: Output report highlighting potential issues
 
 **Input:** Skill folder path + "want to improve"
 
-**Applicable:**
-- Skill works but want to make it better
-- Looking for optimization opportunities
-- Learning best practices
+**Applicable:** Skill works but want to make it better, looking for optimization, learning best practices.
 
 **Workflow:**
 ```
 Step 1: Run full checklist
 Step 2: Focus on  warnings (not just  failures)
 Step 3: Provide detailed improvement suggestions
-Step 4: Reference best practices from guide
+Step 4: Reference best practices
 ```
 
 ---
@@ -100,10 +91,7 @@ Step 4: Reference best practices from guide
 
 **Input:** Execution trace + Execution goal
 
-**Applicable:**
-- Don't know what Skill was used
-- Just want to quickly check for obvious errors
-- Initial problem direction identification
+**Applicable:** Don't know what Skill used, want quick error check, initial problem identification.
 
 **Analysis Capability:**
 ```
@@ -113,7 +101,7 @@ Step 4: Reference best practices from guide
   - Loop detection
 
 △ L2 Goal achievement (limited)
-  - Can only compare goal with final output
+  - Compare goal with final output only
   - Cannot check step coverage
 
  L3 Optimization suggestions
@@ -129,7 +117,6 @@ Step 4: Reference best practices from guide
    Count consecutive identical tool calls
 
 3. Compare goal with output
-   Goal requirements vs actual output
 
 4. Output L1 results + preliminary L2 judgment
 ```
@@ -140,10 +127,7 @@ Step 4: Reference best practices from guide
 
 **Input:** Execution trace + Execution goal + Skill implementation
 
-**Applicable:**
-- Used specific Skill but effect not good
-- Want to optimize Skill implementation
-- Verify Skill design is correctly executed
+**Applicable:** Used Skill but effect not good, want to optimize Skill, verify Skill design executed correctly.
 
 **Analysis Capability:**
 ```
@@ -169,15 +153,13 @@ Step 2: Extract design elements
         - Expected output format
         - Key scripts
 
-Step 3: L1 check
-        Scan errors, detect loops
+Step 3: L1 check — Scan errors, detect loops
 
 Step 4: L2 comparison
         Design steps vs actual execution
         Mark:  executed /  skipped / △ partial
 
-Step 5: L3 suggestions
-        Propose improvements for deviation points
+Step 5: L3 suggestions — Propose improvements for deviation points
 ```
 
 **L3 Suggestion Categories:**
@@ -203,18 +185,15 @@ For references/:
 
 **Input:** Execution trace + Execution goal + Tool implementation
 
-**Applicable:**
-- A Tool call effect not good
-- Want to optimize Tool parameter design
-- Tool return value doesn't meet expectation
+**Applicable:** Tool call effect not good, want to optimize parameter design, return value doesn't meet expectation.
 
 **Analysis Capability:**
 ```
  L1 Engineering correctness check
  L2 Goal achievement
-  - Are parameters used correctly
-  - Are return values handled correctly
-  - Does it meet Tool design intent
+  - Parameters used correctly
+  - Return values handled correctly
+  - Meets tool design intent
  L3 Optimization suggestions
   - Parameter definition optimization
   - Return format improvement
@@ -232,19 +211,11 @@ Step 2: Extract Tool design
         - Processing logic
         - Return format
 
-Step 3: L1 check
-        - Is call successful
-        - Are parameters valid
+Step 3: L1 check — Is call successful, parameters valid
 
-Step 4: L2 comparison
-        - Does parameter use match design
-        - Are return values correctly understood
-        - Does it achieve expected effect
+Step 4: L2 comparison — Parameter use vs design, return value understanding, expected effect
 
-Step 5: L3 suggestions
-        - Parameter design improvement
-        - Description optimization
-        - Error handling enhancement
+Step 5: L3 suggestions — Parameter design, description, error handling
 ```
 
 **L3 Suggestion Categories:**
@@ -266,22 +237,13 @@ For Tool implementation:
 
 **Input:** Execution trace + Execution goal + Skill + Agent implementation
 
-**Applicable:**
-- Analyzing your own developed Agent
-- Agent behavior doesn't match expectation
-- Want to optimize Agent decision logic
+**Applicable:** Analyzing own Agent, behavior doesn't match expectation, want to optimize decision logic.
 
 **Analysis Capability:**
 ```
  L1 Engineering correctness check
- L2 Goal achievement
-  - Skill step coverage
-  - Is Agent decision reasonable
- L3 Deep optimization suggestions
-  - Skill improvement
-  - Tool improvement
-  - System prompt improvement
-  - Agent logic improvement
+ L2 Goal achievement — Skill step coverage, Agent decision reasonableness
+ L3 Deep optimization suggestions — Skill, Tool, System prompt, Agent logic
 ```
 
 **Workflow:**
@@ -297,16 +259,14 @@ Step 1: Read all implementations
 Step 2: Establish relationships
         Skill instruction → Agent understanding → Tool call
 
-Step 3: L1 check
-        Full-chain error check
+Step 3: L1 check — Full-chain error check
 
 Step 4: L2 comparison
         - Skill design vs Agent execution
         - Agent decision vs Tool call
         - Tool result vs final output
 
-Step 5: L3 deep suggestions
-        Locate which layer has the problem
+Step 5: L3 deep suggestions — Locate which layer has problem
 ```
 
 **Problem Location Layers:**

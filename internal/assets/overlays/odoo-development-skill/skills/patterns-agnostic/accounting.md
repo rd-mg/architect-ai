@@ -1,6 +1,6 @@
 # Accounting Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `invoice-bill-patterns.md` (architect-ai)
 - `payment-reconciliation-patterns.md` (architect-ai)
 - `journal-entry-patterns.md` (architect-ai)
@@ -13,7 +13,7 @@ Consolidated from the following source files:
 
 ## Invoices & Moves
 
-### Creating an Invoice
+### Creating Invoice
 ```python
 class AccountMove(models.Model):
     _inherit = 'account.move'

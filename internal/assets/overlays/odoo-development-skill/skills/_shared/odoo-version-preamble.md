@@ -1,6 +1,6 @@
 # Odoo Version Context (Shared Preamble)
 
-The Odoo version for this session was detected during sdd-init and cached in Engram.
+Odoo version for this session was detected during sdd-init and cached in Engram.
 
 To retrieve it:
 mem_search(query: "sdd-init/{project}/odoo-versions")

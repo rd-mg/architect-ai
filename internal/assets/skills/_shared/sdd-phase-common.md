@@ -1,24 +1,24 @@
 # SDD Phase — Common Protocol
 
-Boilerplate identical across all SDD phase skills. Sub-agents MUST load this alongside their phase-specific SKILL.md.
+Boilerplate identical across all SDD phase skills. Sub-agents MUST load this alongside phase-specific SKILL.md.
 
-Executor boundary: every SDD phase agent is an EXECUTOR, not an orchestrator. Do the phase work yourself. Do NOT launch sub-agents, do NOT call `delegate`/`task`, and do NOT bounce work back unless the phase skill explicitly says to stop and report a blocker.
+Executor boundary: SDD phase agents are EXECUTORS, not orchestrators. Do phase work yourself. Do NOT launch sub-agents, do NOT call `delegate`/`task`, do NOT bounce work back unless phase skill explicitly says stop and report blocker.
 
 ## A. Skill Loading
 
-1. Check if the orchestrator injected a `## Project Standards (auto-resolved)` block in your launch prompt. If yes, follow those rules — they are pre-digested compact rules from the skill registry. **Do NOT read any SKILL.md files.**
-2. If no Project Standards block was provided, check for `SKILL: Load` instructions. If present, load those exact skill files.
-3. If neither was provided, search for the skill registry as a fallback:
+1. Check if orchestrator injected `## Project Standards (auto-resolved)` block in launch prompt. If yes, follow those rules — pre-digested compact rules from skill registry. **Do NOT read any SKILL.md files.**
+2. If no Project Standards block, check for `SKILL: Load` instructions. If present, load those exact skill files.
+3. If neither: fallback search for skill registry:
    a. `mem_search(query: "skill-registry", project: "{project}")` — if found, `mem_get_observation(id)` for full content
-   b. Fallback: read `.atl/skill-registry.md` from the project root if it exists
-   c. From the registry's **Compact Rules** section, apply rules whose triggers match your current task.
-4. If no registry exists, proceed with your phase skill only.
+   b. Fallback: read `.atl/skill-registry.md` from project root if exists
+   c. From registry **Compact Rules** section, apply rules whose triggers match current task.
+4. No registry: proceed with phase skill only.
 
-NOTE: the preferred path is (1) — compact rules pre-injected by the orchestrator. Paths (2) and (3) are fallbacks for backwards compatibility. Searching the registry is SKILL LOADING, not delegation. If `## Project Standards` is present, IGNORE any `SKILL: Load` instructions — they are redundant.
+Preferred path is (1) — compact rules pre-injected by orchestrator. Paths (2) and (3) are fallbacks. Searching registry is SKILL LOADING, not delegation. If `## Project Standards` present, IGNORE any `SKILL: Load` instructions — redundant.
 
-## A2. Cognitive Posture Reception (NEW in v2)
+## A2. Cognitive Posture Reception
 
-Check if the orchestrator injected a `+++{Posture}` block at the top of your prompt. Valid postures:
+Check if orchestrator injected `+++{Posture}` block at top of prompt. Valid postures:
 
 - `+++Socratic` — formulate 3 clarifying questions before acting
 - `+++Critical` — evaluate claims against evidence
@@ -27,27 +27,27 @@ Check if the orchestrator injected a `+++{Posture}` block at the top of your pro
 - `+++Pragmatic` — minimum viable solution, no gold-plating
 - `+++Forensic` — trace evidence chains, mark validation state per fact
 
-If a posture is present:
-1. Read and internalize the posture before reading task instructions
-2. Apply the posture's behavior throughout your work
-3. Reflect the posture in your return envelope (Socratic returns questions; Adversarial returns findings; etc.)
+If posture present:
+1. Internalize posture before reading task instructions
+2. Apply posture's behavior throughout work
+3. Reflect posture in return envelope (Socratic returns questions; Adversarial returns findings; etc.)
 
-If multiple postures are present (e.g., Critical + Systemic for sdd-design), apply BOTH simultaneously — do not choose one.
+Multiple postures present (e.g., Critical + Systemic for sdd-design): apply BOTH simultaneously — do not choose one.
 
-If no posture is present, proceed with default analytical behavior.
+No posture: proceed with default analytical behavior.
 
-## A4. Sequential Thinking Harmonization (NEW in v3)
+## A4. Sequential Thinking Harmonization
 
-You MUST use the `sequential_thinking` tool (if available) to execute your assigned Cognition Mode and formulate your Adaptive Reasoning evaluation.
+Use `sequential_thinking` tool (if available) to execute Cognition Mode and formulate Adaptive Reasoning evaluation.
 
-1. **Hierarchy**: `sequential_thinking` is the mechanical engine.
-   - **Cognition Modes (The Lens)**: Postures like `+++Divergent` dictate *how* you think. Use `branchId` in sequential thoughts to explore alternative hypotheses when in divergent postures.
-   - **Adaptive Reasoning (The Structure)**: Dictates the final output depth and formatting. Use thoughts to silently evaluate D1-D4 and formulate your response strategy.
-2. **Supplement, Not Replace**: Sequential thinking steps are for your internal logic. You MUST still produce the final, synthesized response (e.g., `[MODE N | ...]` and the return envelope) as required by this protocol.
+1. **Hierarchy**: `sequential_thinking` is mechanical engine.
+   - **Cognition Modes (The Lens)**: Postures like `+++Divergent` dictate *how* you think. Use `branchId` in sequential thoughts to explore alternative hypotheses in divergent postures.
+   - **Adaptive Reasoning (The Structure)**: Dictates final output depth and formatting. Use thoughts to silently evaluate D1-D4 and formulate response strategy.
+2. **Supplement, Not Replace**: Sequential thinking steps are internal logic. MUST still produce final synthesized response (e.g., `[MODE N | ...]` and return envelope) as required.
 
-## A3. Tool Availability Check (NEW in v2)
+## A3. Tool Availability Check
 
-Check for an `## Available Tools` block in your launch prompt. If present, it lists the tools the orchestrator has verified are operational:
+Check for `## Available Tools` block in launch prompt. Lists tools orchestrator verified operational:
 
 ```
 ## Available Tools
@@ -55,13 +55,13 @@ Check for an `## Available Tools` block in your launch prompt. If present, it li
 - context7_resolve, context7_get_docs: Context7 documentation
 ```
 
-Use ONLY the listed tools. If you would normally call `mem_save` but Engram is NOT listed, fall back to the behavior for the `none` persistence mode (return results inline, do not attempt `mem_save`).
+Use ONLY listed tools. If normally would call `mem_save` but Engram NOT listed, fall back to `none` persistence mode (return results inline, do not attempt `mem_save`).
 
-If no `## Available Tools` block exists, assume standard availability and proceed normally.
+No `## Available Tools` block: assume standard availability.
 
 ## B. Artifact Retrieval (Engram Mode)
 
-**CRITICAL**: `mem_search` returns 300-char PREVIEWS, not full content. You MUST call `mem_get_observation(id)` for EVERY artifact. **Skipping this produces wrong output.**
+**CRITICAL**: `mem_search` returns 300-char PREVIEWS, not full content. MUST call `mem_get_observation(id)` for EVERY artifact. **Skipping produces wrong output.**
 
 **Run all searches in parallel** — do NOT search sequentially.
 
@@ -79,7 +79,7 @@ Do NOT use search previews as source material.
 
 ## C. Artifact Persistence
 
-Every phase that produces an artifact MUST persist it. Skipping this BREAKS the pipeline — downstream phases will not find your output.
+Every phase producing artifact MUST persist it. Skipping BREAKS pipeline — downstream phases won't find output.
 
 ### Engram mode
 
@@ -97,47 +97,44 @@ mem_save(
 
 ### OpenSpec mode
 
-File was already written during the phase's main step. No additional action needed.
+File already written during phase's main step. No additional action needed.
 
 **REQUIRED: state.yaml maintenance**:
-If mode is `openspec` or `hybrid`, you MUST update `openspec/changes/{change-name}/state.yaml` to reflect the new phase status and artifact.
+If mode `openspec` or `hybrid`, MUST update `openspec/changes/{change-name}/state.yaml` to reflect new phase status and artifact.
 
 #### Atomic Write Pattern (state.yaml)
 1. Write to `state.yaml.tmp`
 2. Rename to `state.yaml`
 
 #### Validation
-After every write to `state.yaml`, call `architect-ai sdd-status {change-name}`. If it fails, fix the file immediately.
+After every write to `state.yaml`, call `architect-ai sdd-status {change-name}`. If fails, fix file immediately.
 
-**Reminder for human**: If using `openspec` mode, add a `git add openspec/` reminder in the return envelope so the user knows to commit artifacts.
+**Reminder for human**: If using `openspec` mode, add `git add openspec/` reminder in return envelope so user knows to commit artifacts.
 
 ### Hybrid mode
 
-Do BOTH: write the file to the filesystem AND call `mem_save` as above.
-Follow the **state.yaml maintenance** rules from the OpenSpec section above.
+Do BOTH: write file to filesystem AND call `mem_save` as above. Follow **state.yaml maintenance** rules from OpenSpec section above.
 
 ### None mode
 
-Return result inline only. Do not write any files or call `mem_save`.
+Return result inline only. Do not write files or call `mem_save`.
 
 ## D. Return Envelope
 
-Every phase MUST return a structured envelope to the orchestrator.
+Every phase MUST return structured envelope to orchestrator.
 
 ### D1. Human-Readable Summary
-
-Provide a concise summary of the work done:
 
 - `status`: `success`, `partial`, or `blocked`
 - `executive_summary`: 1-3 sentence summary (LITE caveman style, user-facing)
 - `artifacts`: list of artifact keys/paths written
 - `risks`: risks discovered, or "None"
-- `next_recommended`: the next SDD phase to run, or "none"
-- `cognitive_posture`: the posture applied, e.g., `+++Socratic` or `none` (NEW in v2)
+- `next_recommended`: next SDD phase to run, or "none"
+- `cognitive_posture`: posture applied, e.g., `+++Socratic` or `none`
 
 ### D2. Unified Handshake Schema (JSON-in-Markdown)
 
-**MANDATORY**: You MUST include the following JSON block at the very end of your response. This is used by the **Observer Agent ("Gentleman Angel")** for automated monitoring and state-sync.
+**MANDATORY**: MUST include this JSON block at very end of response. Used by **Observer Agent ("Gentleman Angel")** for automated monitoring and state-sync.
 
 ```json
 {
@@ -157,11 +154,11 @@ Provide a concise summary of the work done:
 - `detailed_report`: (optional) full phase output
 - `findings_triage`: (mandatory for sdd-verify) summary object `{ blocking: N, warning: M, suggestion: K }`
 - `pre_mortem`: (mandatory for sdd-propose) summary of top risks and viability score
-- `skill_resolution`: how skills were loaded — `injected`, `fallback-registry`, `fallback-path`, or `none`
+- `skill_resolution`: how skills loaded — `injected`, `fallback-registry`, `fallback-path`, or `none`
 
-### Size Budget (NEW in v2)
-...
-The `executive_summary` MUST be under 100 words. The full artifact MUST respect the phase-specific word limit:
+### Size Budget
+
+`executive_summary` MUST be under 100 words. Full artifact MUST respect phase-specific word limit:
 
 | Phase | Word Budget |
 |-------|-------------|
@@ -174,13 +171,13 @@ The `executive_summary` MUST be under 100 words. The full artifact MUST respect 
 | sdd-verify | 700 |
 | sdd-archive | 200 |
 
-If your artifact exceeds the budget, compress via:
+If artifact exceeds budget, compress via:
 1. Remove redundant framing
 2. Collapse lists into tables
 3. Use fragments instead of full sentences in checklists
 4. Move supporting detail to Engram and reference via topic_key
 
-NEVER exceed budget by more than 20%. If you cannot fit the content, split the work into multiple smaller artifacts or escalate as `partial` status.
+NEVER exceed budget by more than 20%. If cannot fit content, split into multiple smaller artifacts or escalate as `partial` status.
 
 ### Example envelope
 
@@ -211,27 +208,25 @@ NEVER exceed budget by more than 20%. If you cannot fit the content, split the w
 
 ## E. Permission Tiers
 
-Every tool call MUST align with the permission tiers set by the orchestrator or user.
+Every tool call MUST align with permission tiers set by orchestrator or user.
 
 - **ALWAYS**: Safe, read-only, or idempotent actions (e.g., `mem_search`, `rg`, `ls`).
 - **ASK FIRST**: Mutative, external, or resource-heavy actions (e.g., `mem_save` first time, `run_command` with side effects, `git push`).
 - **NEVER**: Destructive actions without multi-factor/manual override (e.g., `rm -rf /`, `git push --force` to main).
 
-If you are unsure of a tool's tier, DEFAULT to **ASK FIRST**.
+Unsure of tool tier → DEFAULT to **ASK FIRST**.
 
-## F. Anti-Overengineering Constraints 
+## F. Anti-Overengineering Constraints
 
-Follow these constraints to ensure simple, maintainable solutions:
+- **F1: Abstraction Gate**: Do NOT create interface/wrapper unless at least 2 distinct implementations planned.
+- **F2: Scale Check**: Design for project's CURRENT scale, not theoretical future scale.
+- **F3: Dependency Minimization**: Prefer built-in language features over new external libraries.
+- **F4: Cognitive Load**: Single function/component should fit on one screen, do one thing.
+- **F5: YAGNI**: Do NOT implement features or edge-case handling until explicitly required by spec.
 
-- **F1: Abstraction Gate**: Do NOT create an interface/wrapper unless there are at least 2 distinct implementations planned.
-- **F2: Scale Check**: Design for the project's CURRENT scale, not its theoretical future scale.
-- **F3: Dependency Minimization**: Prefer built-in language features over adding new external libraries.
-- **F4: Cognitive Load**: A single function/component should ideally fit on one screen and do one thing.
-- **F5: YAGNI (You Ain't Gonna Need It)**: Do NOT implement features or edge-case handling until they are explicitly required by a spec.
+## G. Caveman Output Mode
 
-## G. Caveman Output Mode 
-
-When producing artifacts, apply caveman compression per the persona file:
+Apply caveman compression per persona file:
 
 - **Artifacts stored to Engram / OpenSpec**: ULTRA mode. Telegraphic. Fragments OK. Drop articles and filler.
 - **`executive_summary` field in return envelope**: LITE mode. No filler, grammar intact, professional.
@@ -251,11 +246,11 @@ Main risk is cache invalidation on theme switch; rollback via feature flag.
 
 ## H. Fallback and Recovery Behavior (MANDATORY)
 
-You are an autonomous agent expected to reach the goal. If you encounter roadblocks:
+Autonomous agent expected to reach goal. On roadblocks:
 
-1. **Unresolved Placeholders**: If the orchestrator passes raw variables like `{change-name}` or `{project}`, DO NOT fail. Determine them dynamically:
-   - For `{change-name}`: Use `glob` on `openspec/changes/*` or `mem_search(query: "sdd")` to find the active change.
-   - For `{project}`: Use the current directory name or git root.
-2. **Tool/Step Failures**: If a specific tool fails (e.g., `mem_search` returns nothing), do not get stuck. Use an alternative tool (e.g., `glob`, `read`, or `grep` the filesystem) or gracefully omit the step if it is non-blocking.
-3. **Missing Artifacts**: If a required artifact is missing, try to reconstruct it from recent context or git history. If it is impossible to reconstruct, record it as a deviation/risk and proceed with the remaining tasks.
-4. **Resilience**: Never give up on the first error. Attempt a fix, try a workaround, or skip the failing non-critical step to complete the core objective.
+1. **Unresolved Placeholders**: If orchestrator passes raw `{change-name}` or `{project}`, determine dynamically:
+   - `{change-name}`: Use `glob` on `openspec/changes/*` or `mem_search(query: "sdd")` to find active change.
+   - `{project}`: Use current directory name or git root.
+2. **Tool/Step Failures**: If tool fails (e.g., `mem_search` returns nothing), use alternative tool (`glob`, `read`, or `grep` filesystem) or gracefully omit non-blocking step.
+3. **Missing Artifacts**: If required artifact missing, try to reconstruct from recent context or git history. If impossible, record as deviation/risk and proceed with remaining tasks.
+4. **Resilience**: Never give up on first error. Attempt fix, try workaround, or skip failing non-critical step to complete core objective.

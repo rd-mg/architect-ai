@@ -529,7 +529,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
     <field name="context">{'search_default_active': 1}</field>
     <field name="view_id" ref="view_my_model_tree"/>
     <field name="limit">80</field>
-    <field name="target">current</field>  <!-- or "new" for popup -->
+    <field name="target">current</field> <!-- or "new" for popup -->
     <field name="help" type="html">
         <p class="o_view_nocontent_smiling_face">
             Create your first record!
@@ -563,7 +563,7 @@ Complete reference for Odoo 18 XML views, actions, menus, and QWeb templates.
 ```xml
 <record id="action_my_client" model="ir.actions.client">
     <field name="name">My Client Action</field>
-    <field name="tag">reload</field>  <!-- reload, opening, etc. -->
+    <field name="tag">reload</field> <!-- reload, opening, etc. -->
     <field name="params">{'param': 'value'}</field>
 </record>
 ```

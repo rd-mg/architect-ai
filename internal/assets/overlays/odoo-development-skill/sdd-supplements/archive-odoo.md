@@ -6,7 +6,7 @@ These checks MUST pass before closing the change:
 
 ### Module Health
 - [ ] `__manifest__.py` version reflects all changes in this change
-- [ ] All modules touched have a CHANGELOG.md or README version entry
+- [ ] All modules touched have CHANGELOG.md or README version entry
 - [ ] `ir.model.access.csv` has entries for ALL models (new and inherited)
 
 ### OCA Compliance (if applicable)
@@ -17,7 +17,7 @@ These checks MUST pass before closing the change:
 
 ### Uninstall Safety
 - [ ] Module uninstall does not orphan records in related models
-- [ ] Any `post_init_hook` has a corresponding `uninstall_hook` if data was created
+- [ ] Any `post_init_hook` has corresponding `uninstall_hook` if data was created
 
 ### Data Integrity
 - [ ] All `ir.rule` domains use valid field paths
@@ -25,7 +25,7 @@ These checks MUST pass before closing the change:
 
 ## Archive Artifact Addition
 
-Add to the standard archive report:
+Add to standard archive report:
 ```markdown
 ## Odoo Compliance
 - Versions tested: {list}

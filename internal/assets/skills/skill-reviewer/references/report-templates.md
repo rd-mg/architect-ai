@@ -12,7 +12,7 @@
 
 ## Brief Report
 
-Suitable for quick troubleshooting, fits on one screen.
+For quick troubleshooting, fits on one screen.
 
 ```markdown
 ## Execution Quick Review
@@ -40,7 +40,7 @@ Suitable for quick troubleshooting, fits on one screen.
 
 ## Complete Report
 
-Suitable for formal analysis, complete structure.
+For formal analysis, complete structure.
 
 ```markdown
 ## Execution Review Report
@@ -105,7 +105,7 @@ Suitable for formal analysis, complete structure.
 **L2 Rating**:  Good
 
 **Rating Reason**: 
-{1-2 sentences explaining why this rating}
+{1-2 sentences}
 
 ---
 
@@ -134,7 +134,7 @@ Suitable for formal analysis, complete structure.
 | Check Item | Status | Notes |
 |-----------|--------|-------|
 | Redundant content | / | {Details or "None found"} |
-| Over-explanation (templates vs text) | / | {Details or "Appropriate balance"} |
+| Over-explanation | / | {Details or "Appropriate balance"} |
 | Clarity preserved | / | {Details or "Clear and concise"} |
 
 **Conciseness Verdict**: { Pass /  Warning with suggestions}
@@ -168,18 +168,13 @@ Suitable for formal analysis, complete structure.
 
 When user adopts L3 suggestions, generate execution plan.
 
-> See `references/execution-guide.md` for complete execution plan generation guide, including:
-> - Context Loading Map template
-> - Best Practices Checklist
-> - Execution Steps format
-> - Verification Checklist
-> - Complete examples
+> See `references/execution-guide.md` for complete execution plan generation guide.
 
 ---
 
 ## Agent Deep Analysis Supplement
 
-When Agent implementation is provided, add to complete report:
+When Agent implementation provided, add to complete report:
 
 ```markdown
 ---

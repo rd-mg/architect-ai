@@ -152,10 +152,10 @@ func TestInjectWritesConfigAndAgents(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read agents file: %v", err)
 	}
-	if !strings.Contains(string(agentsContent), "# Code Review Rules") {
+	if !strings.Contains(string(agentsContent), "# GGA — Gentleman Guardian Angel v2.0") {
 		t.Error("AGENTS.md template missing expected header")
 	}
-	if !strings.Contains(string(agentsContent), "STATUS: PASSED") {
+	if !strings.Contains(string(agentsContent), `"verdict": "APPROVE|WARN|BLOCK"`) {
 		t.Error("AGENTS.md template missing response format section")
 	}
 }

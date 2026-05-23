@@ -1,0 +1,284 @@
+✓ Installed claude-code plugin (1 files)
+  → /home/rdmachadog/.claude/mcp
+
+Add engram tools to ~/.claude/settings.json allowlist?
+This prevents Claude Code from asking permission on every tool call.
+Add to allowlist? (y/N):   Skipped. You can add them later to permissions.allow in ~/.claude/settings.json
+
+Next steps:
+  1. Restart Claude Code — the plugin is active immediately
+  2. Verify with: claude plugin list
+  3. MCP config written to ~/.claude/mcp/engram.json using absolute binary path
+     (survives plugin auto-updates; re-run 'engram setup claude-code' if you move the binary)
+✓ Installed opencode plugin (2 files)
+  → /home/rdmachadog/.config/opencode/plugins
+
+Next steps:
+  1. Restart OpenCode — plugin + MCP server are ready
+  2. Run 'engram serve &' for session tracking (HTTP API)
+✓ Installed gemini-cli plugin (2 files)
+  → /home/rdmachadog/.gemini
+
+Next steps:
+  1. Restart Gemini CLI so MCP config is reloaded
+  2. Verify ~/.gemini/settings.json includes mcpServers.engram
+  3. Verify ~/.gemini/system.md + ~/.gemini/.env exist for compaction recovery
+engram: unknown agent: "antigravity" (supported: opencode, claude-code, gemini-cli, codex)
+Error: post-apply verification failed:
+Verification: 234 passed, 9 failed, 0 warnings, 0 skipped
+
+[ok] verify:file:/home/rdmachadog/.claude/mcp/context7.json — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/opencode.json — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/settings.json — required file exists
+[ok] verify:file:/home/rdmachadog/.config/Code/User/mcp.json — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/mcp_config.json — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/CLAUDE.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/output-styles/architect.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/settings.json — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/AGENTS.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/GEMINI.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/Code/User/prompts/architect-ai.instructions.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/GEMINI.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/mcp/engram.json — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/CLAUDE.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/opencode.json — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/settings.json — required file exists
+[ok] verify:file:/home/rdmachadog/.config/Code/User/mcp.json — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/mcp_config.json — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/GEMINI.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/config — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/AGENTS.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/config — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/AGENTS.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/config — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/AGENTS.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/config — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/AGENTS.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/config — required file exists
+[ok] verify:file:/home/rdmachadog/.config/gga/AGENTS.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/settings.json — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/opencode.json — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/settings.json — required file exists
+[ok] verify:file:/home/rdmachadog/.config/Code/User/settings.json — required file exists
+[!!] verify:file:/home/rdmachadog/.gemini/antigravity/settings.json — required file exists
+      error: stat /home/rdmachadog/.gemini/antigravity/settings.json: no such file or directory
+[ok] verify:file:/home/rdmachadog/.claude/CLAUDE.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-init.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-new.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-continue.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-ff.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-apply.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-verify.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-archive.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/plugins/gentleman/commands/sdd-onboard.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/_shared/persistence-contract.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/_shared/engram-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/_shared/openspec-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/_shared/sdd-phase-common.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/_shared/skill-resolver.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/AGENTS.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-init.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-new.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-continue.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-ff.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-apply.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-verify.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-archive.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/commands/sdd-onboard.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/opencode.json — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/plugins/background-agents.ts — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/_shared/persistence-contract.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/_shared/engram-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/_shared/openspec-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/_shared/sdd-phase-common.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/_shared/skill-resolver.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/GEMINI.md — required file exists
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-init.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-init.md: no such file or directory
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-new.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-new.md: no such file or directory
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-continue.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-continue.md: no such file or directory
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-ff.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-ff.md: no such file or directory
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-apply.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-apply.md: no such file or directory
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-verify.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-verify.md: no such file or directory
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-archive.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-archive.md: no such file or directory
+[!!] verify:file:/home/rdmachadog/.gemini/commands/sdd/sdd-onboard.md — required file exists
+      error: stat /home/rdmachadog/.gemini/commands/sdd/sdd-onboard.md: no such file or directory
+[ok] verify:file:/home/rdmachadog/.gemini/skills/_shared/persistence-contract.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/_shared/engram-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/_shared/openspec-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/_shared/sdd-phase-common.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/_shared/skill-resolver.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/Code/User/prompts/architect-ai.instructions.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/_shared/persistence-contract.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/_shared/engram-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/_shared/openspec-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/_shared/sdd-phase-common.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/_shared/skill-resolver.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/GEMINI.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/_shared/persistence-contract.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/_shared/engram-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/_shared/openspec-convention.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/_shared/sdd-phase-common.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/_shared/skill-resolver.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/sdd-onboard/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/judgment-day/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/solver/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/ideator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/researcher/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/generalist/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/architecture-guardrails/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/go-testing/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/skill-creator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/branch-pr/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/issue-creation/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.claude/skills/skill-registry/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/sdd-onboard/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/judgment-day/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/solver/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/ideator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/researcher/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/generalist/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/architecture-guardrails/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/go-testing/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/skill-creator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/branch-pr/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/issue-creation/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.config/opencode/skills/skill-registry/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/sdd-onboard/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/judgment-day/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/solver/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/ideator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/researcher/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/generalist/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/architecture-guardrails/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/go-testing/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/skill-creator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/branch-pr/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/issue-creation/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/skills/skill-registry/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/sdd-onboard/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/judgment-day/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/solver/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/ideator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/researcher/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/generalist/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/architecture-guardrails/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/go-testing/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/skill-creator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/branch-pr/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/issue-creation/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.copilot/skills/skill-registry/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-init/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-explore/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-propose/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-spec/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-design/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-tasks/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-apply/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-verify/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-archive/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/sdd-onboard/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/judgment-day/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/solver/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/ideator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/researcher/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/generalist/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/architecture-guardrails/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/go-testing/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/skill-creator/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/branch-pr/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/issue-creation/SKILL.md — required file exists
+[ok] verify:file:/home/rdmachadog/.gemini/antigravity/skills/skill-registry/SKILL.md — required file exists
+[ok] verify:engram:binary — engram binary on PATH (restart shell if missing)
+[ok] verify:engram:version — engram version returns valid output
+[ok] verify:antigravity:install — Antigravity IDE configuration directory exists
+
+[!!] BLOCKED — resolve failed checks before using architect-ai.
+

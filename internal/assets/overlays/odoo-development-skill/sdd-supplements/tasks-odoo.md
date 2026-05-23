@@ -18,15 +18,15 @@ One Odoo atomic task = one independently committable unit:
 
 Always sequence: Security → Model → Migration → Views → Controller → Tests → Manifest
 
-NEVER batch model + views in one task — they have different risk profiles.
+NEVER batch model + views in one task — different risk profiles.
 
 ## Manifest Task (ALWAYS last)
 
-Every task batch MUST end with a "Bump manifest version" task. It's never optional.
+Every task batch MUST end with "Bump manifest version" task. Never optional.
 
 ## Test Task Pairing
 
-STRICT TDD: Every model/controller task is paired with a test task immediately after.
+STRICT TDD: Every model/controller task paired with test task immediately after.
 
 ## Forbidden Task Patterns
 - "Implement approval module" — too coarse; violates atomicity

@@ -1,86 +1,68 @@
-# Odoo Module Migration Guide: 16.0 → 17.0
+# Odoo Module Migration: 16.0 → 17.0
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  MIGRATION GUIDE: Odoo 16.0 → 17.0                                           ║
-║  This document covers ONLY changes between these specific versions.          ║
+║  ONLY changes between these specific versions.                               ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ## Breaking Changes Summary
 
-| Component | v16 Status | v17 Status | Action Required |
-|-----------|------------|------------|-----------------|
-| `attrs` attribute | Deprecated | **REMOVED** | Must migrate |
-| `states` attribute | Deprecated | **REMOVED** | Must migrate |
+| Component | v16 | v17 | Action |
+|-----------|-----|-----|--------|
+| `attrs` | Deprecated | **REMOVED** | Must migrate |
+| `states` | Deprecated | **REMOVED** | Must migrate |
 | `@api.model_create_multi` | Recommended | **Mandatory** | Must add |
-| Direct `invisible`/`readonly` | Supported | Required | Use exclusively |
-| OWL | 2.x | 2.x (enhanced) | Minor updates |
+| Direct attributes | Supported | Required | Use exclusively |
+| OWL | 2.x | 2.x (enhanced) | Minor |
 
 ## CRITICAL: attrs Removal
 
-### Before (v16 - Deprecated)
+**v16 (deprecated):**
 ```xml
-<button name="action_confirm"
-        attrs="{'invisible': [('state', '!=', 'draft')]}"/>
-
-<field name="partner_id"
-       attrs="{'readonly': [('state', '!=', 'draft')],
-               'required': [('type', '=', 'invoice')]}"/>
+<button name="action_confirm" attrs="{'invisible': [('state','!=','draft')]}"/>
+<field name="partner_id" attrs="{'readonly': [('state','!=','draft')]}"/>
 ```
 
-### After (v17 - Required)
+**v17 (required):**
 ```xml
-<button name="action_confirm"
-        invisible="state != 'draft'"/>
-
-<field name="partner_id"
-       readonly="state != 'draft'"
-       required="type == 'invoice'"/>
+<button name="action_confirm" invisible="state != 'draft'"/>
+<field name="partner_id" readonly="state != 'draft'"/>
 ```
 
 ### Migration Pattern
 
-| v16 `attrs` Pattern | v17 Replacement |
-|---------------------|-----------------|
-| `[('field', '=', value)]` | `field == value` |
-| `[('field', '!=', value)]` | `field != value` |
-| `[('field', 'in', [a, b])]` | `field in [a, b]` or `field in (a, b)` |
-| `[('field', 'not in', [a, b])]` | `field not in [a, b]` |
-| `[('field', '=', True)]` | `field` |
-| `[('field', '=', False)]` | `not field` |
-| Multiple conditions (AND) | `cond1 and cond2` |
-| Multiple conditions (OR) | `cond1 or cond2` |
+| v16 attrs | v17 Replacement |
+|-----------|-----------------|
+| `[('f','=',v)]` | `f == v` |
+| `[('f','!=',v)]` | `f != v` |
+| `[('f','in',[a,b])]` | `f in [a, b]` |
+| `[('f','not in',[a,b])]` | `f not in [a, b]` |
+| `[('f','=',True)]` | `f` |
+| `[('f','=',False)]` | `not f` |
+| Multiple AND | `cond1 and cond2` |
+| Multiple OR | `cond1 or cond2` |
 
-### Complex Example
-
+**Complex:**
 ```xml
 <!-- v16 -->
-<field name="amount"
-       attrs="{'invisible': [('state', '=', 'draft'), ('amount', '=', 0)],
-               'readonly': ['|', ('state', '!=', 'draft'), ('locked', '=', True)]}"/>
+<field name="amount" attrs="{'invisible': [('state','=','draft'),('amount','=',0)],
+    'readonly': ['|',('state','!=','draft'),('locked','=',True)]}"/>
 
 <!-- v17 -->
-<field name="amount"
-       invisible="state == 'draft' and amount == 0"
-       readonly="state != 'draft' or locked"/>
+<field name="amount" invisible="state == 'draft' and amount == 0"
+    readonly="state != 'draft' or locked"/>
 ```
 
 ## CRITICAL: states Removal
 
-### Before (v16 - Deprecated)
-```xml
-<field name="partner_id" states="draft,sent"/>
-```
-
-### After (v17 - Required)
-```xml
-<field name="partner_id" invisible="state not in ('draft', 'sent')"/>
-```
+**v16:** `<field name="partner_id" states="draft,sent"/>`
+**v17:** `<field name="partner_id" invisible="state not in ('draft','sent')"/>`
 
 ## MANDATORY: @api.model_create_multi
 
-### Before (v16 - Optional)
+**v16 (optional):**
 ```python
 @api.model
 def create(self, vals):
@@ -89,7 +71,7 @@ def create(self, vals):
     return super().create(vals)
 ```
 
-### After (v17 - Required)
+**v17 (required):**
 ```python
 @api.model_create_multi
 def create(self, vals_list):
@@ -99,129 +81,70 @@ def create(self, vals_list):
     return super().create(vals_list)
 ```
 
-## Manifest Version Update
+## Manifest Version
 
-```python
-# v16
-'version': '16.0.1.0.0',
-
-# v17
-'version': '17.0.1.0.0',
-```
+`'version': '16.0.1.0.0'` → `'version': '17.0.1.0.0'`
 
 ## Python Changes
 
-### Minimum Python Version
-- v16: Python 3.8+
-- v17: Python 3.10+
-
-### Type Hints (Recommended)
+v16: 3.8+ → v17: 3.10+. Type hints encouraged:
 ```python
-# v17 encourages type hints
-def process_data(self, partner_id: int, options: dict = None) -> bool:
-    options = options or {}
-    return True
+def process_data(self, partner_id: int, options: dict = None) -> bool: ...
 ```
 
 ## OWL 2.x Updates
 
-### Minor Template Changes
-OWL remains at 2.x but with enhancements. No major breaking changes.
-
-### Component Registration
+Minor. No breaking changes. Registration unchanged:
 ```javascript
-// Unchanged in v17
 registry.category("actions").add("my_module.component", MyComponent);
 ```
 
-## Migration Checklist
+## Checklist
 
 ### Views (XML)
-- [ ] Replace all `attrs="{'invisible': ...}"` with `invisible="..."`
-- [ ] Replace all `attrs="{'readonly': ...}"` with `readonly="..."`
-- [ ] Replace all `attrs="{'required': ...}"` with `required="..."`
-- [ ] Replace all `states="..."` with `invisible="state not in (...)"`
-- [ ] Convert domain syntax to Python expression syntax
+- [ ] Replace ALL `attrs="{'invisible': ...}"` → `invisible="..."`
+- [ ] Replace ALL `attrs="{'readonly': ...}"` → `readonly="..."`
+- [ ] Replace ALL `attrs="{'required': ...}"` → `required="..."`
+- [ ] Replace ALL `states="..."` → `invisible="state not in (...)"`
+- [ ] Convert domain syntax to Python expressions
 
 ### Models (Python)
-- [ ] Add `@api.model_create_multi` to all `create()` methods
-- [ ] Update `create(vals)` to `create(vals_list)` signature
-- [ ] Update Python version compatibility to 3.10+
+- [ ] Add `@api.model_create_multi` to ALL `create()` methods
+- [ ] Update `create(vals)` → `create(vals_list)` signature
+- [ ] Update Python version compat to 3.10+
 - [ ] Add type hints where appropriate
 
 ### Manifest
-- [ ] Update version from `16.0.x.x.x` to `17.0.x.x.x`
-- [ ] Verify all dependencies are v17 compatible
+- [ ] Version `16.0.x.x.x` → `17.0.x.x.x`
+- [ ] Verify dependencies v17 compatible
 
 ### Testing
 - [ ] Run all tests with v17
 - [ ] Test all form views for visibility rules
 - [ ] Test all buttons for state-based visibility
-- [ ] Verify computed field readonly behavior
 
-## Common Migration Errors
+## Common Errors
 
-### Error: attrs not supported
-```
-Error: attrs="..." is no longer supported in Odoo 17
-```
-**Solution**: Convert to direct Python expression syntax.
-
-### Error: create() missing vals_list
-```
-TypeError: create() got an unexpected keyword argument 'vals'
-```
-**Solution**: Update method signature to use `vals_list`.
-
-### Error: Invalid expression syntax
-```
-Error: Invalid expression: field = value
-```
-**Solution**: Use `==` for comparison, not `=`.
+**`attrs="..." not supported`** → Convert to Python expressions
+**`create() got unexpected keyword argument 'vals'`** → Use `vals_list`
+**Invalid expression** → Use `==` not `=` for comparison
 
 ## Automated Migration Script
 
 ```python
-#!/usr/bin/env python3
-"""
-Basic migration helper for attrs to direct expressions.
-Run manually and verify results!
-"""
-import re
-import sys
-
 def convert_domain_to_expr(domain_str):
-    """Convert domain list to Python expression."""
-    # This is a simplified converter - verify results manually
-    domain_str = domain_str.strip()
-    if domain_str.startswith('[') and domain_str.endswith(']'):
-        domain_str = domain_str[1:-1]
-
-    # Handle simple cases
     patterns = [
         (r"\('(\w+)',\s*'=',\s*'([^']+)'\)", r"\1 == '\2'"),
-        (r"\('(\w+)',\s*'=',\s*(\d+)\)", r"\1 == \2"),
         (r"\('(\w+)',\s*'=',\s*True\)", r"\1"),
         (r"\('(\w+)',\s*'=',\s*False\)", r"not \1"),
         (r"\('(\w+)',\s*'!=',\s*'([^']+)'\)", r"\1 != '\2'"),
     ]
-
-    for pattern, replacement in patterns:
-        domain_str = re.sub(pattern, replacement, domain_str)
-
+    for p, r in patterns:
+        domain_str = re.sub(p, r, domain_str)
     return domain_str
-
-if __name__ == '__main__':
-    print("Manual verification required for all conversions!")
 ```
 
 ## GitHub Reference
 
-For official migration notes, consult:
 - https://github.com/odoo/odoo/tree/17.0
 - Odoo 17.0 release notes
-- Community upgrade scripts
-
----
-
-**IMPORTANT**: Always test thoroughly after migration. The automated patterns cover common cases but complex domains may require manual adjustment.

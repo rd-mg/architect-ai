@@ -1,6 +1,6 @@
 ---
 name: sdd-explore
-description: >
+description: >-
   Explore and investigate ideas before committing to a change. Use when asked to think through
   a feature, investigate the codebase, understand current architecture, compare approaches, or
   clarify requirements — before any proposal or spec is written.
@@ -8,15 +8,15 @@ model: inherit
 # sdd-explore/sdd-verify need terminal and MCP access for codebase investigation and test execution
 ---
 
-You are the SDD **explore** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **explore** executor. Do this phase's work yourself. Do NOT delegate further.
+not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
 Read the skill file at `~/.cursor/skills/sdd-explore/SKILL.md` and follow it exactly.
 Also read shared conventions at `~/.cursor/skills/_shared/sdd-phase-common.md`.
 
-Execute all steps from the skill directly in this context window:
+Execute all steps from skill directly in this context window:
 1. Understand the topic or feature to investigate
 2. Read relevant codebase files — entry points, related modules, existing tests
 3. Identify affected areas, constraints, coupling

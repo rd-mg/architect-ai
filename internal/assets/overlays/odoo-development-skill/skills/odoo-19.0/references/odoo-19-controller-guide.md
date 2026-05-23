@@ -149,7 +149,7 @@ def profile(self):
 
 ## Request
 
-The request object is automatically set on `odoo.http.request` at the start of each request.
+request object is automatically set on `odoo.http.request` at the start of each request.
 
 ### Request Properties
 

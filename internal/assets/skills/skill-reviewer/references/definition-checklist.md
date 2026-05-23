@@ -1,6 +1,6 @@
 # Definition Review Checklist
 
-20-item checklist for reviewing Skill definition quality, organized into 4 categories.
+20-item checklist for reviewing Skill definition quality, 4 categories.
 
 ## Status Symbols
 
@@ -71,7 +71,7 @@ your-skill/
 
 ---
 
-##  Format (F1-F5)
+##  Format (F1-F6)
 
 ### F1: YAML Frontmatter Delimiters
 
@@ -164,7 +164,7 @@ metadata:
 
 | Status | Condition |
 |--------|-----------|
-|  Pass | Exists and is a clear, short natural language phrase |
+|  Pass | Exists, clear, short natural language phrase |
 |  Fail | Missing or empty |
 
 **Detection:** Programmatic (YAML parse)
@@ -185,13 +185,13 @@ metadata:
 
 **Detection:** Model-based (semantic analysis)
 
-**Good Examples:**
+**Good:**
 ```yaml
 description: "Analyzes Figma design files and generates developer handoff documentation."
 description: "Review and validate Skill definitions against best practices."
 ```
 
-**Bad Examples:**
+**Bad:**
 ```yaml
 description: "Helps with projects."        # Too vague
 description: "Use when needed."            # No WHAT
@@ -209,13 +209,13 @@ description: "Use when needed."            # No WHAT
 
 **Detection:** Model-based (pattern matching + semantic analysis)
 
-**Good Examples:**
+**Good:**
 ```yaml
 description: "... Use when user asks to 'review skill', 'check skill quality', or 'validate skill'."
 description: "... Triggers on: 'design specs', 'component documentation', 'design-to-code handoff'."
 ```
 
-**Bad Examples:**
+**Bad:**
 ```yaml
 description: "Creates documentation."       # No WHEN
 description: "For projects."               # No trigger phrases
@@ -433,4 +433,4 @@ description: "... Do NOT use for runtime debugging (use agent-debug skill instea
 | T2 | Trigger scope | Model |
 | T3 | Negative triggers | Model |
 
-**Summary:** 10 programmatic checks (S1-S4, F1-F6) + 11 model-based checks (C1-C8, T1-T3)
+**Summary:** 11 programmatic checks (S1-S4, F1-F6, + S4) + 10 model-based checks (C1-C8, T1-T3)

@@ -11,50 +11,43 @@ metadata:
 
 ## Cognitive Posture
 
-This skill runs with **+++Pragmatic + +++Economic**. The task
-decomposition must ship the smallest working change (Pragmatic)
-while staying within the budget declared for this task (Economic).
+**+++Pragmatic + +++Economic**. Ship smallest working change (Pragmatic) within budget (Economic).
 
-If the user did not declare a budget, estimate one based on
-historical metering (see `mem_search(query: "metering/{project}")`).
-Otherwise default to: <= 10 tasks, <= 2000 tokens per task-description.
-Flag any task whose estimated cost exceeds its share of the budget.
+If no budget declared, estimate from historical metering: `mem_search(query: "metering/{project}")`. Default: ≤10 tasks, ≤2000 tokens per task-description. Flag tasks exceeding share of budget.
 
 ## Purpose
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
+Create `tasks.md` — concrete, actionable implementation steps from proposal, specs, and design. Organized by phase.
 
-You are a sub-agent responsible for creating the TASK BREAKDOWN. You take the proposal, specs, and design, then produce a `tasks.md` with concrete, actionable implementation steps organized by phase.
+## Input
 
-## What You Receive
-
-From the orchestrator:
-- Change name
+Orchestrator provides: change name.
 
 ## Persistence
 
-Follow `_shared/mode-branching.md` for artifact-store branching.
+Follow `_shared/mode-branching.md`.
 
 - **Artifact Name**: tasks.md
 - **Topic Key**: sdd/{change-name}/tasks
 - **Type**: architecture
 
-## What to Do
+## Steps
 
 ### Step 1: Load Skills
 Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
-### Step 2: Analyze the Design
+### Step 2: Analyze Design
 
-From the design document, identify:
-- All files that need to be created/modified/deleted
-- The dependency order (what must come first)
+Identify:
+- Files to create/modify/delete
+- Dependency order
 - Testing requirements per component
 
 ### Step 2b: Graphing Dependencies (MANDATORY)
 
-Visualize the implementation flow using a Mermaid diagram. This identifies vertical slices and integration points.
+Visualize implementation flow with Mermaid:
 
 ```mermaid
 graph TD
@@ -63,14 +56,14 @@ graph TD
   P3 --> P4[Phase 4: Testing]
 ```
 
-Rules for the graph:
-1. Use task IDs (e.g., 1.1, 2.1) or Phase names as nodes.
-2. Arrows `-->` must represent hard dependencies (X must be done before Y).
-3. Identify the "Critical Path".
+Rules:
+1. Use task IDs (1.1, 2.1) or Phase names as nodes
+2. `-->` arrows = hard dependencies (X before Y)
+3. Identify Critical Path
 
 ### Step 3: Write tasks.md
 
-If using file-based persistence, create the task file:
+File-based structure:
 
 ```
 openspec/changes/{change-name}/
@@ -88,29 +81,27 @@ openspec/changes/{change-name}/
 ## Dependency Graph
 
 ```mermaid
-{Graph content from Step 2b}
+{Graph from Step 2b}
 ```
 
-## Phase 1: {Phase Name} (e.g., Infrastructure / Foundation)
+## Phase 1: {Phase Name} (Foundation)
 
 - [ ] 1.1 {Concrete action — what file, what change}
 - [ ] 1.2 {Concrete action}
 - [ ] 1.3 {Concrete action}
 
-## Phase 2: {Phase Name} (e.g., Core Implementation)
+## Phase 2: {Phase Name} (Core)
 
 - [ ] 2.1 {Concrete action}
 - [ ] 2.2 {Concrete action}
 - [ ] 2.3 {Concrete action}
-- [ ] 2.4 {Concrete action}
 
-## Phase 3: {Phase Name} (e.g., Testing / Verification)
+## Phase 3: {Phase Name} (Testing)
 
 - [ ] 3.1 {Write tests for ...}
 - [ ] 3.2 {Write tests for ...}
-- [ ] 3.3 {Verify integration between ...}
 
-## Phase 4: {Phase Name} (e.g., Cleanup / Documentation)
+## Phase 4: {Phase Name} (Cleanup)
 
 - [ ] 4.1 {Update docs/comments}
 - [ ] 4.2 {Remove temporary code}
@@ -118,46 +109,40 @@ openspec/changes/{change-name}/
 
 ### Task Writing Rules
 
-Each task MUST be:
-
-| Criteria | Example  | Anti-example  |
-|----------|-----------|----------------|
+| Criteria | Example | Anti-example |
+|----------|---------|--------------|
 | **Specific** | "Create `internal/auth/middleware.go` with JWT validation" | "Add auth" |
 | **Actionable** | "Add `ValidateToken()` method to `AuthService`" | "Handle tokens" |
 | **Verifiable** | "Test: `POST /login` returns 401 without token" | "Make sure it works" |
-| **Small** | One file or one logical unit of work | "Implement the feature" |
+| **Small** | One file or one logical unit | "Implement the feature" |
 
-### Phase Organization Guidelines
+### Phase Organization
 
 ```
 Phase 1: Foundation / Infrastructure
-  └─ New types, interfaces, database changes, config
+  └─ New types, interfaces, DB changes, config
   └─ Things other tasks depend on
 
 Phase 2: Core Implementation
-  └─ Main logic, business rules, core behavior
+  └─ Main logic, business rules
   └─ The meat of the change
 
 Phase 3: Integration / Wiring
-  └─ Connect components, routes, UI wiring
-  └─ Make everything work together
+  └─ Connect components, routes, UI
 
 Phase 4: Testing
-  └─ Unit tests, integration tests, e2e tests
+  └─ Unit, integration, e2e tests
   └─ Verify against spec scenarios
 
-Phase 5: Cleanup (if needed)
-  └─ Documentation, remove dead code, polish
+Phase 5: Cleanup
+  └─ Documentation, dead code removal, polish
 ```
 
 ### Step 4: Persist Artifact
 
-**This step is MANDATORY — do NOT skip it.**
-Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
+**MANDATORY — do NOT skip.** Follow persistence rules in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 5: Return Summary
-
-Return to the orchestrator:
 
 ```markdown
 ## Tasks Created
@@ -174,7 +159,7 @@ Return to the orchestrator:
 | Total | {N} | |
 
 ### Implementation Order
-{Brief description of the recommended order and why}
+{Brief description of recommended order and why}
 
 ### Next Step
 Ready for implementation (sdd-apply).
@@ -182,14 +167,14 @@ Ready for implementation (sdd-apply).
 
 ## Rules
 
-- ALWAYS include a Mermaid `## Dependency Graph` section
+- ALWAYS include Mermaid `## Dependency Graph`
 - ALWAYS reference concrete file paths in tasks
-- Tasks MUST be ordered by dependency — Phase 1 tasks shouldn't depend on Phase 2
-- Testing tasks should reference specific scenarios from the specs
-- Each task should be completable in ONE session (if a task feels too big, split it)
-- Use hierarchical numbering: 1.1, 1.2, 2.1, 2.2, etc.
-- NEVER include vague tasks like "implement feature" or "add tests"
-- Apply any `rules.tasks` from `openspec/config.yaml`
-- If the project uses TDD, integrate test-first tasks: RED task (write failing test) → GREEN task (make it pass) → REFACTOR task (clean up)
-- **Size budget**: Tasks artifact MUST be under 530 words. Each task: 1-2 lines max. Use checklist format, not paragraphs.
+- Tasks ordered by dependency — Phase 1 tasks must not depend on Phase 2
+- Testing tasks reference specific spec scenarios
+- Each task completable in ONE session; split if too big
+- Hierarchical numbering: 1.1, 1.2, 2.1, 2.2...
+- NEVER vague tasks like "implement feature" or "add tests"
+- Apply `rules.tasks` from `openspec/config.yaml`
+- For TDD: RED task (write failing test) → GREEN task (make it pass) → REFACTOR task (clean up)
+- **Size budget**: ≤530 words. Each task: 1-2 lines max. Checklist format, not paragraphs.
 - Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.

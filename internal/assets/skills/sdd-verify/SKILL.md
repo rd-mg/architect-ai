@@ -13,41 +13,32 @@ metadata:
 
 Default: **+++Adversarial** (enumerate failure modes).
 
-Upgrade to **+++Adversarial + +++Empirical** when the task s acceptance
-criteria contain any numeric threshold: latency, throughput, memory,
-p99, coverage %, error rate. In Empirical mode, every perf claim
-needs a measurement plan or is marked PROVISIONAL.
+Upgrade to **+++Adversarial + +++Empirical** when acceptance criteria contain numeric thresholds (latency, throughput, memory, p99, coverage %, error rate). In Empirical mode, every perf claim needs measurement plan or marked PROVISIONAL.
 
 ## Purpose
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
+Quality gate. Prove with real execution evidence that implementation is complete, correct, and behaviorally compliant. Static analysis alone NOT enough — must execute.
 
-You are a sub-agent responsible for VERIFICATION. You are the quality gate. Your job is to prove — with real execution evidence — that the implementation is complete, correct, and behaviorally compliant with the specs.
+## Input
 
-Static analysis alone is NOT enough. You must execute the code.
-
-## What You Receive
-
-From the orchestrator:
-- Change name
+Orchestrator provides: change name.
 
 ## Persistence
 
-Follow `_shared/mode-branching.md` for artifact-store branching.
+Follow `_shared/mode-branching.md`.
 
 - **Artifact Name**: verify-report.md
 - **Topic Key**: sdd/{change-name}/verify-report
 - **Type**: architecture
 
-## What to Do
+## Steps
 
 ### Step 1: Load Skills
 Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Read Testing Capabilities and Resolve TDD Mode
-
-Read the cached testing capabilities to determine if Strict TDD verification applies:
 
 ```
 Read testing capabilities from:
@@ -57,29 +48,27 @@ Read testing capabilities from:
 
 Resolve mode:
 ├── IF strict_tdd: true AND test runner exists
-│   └── STRICT TDD VERIFY → Load strict-tdd-verify.md module
-│       (read the file: skills/sdd-verify/strict-tdd-verify.md)
-│       This adds Steps 5a, expanded 5/5d, 5e to the verification
+│   └── STRICT TDD VERIFY → Load strict-tdd-verify.md
+│       (read: skills/sdd-verify/strict-tdd-verify.md)
+│       Adds Steps 5a, expanded 5/5d, 5e
 │
 ├── IF strict_tdd: false OR no test runner
-│   └── STANDARD VERIFY → skip TDD-specific checks entirely
-│       (strict-tdd-verify.md is never loaded — zero tokens)
+│   └── STANDARD VERIFY → skip TDD-specific checks
+│       (strict-tdd-verify.md never loaded)
 │
-└── Cache the resolved mode for the report header
+└── Cache resolved mode for report header
 ```
 
-#### Step 2c: Guard - Implementation Status (MANDATORY)
+#### Step 2c: Guard — Implementation Status (MANDATORY)
 
-Before proceeding, you MUST verify that implementation is actually ready for verification. Follow the retrieval rules in Step 1 of `_shared/mode-branching.md` to read the change state.
+Verify implementation ready. Follow retrieval rules in Step 1 of `_shared/mode-branching.md`.
 
 - **Hard Gate**:
   - If `sdd-apply.status` is `in_progress` or `failed` or `pending` → **STOP**.
-  - Return failure to the orchestrator: "Verification refused. Phase `sdd-apply` is `{status}`. Implementation must be `completed` before verification can start."
-3. **Exception**: If the orchestrator explicitly launched you for "Partial Verification" (check prompt text), you may proceed, but MUST mark the report as "PARTIAL / INFORMATIONAL".
+  - Return: "Verification refused. Phase `sdd-apply` is `{status}`. Must be `completed`."
+- **Exception**: Orchestrator explicitly launched "Partial Verification" → proceed, mark report "PARTIAL / INFORMATIONAL".
 
 ### Step 3: Check Completeness
-
-Verify ALL tasks are done:
 
 ```
 Read tasks.md
@@ -91,57 +80,49 @@ Read tasks.md
 
 ### Step 4: Check Correctness (Static Specs Match)
 
-For EACH spec requirement and scenario, search the codebase for structural evidence:
-
 ```
 FOR EACH REQUIREMENT in specs/:
 ├── Search codebase for implementation evidence
-├── For each SCENARIO:
-│   ├── Is the GIVEN precondition handled in code?
-│   ├── Is the WHEN action implemented?
-│   ├── Is the THEN outcome produced?
-│   └── Are edge cases covered?
+├── FOR EACH SCENARIO:
+│   ├── GIVEN precondition handled in code?
+│   ├── WHEN action implemented?
+│   ├── THEN outcome produced?
+│   └── Edge cases covered?
 └── Flag: CRITICAL if requirement missing, WARNING if scenario partially covered
 ```
 
-Note: This is static analysis only. Behavioral validation with real execution happens in Step 7.
+Static analysis only. Behavioral validation via real execution in Step 7.
 
 ### Step 5: Check Coherence (Design Match)
 
-Verify design decisions were followed:
-
 ```
 FOR EACH DECISION in design.md:
-├── Was the chosen approach actually used?
-├── Were rejected alternatives accidentally implemented?
-├── Do file changes match the "File Changes" table?
+├── Chosen approach actually used?
+├── Rejected alternatives accidentally implemented?
+├── File changes match "File Changes" table?
 └── Flag: WARNING if deviation found (may be valid improvement)
 ```
 
 ### Step 5a: TDD Compliance Check (Strict TDD only)
 
-> **Skip this step entirely if Strict TDD Mode is not active.**
+> **Skip if Strict TDD Mode not active.**
 
-If Strict TDD is active, follow the instructions in `strict-tdd-verify.md` Step 5a.
+If active, follow `strict-tdd-verify.md` Step 5a.
 
 ### Step 6: Check Testing
 
 #### Step 6a: Static Test Analysis
 
-Verify test files exist and cover the right scenarios:
-
 ```
-Search for test files related to the change
-├── Do tests exist for each spec scenario?
-├── Do tests cover happy paths?
-├── Do tests cover edge cases?
-├── Do tests cover error states?
+Search for test files related to change
+├── Tests exist for each spec scenario?
+├── Happy paths covered?
+├── Edge cases covered?
+├── Error states covered?
 └── Flag: WARNING if scenarios lack tests, SUGGESTION if coverage could improve
 ```
 
 #### Step 6b: Run Tests (Real Execution)
-
-Detect the project's test runner and execute the tests:
 
 ```
 Detect test runner from:
@@ -160,104 +141,96 @@ Capture:
 ├── Skipped
 └── Exit code
 
-Flag: CRITICAL if exit code != 0 (any test failed)
+Flag: CRITICAL if exit code != 0
 Flag: WARNING if skipped tests relate to changed areas
 ```
 
 #### Step 6c: Build & Type Check (Real Execution)
 
-Detect and run the build/type-check command:
-
 ```
 Detect build command from:
 ├── Cached testing capabilities → quality_tools.type_checker (fastest)
 ├── openspec/config.yaml → rules.verify.build_command (override)
-├── package.json → scripts.build → also run tsc --noEmit if tsconfig.json exists
+├── package.json → scripts.build → also tsc --noEmit if tsconfig.json exists
 ├── pyproject.toml → python -m build or equivalent
 ├── Makefile → make build
-└── Fallback: skip and report as WARNING (not CRITICAL)
+└── Fallback: skip, report as WARNING (not CRITICAL)
 
 Execute: {build_command}
 Capture:
 ├── Exit code
-├── Errors (if any)
+├── Errors
 └── Warnings (if significant)
 
 Flag: CRITICAL if build fails (exit code != 0)
-Flag: WARNING if there are type errors even with passing build
+Flag: WARNING if type errors with passing build
 ```
 
 #### Step 6d: Coverage Validation (Real Execution — if available)
 
-Run coverage if the tool is available (from cached capabilities or config):
-
 ```
-IF coverage tool available (from cached capabilities or rules.verify.coverage_threshold set):
-├── Run: {test_command} --coverage (or equivalent for the test runner)
+IF coverage tool available (from cached capabilities or rules.verify.coverage_threshold):
+├── Run: {test_command} --coverage
 ├── Parse coverage report
 ├── IF Strict TDD active → follow expanded Step 5d from strict-tdd-verify.md
 │   (per-file coverage for changed files, uncovered line ranges)
 ├── IF Standard mode → report total coverage only
-│   ├── Compare total coverage % against threshold (if configured)
+│   ├── Compare total coverage % against threshold
 │   └── Flag: WARNING if below threshold
 └── Report
 
 IF coverage tool NOT available:
-└── Skip this step, report as "Not available"
+└── Skip, report "Not available"
 ```
 
 #### Step 6e: Quality Metrics (Strict TDD only)
 
-> **Skip this step entirely if Strict TDD Mode is not active.**
+> **Skip if Strict TDD Mode not active.**
 
-If Strict TDD is active, follow the instructions in `strict-tdd-verify.md` Step 5e.
+If active, follow `strict-tdd-verify.md` Step 5e.
 
 #### Step 6f: Testing Protocol (MANDATORY)
 
 **Test Integrity Lock**:
-- Execute all tests defined in the TDD suite and any supplementary test files.
-- **Failure Protocol**: IF a test fails, prioritize rigorous code review and fix the implementation logic.
-- **STRICT PROHIBITION**: You are **STRICTLY PROHIBITED** from modifying, adapting, or weakening the tests to force a pass. The tests are the contract. If they fail, the implementation is wrong.
-- **Task Audit**: Verify all assigned tasks have been executed. IF any task is pending or incomplete, immediately halt verification and notify `sdd-orchestrator` with: `TASK AUDIT FAILURE: {task-list} incomplete. Cannot verify incomplete implementation.`
+- Execute all tests in TDD suite and supplementary test files.
+- **Failure Protocol**: IF test fails, fix implementation logic. **STRICTLY PROHIBITED** from modifying tests to force pass. Tests are contract. Implementation is wrong if they fail.
+- **Task Audit**: Verify all tasks executed. IF incomplete → halt, notify orchestrator: `TASK AUDIT FAILURE: {task-list} incomplete. Cannot verify.`
 
 ### Step 7: Spec Compliance Matrix (Behavioral Validation)
 
-This is the most important step. Cross-reference EVERY spec scenario against the actual test run results from Step 6b to build behavioral evidence.
-
-For each scenario from the specs, find which test(s) cover it and what the result was:
+Cross-reference every spec scenario against actual test run results from Step 6b:
 
 ```
 FOR EACH REQUIREMENT in specs/:
   FOR EACH SCENARIO:
-  ├── Find tests that cover this scenario (by name, description, or file path)
-  ├── Look up that test's result from Step 6b output
+  ├── Find tests covering this scenario (name, description, file path)
+  ├── Look up result from Step 6b
   ├── Assign compliance status:
   │   ├──  COMPLIANT   → test exists AND passed
   │   ├──  FAILING     → test exists BUT failed (CRITICAL)
-  │   ├──  UNTESTED    → no test found for this scenario (CRITICAL)
-  │   └──  PARTIAL    → test exists, passes, but covers only part of the scenario (WARNING)
+  │   ├──  UNTESTED    → no test found (CRITICAL)
+  │   └──  PARTIAL    → test exists, passes, covers only part (WARNING)
   └── Record: requirement, scenario, test file, test name, result
 ```
 
-A spec scenario is only considered COMPLIANT when there is a test that passed proving the behavior at runtime. Code existing in the codebase is NOT sufficient evidence.
+COMPLIANT = test passed proving behavior at runtime. Code existence NOT sufficient.
 
 ### Step 7b: Adversarial Review Pass (MANDATORY)
 
-Switch posture to **+++Adversarial**. Your goal is to find why the verification might be wrong or what was missed.
+Posture: **+++Adversarial**. Find why verification might be wrong.
 
-1. State clearly: `[PASS 2: ADVERSARIAL REVIEW]`
-2. Re-examine the most critical requirements.
-3. Look for "False Positives" in test results.
-4. Check if error handling (Sad Paths) is actually tested or just exists.
+1. State: `[PASS 2: ADVERSARIAL REVIEW]`
+2. Re-examine most critical requirements.
+3. Look for False Positives in test results.
+4. Check if Sad Paths actually tested or just exist.
 
 ### Step 8: Persist Verification Report
 
-**This step is MANDATORY — do NOT skip it.**
-Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
+**MANDATORY — do NOT skip.** Follow persistence rules in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 9: Return Summary
 
-Return to the orchestrator the same content you wrote to `verify-report.md`:
+Return same content written to `verify-report.md`:
 
 ```markdown
 ## Verification Report
@@ -295,10 +268,10 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 
 ---
 
-{IF Strict TDD Mode → include TDD Compliance table from strict-tdd-verify.md}
-{IF Strict TDD Mode → include Test Layer Distribution table from strict-tdd-verify.md}
-{IF Strict TDD Mode → include Changed File Coverage table from strict-tdd-verify.md}
-{IF Strict TDD Mode → include Quality Metrics from strict-tdd-verify.md}
+{IF Strict TDD Mode → TDD Compliance table from strict-tdd-verify.md}
+{IF Strict TDD Mode → Test Layer Distribution table from strict-tdd-verify.md}
+{IF Strict TDD Mode → Changed File Coverage table from strict-tdd-verify.md}
+{IF Strict TDD Mode → Quality Metrics from strict-tdd-verify.md}
 
 ### Spec Compliance Matrix
 
@@ -342,14 +315,14 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 
 ### Adversarial Findings
 
-{List findings from the second pass. If none, state "No critical bypasses or false positives identified."}
+{Findings from second pass. If none: "No critical bypasses or false positives identified."}
 
 ---
 
 ### Verdict
 **{PASS / PASS WITH WARNINGS / FAIL}**
 
-{One-line summary of overall status}
+{One-line summary}
 
 ### Return Envelope (Internal)
 ```json
@@ -367,19 +340,19 @@ Return to the orchestrator the same content you wrote to `verify-report.md`:
 
 ## Rules
 
-- ALWAYS perform a two-pass verification (Compliance + Adversarial)
-- ALWAYS read the actual source code — don't trust summaries
+- ALWAYS two-pass verification (Compliance + Adversarial)
+- ALWAYS read actual source code — don't trust summaries
 - ALWAYS execute tests — static analysis alone is not verification
-- A spec scenario is only COMPLIANT when a test that covers it has PASSED
-- Compare against SPECS first (behavioral correctness), DESIGN second (structural correctness)
-- Be objective — report what IS, not what should be
-- CRITICAL issues = must fix before archive
-- WARNINGS = should fix but won't block
+- Spec scenario only COMPLIANT when test covering it PASSED
+- Compare SPECS first (behavioral), DESIGN second (structural)
+- Report what IS, not what should be
+- CRITICAL = must fix before archive
+- WARNINGS = should fix, won't block
 - SUGGESTIONS = improvements, not blockers
-- DO NOT fix any issues — only report them. The orchestrator decides what to do.
-- In `openspec` mode, ALWAYS save the report to `openspec/changes/{change-name}/verify-report.md` — this persists the verification for sdd-archive and the audit trail
-- Apply any `rules.verify` from `openspec/config.yaml`
-- If Strict TDD is active, load `strict-tdd-verify.md` and execute ALL its additional steps — they are mandatory, not optional
-- If Strict TDD is NOT active, NEVER load `strict-tdd-verify.md` — zero tokens wasted on TDD checks
-- Use cached testing capabilities from Engram/config whenever possible — avoid re-detecting
+- DO NOT fix issues — only report. Orchestrator decides.
+- In `openspec` mode, ALWAYS save to `openspec/changes/{change-name}/verify-report.md`
+- Apply `rules.verify` from `openspec/config.yaml`
+- If Strict TDD active → load `strict-tdd-verify.md`, execute ALL steps. Mandatory.
+- If Strict TDD NOT active → NEVER load `strict-tdd-verify.md`. Zero tokens on TDD checks.
+- Use cached testing capabilities from Engram/config when possible
 - Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.

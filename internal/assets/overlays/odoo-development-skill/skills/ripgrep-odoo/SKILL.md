@@ -2,17 +2,17 @@
 
 ## Purpose
 
-Search code patterns in the local Odoo monorepo to obtain real evidence
+Search code patterns in local Odoo monorepo to obtain real evidence
 before designing or implementing. Uses the `rg` binary directly.
 
 **ALWAYS use before:**
-- Implementing any functionality that interacts with Odoo core
-- Assuming the API of a model, OWL component, or o-spreadsheet action
+- Implementing any functionality interacts with Odoo core
+- Assuming API of model, OWL component, or o-spreadsheet action
 - Writing imports of Odoo native modules
 
 **Do NOT use when:**
-- There are recent Engrams with the searched pattern (check first with mem_search)
-- The search is over custom project code (use ripgrep base)
+- There are recent Engrams with searched pattern (check first with mem_search)
+- search is over custom project code (use ripgrep base)
 
 ---
 
@@ -61,7 +61,7 @@ rg "{QUERY}" ~/gitproj/odoo/community/addons/web/static/src/ \
   -C 2
 ```
 
-For a specific addon: replace `addons/web/static/src/` with `addons/{addon}/static/src/`
+For specific addon: replace `addons/web/static/src/` with `addons/{addon}/static/src/`
 
 ### o_spreadsheet (o-spreadsheet components)
 
@@ -107,7 +107,7 @@ rg "{QUERY}" ~/gitproj/odoo/community/ \
 
 ## Mandatory Protocol: 2 Steps
 
-**NEVER execute a content search as the first step.**
+**NEVER execute content search as first step.**
 
 ### Step 1: Identify files (-l, files-only)
 
@@ -123,7 +123,7 @@ rg "class AccountMove" ~/gitproj/odoo/community/ -t py -l
 # Output: 2-3 file paths (~10 tokens)
 ```
 
-### Step 2: Surgical extraction of the relevant file
+### Step 2: Surgical extraction of relevant file
 
 ```bash
 # Only if Step 1 returns the correct file:
@@ -145,7 +145,7 @@ Direct unfiltered search: 40,000+ tokens → OOM.
 
 ## VRAM Protection Flags (ALWAYS active)
 
-These flags should NEVER be omitted when searching the full monorepo:
+flags should NEVER be omitted when searching full monorepo:
 
 | Flag | Value | Why |
 |---|---|---|
@@ -183,7 +183,7 @@ rg "const .* = useService" \
   --max-count 2 -C 2
 ```
 
-### "How does Odoo add an action to o-spreadsheet?"
+### "How does Odoo add action to o-spreadsheet?"
 
 ```bash
 # Step 1:
@@ -220,7 +220,7 @@ rg "def _import_bank_statement" \
 
 ## Persistence to Engram (after_model hook)
 
-When ripgrep-odoo finds a pattern that resolves a design question, the result MUST be persisted to Engram to avoid searching the same thing in the next session. Also, if the pattern is high quality and generalizable, it should be proposed for inclusion in the corresponding `patterns-{v}` skill.
+When ripgrep-odoo finds pattern resolves design question, result MUST be persisted to Engram to avoid searching same thing in next session. Also, if pattern is high quality and generalizable, it should be proposed for inclusion in corresponding `patterns-{v}` skill.
 
 ```
 # Format for mem_save after a successful search:
@@ -235,7 +235,7 @@ content: {
 }
 ```
 
-This save is executed by the **Orchestrator's after_model hook** (defined in Step 05). If `propose_to_skill` is `true`, the Orchestrator will generate a `task` artifact so a sub-agent updates the corresponding version's `SKILL.md`.
+save is executed by the **Orchestrator's after_model hook** (defined in Step 05). If `propose_to_skill` is `true`, Orchestrator will generate a `task` artifact so sub-agent updates corresponding version's `SKILL.md`.
 
 ---
 

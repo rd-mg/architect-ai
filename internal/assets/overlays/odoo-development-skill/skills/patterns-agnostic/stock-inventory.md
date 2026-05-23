@@ -1,6 +1,6 @@
 # Stock & Inventory Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `stock-picking-patterns.md` (architect-ai)
 - `inventory-adjustment-patterns.md` (architect-ai)
 - `warehouse-location-patterns.md` (architect-ai)
@@ -13,7 +13,7 @@ Consolidated from the following source files:
 
 ## Picking & Moves
 
-### Validating a Picking Programmatically
+### Validating Picking Programmatically
 ```python
 def validate_picking(self, picking):
     for move in picking.move_ids:

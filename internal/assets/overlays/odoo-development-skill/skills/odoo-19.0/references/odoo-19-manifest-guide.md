@@ -17,7 +17,7 @@ Guide for configuring `__manifest__.py` in Odoo 19 modules.
 
 ## Manifest File
 
-The manifest file declares a python package as an Odoo module and specifies module metadata.
+manifest file declares a python package as an Odoo module and specifies module metadata.
 
 File: `__manifest__.py`
 
@@ -46,7 +46,7 @@ File: `__manifest__.py`
 
 ### name (str, required)
 
-The human-readable name of the module.
+human-readable name of the module.
 
 ```python
 'name': "My Module",
@@ -156,7 +156,7 @@ Odoo modules which must be loaded before this one.
 'depends': ['base', 'web', 'sale'],
 ```
 
-**Important**: Module `base` is always installed, but you should still specify it as a dependency to ensure your module is updated when `base` is updated.
+**Important**: Module `base` is always installed, but still specify it as a dependency to ensure your module is updated when `base` is updated.
 
 When a module is installed, all dependencies are installed first.
 
@@ -253,7 +253,7 @@ Dictionary of Python and binary dependencies.
 },
 ```
 
-The module won't be installed if dependencies are not available.
+module won't be installed if dependencies are not available.
 
 ---
 

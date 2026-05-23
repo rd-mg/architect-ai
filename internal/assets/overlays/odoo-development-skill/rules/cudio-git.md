@@ -5,15 +5,14 @@ project_scope: cudio
 
 # Cudio Git & Branch Convention
 
-Organization-specific Git workflow rules for Cudio projects. Extends the
-generic `branch-pr` skill.
+Organization-specific Git workflow for Cudio projects. Extends `branch-pr` skill.
 
 ## Branch Structure
 
-Cudio repositories follow this hierarchy:
-- **1 Production branch** — stable, production-ready code
-- **Multiple Staging branches** — testing and validation
-- **Multiple Development branches** — active development work
+Cudio repos follow:
+- **1 Production branch** — stable, production-ready
+- **Multiple Staging branches** — testing/validation
+- **Multiple Development branches** — active work
 
 ## Branch Naming
 
@@ -41,10 +40,10 @@ Format: `{prefix}/{task-id}-{brief-description}`
 
 ### Requirements
 
-- Always include the task/ticket ID when available
-- Use kebab-case for the description
+- Always include task/ticket ID when available
+- Use kebab-case for description
 - Keep descriptions concise but descriptive
-- Create branches from the appropriate source branch (typically `staging-dev`)
+- Create branches from appropriate source (typically `staging-dev`)
 
 ### Validation Regex
 ```
@@ -80,7 +79,7 @@ Format: `{prefix}/{task-id}-{brief-description}`
 
 ### Commit Body
 
-Include a detailed description:
+Include detailed description:
 
 ```
 Long version of the change description, including the rationale
@@ -101,68 +100,68 @@ task-1234 (related to task)
 ## Development Workflow
 
 ### Step 1: Branch Synchronization
-Before starting development:
-1. Switch to your development branch
-2. Pull the latest changes from the origin branch
-3. Resolve any conflicts if they exist
+Before starting:
+1. Switch to development branch
+2. Pull latest from origin branch
+3. Resolve conflicts
 
 ### Step 2: Development and Testing
 1. Implement changes following Odoo coding guidelines and Cudio conventions
-2. Test thoroughly in your development environment
-3. Ensure all existing functionality remains intact
+2. Test thoroughly in development environment
+3. Ensure existing functionality remains intact
 
 ### Step 3: Pre-PR Branch Update
-Before creating a Pull Request:
-1. Update your branch from the origin branch to avoid conflicts
-2. Resolve any merge conflicts
-3. Test again to ensure everything works correctly
+Before creating PR:
+1. Update branch from origin to avoid conflicts
+2. Resolve merge conflicts
+3. Test again
 
 ## Pull Request Process
 
 ### Creating the Pull Request
 
-1. Create a PR targeting the appropriate origin branch
-2. Use a descriptive title following the commit message format
-3. Include a detailed description of changes
+1. Create PR targeting appropriate origin branch
+2. Use descriptive title following commit message format
+3. Include detailed description of changes
 4. Add relevant labels and assignees
 
 ### Code Review with Copilot
 
-1. Assign GitHub Copilot as a reviewer
+1. Assign GitHub Copilot as reviewer
 2. Review Copilot's feedback carefully:
-   - Validate that suggested changes are correct
+   - Validate suggested changes are correct
    - Ensure recommendations don't introduce errors
    - Verify changes don't break existing functionality
 3. Resolve each Copilot comment:
-   - Either accept the suggestion by merging it
-   - Or manually address the concern and mark as resolved
-   - Add explanatory comments when rejecting suggestions
+   - Either accept suggestion by merging
+   - Or manually address concern and mark resolved
+   - Add explanatory comments when rejecting
 4. Test merged recommendations:
-   - Always test changes made based on Copilot recommendations
+   - Always test changes from Copilot recommendations
    - Ensure functionality works as expected
-   - Validate that no new issues are introduced
+   - Validate no new issues introduced
 
 ### Important Notes on Copilot Review
 
-- **Critical Validation**: Always verify Copilot's suggestions are appropriate for the specific use case
-- **Manual Testing**: Test any changes made based on Copilot recommendations
-- **Documentation**: Comment on why certain suggestions were accepted or rejected
+- **Critical Validation**: Always verify Copilot's suggestions are appropriate
+- **Manual Testing**: Test any changes based on Copilot recommendations
+- **Documentation**: Comment on why suggestions were accepted or rejected
 - **Resolution Requirement**: All Copilot comments MUST be resolved before merging
 
 ### IDE-Based Review (Optional)
 
-Optionally perform an IDE-based review (e.g., VSCode with Copilot agent) for additional coverage before opening the PR.
+Optionally perform IDE-based review (e.g., VSCode with Copilot agent) before opening PR.
 
 ### Reviewers
 
-The lead developer (or at least one other team member) MUST be added as a reviewer on the PR.
+Lead developer (or at least one team member) MUST be added as reviewer on PR.
 
 ## Merging Process
 
 ### Squash and Merge
 
-- Use the "Squash and Merge" option when merging the PR
-- Update the final commit message to follow Cudio standards:
+- Use "Squash and Merge" when merging PR
+- Update final commit message to Cudio standards:
   - Title: `[TAG][TASK_ID] module_name: Brief description (< 50 chars)`
   - Description: comprehensive and accurate
 
@@ -184,19 +183,19 @@ Resolves task-1234
 
 ## Post-Merge Actions
 
-1. Delete the development branch after successful merge (if no further development needed)
-2. Verify the changes in the target environment
+1. Delete development branch after merge (if no further development)
+2. Verify changes in target environment
 3. Update task/ticket status to reflect completion
 
 ## Quality Checklist (Before PR)
 
 - [ ] Code follows Cudio coding guidelines
 - [ ] Branch name follows naming convention
-- [ ] Commit messages follow the specified format
-- [ ] Branch is updated from origin to avoid conflicts
+- [ ] Commit messages follow specified format
+- [ ] Branch updated from origin to avoid conflicts
 - [ ] All Copilot review comments resolved
-- [ ] Changes have been tested thoroughly
-- [ ] PR description is complete and accurate
+- [ ] Changes tested thoroughly
+- [ ] PR description complete and accurate
 
 ## Forbidden Patterns
 
@@ -204,7 +203,7 @@ Resolves task-1234
 -  Merge commits (use squash and merge)
 -  Force-pushes to shared branches (staging, production)
 -  Committing directly to staging or production
--  Branch names without task IDs (when a task ID exists)
+-  Branch names without task IDs (when task ID exists)
 -  Commit messages without tags
 
 ## Compact Rule Summary (for skill registry)

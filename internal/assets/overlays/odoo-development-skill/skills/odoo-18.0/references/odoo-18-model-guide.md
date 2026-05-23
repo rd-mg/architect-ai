@@ -164,7 +164,7 @@ result = self.read_group(
 
 ### search_fetch() - Search and Fetch Fields (Odoo 18)
 
-**Use when**: You need to search AND prefetch specific fields to cache in one operation.
+**Use when**: search AND prefetch specific fields to cache in one operation.
 
 ```python
 # Search and fetch fields to cache
@@ -632,7 +632,7 @@ result = self.read_group(
 | `minute_number` | Integer | Minute (0-59) |
 | `second_number` | Integer | Second (0-59) |
 
-**Note**: For `read_group`, you can use `day`, `week`, `month`, `quarter`, `year`, `hour` which truncate the date to that granularity.
+**Note**: For `read_group`, use `day`, `week`, `month`, `quarter`, `year`, `hour` which truncate the date to that granularity.
 
 ---
 

@@ -53,7 +53,7 @@
 
 | Aspect | Odoo chart (`odoo_*`) | Spreadsheet-range chart (`line`, `bar`, `pie`) |
 |--------|-----------------------|-----------------------------------------------|
-| Data source | Odoo model via `odooDataSets` | Cell range in a Data sheet |
+| Data source | Odoo model via `odooDataSets` | Cell range in Data sheet |
 | Global filter | Automatically wired via `searchParams` | Must be manually wired via formula |
 | Permissions | Enforced by Odoo access rights | Inherits from formula evaluation context |
 | When to use | Always preferred for Odoo model data | Only for calculated/non-model metrics |

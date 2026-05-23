@@ -1412,7 +1412,7 @@ func TestRunInstallUpgradeIdempotency(t *testing.T) {
 
 	// 3. No duplicate architect-ai marker blocks — each section's open marker
 	// must appear exactly once.
-	for _, sectionID := range []string{"sdd-orchestrator", "engram-protocol"} {
+	for _, sectionID := range []string{"L0", "engram-protocol"} {
 		openMarker := "<!-- architect-ai:" + sectionID + " -->"
 		count := strings.Count(content, openMarker)
 		if count != 1 {
@@ -1726,13 +1726,13 @@ func TestOpenCodePersonaBeforeSDDPreservesAllSections(t *testing.T) {
 		t.Errorf("AGENTS.md contains %d occurrences of %q, want exactly 1 (no duplicates)", count, marker)
 	}
 
-	// AGENTS.md MUST have sdd-orchestrator markers because OpenCode's sdd-orchestrator
+	// AGENTS.md MUST have L0 markers because OpenCode's L0
 	// agent (configured in opencode.json) uses {file:./AGENTS.md} for its prompt.
-	if !strings.Contains(text, "<!-- architect-ai:sdd-orchestrator -->") {
-		t.Error("AGENTS.md missing sdd-orchestrator open marker (required for OpenCode file-referenced prompt)")
+	if !strings.Contains(text, "<!-- architect-ai:L0 -->") {
+		t.Error("AGENTS.md missing L0 open marker (required for OpenCode file-referenced prompt)")
 	}
-	if !strings.Contains(text, "<!-- /architect-ai:sdd-orchestrator -->") {
-		t.Error("AGENTS.md missing sdd-orchestrator close marker")
+	if !strings.Contains(text, "<!-- /architect-ai:L0 -->") {
+		t.Error("AGENTS.md missing L0 close marker")
 	}
 
 	// SDD orchestrator for OpenCode lives in opencode.json agent overlay

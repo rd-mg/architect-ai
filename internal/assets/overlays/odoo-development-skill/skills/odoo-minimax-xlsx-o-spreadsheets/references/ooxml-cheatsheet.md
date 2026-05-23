@@ -37,7 +37,7 @@ B5  → column B (2), row 5
 AA1 → column 27, row 1
 ```
 
-Column letter  number conversion:
+Column letter → number conversion:
 ```python
 def col_letter(n):  # 1-based → letter
     r = ""
@@ -101,7 +101,7 @@ fonts[2]      fills[0]    borders[0]    numFmts: id=165
 blue color    no fill      no border    "0.0%"
 ```
 
-### Adding a New Style (step-by-step)
+### Adding New Style (step-by-step)
 
 1. In `<numFmts>`: add `<numFmt numFmtId="168" formatCode="0.00%"/>`, update `count`
 2. In `<fonts>`: add font entry, note its index
@@ -161,14 +161,14 @@ Special characters:
 
 ## workbook.xml / .rels Sync
 
-Every `<sheet>` in workbook.xml needs a matching `<Relationship>` in workbook.xml.rels:
+Every `<sheet>` in workbook.xml needs matching `<Relationship>` in workbook.xml.rels:
 
 ```xml
 <!-- workbook.xml -->
 <!-- NOTE: rId numbering depends on what rIds are already in workbook.xml.rels.
-     The minimal template reserves rId1=sheet1, rId2=styles, rId3=sharedStrings.
-     When ADDING sheets to the template, start from rId4 to avoid conflicts.
-     The rId3 here is just a generic illustration — use the next available rId. -->
+     Minimal template reserves rId1=sheet1, rId2=styles, rId3=sharedStrings.
+     When ADDING sheets to template, start from rId4 to avoid conflicts.
+     rId3 here is just generic illustration — use next available rId. -->
 <sheet name="Summary" sheetId="3" r:id="rId3"/>
 
 <!-- workbook.xml.rels -->
@@ -177,7 +177,7 @@ Every `<sheet>` in workbook.xml needs a matching `<Relationship>` in workbook.xm
   Target="worksheets/sheet3.xml"/>
 ```
 
-And a matching `<Override>` in `[Content_Types].xml`:
+And matching `<Override>` in `[Content_Types].xml`:
 ```xml
 <Override PartName="/xl/worksheets/sheet3.xml"
   ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>

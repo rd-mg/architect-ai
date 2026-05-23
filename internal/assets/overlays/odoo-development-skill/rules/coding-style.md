@@ -1,12 +1,15 @@
 # Coding Style
 
-**Apply these rules when writing or editing code in any project.**
+**Apply when writing or editing code in any project.**
+
+> [!IMPORTANT]
+> **ENGLISH LANGUAGE ONLY**: All code, comments, manifest fields, variable names, classes, DB schemas, and dev communication MUST be in ENGLISH. Spanish or other translations/comments strictly prohibited.
 
 ---
 
 ## Rule 1: Dependencies at the Top
 
-All import, include, or require statements must be placed at the top of every file.
+All import, include, or require statements at top of every file.
 
 **Placement order:**
 
@@ -21,11 +24,11 @@ All import, include, or require statements must be placed at the top of every fi
 
 ## Rule 2: Meaningful Variable Names
 
-Every variable, function parameter, and constant must have a descriptive name that reveals its purpose.
+Every variable, function parameter, and constant MUST have descriptive name revealing purpose.
 
 **Good names:**
 
-- Reveal intent: what the value represents
+- Reveal intent: what value represents
 - Use full words, not abbreviations
 - Include units when applicable (e.g., `timeout_seconds`, `price_usd`)
 - Use domain terminology
@@ -50,9 +53,9 @@ Every variable, function parameter, and constant must have a descriptive name th
 
 **When writing new code:**
 
-- Place all imports at the top before any code
+- Place all imports at top before any code
 - Name every variable descriptively
-- If a name needs a comment to explain it, the name is wrong
+- If name needs comment to explain it, name is wrong
 
 **When editing existing code:**
 
@@ -71,4 +74,4 @@ Every variable, function parameter, and constant must have a descriptive name th
 
 ## Rationale
 
-Code is read far more often than written. Proper organization and meaningful names make code self-documenting, reduce cognitive load, and enable faster maintenance.
+Code read far more often than written. Proper organization and meaningful names make code self-documenting, reduce cognitive load, enable faster maintenance.

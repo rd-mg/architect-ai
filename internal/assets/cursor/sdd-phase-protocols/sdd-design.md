@@ -50,11 +50,11 @@ and spec (if present), produce a design document covering:
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd/{change-name}/design",
-  topic_key: "sdd/{change-name}/design",
-  type: "architecture",
-  project: "{project}",
-  content: "{your design markdown}"
+ title: "sdd/{change-name}/design",
+ topic_key: "sdd/{change-name}/design",
+ type: "architecture",
+ project: "{project}",
+ content: "{your design markdown}"
 )
 
 ## Size Budget: 800 words max
@@ -67,12 +67,12 @@ mem_save(
 - Validate all mandatory sections present
 - **Decision Check**: Reject if `Alternative designs considered` is empty.
 - **Simplicity Check**: Reject if `YAGNI Gate` shows premature abstractions.
-- **Poka-Yoke Check**: Ensure checklist is filled and items with  have justification.
+- **Poka-Yoke Check**: Ensure checklist is filled and items with have justification.
 - Update state: `specifying` → `designing`
 - Next recommended: `sdd-tasks`
 
 ## Failure Handling
 
-- If sub-agent cannot identify integration points → return `partial`, suggest sdd-explore round
+- If sub-agent can't identify integration points → return `partial`, suggest sdd-explore round
 - If design conflicts with active constraints in Context Pack → return `blocked`, escalate to user
 - If Open Questions is non-empty → present to user, wait for resolution before sdd-tasks
