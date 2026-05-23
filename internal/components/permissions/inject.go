@@ -87,6 +87,11 @@ var vscodeCopilotOverlayJSON = []byte(`{
 }
 `)
 
+// AgentSupportsInjection returns true if the agent supports permission injection via settings.json.
+func AgentSupportsInjection(id model.AgentID) bool {
+	return agentOverlay(id) != nil
+}
+
 // agentOverlay returns the correct permission overlay for the given agent,
 // or nil if the agent does not support permission injection via settings.json.
 func agentOverlay(id model.AgentID) []byte {

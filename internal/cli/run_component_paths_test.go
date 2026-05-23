@@ -15,6 +15,7 @@ func TestComponentPathsSDDIncludesSystemPromptForAllSupportedAgents(t *testing.T
 		model.AgentGeminiCLI,
 		model.AgentCursor,
 		model.AgentVSCodeCopilot,
+		model.AgentAntigravity,
 	})
 
 	paths := componentPaths(home, model.Selection{}, adapters, model.ComponentSDD)

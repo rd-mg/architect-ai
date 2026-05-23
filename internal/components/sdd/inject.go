@@ -94,6 +94,11 @@ const maxAncestorDepth = 20
 // In a JS/TS monorepo, every package has package.json, so we must not stop at
 // the first one — we keep walking to find the highest ancestor with package.json
 // (or a monorepo root marker above it).
+// FindProjectRoot is an exported wrapper around findProjectRoot.
+func FindProjectRoot(dir string) (string, bool) {
+	return findProjectRoot(dir)
+}
+
 func findProjectRoot(dir string) (string, bool) {
 	if dir == "" {
 		return "", false

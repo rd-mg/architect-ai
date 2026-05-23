@@ -492,6 +492,7 @@ For each sub-agent launch:
 2. Match additional skills by **code context** (file extensions) AND **task context** (actions to perform)
 3. Copy compact rule blocks into `## Project Standards (auto-resolved)`
 
+<!-- adaptive-reasoning-gate:START -->
 ## Adaptive Reasoning (MANDATORY)
 
 Before executing your assigned phase protocol, you MUST classify the reasoning depth required for this task. 
@@ -522,6 +523,7 @@ Before executing your assigned phase protocol, you MUST classify the reasoning d
 ### Transition Rules
 - **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
 - **Diagnostic -> Tactical**: Allowed only after D3=0.
+<!-- adaptive-reasoning-gate:END -->
 
 ## Context Guardian Auto-Trigger
 
@@ -712,7 +714,7 @@ Language: English only. Caveman: terse.
 ## Execution Mode: interactive
 ```
 
-## State Synchronization — MANDATORY
+## State Synchronization — MANDATORY in V3.1
 
 The orchestrator is the SOLE authority for the state-machine. You MUST synchronize the active artifact store (Engram, OpenSpec, or Hybrid) after EVERY phase completion, including during `/sdd-ff` or batch execution.
 
@@ -870,7 +872,7 @@ No orchestrator action is required beyond registering the hook — the adapter (
 
 ## Convention Files
 
-Shared under `.agent/skills/_shared/`:
+Shared under `~/.cursor/skills/_shared/`:
 - `engram-convention.md`
 - `persistence-contract.md`
 - `openspec-convention.md`
@@ -880,7 +882,7 @@ Shared under `.agent/skills/_shared/`:
 
 All phase-specific instructions live in:
 ```
-internal/assets/claude/sdd-phase-protocols/
+internal/assets/cursor/sdd-phase-protocols/
   sdd-init.md
   sdd-onboard.md
   sdd-explore.md

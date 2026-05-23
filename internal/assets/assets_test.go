@@ -35,6 +35,16 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"gemini/sdd-orchestrator.md",
 		"gemini/thinking-agent.md",
 
+		// Antigravity agent files
+		"antigravity/sdd-orchestrator.md",
+		"antigravity/thinking-agent.md",
+		"antigravity/architect.md",
+
+		// VSCode agent files
+		"vscode/sdd-orchestrator.md",
+		"vscode/thinking-agent.md",
+		"vscode/general-orchestrator.md",
+
 		// Codex agent files
 		"codex/sdd-orchestrator.md",
 		"codex/thinking-agent.md",
@@ -275,6 +285,9 @@ func TestSDDOrchestratorAssetsScopedToDedicatedAgent(t *testing.T) {
 		"gemini/sdd-orchestrator.md",
 		"codex/sdd-orchestrator.md",
 		"cursor/sdd-orchestrator.md",
+		"opencode/sdd-orchestrator.md",
+		"antigravity/sdd-orchestrator.md",
+		"vscode/sdd-orchestrator.md",
 	} {
 		t.Run(assetPath, func(t *testing.T) {
 			content := MustRead(assetPath)
@@ -308,6 +321,7 @@ func TestAdaptiveReasoningGateInjected(t *testing.T) {
 		"windsurf/sdd-orchestrator.md",
 		"cursor/sdd-orchestrator.md",
 		"opencode/sdd-orchestrator.md",
+		"vscode/sdd-orchestrator.md",
 	}
 
 	for _, path := range orchestrators {
@@ -368,6 +382,7 @@ func TestCognitivePosturesElevenNotTenOrTwelve(t *testing.T) {
 		"generic/sdd-orchestrator.md",
 		"windsurf/sdd-orchestrator.md",
 		"qwen/sdd-orchestrator.md",
+		"vscode/sdd-orchestrator.md",
 	}
 	for _, rel := range orchestrators {
 		t.Run(rel, func(t *testing.T) {
