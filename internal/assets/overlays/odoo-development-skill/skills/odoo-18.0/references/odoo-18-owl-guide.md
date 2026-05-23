@@ -130,7 +130,7 @@ export class MyComponent extends Component {
 
 ### File Structure
 
-A typical OWL component in Odoo should have these files in the same directory:
+typical OWL component in Odoo should have these files in the same directory:
 
 ```
 static/src/views/my_module/

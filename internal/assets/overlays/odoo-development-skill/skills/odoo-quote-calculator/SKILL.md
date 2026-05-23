@@ -69,7 +69,7 @@ python3 SKILL_DIR/assets/adapt_spreadsheet.py \
 - **Adapter**: Script puente agnóstico a credenciales en `assets/adapt_spreadsheet.py`
 
 ## Guardrails
-- Only use `spreadsheet_binary_data` in the MCP tool. Never directly write a string to the `spreadsheet_data` field unless you are testing hotfix patches.
+- Only use `spreadsheet_binary_data` in the MCP tool. Never directly write a string to the `spreadsheet_data` field unless hotfix patches.
 - Verify if the API rejects the M2O link of `sale.order.template`; if the MCP API returns integer List `[ID]` use only `ID`.
 
 ## Checklist
@@ -88,4 +88,3 @@ All research query flows MUST respect the Local-First Fallback Chain:
 - M2O link rejection → query schema via `mcp_odoo_get_model_fields` to find active fields
 - Base64 encoding fails → verify string is utf-8 before applying standard `base64.b64encode()`
 - Workspace source missing → use Engram knowledge nodes and Context7 docs
-

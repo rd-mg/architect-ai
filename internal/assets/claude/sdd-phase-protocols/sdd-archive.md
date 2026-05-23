@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-archive
-Project: architect-ai
-Adapter: Claude
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: all artifacts for the change
-- **Writes**: `archive-report` artifact; marks change as archived
+## Deps: Reads all artifacts for the change | Writes `archive-report` artifact; marks change as archived
 
 ## Cognitive Posture
 None — mechanical close-out.
 
-## Model
-haiku — simple copy and state update
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 ## Project Standards (auto-resolved)
@@ -58,12 +50,6 @@ Task: Close out the change "{change-name}". This is a mechanical phase.
 4. If OpenSpec mode: move change directory to archive/ folder
 5. Update DAG state to "archived"
 
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
-
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
@@ -89,11 +75,9 @@ Compare the final implementation against the original Specs and Design:
 Save to Engram: `sdd/{project}/deviations`.
 
 ## Result Processing
-
 - Update state: `verified` → `archived`
 - Next recommended: `none` (change is closed)
 - Report completion to user in LITE caveman style
-
 ## Failure Handling
 
 - If verify-report is missing → return `blocked`, route to sdd-verify first

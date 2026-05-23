@@ -1,6 +1,6 @@
 ---
 name: odoo-minimax-xlsx-o-spreadsheets
-description: "Open, create, read, analyze, edit, or validate spreadsheets in Odoo 19 format (.osps json) and XLSX format (.xlsx, .xlsm, .csv). Use when the user asks to integrate with Odoo Documents, Dashboards, or Pivot tables. Supports dual generation: Native Odoo o-spreadsheet JSON (with PIVOT formulas) and strict-compatibility XLSX for Odoo import. Triggers on 'odoo spreadsheet', 'o-spreadsheet', 'dashboard', 'sales report', '.osps', or any Odoo-specific tabular data request."
+description: "Open, create, read, analyze, edit, or validate spreadsheets in Odoo 19 format (.osps json) and XLSX format (.xlsx, .xlsm, .csv). Use when user asks to integrate with Odoo Documents, Dashboards, or Pivot tables. Supports dual generation: Native Odoo o-spreadsheet JSON (with PIVOT formulas) and strict-compatibility XLSX for Odoo import. Triggers on 'odoo spreadsheet', 'o-spreadsheet', 'dashboard', 'sales report', '.osps', or any Odoo-specific tabular data request."
 license: MIT
 bridge: false
 on-demand: true
@@ -22,7 +22,7 @@ metadata:
 
 # MiniMax XLSX Skill
 
-Handle the request directly. Do NOT spawn sub-agents. Always write the output file the user requests.
+Handle request directly. Do NOT spawn sub-agents. Always write output file user requests.
 
 ## Task Routing
 
@@ -37,36 +37,36 @@ Handle the request directly. Do NOT spawn sub-agents. Always write the output fi
 
 ## READ — Analyze data (read `references/read-analyze.md` first)
 
-Start with `xlsx_reader.py` for structure discovery, then pandas for custom analysis. Never modify the source file.
+Start with `xlsx_reader.py` for structure discovery, then pandas for custom analysis. Never modify source file.
 
-**Formatting rule**: When the user specifies decimal places (e.g. "2 decimal places"), apply that format to ALL numeric values — use `f'{v:.2f}'` on every number. Never output `12875` when `12875.00` is required.
+**Formatting rule**: When user specifies decimal places (e.g. "2 decimal places"), apply format to ALL numeric values — use `f'{v:.2f}'` on every number. Never output `12875` when `12875.00` required.
 
-**Aggregation rule**: Always compute sums/means/counts directly from the DataFrame column — e.g. `df['Revenue'].sum()`. Never re-derive column values before aggregation.
+**Aggregation rule**: Always compute sums/means/counts directly from DataFrame column — e.g. `df['Revenue'].sum()`. Never re-derive column values before aggregation.
 
 ## CREATE — XML template (read `references/create.md` + `references/format.md`)
 
-Copy `templates/minimal_xlsx/` → edit XML directly → pack with `xlsx_pack.py`. Every derived value MUST be an Excel formula (`<f>SUM(B2:B9)</f>`), never a hardcoded number. Apply font colors per `format.md`.
+Copy `templates/minimal_xlsx/` → edit XML directly → pack with `xlsx_pack.py`. Every derived value MUST be Excel formula (`<f>SUM(B2:B9)</f>`), never hardcoded number. Apply font colors per `format.md`.
 
 ## EDIT — XML direct-edit (read `references/edit.md` first)
 
 **CRITICAL — EDIT INTEGRITY RULES:**
-1. **NEVER create a new `Workbook()`** for edit tasks. Always load the original file.
-2. The output MUST contain the **same sheets** as the input (same names, same data).
-3. Only modify the specific cells the task asks for — everything else must be untouched.
-4. **After saving output.xlsx, verify it**: open with `xlsx_reader.py` or `pandas` and confirm the original sheet names and a sample of original data are present. If verification fails, you wrote the wrong file — fix it before delivering.
+1. **NEVER create new `Workbook()`** for edit tasks. Always load original file.
+2. Output MUST contain **same sheets** as input (same names, same data).
+3. Only modify specific cells task asks for — everything else must be untouched.
+4. **After saving output.xlsx, verify it**: open with `xlsx_reader.py` or `pandas` and confirm original sheet names and sample of original data present. If verification fails, wrote wrong file — fix before delivering.
 
 Never use openpyxl round-trip on existing files (corrupts VBA, pivots, sparklines). Instead: unpack → use helper scripts → repack.
 
-**"Fill cells" / "Add formulas to existing cells" = EDIT task.** If the input file already exists and you are told to fill, update, or add formulas to specific cells, you MUST use the XML edit path. Never create a new `Workbook()`. Example — fill B3 with a cross-sheet SUM formula:
+**"Fill cells" / "Add formulas to existing cells" = EDIT task.** If input file already exists and told to fill, update, or add formulas to specific cells, MUST use XML edit path. Never create new `Workbook()`. Example — fill B3 with cross-sheet SUM formula:
 ```bash
 python3 SKILL_DIR/scripts/xlsx_unpack.py input.xlsx /tmp/xlsx_work/
-# Find the target sheet's XML via xl/workbook.xml → xl/_rels/workbook.xml.rels
-# Then use the Edit tool to add <f> inside the target <c> element:
+# Find target sheet's XML via xl/workbook.xml → xl/_rels/workbook.xml.rels
+# Then use Edit tool to add <f> inside target <c> element:
 #   <c r="B3"><f>SUM('Sales Data'!D2:D13)</f><v></v></c>
 python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_work/ output.xlsx
 ```
 
-**Add a column** (formulas, numfmt, styles auto-copied from adjacent column):
+**Add column** (formulas, numfmt, styles auto-copied from adjacent column):
 ```bash
 python3 SKILL_DIR/scripts/xlsx_unpack.py input.xlsx /tmp/xlsx_work/
 python3 SKILL_DIR/scripts/xlsx_add_column.py /tmp/xlsx_work/ --col G \
@@ -76,44 +76,44 @@ python3 SKILL_DIR/scripts/xlsx_add_column.py /tmp/xlsx_work/ --col G \
     --border-row 10 --border-style medium
 python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_work/ output.xlsx
 ```
-The `--border-row` flag applies a top border to ALL cells in that row (not just the new column). Use it when the task requires accounting-style borders on total rows.
+`--border-row` flag applies top border to ALL cells in row (not just new column). Use when task requires accounting-style borders on total rows.
 
-**Insert a row** (shifts existing rows, updates SUM formulas, fixes circular refs):
+**Insert row** (shifts existing rows, updates SUM formulas, fixes circular refs):
 ```bash
 python3 SKILL_DIR/scripts/xlsx_unpack.py input.xlsx /tmp/xlsx_work/
-# IMPORTANT: Find the correct --at row by searching for the label text
-# in the worksheet XML, NOT by using the row number from the prompt.
-# The prompt may say "row 5 (Office Rent)" but Office Rent might actually
-# be at row 4. Always locate the row by its text label first.
+# IMPORTANT: Find correct --at row by searching for label text
+# in worksheet XML, NOT by row number from prompt.
+# Prompt may say "row 5 (Office Rent)" but Office Rent might actually
+# be at row 4. Always locate row by text label first.
 python3 SKILL_DIR/scripts/xlsx_insert_row.py /tmp/xlsx_work/ --at 5 \
     --sheet "Budget FY2025" --text A=Utilities \
     --values B=3000 C=3000 D=3500 E=3500 \
     --formula 'F=SUM(B{row}:E{row})' --copy-style-from 4
 python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_work/ output.xlsx
 ```
-**Row lookup rule**: When the task says "after row N (Label)", always find the row by searching for "Label" in the worksheet XML (`grep -n "Label" /tmp/xlsx_work/xl/worksheets/sheet*.xml` or check sharedStrings.xml). Use the actual row number + 1 for `--at`. Do NOT call `xlsx_shift_rows.py` separately — `xlsx_insert_row.py` calls it internally.
+**Row lookup rule**: When task says "after row N (Label)", always find row by searching for "Label" in worksheet XML (`grep -n "Label" /tmp/xlsx_work/xl/worksheets/sheet*.xml` or check sharedStrings.xml). Use actual row number + 1 for `--at`. Do NOT call `xlsx_shift_rows.py` separately — `xlsx_insert_row.py` calls it internally.
 
-**Apply row-wide borders** (e.g. accounting line on a TOTAL row):
-After running helper scripts, apply borders to ALL cells in the target row, not just newly added cells. In `xl/styles.xml`, append a new `<border>` with the desired style, then append a new `<xf>` in `<cellXfs>` that clones each cell's existing `<xf>` but sets the new `borderId`. Apply the new style index to every `<c>` in the row via the `s` attribute:
+**Apply row-wide borders** (e.g. accounting line on TOTAL row):
+After running helper scripts, apply borders to ALL cells in target row, not just newly added cells. In `xl/styles.xml`, append new `<border>` with desired style, then append new `<xf>` in `<cellXfs>` that clones each cell's existing `<xf>` but sets new `borderId`. Apply new style index to every `<c>` in row via `s` attribute:
 ```xml
 <!-- In xl/styles.xml, append to <borders>: -->
 <border>
   <left/><right/><top style="medium"/><bottom/><diagonal/>
 </border>
-<!-- Then append to <cellXfs> an xf clone with the new borderId for each existing style -->
+<!-- Then append to <cellXfs> an xf clone with new borderId for each existing style -->
 ```
-**Key rule**: When a task says "add a border to row N", iterate over ALL cells A through the last column, not just newly added cells.
+**Key rule**: When task says "add border to row N", iterate over ALL cells A through last column, not just newly added cells.
 
-**Manual XML edit** (for anything the helper scripts don't cover):
+**Manual XML edit** (for anything helper scripts don't cover):
 ```bash
 python3 SKILL_DIR/scripts/xlsx_unpack.py input.xlsx /tmp/xlsx_work/
-# ... edit XML with the Edit tool ...
+# ... edit XML with Edit tool ...
 python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_work/ output.xlsx
 ```
 
 ## FIX — Repair broken formulas (read `references/fix.md` first)
 
-This is an EDIT task. Unpack → fix broken `<f>` nodes → pack. Preserve all original sheets and data.
+EDIT task. Unpack → fix broken `<f>` nodes → pack. Preserve all original sheets and data.
 
 ## VALIDATE — Check formulas (read `references/validate.md` first)
 
@@ -131,7 +131,7 @@ Run `formula_check.py` for static validation. Use `libreoffice_recalc.py` for dy
 
 When creating data for Odoo Dashboards or Documents:
 1. Receive data context from Odoo MCP.
-2. Use `scripts/json_builder.py` (Pydantic models) to generate the `.osps` JSON.
+2. Use `scripts/json_builder.py` (Pydantic models) to generate `.osps` JSON.
 3. **CRITICAL**: Formulas must start with `=`.
 4. Push JSON directly via `odoo_create_spreadsheet`.
 
@@ -145,11 +145,11 @@ When creating `.xlsx` for manual import or Chatter:
 
 ## Key Rules
 
-1. **Formula-First**: Every calculated cell MUST use an Excel formula or JSON `=content`.
+1. **Formula-First**: Every calculated cell MUST use Excel formula or JSON `=content`.
 2. **Dual Mode**: Choose between Native JSON (Dashboards) and Strict XLSX (Imports).
 3. **JSON Syntax**: Formulas in JSON use `=`, XML `<f>` skips it.
 4. **Style Integrity**: Maintain flat cell structures and global style dictionaries in JSON.
-5. **Validation**: Always run the compatibility audit before delivery.
+5. **Validation**: Always run compatibility audit before delivery.
 
 ## Commands
 
@@ -160,18 +160,18 @@ uv run python3 scripts/json_builder.py --minimal
 # Alternatively, install requirements manually
 pip install -r requirements.txt
 
-# Run the auditor before delivery
+# Run auditor before delivery
 python3 scripts/formula_check.py output.xlsx --report
 ```
 
 ## Odoo Research Priority [MANDATORY]
 
-All research query flows MUST respect the Local-First Fallback Chain:
+All research query flows MUST respect Local-First Fallback Chain:
 1. Engram: `mem_search("odoo ${ODOO_VERSION} <topic>")`
 2. rg in Local Workspace (`${ODOO_COMMUNITY}/addons/`, etc.)
 3. Context7 MCP: `context7.resolve_library_id("odoo")`
 4. researcher agent: `scope_hint="docs"`, `max_depth="standard"`
-5. Web Search (Google/GitHub): ONLY if all local sources are exhausted or fail.
+5. Web Search (Google/GitHub): ONLY if all local sources exhausted or fail.
 
 ## Pre-Flight Safety [MANDATORY before any xlsx operation]
 ```bash

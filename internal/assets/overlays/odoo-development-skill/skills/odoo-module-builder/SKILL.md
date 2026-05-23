@@ -38,5 +38,5 @@ echo "Using blueprint: ${BLUEPRINT}"
 
 ## Anti-Pattern Prohibition
 NEVER add "IMPORTANT: for v19 remember to change X to Y" blocks.
-The blueprint for v19 already has the correct syntax.
+blueprint for v19 already has the correct syntax.
 Cross-version instructions inside a versioned blueprint = REJECTED.

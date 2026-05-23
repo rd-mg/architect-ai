@@ -6,22 +6,22 @@ project_scope: cudio
 
 ## Cudio Security Standards Appendix
 
-Additional security standards enforced on Cudio Inc. projects. These EXTEND the base security rules above.
+Additional security standards for Cudio Inc. projects. EXTEND base security rules.
 
 ### ORM-Only for Writes
 
-NEVER write to the database using raw SQL. Always use ORM methods:
+NEVER write to database using raw SQL. Always use ORM:
 - `env['model'].create(vals)` or `create([vals1, vals2])`
 - `record.write(vals)`
 - `record.unlink()`
 
-Raw SQL writes bypass ACL, record rules, tracking, and audit trails. They are NEVER acceptable in application code.
+Raw SQL writes bypass ACL, record rules, tracking, and audit trails. NEVER acceptable in application code.
 
-The only exception is **performance-critical migrations** where the migration comment MUST explain why ORM is inadequate.
+Only exception: **performance-critical migrations** where migration comment MUST explain why ORM inadequate.
 
 ### SQL Injection Prevention
 
-When raw SELECT queries are necessary (rare), ALWAYS use parameterized queries:
+When raw SELECT queries necessary (rare), ALWAYS parameterize:
 
 Anti-pattern:
 ```python
@@ -39,7 +39,7 @@ self.env.cr.execute(
 )
 ```
 
-For Odoo 19+: Use the `SQL()` builder:
+For Odoo 19+: Use `SQL()` builder:
 ```python
 from odoo.tools import SQL
 query = SQL("SELECT id FROM res_users WHERE login = %s", user_filter)
@@ -48,7 +48,7 @@ self.env.cr.execute(query)
 
 ### sudo() Justification
 
-Every `sudo()` call MUST have a comment explaining why bypassing ACL is necessary.
+Every `sudo()` call MUST have comment explaining why ACL bypass necessary.
 
 Anti-pattern:
 ```python
@@ -67,16 +67,16 @@ Common acceptable justifications:
 - Portal users accessing related records for display
 - Cron jobs running as SUPERUSER
 - Integration endpoints verified via separate auth layer
-- Computed fields that need cross-user visibility
+- Computed fields needing cross-user visibility
 
 Unacceptable (refactor instead):
-- "It was easier" — write the proper ACL
-- "It's temporary" — make it permanent or don't do it
-- "The user won't see this" — they might, in an edge case
+- "It was easier" — write proper ACL
+- "It's temporary" — make permanent or don't do it
+- "The user won't see this" — they might, in edge case
 
 ### Record Rules for Multi-Company Fields
 
-Every model with a `company_id` field MUST have record rules that respect multi-company boundaries:
+Every model with `company_id` field MUST have multi-company record rules:
 
 ```xml
 <record id="rule_my_model_multi_company" model="ir.rule">
@@ -93,7 +93,7 @@ Every model with a `company_id` field MUST have record rules that respect multi-
 ### Default Groups Principle
 
 Default groups for new models:
-- **Read-only**: `base.group_user` (all internal users can see the record)
+- **Read-only**: `base.group_user` (all internal users can see record)
 - **Create/Write**: Specific business group (e.g., `sales_team.group_sale_salesman`)
 - **Unlink**: Manager group only (e.g., `sales_team.group_sale_manager`)
 
@@ -147,10 +147,10 @@ def my_endpoint(self, **kwargs):
 
 ### Cron Job Security
 
-Cron jobs run as SUPERUSER by default. Mitigate by:
-- Setting `user_id` explicitly in the cron definition (non-SUPERUSER when possible)
-- Filtering records by company/user within the job logic
-- Logging all actions performed by the cron
+Cron jobs run as SUPERUSER by default. Mitigate:
+- Set `user_id` explicitly in cron definition (non-SUPERUSER when possible)
+- Filter records by company/user within job logic
+- Log all actions performed by cron
 
 ### Audit Trail
 
@@ -159,23 +159,23 @@ For records with compliance/audit needs:
 - Inherit from `mail.thread` for chatter-based audit
 - Use `mail.activity.mixin` for pending actions
 
-Do NOT use `delete` on audited records. Archive (`active=False`) or create reversal records.
+Do NOT `delete` audited records. Archive (`active=False`) or create reversal records.
 
 ### Cross-Module Security
 
-When a module depends on another:
-- Never assume the parent module's ACL is sufficient
-- Define explicit ACL for any new field added to an inherited model
-- Test with a user who has access to the child but not the parent
+When module depends on another:
+- Never assume parent module's ACL sufficient
+- Define explicit ACL for new fields added to inherited model
+- Test with user who has access to child but not parent
 
 ### Security Review Checklist
 
-Before any PR is merged, verify:
+Before any PR merge, verify:
 - [ ] `ir.model.access.csv` covers every new model
 - [ ] Record rules exist for multi-company fields
 - [ ] All `sudo()` calls have justification comments
-- [ ] No raw SQL writes (only ORM)
-- [ ] User input validated on server side
+- [ ] No raw SQL writes (ORM only)
+- [ ] User input validated server-side
 - [ ] No secrets in code or committed files
 - [ ] Portal endpoints use access token validation
 - [ ] Cron jobs log their actions

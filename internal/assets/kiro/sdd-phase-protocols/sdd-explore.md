@@ -5,7 +5,7 @@
 - **Writes**: `explore` artifact
 
 ## Cognitive Posture
-+++Socratic — Reveal assumptions. Explore the problem space. Formulate questions.
++++Socratic — Reveal assumptions. Explore problem space. Formulate questions.
 
 ## Model
 sonnet — structural investigation, not architectural decisions
@@ -15,7 +15,7 @@ sonnet — structural investigation, not architectural decisions
 ```
 +++Socratic
 Before producing artifacts, formulate 3 questions about unstated assumptions
-in the request. Reveal what has NOT been said.
+in request. Reveal what has NOT been said.
 
 ## Project Standards (auto-resolved)
 {matching compact rules}
@@ -25,10 +25,10 @@ in the request. Reveal what has NOT been said.
 
 ## Phase: sdd-explore
 
-Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
+Task: Investigate topic "{topic}". Read codebase. Compare approaches.
 
 ## Step 0: Deep Code Exploration (Sequential Thinking)
-- **MANDATORY**: Call `sequential_thinking` to map the target modules and identify dependencies BEFORE running any search tools.
+- **MANDATORY**: Call `sequential_thinking` to map target modules and identify dependencies BEFORE running any search tools.
 
 ## ADR Pre-check (MANDATORY)
 **BEFORE** performing any code search, check for existing Architecture Decision Records:
@@ -38,11 +38,11 @@ Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 ## Code Investigation (Section B — 5-Step Skim Protocol)
 1. **Ripgrep Discovery**: Identify candidate files using specific keywords.
 2. **Structural Skim**: List functions and types (e.g., `rg "^func|^type|^var|^const" {file}`).
-3. **Boundary Check**: Identify imports and dependencies to see what OTHER files are affected.
-4. **Logic Isolation**: Read only the specific blocks of code (functions/methods) identified in step 2.
+3. **Boundary Check**: Identify imports and dependencies to see what OTHER files affected.
+4. **Logic Isolation**: Read only specific blocks of code (functions/methods) identified in step 2.
 5. **Pattern Comparison**: Compare found implementation with established project patterns.
 
-Do NOT `cat` entire files unless they are under 50 lines. Identify constraints. Do NOT modify code.
+Do NOT `cat` entire files unless under 50 lines. Identify constraints. Do NOT modify code.
 
 ## Artifact Store: {mode}
 

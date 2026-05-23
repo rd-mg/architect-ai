@@ -8,7 +8,7 @@ risk_level: high
 
 # Odoo Spreadsheet Ecosystem Skill [UNIFIED ROUTER]
 
-This is the primary router and source of truth for all Odoo-related spreadsheet tasks. Do NOT spawn sub-agents. Handle all tasks through this ecosystem.
+Primary router and source of truth for all Odoo-related spreadsheet tasks. Do NOT spawn sub-agents. Handle all tasks through this ecosystem.
 
 ## Task Routing Table
 
@@ -21,9 +21,9 @@ This is the primary router and source of truth for all Odoo-related spreadsheet 
 
 ## Universal Rules
 
-1. **Formula-First**: Every calculated cell MUST use an Excel formula (`<f>SUM(...)</f>`) or Odoo JSON `=formula`. Never write hardcoded values for computed data.
+1. **Formula-First**: Every calculated cell MUST use Excel formula (`<f>SUM(...)</f>`) or Odoo JSON `=formula`. Never write hardcoded values for computed data.
 2. **No openpyxl Round-Trip**: Editing spreadsheets must be done using unpack → XML direct-edit → repack workflow to prevent losing VBA, macros, or pivot linkages.
-3. **Strict Linter Audit**: Always validate outputs via `formula_check.py` or `osheet_validate.py` before presenting results to the user.
+3. **Strict Linter Audit**: Always validate outputs via `formula_check.py` or `osheet_validate.py` before presenting results to user.
 
 ## Standard Color Palette
 
@@ -35,12 +35,12 @@ This is the primary router and source of truth for all Odoo-related spreadsheet 
 
 ## Odoo Research Priority [MANDATORY]
 
-All research query flows MUST respect the Local-First Fallback Chain:
+All research query flows MUST respect Local-First Fallback Chain:
 1. Engram: `mem_search("odoo ${ODOO_VERSION} <topic>")`
 2. rg in Local Workspace (`${ODOO_COMMUNITY}/addons/`, etc.)
 3. Context7 MCP: `context7.resolve_library_id("odoo")`
 4. researcher agent: `scope_hint="docs"`, `max_depth="standard"`
-5. Web Search (Google/GitHub): ONLY if all local sources are exhausted or fail.
+5. Web Search (Google/GitHub): ONLY if all local sources exhausted or fail.
 
 ## Recovery Strategies [MANDATORY in every Odoo SKILL.md]
 - **XML Ordering Breakage**: Use standard Python `xml.etree.ElementTree` serialization or manual regex patching to preserve original tag order and attributes.

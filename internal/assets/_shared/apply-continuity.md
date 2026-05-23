@@ -1,10 +1,8 @@
 # Apply Continuity Protocol
 
-To prevent full restarts when `sdd-apply` is interrupted, progress is tracked at the task level using `.atl/apply-progress.yaml`.
+Prevent full restarts when `sdd-apply` interrupted. Progress tracked at task level via `.atl/apply-progress.yaml`.
 
-## Configuration Structure
-
-The `.atl/apply-progress.yaml` file tracks the progress of the active change's tasks:
+## Configuration
 
 ```yaml
 change_name: "phase-02-sdd-worktrees"
@@ -27,13 +25,13 @@ tasks:
 
 ## Resumption Logic
 
-1. **Check Existing Progress**: When `sdd-apply` starts, look for `.atl/apply-progress.yaml`.
+1. **Check Existing**: On `sdd-apply` start, look for `.atl/apply-progress.yaml`.
 2. **Validate Change Name**:
-   - If the file exists and `change_name` matches the current change, load it.
-   - If `change_name` does not match, archive the old file to `.atl/apply-progress.yaml.old` and initialize a fresh state.
+   - File exists + `change_name` matches → load it.
+   - `change_name` does not match → archive to `.atl/apply-progress.yaml.old`, init fresh.
 3. **Execution**:
    - Skip all tasks marked `completed`.
-   - Resume execution from the first task marked `pending` or `running`.
+   - Resume from first `pending` or `running` task.
 4. **Atomic Checkpointing**:
-   - Update `.atl/apply-progress.yaml` immediately and atomically after each task completes.
-   - Report progress output formatting: `[apply] T{N}/{M} complete — {description} | {lines_added} lines`.
+   - Update `.atl/apply-progress.yaml` atomically after each task completes.
+   - Progress output: `[apply] T{N}/{M} complete — {description} | {lines_added} lines`.

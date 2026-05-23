@@ -1,16 +1,16 @@
 # SDD Explore — Odoo Context
 
-When exploring in an Odoo project, follow this protocol IN ADDITION to the standard sdd-explore behavior.
+Follow IN ADDITION to standard sdd-explore.
 
 ## Odoo Version
-{See shared preamble — version already cached from sdd-init.}
+{See shared preamble — version cached from sdd-init.}
 
 ## Research Fallback Chain
 
-Priority order — stop at the first successful result. Do NOT skip steps silently.
+Priority order — stop at first success. Do NOT skip steps silently.
 
 ### Step 1 — NotebookLM (MCP)
-- Use the `mcp-notebooklm-orchestrator` skill
+- Use `mcp-notebooklm-orchestrator` skill
 - Inject: "Base answers on source code first, then technical docs. Match version {version}."
 - **If MCP unavailable**: emit `"SKIP: NotebookLM MCP offline"` → proceed to Step 2
 
@@ -20,7 +20,7 @@ test -d "$ODOO_COMMUNITY_PATH" && \
   rg "class ModelName" "$ODOO_COMMUNITY_PATH/{version}/addons/" -t py || \
   echo "SKIP: ODOO_COMMUNITY_PATH not set or path not found"
 ```
-- **If env unset or path missing**: emit the SKIP message → proceed to Step 3
+- **If env unset or path missing**: emit SKIP message → proceed to Step 3
 
 ### Step 3 — rg on enterprise source
 ```bash
@@ -28,7 +28,7 @@ test -d "$ODOO_ENTERPRISE_PATH" && \
   rg "class ModelName" "$ODOO_ENTERPRISE_PATH/{version}/" -t py || \
   echo "SKIP: ODOO_ENTERPRISE_PATH not set or path not found"
 ```
-- **If env unset or path missing**: emit the SKIP message → proceed to Step 4
+- **If env unset or path missing**: emit SKIP message → proceed to Step 4
 
 ### Step 4 — Context7 MCP
 - Use Context7 for official Odoo documentation and API reference.
@@ -36,29 +36,27 @@ test -d "$ODOO_ENTERPRISE_PATH" && \
 ### Step 5 — Web search (last resort)
 - Include `site:github.com/odoo` or `site:github.com/OCA` filter when possible.
 
->  If Steps 1–3 are ALL skipped: **declare the limitation explicitly** in your artifact
-> before proceeding with Steps 4–5. Do NOT silently fall through.
+> If Steps 1–3 ALL skipped: **declare limitation explicitly** in artifact before proceeding with Steps 4–5. Do NOT silently fall through.
 
 ### OCA Search
-Before proposing new functionality, also verify OCA:
+Before proposing new functionality, verify OCA:
 ```bash
 # Or browse: https://github.com/OCA?q={keyword}&type=repositories
 rg "class ModelName" ~/gitproj/odoo/oca/ -t py
 ```
 
-
 ## Don't Reinvent the Wheel
 
 Before proposing new functionality, verify it doesn't already exist:
--  Odoo community (`~/gitproj/odoo/community/`)
--  Odoo Enterprise (`~/gitproj/odoo/enterprise/`, if path configured)
--  OCA repositories (`~/gitproj/odoo/oca/` or https://github.com/OCA)
+- Odoo community (`~/gitproj/odoo/community/`)
+- Odoo Enterprise (`~/gitproj/odoo/enterprise/`, if path configured)
+- OCA repositories (`~/gitproj/odoo/oca/` or https://github.com/OCA)
 
-If something similar exists, explore it. Decide: inherit/extend, use as reference, or combine.
+If similar exists, explore it. Decide: inherit/extend, use as reference, or combine.
 
 ## Upgrade Analysis
 
-When the exploration involves version migration, focus on:
+When exploration involves version migration, focus on:
 - Breaking API changes between source and target version
 - OWL version transitions (1.x → 2.x → 3.x)
 - `attrs` removal (v17+), `tree` → `list` rename (v18+)
@@ -70,7 +68,7 @@ Refer to `skills/migration-{from}-{to}/` bundles for version-specific migration 
 
 ## Deliverables
 
-Your exploration artifact MUST include:
+Exploration artifact MUST include:
 
 ### Version Context
 ```markdown
@@ -115,5 +113,5 @@ mem_save(
 
 - Do NOT modify any files in this phase
 - Do NOT generate boilerplate modules — exploration only
-- Do NOT assume version compatibility across the version range
+- Do NOT assume version compatibility across version range
 - Do NOT skip OCA search because "it's probably not there"

@@ -1,21 +1,20 @@
 ---
 name: sdd-spec
-description: >
-  Write specifications with requirements and acceptance scenarios for a change. Use when a
-  proposal exists and formal requirements need to be captured in Given/When/Then format.
-  Produces the spec artifact that sdd-tasks depends on.
+description: > Write specifications with requirements and acceptance scenarios for a change. Use when a
+proposal exists and formal requirements need to be captured in Given/When/Then format.
+Produces the spec artifact that sdd-tasks depends on.
 model: inherit
 ---
 
-You are the SDD **spec** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **spec** executor. Do this phase's work yourself. Do NOT delegate further.
+not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
 Read the skill file at `~/.cursor/skills/sdd-spec/SKILL.md` and follow it exactly.
 Also read shared conventions at `~/.cursor/skills/_shared/sdd-phase-common.md`.
 
-Execute all steps from the skill directly in this context window:
+Execute all steps from skill directly in this context window:
 1. Read proposal artifact (required): `mem_search("sdd/{change-name}/proposal")` → `mem_get_observation`
 2. Write requirements using RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
 3. Write acceptance scenarios in Given/When/Then format for each requirement

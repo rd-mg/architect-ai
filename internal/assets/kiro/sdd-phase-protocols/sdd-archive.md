@@ -1,7 +1,7 @@
 # Phase Protocol: sdd-archive
 
 ## Dependencies
-- **Reads**: all artifacts for the change
+- **Reads**: all artifacts for change
 - **Writes**: `archive-report` artifact; marks change as archived
 
 ## Cognitive Posture
@@ -21,7 +21,7 @@ haiku — simple copy and state update
 
 ## Phase: sdd-archive
 
-Task: Close out the change "{change-name}". This is a mechanical phase.
+Task: Close out change "{change-name}". Mechanical phase.
 
 ## Procedure
 1. Read verify-report. Confirm verdict is APPROVED or CONDITIONALLY APPROVED
@@ -47,8 +47,8 @@ Task: Close out the change "{change-name}". This is a mechanical phase.
      services: ...
      concepts: ...
      risks: ...
-3b. Eval Gate Check: Verify NO tasks classified as HIGH risk lack an explicit eval step (peer review, manual validation, test evidence) in the mem_search observation history. If HIGH risk tasks lack evidence, STOP and return blocked.
-   
+3b. Eval Gate Check: Verify NO tasks classified as HIGH risk lack explicit eval step (peer review, manual validation, test evidence) in mem_search observation history. If HIGH risk tasks lack evidence, STOP and return blocked.
+    
 4. **Persistence (Learned Patterns)**: Save lessons and patterns to `project/{project}/lessons`. Search `knowledge/_global/skill/{skill-name}/learned-patterns`. If found, `mem_update` with appended patterns and incremented version. If not, `mem_save` new patterns.
 4. If OpenSpec mode: move change directory to archive/ folder
 5. Update DAG state to "archived"
@@ -70,9 +70,9 @@ mem_save(
 ```
 
 ## Deviation Logging (MANDATORY)
-Compare the final implementation against the original Specs and Design:
+Compare final implementation against original Specs and Design:
 1. **Technical Debt**: List any shortcuts or temporary solutions implemented.
-2. **Spec Deviations**: List features that differ from the spec or were not implemented.
+2. **Spec Deviations**: List features that differ from spec or were not implemented.
 3. **Rationale**: Briefly explain WHY these deviations occurred.
 
 Save to Engram: `sdd/{project}/deviations`.
@@ -80,11 +80,11 @@ Save to Engram: `sdd/{project}/deviations`.
 ## Result Processing
 
 - Update state: `verified` → `archived`
-- Next recommended: `none` (change is closed)
+- Next recommended: `none` (change closed)
 - Report completion to user in LITE caveman style
 
 ## Failure Handling
 
-- If verify-report is missing → return `blocked`, route to sdd-verify first
+- If verify-report missing → return `blocked`, route to sdd-verify first
 - If verdict is NEEDS CHANGES → return `blocked`, don't archive incomplete work
 - If required artifacts missing → return `partial`, list what's missing

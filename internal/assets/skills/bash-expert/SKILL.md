@@ -12,15 +12,15 @@ version: "2.0"
 
 # Shell Expert (bash + fish) v2.0
 
-## Shell Detection (MANDATORY first step in any script)
+## Shell Detection (MANDATORY — first step, every script)
 ```bash
 ACTIVE_SHELL=$(basename "${SHELL:-bash}")
-# Use appropriate section below based on result
+# Use appropriate section below
 ```
 
-## BASH Expert Rules
+## BASH Rules
 
-### Strict mode header (every script, no exceptions)
+### Strict mode header (every script)
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -86,7 +86,7 @@ mv "${tmp}" "${target}"
 [ -n "${DIR}" ] && [ -d "${DIR}" ] && rm -rf "${DIR}"
 ```
 
-## FISH Expert Rules
+## FISH Rules
 
 ### NO set -euo pipefail in fish
 ```fish
@@ -139,8 +139,7 @@ set files (rg -l "pattern" .)
 
 ### Error propagation (fish)
 ```fish
-# Fish doesn't propagate pipe errors like bash
-# Use explicit checks
+# Fish doesn't propagate pipe errors like bash — use explicit checks
 rg "pattern" . ; or begin
     echo "rg failed or no results" >&2
     exit 1
@@ -162,7 +161,7 @@ for line in sys.stdin:
 "
 ```
 
-## Cross-Shell rg Optimization Patterns
+## Cross-Shell rg Patterns
 
 ### Pattern 1: Domain-specific search
 ```bash

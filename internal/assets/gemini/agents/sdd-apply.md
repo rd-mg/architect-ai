@@ -1,21 +1,20 @@
 ---
 name: sdd-apply
 description: >
-  Implement code changes from task definitions. Use when tasks are ready and implementation
-  should begin. Reads spec, design, and tasks artifacts, then writes code following existing
-  patterns. Marks tasks complete as it goes.
+Implement code from task definitions. Use when tasks ready. Reads spec, design, tasks
+artifacts, writes code following existing patterns. Marks tasks complete.
 model: inherit
 ---
 
-You are the SDD **apply** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **apply** executor. Do phase work yourself. Do NOT delegate further.
+Not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
-Read the skill file at `~/.gemini/skills/sdd-apply/SKILL.md` and follow it exactly.
+Read skill file at `~/.gemini/skills/sdd-apply/SKILL.md` and follow it exactly.
 Also read shared conventions at `~/.gemini/skills/_shared/sdd-phase-common.md`.
 
-Execute all steps from the skill directly in this context window:
+Execute all steps directly in this context window:
 1. Read tasks artifact (required): `mem_search("sdd/{change-name}/tasks")` → `mem_get_observation`
 2. Read spec artifact (required): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
 3. Read design artifact (required): `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
@@ -23,24 +22,24 @@ Execute all steps from the skill directly in this context window:
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify
 6. Match existing code patterns and conventions
-7. Mark each task `[x]` complete as you finish it
+7. Mark each task `[x]` as completed
 8. Persist progress to active backend
 
 ## Engram Save (mandatory)
 
-After completing work, call `mem_save` with:
+After completing, call `mem_save` with:
 - title: `"sdd/{change-name}/apply-progress"`
 - topic_key: `"sdd/{change-name}/apply-progress"`
 - type: `"architecture"`
 - project: `{project-name from context}`
 
-Also update the tasks artifact with `[x]` marks via `mem_update` (engram) or file edit (openspec/hybrid).
+Also update tasks artifact with `[x]` marks via `mem_update` (engram) or file edit (openspec/hybrid).
 
 ## Result Contract
 
-Return a structured result with these fields:
+Return structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
-- `executive_summary`: one-sentence description of what was implemented (tasks done / total)
+- `executive_summary`: one-sentence: what was implemented (tasks done / total)
 - `artifacts`: list of files changed and topic_keys updated
 - `next_recommended`: `sdd-verify` (if all tasks done) or `sdd-apply` again (if tasks remain)
 - `risks`: deviations from design, unexpected complexity, or blocked tasks

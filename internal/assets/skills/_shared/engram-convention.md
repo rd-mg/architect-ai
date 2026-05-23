@@ -1,10 +1,10 @@
 # Engram Artifact Convention (reference documentation)
 
-NOTE: Critical engram calls (`mem_search`, `mem_save`, `mem_get_observation`) are inlined directly in each skill's SKILL.md. This document is supplementary reference — sub-agents do NOT need to read it to function.
+NOTE: Critical engram calls (`mem_search`, `mem_save`, `mem_get_observation`) are inlined in each skill's SKILL.md. This document is supplementary reference — sub-agents do NOT need to read it to function.
 
 ## Naming Rules
 
-ALL SDD artifacts persisted to Engram MUST follow this deterministic naming:
+ALL SDD artifacts persisted to Engram MUST follow deterministic naming:
 
 ```
 title:     sdd/{change-name}/{artifact-type}
@@ -16,14 +16,14 @@ scope:     project
 
 ### Knowledge Roots (Global & External)
 
-Artifacts that are NOT tied to a specific change use a hierarchical knowledge root:
+Artifacts NOT tied to specific change use hierarchical knowledge root:
 
 | Root | Topic Key Pattern | Description |
 |------|-------------------|-------------|
 | `knowledge/_global/skill/` | `knowledge/_global/skill/{name}` | Global skill definitions and rules |
 | `knowledge/external/` | `knowledge/{domain}/external/{topic}` | External research (NotebookLM, Context7) |
 
-`{domain}` identifies the broad area of knowledge (e.g., `odoo`, `architecture`, `vendor-playbook`). For NotebookLM, this is the sanitized notebook name.
+`{domain}` identifies broad knowledge area (e.g., `odoo`, `architecture`, `vendor-playbook`). For NotebookLM, this is sanitized notebook name.
 
 ---
 
@@ -64,7 +64,7 @@ Step 1: mem_search(query: "sdd/{change-name}/{artifact-type}", project: "{projec
 Step 2: mem_get_observation(id: {observation-id}) → complete content
 ```
 
-When retrieving multiple artifacts, group all searches first, then all retrievals:
+When retrieving multiple artifacts, group searches first, then all retrievals:
 
 ```
 STEP A — SEARCH (get IDs only):
@@ -97,7 +97,7 @@ mem_save(
 )
 ```
 
-Concrete example — saving a proposal for `add-dark-mode`:
+Concrete example — saving proposal for `add-dark-mode`:
 ```
 mem_save(
   title: "sdd/add-dark-mode/proposal",
@@ -108,12 +108,12 @@ mem_save(
 )
 ```
 
-Update existing artifact (when you have the observation ID):
+Update existing artifact (when you have observation ID):
 ```
 mem_update(id: {observation-id}, content: "{updated full content}")
 ```
 
-Use `mem_update` when you have the exact ID. Use `mem_save` with same `topic_key` for upserts.
+Use `mem_update` when you have exact ID. Use `mem_save` with same `topic_key` for upserts.
 
 ### Browsing All Artifacts for a Change
 
@@ -124,20 +124,20 @@ mem_search(query: "sdd/{change-name}/", project: "{project}")
 
 ## Project Name Resolution (engram v1.11.0+)
 
-Engram auto-detects the project name from the git remote at MCP startup. The `--project` flag and `ENGRAM_PROJECT` env var can override detection. All project names are normalized to lowercase and trimmed.
+Engram auto-detects project name from git remote at MCP startup. `--project` flag and `ENGRAM_PROJECT` env var override detection. All project names normalized to lowercase and trimmed.
 
-If the agent saves a memory under a project name that doesn't match existing observations, engram warns about potential name drift. Use `mem_merge_projects` (MCP tool) or `engram projects consolidate` (CLI) to merge variants.
+If agent saves under project name that doesn't match existing observations, engram warns about potential name drift. Use `mem_merge_projects` (MCP tool) or `engram projects consolidate` (CLI) to merge variants.
 
 ## Upsert Behavior
 
-Same `topic_key` + `project` + `scope` → UPDATE (overwrite), not INSERT. Previous content is lost — `revision_count` increments but old content is NOT saved. This is by design — engram is working memory, not an audit trail. For iteration history or team collaboration, use `openspec` or `hybrid` mode.
+Same `topic_key` + `project` + `scope` → UPDATE (overwrite), not INSERT. Previous content lost — `revision_count` increments but old content NOT saved. By design — engram is working memory, not audit trail. For iteration history or team collaboration, use `openspec` or `hybrid` mode.
 
 ## Why This Convention
 
 - Deterministic titles → recovery works by exact match
 - `topic_key` → enables upserts without duplicates
 - `sdd/` prefix → namespaces all SDD artifacts
-- Two-step recovery → search previews are always truncated; `mem_get_observation` is the only way to get full content
+- Two-step recovery → search previews always truncated; `mem_get_observation` only way to get full content
 - Lineage → archive-report includes all observation IDs for complete traceability
 
 ## Engram Tool Distribution v3.0 [MANDATORY for all agents]
@@ -160,7 +160,7 @@ Same `topic_key` + `project` + `scope` → UPDATE (overwrite), not INSERT. Previ
 | `mem_compare` | ❌ | ❌ | ❌ | ❌ | ❌ | CLI only — never in agents |
 | `mem_merge_projects` | ❌ | ❌ | ❌ | ❌ | ❌ | CLI only — never in agents |
 
-### Universal (all agents receive these in every prompt)
+### Universal (all agents receive in every prompt)
 - `mem_search` — find relevant knowledge
 - `mem_save` — persist findings
 - `mem_get_observation` — read full document (always call after search)
@@ -182,6 +182,5 @@ Same `topic_key` + `project` + `scope` → UPDATE (overwrite), not INSERT. Previ
 ### ByteRover Loading Order
 - **Level 1 — Working Memory (session scope)**: `mem_context(limit: 5)` at session start
 - **Level 2 — Episodic Memory (project scope)**: `mem_search("sdd/{change_name}/spec")` → load only what current phase needs
-- **Level 3 — Semantic Memory (knowledge scope)**: NEVER load Odoo guides eagerly. Lazy load via `mem_search('odoo {version} {topic}')`
+- **Level 3 — Semantic Memory (knowledge scope)**: NEVER load guides eagerly. Lazy load via `mem_search('odoo {version} {topic}')`
 - **Level 4 — Archive Memory (historical scope)**: `sdd/{change}/archive`
-

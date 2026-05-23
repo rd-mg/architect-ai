@@ -1,7 +1,7 @@
 ## sdd-hotfix [trigger: "/sdd-hotfix {description}" OR "hotfix {description}"]
 
-### Eligibility Gate (ALL must pass — hard requirements)
-- Scope: ≤ 3 files changed (verify with rg count BEFORE starting)
+### Eligibility Gate (ALL must pass)
+- Scope: ≤ 3 files changed (rg count BEFORE starting)
 - No new public API surfaces
 - No schema migrations / model field changes
 - D5 < 2 (not security-critical)

@@ -10,12 +10,11 @@ metadata:
 
 ## Purpose
 
-Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+Adaptive Reasoning gate: MUST state Mode: {n} as first line of response per gate instructions in prompt.
 
-
-This directory stores shared reference documents consumed by real SDD skills
-(for example: `sdd-phase-common.md`, `persistence-contract.md`).
+Directory stores shared reference documents consumed by real SDD skills
+(e.g.: `sdd-phase-common.md`, `persistence-contract.md`).
 
 ## Not Invokable
 
-`_shared` is a support package only. Do not invoke it as a skill.
+`_shared` is support package only. Do not invoke as skill.

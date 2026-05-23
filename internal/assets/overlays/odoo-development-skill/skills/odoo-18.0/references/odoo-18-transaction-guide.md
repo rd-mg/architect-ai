@@ -144,7 +144,7 @@ if not existing:
 
 ### What is a Savepoint?
 
-A savepoint creates a nested transaction that can be rolled back without affecting the outer transaction.
+savepoint creates a nested transaction that can be rolled back without affecting the outer transaction.
 
 ```python
 # From odoo/sql_db.py:79
@@ -649,7 +649,7 @@ def upsert_by_key(self, key_field, key_value, values):
 
 ### Pattern 3: Record Locking (Odoo Standard Pattern)
 
-This is the **standard Odoo pattern** for preventing concurrent record processing:
+the **standard Odoo pattern** for preventing concurrent record processing:
 
 ```python
 from psycopg2.errors import LockNotAvailable
@@ -732,4 +732,3 @@ def get_aggregated_data(self):
 - `odoo/addons/account_edi/models/account_edi_document.py:229` - `FOR UPDATE NOWAIT` pattern
 - `odoo/addons/website_sale/controllers/payment.py:47` - `LockNotAvailable` handling
 - PostgreSQL Documentation: Transaction Isolation, Error Codes
-

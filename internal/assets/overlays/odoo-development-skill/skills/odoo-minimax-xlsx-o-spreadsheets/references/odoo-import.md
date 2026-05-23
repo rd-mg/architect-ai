@@ -4,16 +4,16 @@ When generating `.xlsx` files for Odoo import (e.g., via Chatter attachment or "
 
 ## Mandatory Rules
 
-1. **Fonts**: ONLY **Arial** is supported. Any other font will be discarded or forced to Arial by Odoo.
-2. **Fills**: Only **Solid Fills** are allowed. Gradient fills are ignored/broken.
-3. **Borders**: **Diagonal borders** are not supported.
-4. **Alignments**: Only `left`, `center`, `right` (horizontal) and `top`, `center`, `bottom` (vertical). `Justify` or `Distributed` are forced to defaults.
+1. **Fonts**: ONLY **Arial** supported. Any other font discarded or forced to Arial by Odoo.
+2. **Fills**: Only **Solid Fills** allowed. Gradient fills ignored/broken.
+3. **Borders**: **Diagonal borders** not supported.
+4. **Alignments**: Only `left`, `center`, `right` (horizontal) and `top`, `center`, `bottom` (vertical). `Justify` or `Distributed` forced to defaults.
 5. **Strings**: Clean all cell text from **newline characters** (`\n`, `\r`). Odoo strips them on import.
 
 ## Chart Restrictions
 
 - Supported: `pie`, `doughnut`, `bar`, `line`.
-- **Conversion**: If a `pie` chart has multiple data series, Odoo will convert it to a `doughnut`.
+- **Conversion**: If `pie` chart has multiple data series, Odoo converts it to `doughnut`.
 
 ## Conditional Formatting Restrictions
 
@@ -23,7 +23,7 @@ When generating `.xlsx` files for Odoo import (e.g., via Chatter attachment or "
 ## Validation Command
 
 ```bash
-# Run the auditor before delivery
+# Run auditor before delivery
 python3 scripts/formula_check.py output.xlsx --report
 ```
-Check the `Odoo 19 Compatibility Audit` section in the output.
+Check `Odoo 19 Compatibility Audit` section in output.

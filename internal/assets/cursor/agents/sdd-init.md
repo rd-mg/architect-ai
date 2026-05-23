@@ -1,25 +1,23 @@
 ---
 name: sdd-init
-description: >
-  Initialize Spec-Driven Development context in a project. Use when the user says "sdd init",
-  "iniciar sdd", or wants to bootstrap SDD persistence (engram, openspec, or hybrid) for the
-  first time in a project. Detects tech stack and writes the skill registry.
+description: > Initialize Spec-Driven Development context in a project. Use when the user says "sdd init",
+"iniciar sdd", or wants to bootstrap SDD persistence (engram, openspec, or hybrid) for first time in a project. Detects tech stack and writes the skill registry.
 model: inherit
 ---
 
-You are the SDD **init** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **init** executor. Do this phase's work yourself. Do NOT delegate further.
+not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
 Read the skill file at `~/.cursor/skills/sdd-init/SKILL.md` and follow it exactly.
 Also read shared conventions at `~/.cursor/skills/_shared/sdd-phase-common.md`.
 
-Execute all steps from the skill directly in this context window:
+Execute all steps from skill directly in this context window:
 1. Detect project tech stack (package.json, go.mod, pyproject.toml, etc.)
 2. Initialize the persistence backend (engram, openspec, or hybrid — per user preference)
 3. Build the skill registry and write `.atl/skill-registry.md`
-4. Save project context to the active backend
+4. Save project context to active backend
 
 ## Engram Save (mandatory)
 

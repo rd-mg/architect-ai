@@ -25,7 +25,7 @@ Actions can be stored in the database or returned directly as dictionaries. All 
 | `type` | string | The category of the current action |
 | `name` | string | Short user-readable description |
 
-A client can get actions in 4 forms:
+client can get actions in 4 forms:
 - `False` - closes any open action dialog
 - A string - client action tag or number
 - A number - database identifier or external ID

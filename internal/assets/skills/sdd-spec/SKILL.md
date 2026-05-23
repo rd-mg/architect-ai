@@ -13,111 +13,100 @@ metadata:
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
+Produce delta specs — requirements and scenarios describing what's ADDED, MODIFIED, or REMOVED from system behavior.
 
-You are a sub-agent responsible for writing SPECIFICATIONS. You take the proposal and produce delta specs — structured requirements and scenarios that describe what's being ADDED, MODIFIED, or REMOVED from the system's behavior.
+## Input
 
-## What You Receive
-
-From the orchestrator:
-- Change name
+Orchestrator provides: change name.
 
 ## Persistence
 
-Follow `_shared/mode-branching.md` for artifact-store branching.
+Follow `_shared/mode-branching.md`.
 
 - **Artifact Name**: spec.md
 - **Topic Key**: sdd/{change-name}/spec
 - **Type**: architecture
 
-## What to Do
+## Steps
 
 ### Step 1: Load Skills
 Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Identify Affected Domains
 
-Read the proposal's **Capabilities section** — this is your primary contract:
+Read proposal's **Capabilities section** — primary contract:
 
 ```
-FOR EACH entry under "New Capabilities":
-├── This becomes a NEW full spec: openspec/specs/<capability-name>/spec.md
-└── Write a complete spec (not a delta) — no existing behavior to reference
+FOR EACH "New Capabilities" entry:
+├── New FULL spec: openspec/specs/<capability-name>/spec.md
+└── Write complete spec (not delta)
 
-FOR EACH entry under "Modified Capabilities":
-├── This becomes a DELTA spec: openspec/changes/{change-name}/specs/<capability-name>/spec.md
-└── Read existing openspec/specs/<capability-name>/spec.md first — your delta modifies it
+FOR EACH "Modified Capabilities" entry:
+├── DELTA spec: openspec/changes/{change-name}/specs/<capability-name>/spec.md
+└── Read existing openspec/specs/<capability-name>/spec.md first
 ```
 
-If the proposal has no Capabilities section (older format), fall back to inferring from "Affected Areas". But always prefer the explicit Capabilities mapping when present.
+Fallback: infer from "Affected Areas" if no Capabilities section.
 
 ### Step 3: Read Existing Specs
 
-If `openspec/specs/{domain}/spec.md` exists, read it to understand CURRENT behavior. Your delta specs describe CHANGES to this behavior.
+If `openspec/specs/{domain}/spec.md` exists, read it. Delta specs describe CHANGES.
 
-### Step 3b: Failure Analysis (FMEA) (MANDATORY for Behavioral Changes)
-
-Before finalizing the spec, identify potential failure modes. This identifies the "Sad Paths" you must document.
+### Step 3b: Failure Analysis (FMEA) — MANDATORY for Behavioral Changes
 
 ```markdown
 FOR EACH requirement:
-├── Identify what could go wrong (Failure Mode).
-├── Determine the impact (Effect).
-├── Rate Severity (1-5, where 5 is data loss/crash).
-└── Define Prevention/Mitigation.
+├── Identify failure mode
+├── Determine effect
+├── Rate Severity (1-5, 5 = data loss/crash)
+└── Define Prevention/Mitigation
 ```
 
-If the change is a pure refactor or internal documentation without behavioral impact, you MAY skip this step but MUST state "FMEA: Not applicable (Refactor)" in your return summary.
+Pure refactor without behavioral impact → state "FMEA: Not applicable (Refactor)" in summary.
 
-### Step 3c: UI State Analysis (FSM) (MANDATORY for Complex UI)
-
-For UI components with more than 3 states or complex transitions, model them using a Finite State Machine.
+### Step 3c: UI State Analysis (FSM) — MANDATORY for Complex UI (>3 states)
 
 ```markdown
 FSM:
-├── States: List all possible UI states (e.g., Idle, Loading, Error, Success).
-├── Triggers: What causes a state change (e.g., user click, API response).
-└── Transitions: Define the matrix (Current + Trigger = Next).
+├── States: Idle, Loading, Error, Success...
+├── Triggers: user click, API response...
+└── Transitions: Current + Trigger = Next
 ```
 
-### Step 3d: Accessibility (WCAG) (MANDATORY for UI)
-
-For all UI changes, define the accessibility contract.
+### Step 3d: Accessibility (WCAG) — MANDATORY for UI
 
 ```markdown
 WCAG:
-├── Keyboard: Can the change be operated via keyboard only?
-├── ARIA: Are proper roles and labels (aria-*) defined?
-└── Focus: Is focus management handled (e.g., modal focus trap)?
+├── Keyboard: operable via keyboard only?
+├── ARIA: proper roles and labels (aria-*)?
+└── Focus: focus management handled?
 ```
 
 ### Step 4: Write Delta Specs
 
-If using file-based persistence, create specs inside the change folder:
+File-based persistence structure:
 
 ```
 openspec/changes/{change-name}/
-├── proposal.md              ← (already exists)
+├── proposal.md
 └── specs/
     └── {domain}/
         └── spec.md          ← Delta spec
 ```
 
-#### MODIFIED Requirements Workflow (CRITICAL — read before writing deltas)
-
-When writing a `## MODIFIED Requirements` section, follow this exact workflow:
+#### MODIFIED Requirements Workflow (CRITICAL)
 
 ```
-1. Locate the requirement in openspec/specs/{domain}/spec.md
-2. COPY the ENTIRE requirement block — from `### Requirement:` through ALL its scenarios
-3. PASTE it under `## MODIFIED Requirements`
-4. EDIT the copy to reflect the new behavior
-5. Add "(Previously: {one-line summary of what changed})" under the requirement text
+1. Locate requirement in openspec/specs/{domain}/spec.md
+2. COPY ENTIRE requirement block — from "### Requirement:" through ALL scenarios
+3. PASTE under "## MODIFIED Requirements"
+4. EDIT copy to reflect new behavior
+5. Add "(Previously: {one-line summary})" under requirement text
 
 Why copy-full-then-edit?
-→ The archive step REPLACES the requirement in main specs with your MODIFIED block
-→ If your block is partial, the archive will lose scenarios you didn't copy
-→ Common pitfall: only writing the changed scenario and losing the rest
-→ If adding NEW behavior WITHOUT changing existing behavior, use ADDED instead
+→ Archive step REPLACES requirement in main specs with your MODIFIED block
+→ Partial block = lost scenarios at archive time
+→ Adding NEW behavior without changing existing → use ADDED, not MODIFIED
 ```
 
 #### Delta Spec Format
@@ -132,60 +121,59 @@ Why copy-full-then-edit?
 | {mode}       | {eff}  | {1-5}    | {mit}      |
 
 ## FSM (UI States)
-> Only required for UI components with >3 states.
+> Only for UI components with >3 states.
 
 | Current State | Trigger | Next State | Action |
 |---------------|---------|------------|--------|
 | {state}       | {trig}  | {next}     | {act}  |
 
 ## Accessibility (WCAG)
-> Only required for UI changes.
+> Only for UI changes.
 
-- **Keyboard**: {How keyboard nav is handled}
-- **Screen Reader**: {ARIA roles and labels used}
+- **Keyboard**: {How keyboard nav handled}
+- **Screen Reader**: {ARIA roles and labels}
 - **Focus**: {Focus management strategy}
 
 ## ADDED Requirements
 
-### Requirement: {Requirement Name}
+### Requirement: {Name}
 
-{Description using RFC 2119 keywords: MUST, SHALL, SHOULD, MAY}
+{Description using RFC 2119: MUST, SHALL, SHOULD, MAY}
 
-The system {MUST/SHALL/SHOULD} {do something specific}.
+The system {MUST/SHALL/SHOULD} {do something}.
 
-#### Scenario: {Happy path scenario}
+#### Scenario: {Happy path}
 
 - GIVEN {precondition}
 - WHEN {action}
 - THEN {expected outcome}
 
-#### Scenario: {Sad Path scenario}
+#### Scenario: {Sad path}
 
 - GIVEN {error-triggering precondition}
 - WHEN {action}
 - THEN {expected error outcome}
 
-#### Scenario: {Edge case scenario}
+#### Scenario: {Edge case}
 
 - GIVEN {precondition}
 - WHEN {action}
 - THEN {expected outcome}
-```
 
 ## MODIFIED Requirements
 
-### Requirement: {Existing Requirement Name}
+### Requirement: {Existing Name}
 
-{Full updated requirement text — replaces the existing one entirely}
-(Previously: {what it was before, in one line})
+{Full updated requirement text — replaces existing entirely}
+(Previously: {one-line summary})
 
-#### Scenario: {Unchanged scenario — keep if still valid}
+#### Scenario: {Unchanged — keep if still valid}
 
 - GIVEN {precondition}
 - WHEN {action}
 - THEN {outcome}
 
-#### Scenario: {Updated or new scenario}
+#### Scenario: {Updated or new}
 
 - GIVEN {updated precondition}
 - WHEN {updated action}
@@ -193,15 +181,14 @@ The system {MUST/SHALL/SHOULD} {do something specific}.
 
 ## REMOVED Requirements
 
-### Requirement: {Requirement Being Removed}
+### Requirement: {Name}
 
-(Reason: {why this requirement is being deprecated/removed})
+(Reason: {why deprecated/removed})
+```
 
 #### Delta front-matter (mandatory)
 
-Every delta spec file MUST begin with a YAML front-matter block. Compute `base_sha` as SHA-256 of the current main spec at `openspec/specs/{domain}/spec.md`. If that file does not exist, use the sentinel `"0"`.
-
-Front-matter template (prepend to every `openspec/changes/{change-name}/specs/{domain}/spec.md`):
+Every delta spec MUST begin with YAML front-matter. Compute `base_sha` as SHA-256 of `openspec/specs/{domain}/spec.md`, or `"0"` if new:
 
 ```yaml
 ---
@@ -216,12 +203,11 @@ openspec_delta:
 # ...delta content below...
 ```
 
-Do NOT omit any field. The archive step (`sdd-archive`) refuses to merge deltas without valid front-matter.
-```
+Do NOT omit any field. Archive step refuses merge without valid front-matter.
 
 #### For NEW Specs (No Existing Spec)
 
-If this is a completely new domain, create a FULL spec (not a delta):
+Write FULL spec:
 
 ```markdown
 # {Domain} Specification
@@ -230,8 +216,7 @@ If this is a completely new domain, create a FULL spec (not a delta):
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
-
-{High-level description of this spec's domain.}
+{High-level domain description.}
 
 ## Requirements
 
@@ -248,12 +233,9 @@ The system {MUST/SHALL/SHOULD} {behavior}.
 
 ### Step 5: Persist Artifact
 
-**This step is MANDATORY — do NOT skip it.**
-Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
+**MANDATORY — do NOT skip.** Follow persistence rules in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 6: Return Summary
-
-Return to the orchestrator:
 
 ```markdown
 ## Specs Created
@@ -263,7 +245,7 @@ Return to the orchestrator:
 ### Specs Written
 | Domain | Type | Requirements | Scenarios |
 |--------|------|-------------|-----------|
-| {domain} | Delta/New | {N added, M modified, K removed} | {total scenarios} |
+| {domain} | Delta/New | {N added, M modified, K removed} | {total} |
 
 ### Coverage
 - Happy paths: {covered/missing}
@@ -271,27 +253,27 @@ Return to the orchestrator:
 - Error states: {covered/missing}
 
 ### Next Step
-Ready for design (sdd-design). If design already exists, ready for tasks (sdd-tasks).
+Ready for design (sdd-design). If design exists, ready for tasks (sdd-tasks).
 ```
 
 ## Rules
 
-- ALWAYS use Given/When/Then format for scenarios
-- ALWAYS use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY) for requirement strength
-- Read the proposal's **Capabilities section** first — it tells you exactly which spec files to create
-- If existing specs exist, write DELTA specs (ADDED/MODIFIED/REMOVED sections)
-- If NO existing specs exist for the domain, write a FULL spec
-- Every requirement MUST have at least ONE Happy Path scenario
-- Every requirement with behavioral logic MUST have at least ONE Sad Path scenario
-- Every delta spec with behavioral changes MUST include an FMEA table
-- Every UI-related spec MUST include an Accessibility (WCAG) section
-- Every complex UI component (>3 states) MUST include an FSM (UI States) table
-- Keep scenarios TESTABLE — someone should be able to write an automated test from each one
-- DO NOT include implementation details in specs — specs describe WHAT, not HOW
-- **MODIFIED requirements MUST be the FULL block** — copy entire requirement + all scenarios from main spec, then edit. Partial MODIFIED blocks lose content at archive time.
-- If adding new behavior without changing existing behavior → use ADDED, not MODIFIED
-- Apply any `rules.specs` from `openspec/config.yaml`
-- **Size budget**: Spec artifact MUST be under 650 words. Prefer requirement tables over narrative descriptions. Each scenario: 3-5 lines max.
+- ALWAYS Given/When/Then format for scenarios
+- ALWAYS RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+- Read proposal's **Capabilities section** first — tells exactly which spec files to create
+- If existing specs exist → DELTA specs (ADDED/MODIFIED/REMOVED)
+- If no existing specs → FULL spec
+- Every requirement: ≥1 Happy Path scenario
+- Every behavioral requirement: ≥1 Sad Path scenario
+- Every delta with behavioral changes: FMEA table
+- Every UI spec: Accessibility (WCAG) section
+- Every complex UI (>3 states): FSM table
+- Scenarios must be TESTABLE
+- NO implementation details — specs describe WHAT, not HOW
+- **MODIFIED requirements: FULL block** — copy entire requirement + all scenarios, then edit. Partial blocks lose content at archive.
+- Adding new behavior without changing existing → use ADDED, not MODIFIED
+- Apply `rules.specs` from `openspec/config.yaml`
+- **Size budget**: ≤650 words. Requirement tables over narrative. Each scenario: 3-5 lines max.
 - Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.
 
 ## RFC 2119 Keywords Quick Reference
@@ -300,6 +282,6 @@ Ready for design (sdd-design). If design already exists, ready for tasks (sdd-ta
 |---------|---------|
 | **MUST / SHALL** | Absolute requirement |
 | **MUST NOT / SHALL NOT** | Absolute prohibition |
-| **SHOULD** | Recommended, but exceptions may exist with justification |
-| **SHOULD NOT** | Not recommended, but may be acceptable with justification |
+| **SHOULD** | Recommended, exceptions possible with justification |
+| **SHOULD NOT** | Not recommended, may be acceptable with justification |
 | **MAY** | Optional |

@@ -10,15 +10,15 @@ globs: "**/*.{py,xml}"
 
 # Odoo DDD Tactical Patterns
 
-This skill provides guidance on mapping DDD tactical patterns to the Odoo framework (v17+).
+skill provides guidance on mapping DDD tactical patterns to Odoo framework (v17+).
 
 ## Core Patterns
 
 ### 1. Aggregate Root (Model with Invariants)
-In Odoo, the **Aggregate Root** is the primary `models.Model`. Business invariants (rules that must always be true) are enforced using `@api.constrains`.
+In Odoo, the **Aggregate Root** is primary `models.Model`. Business invariants (rules must always be true) are enforced using `@api.constrains`.
 
 - **Pattern**: Use `@api.constrains` for global invariants.
-- **Why**: Ensures the rule is checked on every create/write, not just UI actions.
+- **Why**: Ensures rule is checked on every create/write, not just UI actions.
 - **Example**:
     ```python
     class SaleOrder(models.Model):
@@ -32,17 +32,17 @@ In Odoo, the **Aggregate Root** is the primary `models.Model`. Business invarian
     ```
 
 ### 2. Value Object (Data Logic)
-**Value Objects** are immutable data structures that encapsulate logic. In Odoo, these are often mapped to `fields.Selection` or related fields combined with `compute` methods.
+**Value Objects** are immutable data structures encapsulate logic. In Odoo, these are often mapped to `fields.Selection` or related fields combined with `compute` methods.
 
 - **Pattern**: Use `compute` fields with `@api.depends` for domain logic derived from attributes.
-- **Odoo 19+ Tip**: For complex logic, extract to a pure Python class and use it within the compute method.
+- **Odoo 19+ Tip**: For complex logic, extract to pure Python class and use it within compute method.
 - **Example**: Support Ticket SLA calculation logic.
 
 ### 3. Domain Service (Cross-Model Orchestration)
-When logic doesn't belong to a single entity, use a **Domain Service**.
+When logic doesn't belong to single entity, use a **Domain Service**.
 
 - **Pattern**: Use `models.AbstractModel` for stateless orchestration logic.
-- **Why**: Allows grouping methods without creating a database table.
+- **Why**: Allows grouping methods without creating database table.
 - **Example**:
     ```python
     class StockOptimizer(models.AbstractModel):
@@ -58,7 +58,7 @@ When logic doesn't belong to a single entity, use a **Domain Service**.
 **Specifications** encapsulate query logic.
 
 - **Pattern**: Use `@api.model` methods returning domain filters.
-- **Odoo 19+ Requirement**: Use the native `odoo.fields.Domain` object for advanced composition.
+- **Odoo 19+ Requirement**: Use native `odoo.fields.Domain` object for advanced composition.
 - **Example**:
     ```python
     @api.model
@@ -68,17 +68,17 @@ When logic doesn't belong to a single entity, use a **Domain Service**.
     ```
 
 ### 5. Domain Events
-Use the Odoo **Bus** or **Tracking** system to react to state changes.
+Use Odoo **Bus** or **Tracking** system to react to state changes.
 
 ### 6. Repository
-The **Odoo ORM** (`env['model'].search(...)`) acts as the Repository. Do not wrap it further unless implementing an external integration adapter.
+**Odoo ORM** (`env['model'].search(...)`) acts as Repository. Do not wrap it further unless implementing external integration adapter.
 
 ---
 
 ## Non-Applicable Patterns (Anti-patterns)
 
-Avoid these DDD patterns in Odoo as they conflict with the "Active Record" nature of the framework:
-1. **Explicit Repositories**: Creating separate `Repository` classes adds unnecessary boilerplate; Odoo `env` is the repository.
-2. **DTOs for internal logic**: Passing dictionaries instead of recordsets loses the power of lazy-loading and pre-fetching.
+Avoid these DDD patterns in Odoo as they conflict with the "Active Record" nature of framework:
+1. **Explicit Repositories**: Creating separate `Repository` classes adds unnecessary boilerplate; Odoo `env` is repository.
+2. **DTOs for internal logic**: Passing dictionaries instead of recordsets loses power of lazy-loading and pre-fetching.
 3. **Anemic Domain Model**: Putting all logic in "Services" and leaving Models as data containers. Keep logic in Models where possible.
-4. **Manual Transaction Management**: Odoo handles transactions via its cursor; manual `commit()` is usually a security/integrity risk.
+4. **Manual Transaction Management**: Odoo handles transactions via its cursor; manual `commit()` is usually security/integrity risk.

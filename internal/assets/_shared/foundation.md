@@ -2,32 +2,32 @@
 <!-- architect-ai:foundation:start -->
 
 ### 1. Search (ripgrep)
-- ALWAYS use `rg` instead of `grep -r`. Never use `find . -name`.
+- ALWAYS use `rg` not `grep -r`. Never `find . -name`.
 - Type filter: `rg "pattern" --type go` / `--type py` / `--type js`
 - File list: `rg -l "pattern"` | Context: `rg -C 3 "pattern"` | Count: `rg -c "pattern"`
 - Word boundary: `rg -w "exactWord"` | JSON output: `rg --json "pattern" | jq ...`
 - NEVER grep without --type in projects > 100 files.
 
 ### 2. Shell Safety (bash + fish)
-**bash**: Always start scripts with `set -euo pipefail` and `IFS=$'\n\t'`.
-**fish**: Use `or begin ... end` for error handling. No `set -euo pipefail` needed.
-**Both**: Quote all variables. Use `rg` not `grep`. Check command availability with `command -v`.
-**Never**: `rm -rf $VAR` without quoting. Never pipe untrusted input to `bash` or `sh`.
+- **bash**: Start scripts with `set -euo pipefail` and `IFS=$'\n\t'`.
+- **fish**: Use `or begin ... end` for error handling. No `set -euo pipefail` needed.
+- **Both**: Quote all variables. Use `rg` not `grep`. Check command with `command -v`.
+- **Never**: `rm -rf $VAR` unquoted. Never pipe untrusted input to `bash` or `sh`.
 
 ### 3. Architecture Guardrails
 - Respect module boundaries. Never import child packages from parent.
 - No circular imports. No business logic in presentation layer.
-- Prefer explicit error returns over panics. Log errors at the boundary.
+- Prefer explicit error returns over panics. Log errors at boundary.
 - No global mutable state outside of explicitly marked singletons.
 
 ### 4. Context Guardian
-- When context usage > 50%: run compress command or manual summary.
-- When D4 >= 2 (Adaptive Reasoning): trigger context-guardian immediately.
+- Context usage > 50%: run compress command or manual summary.
+- D4 >= 2 (Adaptive Reasoning): trigger context-guardian immediately.
 - Save checkpoint to Engram before any compress operation.
 - Platforms: /compact (OpenCode/Claude) · /compress (Gemini) · manual summary (VSCode/Antigravity).
 
 ### 5. Adaptive Reasoning (Gate v3)
-- MANDATORY first line of every response: `[MODE N | D1=X D2=X D3=X D4=X D5=X | POSTURE: +++P]`
+- MANDATORY first line: `[MODE N | D1=X D2=X D3=X D4=X D5=X | POSTURE: +++P]`
 - D5>=2 (security): always add +++Adversarial. D3>=2: Mode 3. Hard ceiling: 2 postures max.
 - D1+D2>=5 OR D5>=2: sequential thinking required before code generation.
 

@@ -11,7 +11,7 @@
 
 ## Version 18.0 Overview
 
-Odoo 18.0 is a refinement release focusing on:
+Odoo 18.0 is refinement release focusing on:
 - Multi-company improvements with automatic validation
 - SQL security enhancements with SQL() builder
 - Type hint preparation for v19 mandatory adoption
@@ -235,4 +235,4 @@ Start adopting these patterns now to ease v19 migration:
 
 ---
 
-**Note**: Always verify patterns against the official Odoo 18.0 source code at `github.com/odoo/odoo/tree/18.0`.
+**Note**: Always verify patterns against official Odoo 18.0 source code at `github.com/odoo/odoo/tree/18.0`.

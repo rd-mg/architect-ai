@@ -8,7 +8,7 @@ description: >
 
 # Odoo 19.0 Patterns
 
-This bundle contains patterns specific to Odoo 19.0. Version-agnostic
+bundle contains patterns specific to Odoo 19.0. Version-agnostic
 domain patterns (accounting, stock, sale, etc.) are in `patterns-agnostic/`.
 
 ## Files in This Bundle
@@ -32,6 +32,6 @@ domain patterns (accounting, stock, sale, etc.) are in `patterns-agnostic/`.
 
 ## Before Writing Code for v19
 
-1. Read the relevant file in this bundle (model-patterns.md, etc.)
+1. Read relevant file in this bundle (model-patterns.md, etc.)
 2. Cross-reference `patterns-agnostic/` for domain-specific concerns
 3. For migration work, see `migration-{prev}-19/` and `migration-19-{next}/`

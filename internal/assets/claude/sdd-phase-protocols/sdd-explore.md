@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-explore
-Project: architect-ai
-Adapter: Claude
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: nothing (optional: prior context)
-- **Writes**: `explore` artifact
+## Deps: Reads nothing (optional: prior context) | Writes `explore` artifact
 
 ## Cognitive Posture
 +++Socratic — Reveal assumptions. Explore the problem space. Formulate questions.
 
-## Model
-sonnet — structural investigation, not architectural decisions
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 +++Socratic
@@ -33,7 +25,7 @@ in the request. Reveal what has NOT been said.
 Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 
 ## Step 0: Deep Code Exploration (Sequential Thinking)
-- **MANDATORY**: Call `sequential_thinking` to map the target modules and identify dependencies BEFORE running any search tools.
+- Call `sequential_thinking` to map the target modules and identify dependencies BEFORE running any search tools.
 
 ## ADR Pre-check (MANDATORY)
 **BEFORE** performing any code search, check for existing Architecture Decision Records:
@@ -48,12 +40,6 @@ Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 5. **Pattern Comparison**: Compare found implementation with established project patterns.
 
 Do NOT `cat` entire files unless they are under 50 lines. Identify constraints. Do NOT modify code.
-
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 
@@ -72,12 +58,10 @@ mem_save(
 ```
 
 ## Result Processing
-
 - Check `skill_resolution` — if not `injected`, trigger re-read of registry
 - Store `executive_summary` only; discard verbose output
 - Extract any `questions` returned by Socratic mode and present to user
 - Update state: `idle` → `exploring`
-
 ## Failure Handling
 
 - If sub-agent returns `status: blocked` with unanswered questions → present to user, wait

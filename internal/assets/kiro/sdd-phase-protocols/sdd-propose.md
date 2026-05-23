@@ -27,12 +27,12 @@ as evidence.
 
 ## Phase: sdd-propose
 
-Task: Create a change proposal for "{change-name}". Read exploration (if any).
+Task: Create change proposal for "{change-name}". Read exploration (if any).
 Produce: proposal.md with scope, approach, affected areas, rollback plan,
 success criteria, capabilities section.
 
 ## Step 0: Hypothesis Branching (Sequential Thinking)
-- **MANDATORY**: Call `sequential_thinking` with at least 2 branches (using `branchId`) to explore alternative architectural approaches before committing to one in the proposal.
+- **MANDATORY**: Call `sequential_thinking` with at least 2 branches (using `branchId`) to explore alternative architectural approaches before committing to one in proposal.
 
 ## Mandatory Sections
 - Scope (what's in, what's out)
@@ -41,9 +41,9 @@ success criteria, capabilities section.
 - Rollback Plan (how to undo if this fails)
 - Success Criteria (observable conditions for "done")
 - Capabilities (contract with sdd-spec — new/modified/none)
-- **Pre-mortem**: Address: (1) What is most likely to break? (2) What dependency is the weakest link? (3) How will we detect failure in production? (4) Who is affected if this fails?
+- **Pre-mortem**: Address: (1) What most likely to break? (2) What dependency weakest link? (3) How detect failure in production? (4) Who affected if this fails?
 - **Open Assumptions**: Table with ≥ 2 rows (Assumption | Impact if False). If 0 assumptions, justify why.
-- **Viability Score**: Score 1-15 (Sum of 3 dimensions: 1-5 Complexity, 1-5 Clarity, 1-5 Tooling). If score < 8, initialization is BLOCKED.
+- **Viability Score**: Score 1-15 (Sum of 3 dimensions: 1-5 Complexity, 1-5 Clarity, 1-5 Tooling). If score < 8, initialization BLOCKED.
 
 ## Artifact Store: {mode}
 
@@ -64,9 +64,9 @@ mem_save(
 ## Result Processing
 
 - Check `executive_summary` length — must be < 100 words
-- Validate `Capabilities` section is filled (not "TODO")
+- Validate `Capabilities` section filled (not "TODO")
 - **Viability Gate**: If Viability Score < 8, set status to `blocked` and recommend `sdd-explore`.
-- **Pre-mortem Check**: Reject if Pre-mortem section is missing or incomplete.
+- **Pre-mortem Check**: Reject if Pre-mortem section missing or incomplete.
 - Update state: `exploring` → `proposing`
 - Next recommended: `sdd-spec` or `sdd-design`
 

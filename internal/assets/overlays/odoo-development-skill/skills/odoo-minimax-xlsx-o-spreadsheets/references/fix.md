@@ -1,6 +1,6 @@
-# FIX — Repair Broken Formulas in an Existing xlsx
+# FIX — Repair Broken Formulas in Existing xlsx
 
-This is an EDIT task. You MUST preserve all original sheets and data. Never create a new workbook.
+EDIT task. MUST preserve all original sheets and data. Never create new workbook.
 
 ## Workflow
 
@@ -11,7 +11,7 @@ python3 SKILL_DIR/scripts/formula_check.py input.xlsx --json
 # Step 2: Unpack
 python3 SKILL_DIR/scripts/xlsx_unpack.py input.xlsx /tmp/xlsx_work/
 
-# Step 3: Fix each broken <f> element in the worksheet XML using the Edit tool
+# Step 3: Fix each broken <f> element in worksheet XML using Edit tool
 #   (see Error-to-Fix mapping below)
 
 # Step 4: Pack and validate
@@ -25,13 +25,13 @@ python3 SKILL_DIR/scripts/formula_check.py output.xlsx
 |-------|-------------|
 | `#DIV/0!` | Wrap: `IFERROR(original_formula, "-")` |
 | `#NAME?` | Fix misspelled function (e.g. `SUMM` → `SUM`) |
-| `#REF!` | Reconstruct the broken reference |
+| `#REF!` | Reconstruct broken reference |
 | `#VALUE!` | Fix type mismatch |
 
-For the full list of Excel error types and advanced diagnostics, see `validate.md`.
+For full list of Excel error types and advanced diagnostics, see `validate.md`.
 
 ## Critical Rules
 
-- The output MUST contain the same sheets as the input. Do NOT create a new workbook.
-- Only modify the specific `<f>` elements that are broken — everything else must be untouched.
-- After packing, always run `formula_check.py` to confirm all errors are resolved.
+- Output MUST contain same sheets as input. Do NOT create new workbook.
+- Only modify specific `<f>` elements that are broken — everything else must be untouched.
+- After packing, always run `formula_check.py` to confirm all errors resolved.

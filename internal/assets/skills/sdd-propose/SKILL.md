@@ -13,36 +13,33 @@ metadata:
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
+Create structured `proposal.md` inside change folder from exploration analysis or direct user input.
 
-You are a sub-agent responsible for creating PROPOSALS. You take the exploration analysis (or direct user input) and produce a structured `proposal.md` document inside the change folder.
+## Input
 
-## What You Receive
-
-From the orchestrator:
-- Change name (e.g., "add-dark-mode")
-- Exploration analysis (from sdd-explore) OR direct user description
+Orchestrator provides: change name, exploration analysis (from sdd-explore) or user description.
 
 ## Persistence
 
-Follow `_shared/mode-branching.md` for artifact-store branching.
+Follow `_shared/mode-branching.md`.
 
 - **Artifact Name**: proposal.md
 - **Topic Key**: sdd/{change-name}/proposal
 - **Type**: architecture
 
-- Never force `openspec/` creation unless user requested file-based persistence or mode is `hybrid`.
+Never force `openspec/` creation unless user requested file-based persistence or mode `hybrid`.
 
-## What to Do
+## Steps
 
-## Step 0: Hypothesis Branching (Sequential Thinking)
-- **MANDATORY**: Call `sequential_thinking` with at least 2 branches (using `branchId`) to explore alternative architectural approaches before committing to one in the proposal.
+### Step 0: Hypothesis Branching (Sequential Thinking)
+**MANDATORY**: Call `sequential_thinking` with ≥2 branches (`branchId`) before committing.
 
 ### Step 1: Load Skills
 Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Create Change Directory and Initial State
 
-If using file-based persistence, create the change folder structure:
+File-based persistence: create change folder structure:
 
 ```
 openspec/changes/{change-name}/
@@ -50,8 +47,7 @@ openspec/changes/{change-name}/
 └── state.yaml       (initial state)
 ```
 
-**Write `state.yaml` initial skeleton:**
-Follow the atomic write pattern (tmp + rename).
+**Write `state.yaml` initial skeleton** (atomic write: tmp + rename):
 ```yaml
 schema_version: 1
 change_name: {change-name}
@@ -72,7 +68,7 @@ phases:
 
 ### Step 3: Read Existing Specs
 
-If `openspec/specs/` has relevant specs, read them to understand current behavior that this change might affect.
+If `openspec/specs/` has relevant specs, read them.
 
 ### Step 4: Write proposal.md
 
@@ -81,42 +77,33 @@ If `openspec/specs/` has relevant specs, read them to understand current behavio
 
 ## Intent
 
-{What problem are we solving? Why does this change need to happen?
-Be specific about the user need or technical debt being addressed.}
+{What problem? Why? Be specific about user need or technical debt.}
 
 ## Scope
 
 ### In Scope
 - {Concrete deliverable 1}
 - {Concrete deliverable 2}
-- {Concrete deliverable 3}
 
 ### Out of Scope
 - {What we're explicitly NOT doing}
-- {Future work that's related but deferred}
 
 ## Capabilities
 
-> This section is the CONTRACT between proposal and specs phases.
-> The sdd-spec agent reads this to know exactly which spec files to create or update.
-> Research `openspec/specs/` before filling this in.
+> CONTRACT between proposal and specs phases. sdd-spec reads this to know which spec files to create.
+> Research `openspec/specs/` first.
 
 ### New Capabilities
-<!-- Capabilities being introduced. Each becomes a new `openspec/specs/<name>/spec.md`.
-     Use kebab-case names (e.g., user-auth, data-export, api-rate-limiting).
-     Leave empty if no new capabilities. -->
-- `<capability-name>`: <brief description of what this capability covers>
+<!-- Each becomes openspec/specs/<name>/spec.md. kebab-case names. Empty if none. -->
+- `<capability-name>`: <brief description>
 
 ### Modified Capabilities
-<!-- Existing capabilities whose REQUIREMENTS are changing (not just implementation).
-     Only list here if spec-level behavior changes. Each needs a delta spec.
-     Use existing spec names from openspec/specs/. Leave empty if none. -->
-- `<existing-capability-name>`: <what requirement is changing>
+<!-- Existing capabilities whose REQUIREMENTS change. Delta spec per entry. -->
+- `<existing-capability-name>`: <what requirement changes>
 
 ## Approach
 
-{High-level technical approach. How will we solve this?
-Reference the recommended approach from exploration if available.}
+{High-level technical approach. Reference exploration if available.}
 
 ## Affected Areas
 
@@ -128,14 +115,14 @@ Reference the recommended approach from exploration if available.}
 
 | Risk | Likelihood | Mitigation |
 |------|------------|------------|
-| {Risk description} | Low/Med/High | {How we mitigate} |
+| {Risk} | Low/Med/High | {Mitigation} |
 
 ## Viability Score: {N}/10
-**Rationale**: {1-2 sentences on why this score was given based on current codebase readiness.}
+**Rationale**: {1-2 sentences on current codebase readiness.}
 
 ## Rollback Plan
 
-{How to revert if something goes wrong. Be specific.}
+{How to revert. Be specific.}
 
 ## Dependencies
 
@@ -143,18 +130,15 @@ Reference the recommended approach from exploration if available.}
 
 ## Success Criteria
 
-- [ ] {How do we know this change succeeded?}
+- [ ] {Measurable outcome}
 - [ ] {Measurable outcome}
 ```
 
 ### Step 5: Persist Artifact
 
-**This step is MANDATORY — do NOT skip it.**
-Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md`.
+**MANDATORY — do NOT skip.** Follow persistence rules in Step 2 of `_shared/mode-branching.md`.
 
 ### Step 6: Return Summary
-
-Return to the orchestrator:
 
 ```markdown
 **Status**: success
@@ -166,18 +150,18 @@ Return to the orchestrator:
 
 ## Rules
 
-- In `openspec` mode, ALWAYS create the `proposal.md` file
-- If the change directory already exists with a proposal, READ it first and UPDATE it
-- Keep the proposal CONCISE - it's a thinking tool, not a novel
-- Every proposal MUST have a Pre-mortem section with at least 2 risks
-- Every proposal MUST have a Viability Score with rationale
-- Every proposal MUST have a rollback plan
-- Every proposal MUST have success criteria
-- Use concrete file paths in "Affected Areas" when possible
-- Apply any `rules.proposal` from `openspec/config.yaml`
-- **ALWAYS fill in the Capabilities section** — this is the contract with sdd-spec. Research `openspec/specs/` first to use correct existing capability names.
-- New Capabilities → each will become `openspec/specs/<name>/spec.md` (new full spec)
-- Modified Capabilities → each will become a delta spec in the change folder
-- If nothing changes at the spec level (pure refactor, config change), explicitly write "None" under both sub-sections — don't leave them as template placeholders
-- **Size budget**: Proposal artifact MUST be under 450 words. Use bullet points and tables over prose. Headers organize, not explain.
+- In `openspec` mode, ALWAYS create `proposal.md`
+- If change directory already has proposal, READ then UPDATE
+- Keep proposal CONCISE
+- Pre-mortem section: ≥2 risks
+- Viability Score with rationale
+- Rollback plan
+- Success criteria
+- Concrete file paths in "Affected Areas"
+- Apply `rules.proposal` from `openspec/config.yaml`
+- **ALWAYS fill Capabilities section** — contract with sdd-spec. Research `openspec/specs/` for correct names.
+- New Capabilities → new `openspec/specs/<name>/spec.md`
+- Modified Capabilities → delta spec in change folder
+- Pure refactor/config change → explicitly write "None" under both sub-sections
+- **Size budget**: ≤450 words. Bullet points and tables over prose.
 - Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.

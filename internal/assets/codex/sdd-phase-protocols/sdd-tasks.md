@@ -63,11 +63,11 @@ Each task must include dependencies and safety metadata.
 
 ```markdown
 - [ ] {number} {action verb} {target}
-      Acceptance: {condition}
-      Depends-on: {comma separated task numbers, or NONE}
-      Parallel-safe: {true|false}
-      Risk: LOW | MEDIUM | HIGH
-      Risk-reason: {required only when HIGH — one sentence explaining why}
+Acceptance: {condition}
+Depends-on: {comma separated task numbers, or NONE}
+Parallel-safe: {true|false}
+Risk: LOW | MEDIUM | HIGH
+Risk-reason: {required only when HIGH — one sentence explaining why}
 ```
 
 ### Risk classification

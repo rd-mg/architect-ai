@@ -17,7 +17,7 @@ silent corruption or runtime import failures.
    python3 scripts/osheet_validate.py file.osheet.json --strict
    ```
 
-3. **Validate a directory** and emit JSON report for CI:
+3. **Validate directory** and emit JSON report for CI:
    ```bash
    python3 scripts/osheet_validate.py assets/sample-osheets/*.json --json
    ```
@@ -52,7 +52,7 @@ silent corruption or runtime import failures.
 
 ## Notes
 
-- The validator resolves pivots by BOTH UUID dictionary key AND numeric `formulaId`.
-  This is mandatory — all 13 reference samples use UUID keys but numeric `formulaId` in formulas.
-- The validator does NOT connect to a live Odoo instance by default.
-  Online model/field verification is available via `--odoo-url` flag (opt-in).
+- Validator resolves pivots by BOTH UUID dictionary key AND numeric `formulaId`.
+  Mandatory — all 13 reference samples use UUID keys but numeric `formulaId` in formulas.
+- Validator does NOT connect to live Odoo instance by default.
+  Online model/field verification available via `--odoo-url` flag (opt-in).

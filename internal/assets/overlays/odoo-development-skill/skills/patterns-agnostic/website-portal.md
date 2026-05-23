@@ -1,6 +1,6 @@
 # Website & Portal Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `portal-user-patterns.md` (architect-fix)
 - `public-route-patterns.md` (architect-fix)
 - `website-controller-patterns.md` (architect-fix)
@@ -13,7 +13,7 @@ Consolidated from the following source files:
 
 ## Portal & Mixins
 
-### Making a Model Portal-Aware
+### Making Model Portal-Aware
 ```python
 class MyDocument(models.Model):
     _name = 'my.document'

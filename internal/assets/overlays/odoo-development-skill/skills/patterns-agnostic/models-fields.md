@@ -1,6 +1,6 @@
 # Models & Fields Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `field-type-patterns.md` (architect-fix)
 - `compute-depends-patterns.md` (architect-fix)
 - `constraint-validation-patterns.md` (architect-fix)

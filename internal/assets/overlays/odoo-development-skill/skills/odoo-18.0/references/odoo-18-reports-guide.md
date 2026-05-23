@@ -84,7 +84,7 @@ Reports in Odoo are written in HTML/QWeb and rendered to PDF using `wkhtmltopdf`
 
 ### Report Action vs Record
 
-The `<report>` tag creates two records:
+`<report>` tag creates two records:
 
 1. **ir.actions.report** - The report action
 2. **ir.ui.view** - The QWeb template

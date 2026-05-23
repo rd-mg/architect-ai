@@ -17,19 +17,18 @@ metadata:
 
 ## Purpose
 
-Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
+Adaptive Reasoning gate: State Mode: {n} as first line of response per gate instructions.
 
+Policy surface that assembles working context set from existing sources.
+Makes curation decisions explainable. Filters, masks, and prioritizes facts
+by bounded disclosure and semantic priority — does NOT dump full monolithic history.
 
-You are the policy surface that assembles a working context set from existing
-sources and makes curation decisions explainable. You do not dump the full
-monolithic history. Instead, you filter, mask, and prioritize facts according
-to bounded disclosure and semantic priority.
-
-In v3.0, the orchestrator invokes this skill AUTOMATICALLY under five conditions (see "Auto-Trigger Rules" below). You are no longer a passive skill that must be explicitly called.
+In v3.0, orchestrator invokes this skill AUTOMATICALLY under six conditions (see below).
+No longer a passive skill requiring explicit call.
 
 ## Cognitive Posture
 
-This skill always operates under **+++Forensic** posture:
+Always operates under **+++Forensic**:
 - Trace evidence chains
 - Every claim needs provenance
 - Never assume — verify
@@ -37,56 +36,66 @@ This skill always operates under **+++Forensic** posture:
 
 ## Auto-Trigger Rules
 
-The orchestrator MUST invoke this skill when ANY of these conditions holds:
+Orchestrator MUST invoke when ANY condition holds:
 
-1. **Token threshold (Trigger 1)**: Estimated token usage exceeds 50% of the context window (heuristic: character count in conversation ≥ ~100K for a 200K context window).
-2. **Compaction detected (Trigger 2)**: The orchestrator observes that recent context has been summarized or truncated (e.g., a sub-agent reports `skill_resolution: fallback-registry` or `fallback-path`, indicating the cache was lost).
-3. **Sub-agent reports context loss (Trigger 3)**: Sub-agent explicitly reports context loss in their Result Contract.
-4. **Adaptive Reasoning Gate pressure (Trigger 4)**: The Adaptive Reasoning Gate assessment returns a D4 (context pressure) value >= 2.
-5. **Long-session exploration (Trigger 5)**: 3+ exploratory file/knowledge reads occur within the same context window.
-6. **Explicit invocation**: User requests "compact context", "reset context", "what's my current state", or similar.
+1. **Token threshold**: Estimated token usage > 50% of context window (heuristic: char count ≥ ~100K for 200K window)
+2. **Compaction detected**: Recent context summarized/truncated (e.g., sub-agent reports `skill_resolution: fallback-registry` or `fallback-path`)
+3. **Sub-agent context loss**: Sub-agent explicitly reports context loss in Result Contract
+4. **D4 pressure**: Adaptive Reasoning Gate returns D4 (context pressure) >= 2
+5. **Long-session exploration**: 3+ exploratory file/knowledge reads in same context window
+6. **Explicit invocation**: User requests "compact context", "reset context", "what's my current state"
 
-On trigger, the orchestrator executes the **Branch A/B Unified Strategy**:
+## Compaction Strategy
 
 ### Branch A: Engram Persistence (PRIMARY)
+
 Goal: Durable cross-session memory. Zero information loss. LCM-compliant.
-1. Generate a checkpoint BEFORE compress via `mem_save(title: "session/context-pack/{project}/{timestamp}", topic_key: "session/context-pack/{project}/{timestamp}", type: "architecture", content: "{Context Pack}")`.
-2. Execute the platform-native compress command (e.g., `/compact` or `/compress`).
-3. Reload working memory via `mem_context(limit: 3)`.
+
+1. Generate checkpoint BEFORE compress via:
+   ```
+   mem_save(
+     title: "session/context-pack/{project}/{timestamp}",
+     topic_key: "session/context-pack/{project}/{timestamp}",
+     type: "architecture",
+     content: "{Context Pack}"
+   )
+   ```
+2. Execute platform-native compress (e.g., `/compact` or `/compress`)
+3. Reload working memory via `mem_context(limit: 3)`
+
 *If Branch A fails (Engram down), WARN and attempt Branch B.*
 
 ### Branch B: context-mode MCP Buffer (SECONDARY)
-Goal: Transparent session buffering for large outputs.
-Scope: Session only.
-Use `ctx_execute()` or `ctx_batch_execute()` for any command output > 10KB (e.g. large git logs, unfiltered ripgrep, large test suites). Do NOT use for architectural decisions.
+
+Goal: Transparent session buffering for large outputs. Session only.
+Use `ctx_execute()` or `ctx_batch_execute()` for command output > 10KB
+(e.g., large git logs, unfiltered ripgrep, large test suites).
+Do NOT use for architectural decisions.
 
 ### Manual Summary Fallback (VSCode Copilot / Antigravity)
-When no platform-native compress command is available AND the Engram checkpoint is saved:
-1. Emit a LITE status update instructing the user: `"Context limit approaching. I have saved a persistent checkpoint. Please start a new chat session and say: 'resume {change_name} from Engram'"`.
-2. Halt the active session.
 
-On trigger, the orchestrator:
+When no platform-native compress available AND Engram checkpoint saved:
+1. Emit LITE status: `"Context limit approaching. Checkpoint saved. Start new chat and say: 'resume {change_name} from Engram'"`
+2. Halt active session
+
+On trigger, orchestrator:
 1. Reads this skill
-2. Assembles the Context Pack per the procedure below
-3. Persists the pack to Engram (see Persistence)
-4. Uses the pack as the seed for the next delegation, discarding raw history
-   above the pack's lineage cutoff
+2. Assembles Context Pack per procedure below
+3. Persists pack to Engram (see Persistence)
+4. Seeds next delegation with pack, discarding raw history above lineage cutoff
 
-## Input Order
-
-When directed to assemble context, prioritize inputs in this exact order:
+## Input Priority Order
 
 1. **Active artifacts** (current specs, tasks, apply-progress)
-2. **Pinned working rules** from the skill registry (compact rules)
-3. **Semantic memory observations** (from Engram via `mem_search`)
-4. **Compacted tail** of the current session (last ~3 turns, full fidelity)
+2. **Pinned working rules** from skill registry (compact rules)
+3. **Semantic memory observations** (Engram via `mem_search`)
+4. **Compacted tail** of current session (last ~3 turns, full fidelity)
 
-Earlier history is represented only through masked evidence and protected
-facts — not included verbatim.
+Earlier history represented only through masked evidence and protected facts — not verbatim.
 
 ## The Context Pack
 
-Your output MUST be a markdown artifact with these exact stable sections:
+Output MUST be markdown artifact with these exact stable sections:
 
 ```markdown
 # Context Pack — {change-name or session-id}
@@ -112,7 +121,7 @@ Token count (estimated): {number}
 - [provenance: manifest.py] [valid] Odoo 18.0 target version
 
 ## working_rules
-{Compact rules selected from the registry, keyed by skill name}
+{Compact rules from registry, keyed by skill name}
 ### sdd-apply
 - ALWAYS read specs before implementing
 - NEVER implement tasks not assigned to you
@@ -142,25 +151,24 @@ Token count (estimated): {number}
 
 ## Protected Classes
 
-During any compaction, the following protected classes MUST survive and be
-placed into `protected_facts` or `active_constraints`:
+During any compaction, these classes MUST survive and move into
+`protected_facts` or `active_constraints`:
 
 - **Architecture decisions**: Permanent changes to software structure
-- **Active constraints**: Rules, budgets, or boundaries currently restricting execution
+- **Active constraints**: Rules, budgets, boundaries currently restricting execution
 - **Open tasks**: Anything assigned but not checked off in `tasks.md`
-- **Failing-test lineage**: Traceability of a defect or failing test through attempts to fix it
-- **Security-relevant findings**: Any finding marked CRITICAL in a verification report
-- **User commitments**: Promises made to the user that must be kept
+- **Failing-test lineage**: Traceability of defect/failing test through fix attempts
+- **Security-relevant findings**: Any finding marked CRITICAL in verification report
+- **User commitments**: Promises made to user that must be kept
 
-These classes cannot be dropped by low-priority compaction examples.
+Cannot be dropped by low-priority compaction.
 
 ## Provenance and Validation State
 
-Every retained or reused fact MUST carry explicit provenance and a validation
-state. Do not blindly copy text without marking its reliability.
+Every retained/reused fact MUST carry explicit provenance and validation state.
+Do not blindly copy text without marking reliability.
 
 Validation states:
-
 - `valid` — still consistent with current state
 - `stale` — source exists but no longer reflects current reality
 - `unverified` — reused provisionally, requires confirmation
@@ -174,40 +182,40 @@ Examples:
 
 ## Verbose Evidence Masking
 
-Verbose output from tools MUST NOT be dumped raw into the context pack.
+MUST NOT dump raw verbose tool output into context pack.
 Replace large dumps with masked references in `masked_evidence`.
 
-###  BAD (dumping raw tool output)
+### BAD (dumping raw tool output)
 
 ```
 Command output:
 <1000 lines of `ls -la` results>
 ```
 
-###  GOOD (masked with provenance)
+### GOOD (masked with provenance)
 
 ```
 masked_evidence:
-- [provenance: cmd/abc1] Verified file structure exists. Full tree masked. Summary: 47 files in 12 directories.
+- [provenance: cmd/abc1] Verified file structure exists. Full tree masked. Summary: 47 files, 12 directories.
 ```
 
-###  BAD (dropping validation state)
+### BAD (dropping validation state)
 
 ```
 protected_facts:
 - We chose Zettelkasten memory.
 ```
 
-###  GOOD (strict protected class usage)
+### GOOD (strict protected class usage)
 
 ```
 protected_facts:
-- [provenance: mem/5] [valid] Architecture decision: Memory is stored as Zettelkasten.
+- [provenance: mem/5] [valid] Architecture decision: Memory stored as Zettelkasten.
 ```
 
 ## Persistence
 
-After assembling the Context Pack, persist it to Engram:
+After assembling Context Pack, persist to Engram:
 
 ```
 mem_save(
@@ -219,25 +227,22 @@ mem_save(
 )
 ```
 
-This enables recovery after compaction: the orchestrator can retrieve the
-pack via `mem_search` + `mem_get_observation`.
+Enables recovery after compaction: orchestrator retrieves via `mem_search` + `mem_get_observation`.
 
 ## Size Budget
 
-The Context Pack MUST be under 2000 tokens (approximately 500 lines of
-markdown). If it exceeds that:
+Context Pack MUST be under 2000 tokens (~500 lines markdown). If exceeding:
 
 1. Reduce `masked_evidence` — collapse related items
-2. Remove `suppressed_items` that no longer need mention
+2. Remove `suppressed_items` no longer needing mention
 3. Summarize `active_tasks` that are not blocking
-4. Move verbose fact details into Engram and keep only the topic_key reference
+4. Move verbose fact details into Engram, keep only topic_key reference
 
-Never compromise `protected_facts` or `active_constraints` to fit the budget.
-These classes are mandatory.
+NEVER compromise `protected_facts` or `active_constraints` to fit budget. These are mandatory.
 
 ## Return Envelope
 
-When called explicitly, return:
+When called explicitly:
 
 ```markdown
 **Status**: success | partial | blocked
@@ -250,29 +255,28 @@ When called explicitly, return:
 
 ## Orchestrator Self-Correction Loop
 
-If a sub-agent returns with `skill_resolution` = `fallback-registry`,
-`fallback-path`, or `none`, the orchestrator:
+If sub-agent returns `skill_resolution` = `fallback-registry`,
+`fallback-path`, or `none`:
 
-1. Invokes this skill immediately
-2. Generates a fresh Context Pack from current state
-3. Re-reads the skill registry
-4. Includes the Context Pack in the next delegation prompt
-5. Logs a warning: "Skill cache miss detected — reloaded registry and
-   refreshed context pack."
+1. Invoke this skill immediately
+2. Generate fresh Context Pack from current state
+3. Re-read skill registry
+4. Include Context Pack in next delegation prompt
+5. Log warning: "Skill cache miss detected — reloaded registry, refreshed context pack."
 
-This prevents silent degradation over long sessions.
+Prevents silent degradation over long sessions.
 
 ## Rules
 
-- NEVER dump raw tool output into the context pack
-- NEVER drop a `protected_facts` item to fit the size budget
-- NEVER invent provenance — if you don't know the source, mark as `[provenance: unknown] [unverified]`
-- ALWAYS persist the context pack to Engram when Engram is available
-- ALWAYS reduce the character count of the full history when assembling the pack — a pack that is the same size as the history has failed its purpose
+- NEVER dump raw tool output into context pack
+- NEVER drop `protected_facts` to fit size budget
+- NEVER invent provenance — mark unknown sources as `[provenance: unknown] [unverified]`
+- ALWAYS persist context pack to Engram when available
+- ALWAYS reduce character count of full history — pack same size as history failed its purpose
 
 ## Anti-Patterns
 
-- Treating this skill as optional for long sessions — the auto-trigger makes it mandatory at threshold
-- Rebuilding the pack from scratch every turn when only one fact changed (use `mem_update` on the existing pack)
-- Including irrelevant historical exploration ("we tried X, it didn't work") unless it informs an active constraint
-- Mixing suppression decisions into `masked_evidence` — the two sections have different purposes
+- Treating this skill as optional for long sessions — auto-trigger makes it mandatory at threshold
+- Rebuilding pack from scratch every turn when only one fact changed (use `mem_update` on existing pack)
+- Including irrelevant historical exploration ("we tried X, didn't work") unless it informs active constraint
+- Mixing suppression decisions into `masked_evidence` — different sections, different purposes

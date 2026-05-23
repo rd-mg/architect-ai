@@ -12,14 +12,13 @@
 - Compress: /compact (context-guardian auto-triggers)
 
 ## Mode A (Claude Code inline)
-Use Read, Write, Edit, Bash tools from the main agent context.
-Do NOT spawn Task tool for simple operations.
+Use Read, Write, Edit, Bash tools from main agent context. Do NOT spawn Task tool for simple ops.
 
 ## Mode B (Claude Code SDD delegation)
 ```
 Task(
   description = "SDD orchestration: {user_message}",
-  // Claude Code routes to sdd-orchestrator via the agent name in .claude/settings.json
+  // Claude Code routes to sdd-orchestrator via agent name in .claude/settings.json
 )
 ```
 Pass in description: execution_mode={mode}, model_routing_table={JSON of phase→model}

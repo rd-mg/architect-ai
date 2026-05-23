@@ -1,12 +1,12 @@
 ## Skill Resolver Protocol v3.0 [Orchestrators L1a + L1b — before EVERY delegation]
 
-Purpose: Inject the right skills into each sub-agent without overloading context.
+Inject right skills into each sub-agent without overloading context.
 Rule: Load Tier 1 always. Load Tier 2 only if condition matches. Never load Tier 3 inline.
 
 ### Step 1: Load Tier 1 (Foundation)
 ```
 foundation_block = read(".atl/_generated/foundation.md")
-# This file is pre-generated at install time — no runtime reading of 6 separate files.
+# Pre-generated at install time — no runtime read of 6 separate files.
 # Inject as ## Project Foundation Standards block in sub-agent prompt.
 ```
 
@@ -63,4 +63,3 @@ IF result.skill_resolution.status == "fallback-registry" OR "none":
   → Re-read .atl/skill-manifest.yaml
   → Rebuild skill injection for that agent
   → Retry phase once (circuit breaker allows it)
-```

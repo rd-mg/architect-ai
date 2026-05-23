@@ -177,7 +177,7 @@ There's a large difference between global and group rules:
 
 ## Field Access
 
-An ORM field can have a `groups` attribute providing a list of groups (comma-separated external identifiers).
+ORM field can have a `groups` attribute providing a list of groups (comma-separated external identifiers).
 
 If the current user is not in one of the listed groups:
 

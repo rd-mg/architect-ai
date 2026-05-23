@@ -6,11 +6,10 @@ applyTo: "**/*.py"
 
 # Odoo Python Guidelines
 
-- Prefer recordset-safe code (support multi-record `self` unless the method is clearly singleton).
-- Use `super()` for overrides and preserve the method contract.
+- Prefer recordset-safe code: support multi-record `self` unless method is clearly singleton.
+- Use `super()` for overrides; preserve method contract.
 - Avoid `sudo()` unless required; prefer correct ACLs or `with_company`/`with_context`.
-- Be careful with computed fields: declare dependencies, keep compute deterministic, avoid expensive loops.
+- Careful with computed fields: declare dependencies, keep compute deterministic, avoid expensive loops.
 - Keep business logic in models; keep wizards thin.
-
-- **Odoo 17.0+ Display Name**: Do not use `name_get`. Instead, override `_compute_display_name`.
-- **Research Priority**: (1) Apply `mcp-notebooklm-orchestrator` skill for code-based and high-level strategy, (2) Apply `ripgrep` skill for local implementation patterns, (3) Use Context7 only as a last-resort fallback.
+- **Odoo 17.0+ Display Name**: Override `_compute_display_name` instead of `name_get`.
+- **Research Priority**: (1) `mcp-notebooklm-orchestrator` skill for high-level strategy, (2) `ripgrep` skill for local implementation patterns, (3) Context7 as last-resort fallback.

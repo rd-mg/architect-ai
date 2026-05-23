@@ -6,7 +6,7 @@
 ## VSCode Copilot Runtime Notice
 
 VSCode Copilot is single-threaded. L0/L1/L2 separation is LOGICAL.
-Mode A executes directly. Mode B/C switches to the appropriate section inline.
+Mode A executes directly. Mode B/C switches to appropriate section inline.
 
 ## Mode A (VSCode inline)
 Execute directly using available tools. No subagent spawning.

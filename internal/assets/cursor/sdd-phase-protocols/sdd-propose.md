@@ -49,11 +49,11 @@ success criteria, capabilities section.
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd/{change-name}/proposal",
-  topic_key: "sdd/{change-name}/proposal",
-  type: "architecture",
-  project: "{project}",
-  content: "{your proposal markdown with Pre-mortem, Assumptions, and Viability Score}"
+ title: "sdd/{change-name}/proposal",
+ topic_key: "sdd/{change-name}/proposal",
+ type: "architecture",
+ project: "{project}",
+ content: "{your proposal markdown with Pre-mortem, Assumptions, and Viability Score}"
 )
 
 ## Size Budget: 600 words max. Use bullets and tables over prose.

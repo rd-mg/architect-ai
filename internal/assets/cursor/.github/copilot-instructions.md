@@ -7,7 +7,7 @@
 ## DEGRADED MODE NOTICE
 
 VSCode Copilot does not support MCP servers natively (as of current version).
-The following features operate in degraded mode:
+following features operate in degraded mode:
 
 | Feature | Normal | VSCode Degraded |
 |---|---|---|

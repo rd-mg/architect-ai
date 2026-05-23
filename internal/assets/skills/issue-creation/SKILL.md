@@ -1,7 +1,7 @@
 ---
 name: issue-creation
 description: >
-  Issue creation workflow for Agent Teams Lite following the issue-first enforcement system.
+  Issue creation workflow for Agent Teams Lite following issue-first enforcement system.
   Trigger: When creating a GitHub issue, reporting a bug, or requesting a feature.
 license: Apache-2.0
 metadata:
@@ -11,19 +11,18 @@ metadata:
 
 ## When to Use
 
-Use this skill when:
-- Creating a GitHub issue (bug report or feature request)
-- Helping a contributor file an issue
-- Triaging or approving issues as a maintainer
+- Creating GitHub issue (bug report or feature request)
+- Helping contributor file an issue
+- Triaging or approving issues as maintainer
 
 ---
 
 ## Critical Rules
 
-1. **Blank issues are disabled** — MUST use a template (bug report or feature request)
-2. **Every issue gets `status:needs-review` automatically** on creation
-3. **A maintainer MUST add `status:approved`** before any PR can be opened
-4. **Questions go to [Discussions](https://github.com/Gentleman-Programming/agent-teams-lite/discussions)**, not issues
+1. **Blank issues disabled** — MUST use template (bug report or feature request)
+2. **Every issue gets `status:needs-review`** automatically on creation
+3. **Maintainer MUST add `status:approved`** before PR can be opened
+4. **Questions go to [Discussions](https://github.com/Gentleman-Programming/agent-teams-lite/discussions)**, NOT issues
 
 ---
 
@@ -31,12 +30,12 @@ Use this skill when:
 
 ```
 1. Search existing issues for duplicates
-2. Choose the correct template (Bug Report or Feature Request)
-3. Fill in ALL required fields
+2. Choose correct template (Bug Report or Feature Request)
+3. Fill ALL required fields
 4. Check pre-flight checkboxes
 5. Submit → issue gets status:needs-review automatically
 6. Wait for maintainer to add status:approved
-7. Only then open a PR linking this issue
+7. Only then open PR linking this issue
 ```
 
 ---
@@ -120,8 +119,8 @@ Auto-labels: `enhancement`, `status:needs-review`
 | Field | Description |
 |-------|-------------|
 | **Pre-flight Checks** | Checkboxes: no duplicate + understands approval workflow |
-| **Problem Description** | The pain point this feature solves |
-| **Proposed Solution** | How it should work from the user's perspective |
+| **Problem Description** | Pain point this feature solves |
+| **Proposed Solution** | How it should work from user's perspective |
 | **Affected Area** | Dropdown: Scripts, Skills, Examples, Documentation, CI/Workflows, Other |
 
 #### Optional Fields
@@ -175,7 +174,7 @@ Manually symlinking, but that defeats the purpose of the setup script.
 
 | Label | When to apply |
 |-------|--------------|
-| `status:approved` | Issue accepted for implementation — PRs can now be opened |
+| `status:approved` | Issue accepted — PRs can now be opened |
 | `priority:high` | Critical bug or urgent feature |
 | `priority:medium` | Important but not blocking |
 | `priority:low` | Nice to have |
@@ -186,10 +185,10 @@ Manually symlinking, but that defeats the purpose of the setup script.
 
 ```
 1. New issue arrives with status:needs-review
-2. Review the issue — is it valid, clear, and in scope?
+2. Review — is it valid, clear, in scope?
 3. If YES → add status:approved label
 4. If NO → comment with reason, close if needed
-5. Contributor can now open a PR linking this issue
+5. Contributor can now open PR linking this issue
 ```
 
 ---

@@ -15,17 +15,17 @@ metadata:
 
 # Ripgrep (rg) — Mandatory Skill
 
-## Why this is `bridge: always`
+## Why `bridge: always`
 
-Every SDD phase touches file search at some point:
-- **Explore**: find all callers of a function
+Every SDD phase touches file search:
+- **Explore**: find all callers of function
 - **Propose/Spec**: survey existing patterns
 - **Apply**: find edit targets
-- **Verify**: check that a pattern is NOT present (negative assertions)
+- **Verify**: check pattern NOT present (negative assertions)
 
-Using `grep -r` or `find ... -exec grep` on a medium-sized repo is 10-50× slower than `rg` and ignores `.gitignore`, causing hits in `node_modules/`, `.venv/`, `dist/`, etc. that pollute the sub-agent's context.
+`grep -r` or `find ... -exec grep` on medium repo is 10-50× slower than `rg` and ignores `.gitignore`, causing hits in `node_modules/`, `.venv/`, `dist/`, polluting sub-agent context.
 
-Marking this skill `bridge: always` means the orchestrator injects it into **every** sub-agent prompt, unconditionally.
+`bridge: always` means orchestrator injects into **every** sub-agent prompt, unconditionally.
 
 ---
 
@@ -72,7 +72,7 @@ rg -l "import.*mypkg" || echo "no callers"
 rg -U "func\s+\w+\s*\([^)]*\)\s+error"
 ```
 
-### Count occurrences across the repo
+### Count occurrences across repo
 ```bash
 rg -c "TODO" | sort -t: -k2 -n -r | head
 ```
@@ -86,11 +86,11 @@ rg -l "old_name" | xargs sed -i 's/old_name/new_name/g'
 
 ## When NOT to use ripgrep
 
-- **Structured code queries**: use the language server / tree-sitter / `gopls`, not regex. Example: finding all implementers of an interface.
-- **Symbol rename**: use IDE refactor, not rg | sed (regex can't distinguish `foo.bar` from `foo_bar` in the wrong contexts).
+- **Structured code queries**: use language server / tree-sitter / `gopls`, not regex. Example: finding all implementers of interface.
+- **Symbol rename**: use IDE refactor, not rg | sed (regex can't distinguish `foo.bar` from `foo_bar` in wrong contexts).
 - **Cross-file semantic checks**: regex is text. Use `go vet`, `eslint`, etc.
 
-If the task needs semantic understanding, the orchestrator should note that in the sub-agent prompt and the sub-agent should use the language toolchain instead.
+If task needs semantic understanding, orchestrator should note in sub-agent prompt; sub-agent should use language toolchain.
 
 ---
 
@@ -109,5 +109,5 @@ command -v rg >/dev/null || {
 
 ## See also
 
-- `bash-expert/SKILL.md` — shell patterns that complement ripgrep usage
-- `_shared/research-routing.md` — when ripgrep is the right tool vs. NotebookLM/Context7
+- `bash-expert/SKILL.md` — shell patterns complementing ripgrep
+- `_shared/research-routing.md` — when ripgrep vs. NotebookLM/Context7

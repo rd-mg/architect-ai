@@ -2,10 +2,10 @@
 
 ## Preprocessors
 
-Transform file contents before searching using `--pre`:
+Transform file contents before searching via `--pre`:
 
 ```bash
-# Create a preprocessor script
+# Create preprocessor script
 cat > ~/bin/pre-rg << 'EOF'
 #!/bin/sh
 case "$1" in
@@ -23,7 +23,7 @@ esac
 EOF
 chmod +x ~/bin/pre-rg
 
-# Use the preprocessor
+# Use preprocessor
 rg --pre ~/bin/pre-rg 'pattern' document.pdf
 
 # Limit preprocessor to specific files (performance)
@@ -47,20 +47,20 @@ rg -E none 'pattern'
 rg '(?-u)\(\x045\x04@\x04' -E none -a file
 ```
 
-Supported encodings: UTF-8, UTF-16, latin1, GBK, EUC-JP, Shift_JIS, and more from the Encoding Standard.
+Supported encodings: UTF-8, UTF-16, latin1, GBK, EUC-JP, Shift_JIS, and more from Encoding Standard.
 
 ## Binary File Handling
 
 ripgrep operates in three binary modes:
 
 ### Default Mode
-Stops searching when NUL byte found (for recursive directory traversal):
+Stops searching when NUL byte found (recursive directory traversal):
 ```bash
 rg 'pattern'
 ```
 
 ### Binary Mode
-Continues searching but stops output on first match:
+Continues searching, stops output on first match:
 ```bash
 rg --binary 'pattern'
 ```
@@ -146,7 +146,7 @@ rg --count-matches 'pattern'
 
 ## Null Data Mode
 
-For files with NUL-separated records instead of newlines:
+For files with NUL-separated records:
 
 ```bash
 rg --null-data 'pattern'
@@ -187,5 +187,5 @@ rg --hyperlink-format default 'pattern'
 2. Use `--max-depth` to limit directory depth
 3. Use `-t type` instead of `-g '*.ext'` when possible (faster)
 4. Use `--no-mmap` for consistent behavior across platforms
-5. Specific paths are faster than recursive search
-6. `-F` (fixed strings) is faster than regex for literal patterns
+5. Specific paths faster than recursive search
+6. `-F` (fixed strings) faster than regex for literal patterns

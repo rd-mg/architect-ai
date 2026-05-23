@@ -1,6 +1,6 @@
 # Sale & CRM Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `sale-crm-patterns.md` (architect-ai)
 - `pricelist-pricing-patterns.md` (architect-ai)
 - `product-variant-patterns.md` (architect-ai)

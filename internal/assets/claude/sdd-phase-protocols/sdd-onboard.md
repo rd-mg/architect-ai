@@ -1,23 +1,14 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-onboard
-Project: architect-ai
-Adapter: Claude
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: project context from sdd-init (if exists)
-- **Writes**: potentially runs full SDD cycle end-to-end
+## Deps: Reads project context from sdd-init (if exists) | Writes potentially runs full SDD cycle end-to-end
 
 ## Cognitive Posture
 +++Socratic — Guided question-driven walkthrough for new users.
 
-## Model
-sonnet — conversational guidance
-
-## When Triggered
-- User invokes `/sdd-onboard` explicitly
-- First-time usage in a new project
+## Trigger
+- User invokes `/sdd-onboard` explicitly; First-time usage in a new project
 
 ## Procedure (Orchestrator Handles This — Not a Single Sub-Agent)
 
@@ -45,17 +36,11 @@ sonnet — conversational guidance
      - `.atl/skill-registry.md` — what skills are active
      - The generated artifacts in Engram or `openspec/changes/`
 
-## No Explicit Sub-Agent Launch
+## No template (orchestrator-driven)
 
 This phase is NOT a single sub-agent invocation. The orchestrator runs the
 full SDD cycle interactively, using the normal phase protocols, but with
 extra conversational framing between phases.
-
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: (user-selected in step 2)
 
@@ -76,10 +61,8 @@ mem_save(
 ## Return Envelope & Compliance per sdd-phase-common.md (Sections A-F)
 
 ## Result Processing
-
 - Cache user preferences for the session
 - No further phases needed — user is now onboarded
-
 ## Failure Handling
 
 - If user stops mid-onboarding → save state, can resume later

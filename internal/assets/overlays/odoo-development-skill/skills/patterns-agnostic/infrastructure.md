@@ -1,6 +1,6 @@
 # Infrastructure Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `cron-server-action-patterns.md` (architect-ai)
 - `security-acl-rules-patterns.md` (architect-ai)
 - `translation-i18n-patterns.md` (architect-ai)

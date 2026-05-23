@@ -26,7 +26,7 @@ from . import test_library_book
 from . import test_library_wizard
 ```
 
-The `tests/` package does NOT go in `__manifest__.py` `data` — Odoo auto-discovers it.
+`tests/` package does NOT go in `__manifest__.py` `data` — Odoo auto-discovers it.
 
 ## Test Classes
 

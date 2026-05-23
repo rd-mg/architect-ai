@@ -9,10 +9,9 @@ metadata:
   version: "2.0"
 ---
 
-## When to Use
+## Triggers
 
-Use this skill when:
-- Creating a pull request for any change
+- Creating a pull request
 - Preparing a branch for submission
 - Helping a contributor open a PR
 
@@ -22,8 +21,8 @@ Use this skill when:
 
 1. **Every PR MUST link an approved issue** — no exceptions
 2. **Every PR MUST have exactly one `type:*` label**
-3. **Automated checks must pass** before merge is possible
-4. **Blank PRs without issue linkage will be blocked** by GitHub Actions
+3. **Automated checks must pass** before merge
+4. **Blank PRs without issue linkage blocked** by GitHub Actions
 
 ---
 
@@ -31,19 +30,19 @@ Use this skill when:
 
 ```
 1. Verify issue has `status:approved` label
-2. Create branch: type/description (see Branch Naming below)
+2. Create branch: type/description
 3. Implement changes with conventional commits
 4. Run shellcheck on modified scripts
-5. Open PR using the template
+5. Open PR using template
 6. Add exactly one type:* label
-7. Wait for automated checks to pass
+7. Wait for automated checks
 ```
 
 ---
 
 ## Branch Naming
 
-Branch names MUST match this regex:
+Branch names MUST match:
 
 ```
 ^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)\/[a-z0-9._-]+$
@@ -69,7 +68,7 @@ Branch names MUST match this regex:
 
 ## PR Body Format
 
-The PR template is at `.github/PULL_REQUEST_TEMPLATE.md`. Every PR body MUST contain:
+Template at `.github/PULL_REQUEST_TEMPLATE.md`. Every PR body MUST contain:
 
 ### 1. Linked Issue (REQUIRED)
 
@@ -78,11 +77,11 @@ Closes #<issue-number>
 ```
 
 Valid keywords: `Closes #N`, `Fixes #N`, `Resolves #N` (case insensitive).
-The linked issue MUST have the `status:approved` label.
+Linked issue MUST have `status:approved` label.
 
 ### 2. PR Type (REQUIRED)
 
-Check exactly ONE in the template and add the matching label:
+Check exactly ONE, add matching label:
 
 | Checkbox | Label to add |
 |----------|-------------|
@@ -109,7 +108,7 @@ Check exactly ONE in the template and add the matching label:
 
 ```markdown
 - [x] Scripts run without errors: `shellcheck scripts/*.sh`
-- [x] Manually tested the affected functionality
+- [x] Manually tested affected functionality
 - [x] Skills load correctly in target agent
 ```
 
@@ -128,8 +127,8 @@ All boxes must be checked:
 
 ## Automated Checks (all must pass)
 
-| Check | Job name | What it verifies |
-|-------|----------|-----------------|
+| Check | Job name | Verifies |
+|-------|----------|----------|
 | PR Validation | `Check Issue Reference` | Body contains `Closes/Fixes/Resolves #N` |
 | PR Validation | `Check Issue Has status:approved` | Linked issue has `status:approved` |
 | PR Validation | `Check PR Has type:* Label` | PR has exactly one `type:*` label |
@@ -139,7 +138,7 @@ All boxes must be checked:
 
 ## Conventional Commits
 
-Commit messages MUST match this regex:
+Commit messages MUST match:
 
 ```
 ^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9\._-]+\))?!?: .+
@@ -147,10 +146,10 @@ Commit messages MUST match this regex:
 
 **Format:** `type(scope): description` or `type: description`
 
-- `type` — required, one of: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`
-- `(scope)` — optional, lowercase with `a-z0-9._-`
-- `!` — optional, indicates breaking change
-- `description` — required, starts after `: `
+- `type` — required: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`
+- `(scope)` — optional, lowercase `a-z0-9._-`
+- `!` — optional, breaking change
+- `description` — required, after `: `
 
 Type-to-label mapping:
 

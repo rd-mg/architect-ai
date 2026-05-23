@@ -1,6 +1,6 @@
 # Odoo 19 Exclusive Features
 
-Consolidated v19-specific micro-skills covering features that only exist in v19.0.
+Consolidated v19-specific micro-skills covering features only exist in v19.0.
 
 
 ---
@@ -10,12 +10,12 @@ Consolidated v19-specific micro-skills covering features that only exist in v19.
 # Skill: Odoo AI Server Actions (v19)
 
 ## 1. Description
-This skill defines architectural mandates for Odoo 19 native AI integration using the `ai.agent` framework. It ensures agents utilize the internal server action tool-calling mechanism instead of external, non-native APIs.
+skill defines architectural mandates for Odoo 19 native AI integration using the `ai.agent` framework. It ensures agents utilize internal server action tool-calling mechanism instead of external, non-native APIs.
 
 ## 2. Core Mandatory Rules
 - **Native Agents**: Only use `ai.agent` models. Never hallucinate third-party LLM service integrations.
 - **Tool Calling**: Server Actions used as AI tools MUST set `use_in_ai=True`.
-- **Result Injection**: NEVER use `return` statements in Server Actions. Use `ai['result'] = ...` to return data to the LLM.
+- **Result Injection**: NEVER use `return` statements in Server Actions. Use `ai['result'] = ...` to return data to LLM.
 
 ## 3. Implementation Patterns (Bad vs Good)
 
@@ -44,8 +44,8 @@ def compute_summary(self):
 ```
 
 ## 4. Verification Workflow
-- Ensure all AI-exposed actions define a JSON `ai_tool_schema` for input validation.
-- Verify that `ai['result']` is populated in every tool-called method.
+- Ensure all AI-exposed actions define JSON `ai_tool_schema` for input validation.
+- Verify `ai['result']` is populated in every tool-called method.
 
 ## 5. Maintenance
 - Sync agent prompts with business requirements in `ai.topic`.
@@ -58,7 +58,7 @@ def compute_summary(self):
 # Skill: Odoo Auth Passkeys (v19)
 
 ## 1. Description
-The `odoo-auth-passkeys-19` skill defines the architectural mandates for WebAuthn/Passkey integration. It standardizes the two-step verification flow and prevents manual implementation of crypto primitives.
+`odoo-auth-passkeys-19` skill defines architectural mandates for WebAuthn/Passkey integration. It standardizes two-step verification flow and prevents manual implementation of crypto primitives.
 
 ## 2. Core Mandatory Rules
 - **Crypto Abstraction**: Agents MUST NOT implement manual WebAuthn/Crypto logic. Use `simplewebauthn` library.
@@ -88,8 +88,8 @@ this.model.root.update({ password: JSON.stringify(auth) });
 ```
 
 ## 4. Verification Workflow
-- Ensure all sensitive `action_button` calls check `auth_method == 'webauthn'` in the view logic.
-- Validate that identity check views override the JS controller with the v19 `auth_passkey_identity_check_view_form` class.
+- Ensure all sensitive `action_button` calls check `auth_method == 'webauthn'` in view logic.
+- Validate identity check views override JS controller with v19 `auth_passkey_identity_check_view_form` class.
 
 ## 5. Maintenance
 - Monitor security patches for `simplewebauthn` dependency.
@@ -102,7 +102,7 @@ this.model.root.update({ password: JSON.stringify(auth) });
 # Skill: Odoo Hoot Testing Framework (v19)
 
 ## 1. Description
-The `odoo-hoot-testing-19` skill defines the architectural mandates for the new reactive frontend testing framework, replacing the legacy QUnit runner.
+`odoo-hoot-testing-19` skill defines architectural mandates for new reactive frontend testing framework, replacing legacy QUnit runner.
 
 ## 2. Core Mandatory Rules
 - **Framework**: Prohibited to use `QUnit` or `web.test_utils`. Use `@odoo/hoot`.
@@ -138,7 +138,7 @@ expect(".o_form").toHaveText("Saved");
 
 ## 4. Verification Workflow
 - Ensure all tests are tagged with environment tags (`describe.current.tags("desktop")`).
-- Validate that mocking uses `hoot-mock` modules (e.g., `mockService`, `onRpc`, `mockDate`).
+- Validate mocking uses `hoot-mock` modules (e.g., `mockService`, `onRpc`, `mockDate`).
 
 ## 5. Maintenance
 - Track breaking changes in `@odoo/hoot` API.
@@ -203,12 +203,12 @@ test("IoT Scale Measurement", async () => {
 # Skill: Odoo ORM Extreme Performance (v19)
 
 ## 1. Description
-The `odoo-orm-extreme-19` skill defines the architectural mandates for ORM efficiency in Odoo 19. It enforces patterns that eliminate N+1 queries and high memory consumption.
+`odoo-orm-extreme-19` skill defines architectural mandates for ORM efficiency in Odoo 19. It enforces patterns eliminate N+1 queries and high memory consumption.
 
 ## 2. Core Mandatory Rules
 - **Indexing**: Composite and complex indexes **MUST** be defined declaratively via `models.Index`.
 - **Query Efficiency**: `read_group()` is deprecated for backend logic. Use `_read_group()`.
-- **Prefetching**: Use `search_fetch()` to perform search and prefetch in a single database round-trip.
+- **Prefetching**: Use `search_fetch()` to perform search and prefetch in single database round-trip.
 
 ## 3. Implementation Patterns (Bad vs Good)
 
@@ -252,11 +252,11 @@ results = self.env['model']._read_group(
 # Skill: Odoo Security Hardening (v19)
 
 ## 1. Description
-The `odoo-security-hardening-19` skill defines the architectural mandates for secure module development in Odoo 19. It enforces the transition from legacy security conventions to explicit API-level security.
+`odoo-security-hardening-19` skill defines architectural mandates for secure module development in Odoo 19. It enforces transition from legacy security conventions to explicit API-level security.
 
 ## 2. Core Mandatory Rules
 - **Method Exposure**: The underscore prefix (`_`) is officially insufficient for RPC blocking. **MUST** use `@api.private`.
-- **Privilege Escalation**: Assigning groups during `res.users.create()` is blocked by the ORM. **MUST** use a two-step `create()` then `write()` flow.
+- **Privilege Escalation**: Assigning groups during `res.users.create()` is blocked by ORM. **MUST** use two-step `create()` then `write()` flow.
 
 ## 3. Implementation Patterns (Bad vs Good)
 
@@ -289,7 +289,7 @@ user.write({'groups_id': [Command.link(self.env.ref('base.group_system').id)]})
 ```
 
 ## 4. Verification Workflow
-- Ensure all business-logic methods that shouldn't be exposed are decorated.
+- Ensure all business-logic methods shouldn't be exposed are decorated.
 - Use static analysis (Compliance Checker) to detect usage of restricted ORM parameters in user creation.
 
 ## 5. Maintenance
@@ -303,7 +303,7 @@ user.write({'groups_id': [Command.link(self.env.ref('base.group_system').id)]})
 # Skill: Odoo v19 Compliance Checker
 
 ## 1. Description
-The `odoo-v19-compliance-checker` is a static analysis tool that scans Odoo modules for Odoo 19 mandatory breaking changes. It acts as an automated "Compliance Gate" to prevent non-compliant code (legacy SQL patterns, deprecated XML, missing types) from entering the codebase.
+`odoo-v19-compliance-checker` is static analysis tool scans Odoo modules for Odoo 19 mandatory breaking changes. It acts as automated "Compliance Gate" to prevent non-compliant code (legacy SQL patterns, deprecated XML, missing types) from entering codebase.
 
 ## 2. Mandatory Rules (Compliance Gate)
 - **SQL Security**: Raw `cr.execute()` calls with formatted strings are strictly prohibited. The `SQL()` builder is mandatory for all database interactions.
@@ -312,7 +312,7 @@ The `odoo-v19-compliance-checker` is a static analysis tool that scans Odoo modu
 - **ORM Patterns**: `_sql_constraints` is removed; `models.Constraint` is mandatory for data integrity.
 
 ## 3. Implementation Patterns
-The checker utilizes Python's `ast` module to walk the Abstract Syntax Tree and `lxml` for XML structure validation.
+checker utilizes Python's `ast` module to walk Abstract Syntax Tree and `lxml` for XML structure validation.
 
 ```python
 # AST Analysis Example for SQL() enforcement
@@ -324,12 +324,12 @@ def check_sql_builder(self, node):
 
 ## 4. Verification Workflow
 1. Execute `python odoo-v19-compliance-checker.py [module_path]`.
-2. Review the JSON report output.
+2. Review JSON report output.
 3. If `status: FAIL`, address all `CRITICAL` violations before further review.
 
 ## 5. Maintenance
 - Add new v19 deprecation patterns to the `check_xml_file` or `check_python_file` methods as Odoo releases updates.
-- Keep the checker synchronized with the official `models.py` structural changes in Odoo 19.
+- Keep checker synchronized with official `models.py` structural changes in Odoo 19.
 
 ---
 
@@ -338,12 +338,12 @@ def check_sql_builder(self, node):
 # Skill: Odoo Webhook Automation (v19)
 
 ## 1. Description
-The `odoo-webhooks-automation-19` skill defines patterns for native webhook ingestion in Odoo 19 via `base_automation`. It replaces legacy custom HTTP controllers with declarative automation rules.
+`odoo-webhooks-automation-19` skill defines patterns for native webhook ingestion in Odoo 19 via `base_automation`. It replaces legacy custom HTTP controllers with declarative automation rules.
 
 ## 2. Core Mandatory Rules
 - **No HTTP Controllers**: Prohibited to create `@http.route` for simple data ingestion.
 - **Native Trigger**: MUST use `trigger="on_webhook"`.
-- **Payload Handling**: Use the built-in `payload` object. Do not parse request bodies manually.
+- **Payload Handling**: Use built-in `payload` object. Do not parse request bodies manually.
 
 ## 3. Implementation Patterns (Bad vs Good)
 
@@ -375,7 +375,7 @@ amount = payload.get('monto')
 ```
 
 ## 4. Verification Workflow
-- Check that no custom controllers exist for simple webhook integrations.
+- Check no custom controllers exist for simple webhook integrations.
 - Audit `base.automation` rules to ensure `record_getter` is performant (uses indexing).
 
 ## 5. Maintenance
@@ -400,7 +400,7 @@ amount = payload.get('monto')
 Agents MUST NOT implement direct `RTCPeerConnection` for IoT. Use `IotHttpService` to handle connection resilience.
 
 ### MANDATORY RULE
-Always use the service orchestrator which automatically degrades connection type if WebRTC fails.
+Always use service orchestrator which automatically degrades connection type if WebRTC fails.
 
 ```javascript
 //  GOOD: Pattern for IotHttpService

@@ -16,7 +16,7 @@ Guide for working with Odoo 19 data files (XML and CSV), records, and shortcuts.
 
 ## XML Data Files Structure
 
-The main way to define data in Odoo is via XML data files:
+main way to define data in Odoo is via XML data files:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

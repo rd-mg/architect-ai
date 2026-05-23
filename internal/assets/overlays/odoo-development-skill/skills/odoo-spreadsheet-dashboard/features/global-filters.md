@@ -2,9 +2,9 @@
 
 ## What are global filters?
 
-Global filters are top-level `.osheet` objects that wire a single user-visible filter control
-to multiple pivots, lists, and Odoo chart data sources simultaneously. They are the canonical
-way to let a user filter an entire dashboard by period, company, salesperson, etc.
+Global filters are top-level `.osheet` objects wiring single user-visible filter control
+to multiple pivots, lists, and Odoo chart data sources simultaneously. Canonical
+way to let user filter entire dashboard by period, company, salesperson, etc.
 
 ## Filter types observed in samples
 
@@ -48,14 +48,14 @@ way to let a user filter an entire dashboard by period, company, salesperson, et
 ## Key rules
 
 1. **`fields` mapping**: Each filter must declare which field to match for every pivot/list it
-   controls. Use the UUID dictionary key as the top-level key in `fields`.
-2. **Do not duplicate**: Do not also add the filter condition to a pivot's `domain`. The filter
+   controls. Use UUID dictionary key as top-level key in `fields`.
+2. **Do not duplicate**: Do not also add filter condition to pivot's `domain`. Filter
    mechanism injects it at runtime.
-3. **`dateRange` values**: Common values are `"this_year"`, `"this_quarter"`, `"this_month"`,
+3. **`dateRange` values**: Common values `"this_year"`, `"this_quarter"`, `"this_month"`,
    `"last_year"`, or `null` for no default.
-4. **Relation filters**: `modelName` is the Odoo model of the related record (not the source model).
-5. **Validator warning**: A global filter without any `fields` matching is a WARNING — it exists
-   in the UI but controls nothing.
+4. **Relation filters**: `modelName` is Odoo model of related record (not source model).
+5. **Validator warning**: Global filter without any `fields` matching is WARNING — exists
+   in UI but controls nothing.
 
 ## Design pattern
 

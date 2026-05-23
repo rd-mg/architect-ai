@@ -1,48 +1,48 @@
 ---
 name: odoo-18
 description: >
-  Odoo 18 development reference for Python models and ORM (search, domain, read_group, compute fields),
-  XML/CSV data and views, OWL/JS client code, QWeb reports, security (ACL, record rules, groups),
-  cron and server actions, migrations and module upgrades, tests, i18n, and performance.
-  Use this skill whenever work involves Odoo 18 or custom addons—even if the user only pastes a traceback,
-  mentions addons/ or __manifest__.py, describes form/list/kanban/XML errors, HTTP controllers, or
-  business rules on models—including building features, fixing bugs, refactoring, or reviewing addon code.
+ Odoo 18 development reference for Python models and ORM (search, domain, read_group, compute fields),
+ XML/CSV data and views, OWL/JS client code, QWeb reports, security (ACL, record rules, groups),
+ cron and server actions, migrations and module upgrades, tests, i18n, and performance.
+ Use this skill whenever work involves Odoo 18 or custom addons—even if user only pastes traceback,
+ mentions addons/ or __manifest__.py, describes form/list/kanban/XML errors, HTTP controllers, or
+ business rules on models—including building features, fixing bugs, refactoring, or reviewing addon code.
 globs: "**/*.{py,xml,csv,js,ts}"
 ---
 
-# Odoo 18 Skill - Master Index
+# Odoo 18 Skill — Master Index
 
-Master index for all Odoo 18 development guides. Read the appropriate guide from `references/` based on your task.
+Master index. Read guide from `references/` based on task.
 
 ## Quick Reference
 
 | Topic | File | When to Use |
 |-------|------|-------------|
-| Actions | `references/odoo-18-actions-guide.md` | Creating actions, menus, scheduled jobs, server actions |
-| API Decorators | `references/odoo-18-decorator-guide.md` | Using @api decorators, compute fields, validation |
-| Controllers | `references/odoo-18-controller-guide.md` | Writing HTTP endpoints, routes, web controllers |
+| Actions | `references/odoo-18-actions-guide.md` | Create actions, menus, scheduled jobs, server actions |
+| API Decorators | `references/odoo-18-decorator-guide.md` | @api decorators, compute fields, validation |
+| Controllers | `references/odoo-18-controller-guide.md` | HTTP endpoints, routes, web controllers |
 | Data Files | `references/odoo-18-data-guide.md` | XML/CSV data files, records, shortcuts |
-| Development | `references/odoo-18-development-guide.md` | Creating modules, manifest, reports, security, wizards |
-| Field Types | `references/odoo-18-field-guide.md` | Defining model fields, choosing field types |
-| Manifest | `references/odoo-18-manifest-guide.md` | __manifest__.py configuration, dependencies, hooks |
-| Migration | `references/odoo-18-migration-guide.md` | Upgrading modules, data migration, version changes |
+| Development | `references/odoo-18-development-guide.md` | Create modules, manifest, reports, security, wizards |
+| Field Types | `references/odoo-18-field-guide.md` | Define model fields, choose field types |
+| Manifest | `references/odoo-18-manifest-guide.md` | __manifest__.py config, dependencies, hooks |
+| Migration | `references/odoo-18-migration-guide.md` | Upgrade modules, data migration, version changes |
 | Mixins | `references/odoo-18-mixins-guide.md` | mail.thread, activities, email aliases, tracking |
-| Model Methods | `references/odoo-18-model-guide.md` | Writing ORM queries, CRUD operations, domain filters |
-| OWL Components | `references/odoo-18-owl-guide.md` | Building OWL UI components, hooks, services |
-| Performance | `references/odoo-18-performance-guide.md` | Optimizing queries, fixing slow code, preventing N+1 |
+| Model Methods | `references/odoo-18-model-guide.md` | ORM queries, CRUD, domain filters |
+| OWL Components | `references/odoo-18-owl-guide.md` | OWL UI components, hooks, services |
+| Performance | `references/odoo-18-performance-guide.md` | Optimize queries, fix slow code, prevent N+1 |
 | Reports | `references/odoo-18-reports-guide.md` | QWeb reports, PDF/HTML, templates, paper formats |
 | Security | `references/odoo-18-security-guide.md` | Access rights, record rules, field permissions |
-| Testing | `references/odoo-18-testing-guide.md` | Writing tests, mocking, assertions, browser testing |
-| Transactions | `references/odoo-18-transaction-guide.md` | Handling database errors, savepoints, UniqueViolation |
-| Translation | `references/odoo-18-translation-guide.md` | Adding translations, localization, i18n |
-| Views & XML | `references/odoo-18-view-guide.md` | Writing XML views, actions, menus, QWeb templates |
+| Testing | `references/odoo-18-testing-guide.md` | Write tests, mocking, assertions, browser testing |
+| Transactions | `references/odoo-18-transaction-guide.md` | DB errors, savepoints, UniqueViolation |
+| Translation | `references/odoo-18-translation-guide.md` | Translations, localization, i18n |
+| Views & XML | `references/odoo-18-view-guide.md` | XML views, actions, menus, QWeb templates |
 
 ## File Structure
 
 ```
 skills/odoo-18.0/
-├── SKILL.md                          # This file - master index
-└── references/                       # Development guides
+├── SKILL.md                          # Master index
+└── references/                       # Dev guides
     ├── odoo-18-actions-guide.md
     ├── odoo-18-controller-guide.md
     ├── odoo-18-data-guide.md
@@ -65,15 +65,15 @@ skills/odoo-18.0/
 
 ## Base Code Reference (Odoo 18)
 
-All guides are based on analysis of Odoo 18 source code:
-- `odoo/models.py` - ORM implementation
-- `odoo/fields.py` - Field types
-- `odoo/api.py` - Decorators
-- `odoo/http.py` - HTTP layer
-- `odoo/exceptions.py` - Exception types
-- `odoo/tools/translate.py` - Translation system
-- `odoo/addons/base/models/res_lang.py` - Language model
-- `addons/web/static/src/core/l10n/translation.js` - JS translations
+Based on Odoo 18 source:
+- `odoo/models.py` — ORM
+- `odoo/fields.py` — Field types
+- `odoo/api.py` — Decorators
+- `odoo/http.py` — HTTP layer
+- `odoo/exceptions.py` — Exception types
+- `odoo/tools/translate.py` — Translation system
+- `odoo/addons/base/models/res_lang.py` — Language model
+- `addons/web/static/src/core/l10n/translation.js` — JS translations
 
 ## External Documentation
 

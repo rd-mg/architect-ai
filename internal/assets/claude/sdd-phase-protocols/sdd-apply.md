@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-apply
-Project: architect-ai
-Adapter: Claude
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: tasks artifact, spec (if exists), design (if exists), apply-progress (if continuation)
-- **Writes**: `apply-progress` artifact (updated after each batch)
+## Deps: Reads tasks artifact, spec (if exists), design (if exists), apply-progress (if continuation) | Writes `apply-progress` artifact (updated after each batch)
 
 ## Cognitive Posture
 +++Pragmatic — Execute the spec. Don't freelance.
 
-## Model
-sonnet — implementation work
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 +++Pragmatic
@@ -41,7 +33,7 @@ Write failing test → verify red → implement → verify green → refactor.
 - If current batch violates graph order, STOP and report.
 
 ## Atomic Commit Protocol
-- **MANDATORY**: Each [x] task MUST be accompanied by a clean commit (if using Git).
+- Each [x] task MUST be accompanied by a clean commit (if using Git).
 - Format: `type(scope): message` (Conventional Commits).
 - No attribution or "Co-authored-by" allowed.
 
@@ -66,12 +58,6 @@ Tasks to complete in this batch: {list from tasks artifact}
 - Do not modify files outside the scope of assigned tasks
 - Do not start new tasks until assigned ones are done or blocked
 
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
-
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
@@ -89,12 +75,10 @@ mem_save(
 ```
 
 ## Result Processing
-
 - Check that tasks.md was updated (completed tasks marked [x])
 - Verify blocked tasks have reason + next action
 - Update state: `tasks-ready` → `applying`
 - Next recommended: `sdd-verify` (if all tasks done) or `sdd-apply` (next batch)
-
 ## Failure Handling
 
 - If sub-agent reports errors in file operations → return `blocked`, escalate

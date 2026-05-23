@@ -53,7 +53,7 @@ All actions share these mandatory attributes:
 
 ### Action Forms
 
-A client can receive actions in 4 forms:
+client can receive actions in 4 forms:
 
 | Form | Description |
 |------|-------------|
@@ -68,7 +68,7 @@ A client can receive actions in 4 forms:
 
 ### `ir.actions.act_window` - Most Common Action
 
-The most common action type, used to present visualizations of a model through views.
+most common action type, used to present visualizations of a model through views.
 
 #### Window Action Fields
 

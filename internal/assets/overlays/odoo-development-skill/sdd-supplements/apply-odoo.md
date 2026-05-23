@@ -1,13 +1,13 @@
 # SDD Apply — Odoo Context
 
-When applying changes in an Odoo project, follow this protocol IN ADDITION to the standard sdd-apply behavior.
+Follow IN ADDITION to standard sdd-apply.
 
 ## Odoo Version
 {See shared preamble — version already cached from sdd-init.}
 
 ## File Order Within a Module
 
-When creating/modifying module files, respect Odoo's import order:
+Respect Odoo's import order when creating/modifying module files:
 
 ```
 my_module/
@@ -43,13 +43,13 @@ my_module/
 
 ## Manifest data[] Load Order
 
-The order of entries in `data` is CRITICAL. Follow this sequence:
+Order of entries in `data` is CRITICAL. Follow this sequence:
 
 1. Security definitions (groups, categories)
 2. `security/ir.model.access.csv`
 3. Record rules (security/record_rules.xml)
 4. Base data (required by views)
-5. Views (tree/list, form, kanban, search — typically in one file per model)
+5. Views (tree/list, form, kanban, search — typically one file per model)
 6. Actions (actions referenced by menus)
 7. Menus (menus reference actions)
 8. Reports
@@ -61,7 +61,7 @@ Wrong order = install failure. Double-check before committing.
 
 ## Migration Script Scaffolding
 
-When the change involves schema changes, scaffold migrations:
+When change involves schema changes, scaffold migrations:
 
 ### Adding a required field to an existing model
 ```python
@@ -107,7 +107,7 @@ def migrate(cr, version):
 
 ## Security Files
 
-For EVERY new model, create `security/ir.model.access.csv` BEFORE writing the model file. The model won't be accessible otherwise.
+For EVERY new model, create `security/ir.model.access.csv` BEFORE writing model file. Model won't be accessible otherwise.
 
 ```csv
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
@@ -128,14 +128,14 @@ From `rules/coding-style.md` and Odoo conventions:
 
 ## DDD Tactical Implementation
 
-Reference `skills/patterns-ddd/SKILL.md` for implementation details of:
+Reference `skills/patterns-ddd/SKILL.md` for:
 - **Invariants**: Always use `@api.constrains` for rules that must persist regardless of UI.
 - **Service Orchestration**: Use `models.AbstractModel` to group logic that doesn't fit in a single model.
 - **Reusable Filters**: Implement Specifications as `@api.model` methods returning domains.
 
 ## README Auto-Generation
 
-When a module is created or significantly modified, generate/update README.md:
+When module is created or significantly modified, generate/update README.md:
 
 ```markdown
 # {Module Name}
@@ -161,18 +161,18 @@ When a module is created or significantly modified, generate/update README.md:
 
 ## Test Scaffolding
 
-For each capability in the spec, create at minimum:
+For each capability in spec, create at minimum:
 - Unit test in `tests/test_{capability}.py`
 - Test class inherits from `odoo.tests.TransactionCase` (for ORM tests) or `HttpCase` (for HTTP tests)
 
 ## Size Budget
 
-Respect the 400-word progress report limit. Code changes themselves are separate artifacts.
+Respect 400-word progress report limit. Code changes are separate artifacts.
 
 ## Boundaries
 
-- Do NOT modify files outside the scope of assigned tasks
-- Do NOT silently skip the manifest version bump
+- Do NOT modify files outside scope of assigned tasks
+- Do NOT silently skip manifest version bump
 - Do NOT commit code without `ir.model.access.csv` for new models
 - Do NOT use `attrs=` in v17+
 - Do NOT use `<tree>` in v18+

@@ -384,7 +384,7 @@ records.unlink()
 
 ## Search Domains
 
-A search domain is a first-order logical predicate for filtering.
+search domain is a first-order logical predicate for filtering.
 
 ### Domain Condition
 
@@ -475,7 +475,7 @@ records = self.env['model'].name_search('keyword', operator='ilike')
 
 ## Environment
 
-The environment holds:
+environment holds:
 
 - Database cursor (`cr`)
 - Current user (`user`, `uid`)

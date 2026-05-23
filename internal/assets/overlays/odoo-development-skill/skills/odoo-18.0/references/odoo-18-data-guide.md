@@ -699,11 +699,11 @@ For company-dependent many2one values stored as JSONB:
 - Merge source JSONB values into destination in deterministic order
 - Flush environment after SQL updates
 
-This is safer than partial ORM-only writes when data is stored in JSONB structures.
+safer than partial ORM-only writes when data is stored in JSONB structures.
 
 ### 6) Deterministic Destination Selection
 
-The wizard selects destination partner by ordered criteria (`active`, `create_date`) before merge. In custom dedup flows, define and document an explicit winner strategy to keep behavior predictable.
+wizard selects destination partner by ordered criteria (`active`, `create_date`) before merge. In custom dedup flows, define and document an explicit winner strategy to keep behavior predictable.
 
 ### 7) Defensive Checks Before Merge
 
@@ -711,7 +711,7 @@ Before data merge, validate constraints to avoid corrupt states:
 
 - Do not merge parent with child (`child_of` checks)
 - Block conflicting user links
-- Enforce consistency checks (for example, same email unless admin)
+- Enforce consistency checks (e.g., same email unless admin)
 - Limit merge group size for operational safety
 
 ---

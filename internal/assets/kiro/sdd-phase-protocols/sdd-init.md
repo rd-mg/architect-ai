@@ -25,22 +25,22 @@ sonnet — needs to read project structure intelligently
 
 ## Phase: sdd-init
 
-Task: Detect project context and persist for the session.
+Task: Detect project context and persist for session.
 
 ## Detection Procedure
 
 ### Step 0: Pre-flight Validation (MANDATORY)
-Verify the project's health before initializing SDD:
-1. **Build Health**: Check if the project can build/compile.
-2. **Test Baseline**: Run the existing test suite and record current failures.
+Verify project health before initializing SDD:
+1. **Build Health**: Check if project can build/compile.
+2. **Test Baseline**: Run existing test suite and record current failures.
 3. **Linter**: Check for critical linting errors.
 4. **Environment**: Verify required environment variables and dependencies.
 5. **CI status**: (Optional) Check status of latest CI run.
 
-Return a `pre-flight-report` in the artifact content. If critical failures found, set status to `blocked`.
+Return `pre-flight-report` in artifact content. If critical failures found, set status to `blocked`.
 
 ### Steps 1-6
-1. Project name: use the directory name or package.json/manifest name
+1. Project name: use directory name or package.json/manifest name
 2. Language/framework: detect from build files
 3. Test runner: detect from scripts in build files
 4. Artifact store mode: default to `engram` if Engram available, else `none`
@@ -48,8 +48,8 @@ Return a `pre-flight-report` in the artifact content. If critical failures found
 6. Active overlays: check for `.atl/overlays/` directory
 
 ### Step 7: Test Baseline Persistence
-Record the current test state to establish a baseline for verification:
-- `mem_save(topic_key: "sdd/{project}/test-baseline")` with the test output summary.
+Record current test state to establish baseline for verification:
+- `mem_save(topic_key: "sdd/{project}/test-baseline")` with test output summary.
 
 ### Step 8: Surface Mapping
 Identify entry points and public APIs affected by this change:
@@ -57,7 +57,7 @@ Identify entry points and public APIs affected by this change:
 - **API Entry Points**: Endpoints, webhooks, CLI commands.
 - **Data Entry Points**: DB schemas, message queues, file watchers.
 
-Record in the sdd-init artifact.
+Record in sdd-init artifact.
 
 ## Artifact Store: {mode}
 
@@ -75,12 +75,12 @@ mem_save(
 
 ## Result Processing
 
-- Cache project context for the session
-- Orchestrator uses this for all subsequent phase delegations
+- Cache project context for session
+- Orchestrator uses for all subsequent phase delegations
 - Update state: `uninitialized` → `idle`
 
 ## Failure Handling
 
 - If project root cannot be determined → return `blocked`, ask user to run from project root
-- If detection is ambiguous → return `partial`, ask user specific questions
-- If Engram is unavailable → fall back to `none` mode silently, note in return envelope
+- If detection ambiguous → return `partial`, ask user specific questions
+- If Engram unavailable → fall back to `none` mode silently, note in return envelope

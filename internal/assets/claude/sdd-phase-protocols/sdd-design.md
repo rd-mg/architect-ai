@@ -1,21 +1,13 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-design
-Project: architect-ai
-Adapter: Claude
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: proposal artifact, spec artifact (if exists)
-- **Writes**: `design` artifact
+## Deps: Reads proposal artifact, spec artifact (if exists) | Writes `design` artifact
 
 ## Cognitive Posture
 +++Critical + +++Systemic — Architecture needs both rigor and system view.
 
-## Model
-opus — architectural decisions
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 +++Critical
@@ -39,7 +31,6 @@ Task: Produce the architecture design for "{change-name}". Based on proposal
 and spec (if present), produce a design document covering:
 
 ## Mandatory Sections
-## Mandatory Sections
 - Architecture diagram (ASCII or Mermaid)
 - Module/component boundaries
 - Data flow & Interface contracts
@@ -50,12 +41,6 @@ and spec (if present), produce a design document covering:
 - **YAGNI Gate**: Table of proposed abstractions. For each, state: (1) Current need (2) Anticipated implementations (3) Cost of direct implementation. If only 1 implementation exists, abstraction is REJECTED.
 - Alternative designs considered and why rejected
 - Open questions (if any remain)
-
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
 
 ## Artifact Store: {mode}
 
@@ -74,14 +59,12 @@ mem_save(
 ```
 
 ## Result Processing
-
 - Validate all mandatory sections present
 - **Decision Check**: Reject if `Alternative designs considered` is empty.
 - **Simplicity Check**: Reject if `YAGNI Gate` shows premature abstractions.
 - **Poka-Yoke Check**: Ensure checklist is filled and items with  have justification.
 - Update state: `specifying` → `designing`
 - Next recommended: `sdd-tasks`
-
 ## Failure Handling
 
 - If sub-agent cannot identify integration points → return `partial`, suggest sdd-explore round

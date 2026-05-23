@@ -47,8 +47,8 @@ All 13 samples passed `osheet_validate.py` and lossless `osheet_recipe.py` round
 ## Key patterns observed
 
 1. Every dashboard uses `Dashboard` + `Data` two-sheet layout.
-2. MRR Evolution uses 3 sheets (adds a `MRR` calculation sheet).
+2. MRR Evolution uses 3 sheets (adds `MRR` calculation sheet).
 3. Accounting dashboard uses 403 formulas with 0 pivots — pure `ODOO.BALANCE` + `ODOO.ACCOUNT.GROUP`.
 4. POS Restaurant uses `combo` chart type (only sample).
 5. Retention dashboard uses spreadsheet-range `line` charts (local calc, no Odoo chart).
-6. Sales dashboard (10 pivots, 2 lists, 9 filters) is the most complex sample.
+6. Sales dashboard (10 pivots, 2 lists, 9 filters) is most complex sample.

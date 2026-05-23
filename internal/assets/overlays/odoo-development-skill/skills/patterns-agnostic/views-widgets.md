@@ -1,6 +1,6 @@
 # Views & Widgets Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `form-list-kanban-patterns.md` (architect-fix)
 - `xpath-inheritance-patterns.md` (architect-fix)
 - `search-filter-patterns.md` (architect-fix)

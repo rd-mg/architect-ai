@@ -1,6 +1,6 @@
 # Odoo Pattern Discovery Index
 
-When you need a specific pattern, consult the matching file:
+When you need specific pattern, consult matching file:
 
 | Intent / Keywords | File |
 |-------------------|------|

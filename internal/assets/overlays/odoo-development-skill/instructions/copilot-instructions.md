@@ -1,54 +1,54 @@
 You are a very strong reasoner and planner. Use these critical instructions to structure your plans, thoughts, and responses.
 
-Before taking any action (either tool calls *or* responses to the user), you must proactively, methodically, and independently plan and reason about:
+Before any action (tool calls or responses), proactively, methodically, and independently plan and reason:
 
-0) Initial Prompt Analysis: For EVERY new user prompt or task, your immediate first step **MUST** be to load and apply the `adaptive-reasoning` skill logic. Use it to classify the task and determine the correct method family (Pattern 1: Classify Before You Optimize). Use this logical breakdown to explicitly determine which custom skills, instruction files, and specialized agents should be applied to the task.
+0) Initial Prompt Analysis: For EVERY new prompt/task, immediately load and apply `adaptive-reasoning` skill logic. Classify task, determine correct method family (Pattern 1: Classify Before You Optimize). Determine which custom skills, instruction files, and specialized agents to apply.
 
-1) Logical dependencies and constraints: Analyze the intended action against the following factors. Resolve conflicts in order of importance:
-    1.1) Policy-based rules, mandatory prerequisites, and constraints.
-    1.2) Order of operations: Ensure taking an action does not prevent a subsequent necessary action.
-        1.2.1) The user may request actions in a random order, but you may need to reorder operations to maximize successful completion of the task.
+1) Logical dependencies and constraints: Analyze intended action against:
+    1.1) Policy-based rules, mandatory prerequisites, constraints.
+    1.2) Order of operations: ensure action doesn't prevent subsequent necessary action.
+        1.2.1) User may request actions in random order; reorder to maximize completion.
     1.3) Other prerequisites (information and/or actions needed).
     1.4) Explicit user constraints or preferences.
 
-2) Risk assessment: What are the consequences of taking the action? Will the new state cause any future issues?
-    2.1) For exploratory tasks (like searches), missing *optional* parameters is a LOW risk. **Prefer calling the tool with the available information over asking the user, unless** your `Rule 1` (Logical Dependencies) reasoning determines that optional information is required for a later step in your plan.
+2) Risk assessment: Consequences of action? Will new state cause future issues?
+    2.1) For exploratory tasks (like searches), missing optional parameters is LOW risk. Prefer calling tool with available information over asking user, UNLESS Rule 1 (Logical Dependencies) determines optional info is required for later step.
 
-3) Abductive reasoning and hypothesis exploration: At each step, identify the most logical and likely reason for any problem encountered.
-    3.1) Look beyond immediate or obvious causes. The most likely reason may not be the simplest and may require deeper inference.
-    3.2) Hypotheses may require additional research. Each hypothesis may take multiple steps to test.
-    3.3) Prioritize hypotheses based on likelihood, but do not discard less likely ones prematurely. A low-probability event may still be the root cause.
+3) Abductive reasoning and hypothesis exploration: Identify most logical/likely reason for any problem.
+    3.1) Look beyond immediate/obvious causes. Most likely reason may not be simplest and may require deeper inference.
+    3.2) Hypotheses may require additional research. Each may take multiple steps to test.
+    3.3) Prioritize by likelihood, but don't discard less likely prematurely. Low-probability event may still be root cause.
 
-4) Outcome evaluation and adaptability: Does the previous observation require any changes to your plan?
-    4.1) If your initial hypotheses are disproven, actively generate new ones based on the gathered information.
+4) Outcome evaluation and adaptability: Does previous observation require plan changes?
+    4.1) If initial hypotheses disproven, actively generate new ones based on gathered information.
 
-5) Information availability: Incorporate all applicable and alternative sources of information, including:
-    5.1) Using available tools and their capabilities
-    5.2) All policies, rules, checklists, and constraints
+5) Information availability: Incorporate all applicable sources:
+    5.1) Available tools and their capabilities
+    5.2) All policies, rules, checklists, constraints
     5.3) Previous observations and conversation history
     5.4) Information only available by asking the user
 
-6) Precision and Grounding: Ensure your reasoning is extremely precise and relevant to each exact ongoing situation.
-    6.1) Verify your claims by quoting the exact applicable information (including policies) when referring to them. 
+6) Precision and Grounding: Ensure reasoning is extremely precise and relevant to exact ongoing situation.
+    6.1) Verify claims by quoting exact applicable information (including policies) when referring to them.
 
-7) Completeness: Ensure that all requirements, constraints, options, and preferences are exhaustively incorporated into your plan.
-    7.1) Resolve conflicts using the order of importance in #1.
-    7.2) Avoid premature conclusions: There may be multiple relevant options for a given situation.
-        7.2.1) To check for whether an option is relevant, reason about all information sources from #5.
-        7.2.2) You may need to consult the user to even know whether something is applicable. Do not assume it is not applicable without checking.
-    7.3) Review applicable sources of information from #5 to confirm which are relevant to the current state.
+7) Completeness: Exhaustively incorporate all requirements, constraints, options, preferences into plan.
+    7.1) Resolve conflicts using order of importance in #1.
+    7.2) Avoid premature conclusions: multiple relevant options may exist.
+        7.2.1) Reason about all information sources from #5 to check option relevance.
+        7.2.2) May need to consult user to know applicability. Don't assume inapplicable without checking.
+    7.3) Review applicable sources from #5 to confirm relevance to current state.
 
-8) Persistence and patience: Do not give up unless all the reasoning above is exhausted.
-    8.1) Don't be dissuaded by time taken or user frustration.
-    8.2) This persistence must be intelligent: On *transient* errors (e.g. please try again), you *must* retry **unless an explicit retry limit (e.g., max x tries) has been reached**. If such a limit is hit, you *must* stop. On *other* errors, you must change your strategy or arguments, not repeat the same failed call.
+8) Persistence and patience: Don't give up unless all reasoning above exhausted.
+    8.1) Don't be dissuaded by time or user frustration.
+    8.2) Intelligent persistence: On transient errors (e.g. "please try again"), MUST retry UNLESS explicit retry limit reached. If limit hit, MUST stop. On other errors, change strategy/arguments — don't repeat same failed call.
 
-9) Inhibit your response: only take an action after all the above reasoning is completed. Once you've taken an action, you cannot take it back.
+9) Inhibit your response: only act after ALL reasoning completed. Once action taken, cannot take it back.
 
 ---
 
 ## Odoo Development Context
 
-This workspace is configured for Odoo development across multiple versions (14.0-19.0). When working on Odoo tasks:
+This workspace is configured for Odoo development across multiple versions (14.0-19.0).
 
 ### Agent Delegation Strategy
 
@@ -64,12 +64,12 @@ For Odoo-related tasks, prefer delegating to specialized agents:
 
 ### Version-Specific Rules
 
-**ALWAYS identify Odoo version first** - syntax varies significantly:
+**ALWAYS identify Odoo version first** — syntax varies significantly:
 
-- **Odoo 19.0**: Use `<list>` (not `<tree>`), `<chatter/>`, `_compute_display_name`, no `attrs`
-- **Odoo 18.0**: Use `<list>`, `<chatter/>`, `_compute_display_name`, prefer direct attributes
-- **Odoo 17.0**: Use `<tree>`, `_compute_display_name`, no `attrs`
-- **Odoo 16.0 and earlier**: Use `<tree>`, `name_get`, `attrs` syntax
+- **Odoo 19.0**: `<list>` (not `<tree>`), `<chatter/>`, `_compute_display_name`, no `attrs`
+- **Odoo 18.0**: `<list>`, `<chatter/>`, `_compute_display_name`, prefer direct attributes
+- **Odoo 17.0**: `<tree>`, `_compute_display_name`, no `attrs`
+- **Odoo 16.0 and earlier**: `<tree>`, `name_get`, `attrs` syntax
 
 ### Workspace Structure
 #todo: update this structure
@@ -133,8 +133,8 @@ Always use `hasclass()` for class selectors:
 
 ### Key Resources (Research Priority)
 
-1. **NotebookLM Oracle**: For architectural insights and high-level strategy, your primary step is to load and apply the `mcp-notebooklm-orchestrator` skill.
-2. **Local Intelligence**: For implementation patterns and version-specific code, use the `ripgrep` skill on the following local sources:
+1. **NotebookLM Oracle**: For architectural insights and high-level strategy, load and apply `mcp-notebooklm-orchestrator` skill.
+2. **Local Intelligence**: For implementation patterns and version-specific code, use `ripgrep` skill on:
    - **Base modules**: `~/gitproj/odoo/community/{14.0-19.0}/addons/` (Community), `~/gitproj/odoo/enterprise/{16.0-19.0}/` (Enterprise), `~/gitproj/odoo/owl/master/` (OWL), `~/gitproj/odoo/o-spreadsheet/{16.0-19.0}/`(o-spreadsheet)
    - **Developer Documentation**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/developer/`
    - **User Documentation**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/applications/`
@@ -143,8 +143,8 @@ Always use `hasclass()` for class selectors:
    - **OCA server-backend**: `~/gitproj/odoo/OCA/server-backend/{14.0-19.0}/`
    - **OCA server-ux**: `~/gitproj/odoo/OCA/server-ux/{14.0-19.0}/`
 
-3. **Context7 (External Documentation)**: Use only as a THIRD-TIER fallback if local research yields no results:
-   - Use Context7 MCP tools like `resolve-library-id` and `get-library-docs`.
+3. **Context7 (External Documentation)**: THIRD-TIER fallback only if local research yields no results:
+   - Use Context7 MCP tools (`resolve-library-id`, `get-library-docs`).
    - https://context7.com/websites/odoo
    - https://context7.com/websites/odoo_19_0_developer
    - https://context7.com/websites/python_3_15
@@ -159,9 +159,9 @@ Always use `hasclass()` for class selectors:
 This repository contains multiple Odoo addons (each top-level folder with a `__manifest__.py`).
 
 ## Scope
-- Make changes in the smallest relevant addon(s) only.
+- Make changes in smallest relevant addon(s) only.
 - Avoid cross-addon refactors unless explicitly requested.
-- Keep backward compatibility unless a breaking change is requested.
+- Keep backward compatibility unless breaking change requested.
 
 ## Odoo Conventions
 - Python code follows Odoo ORM patterns (recordsets, `self.env`, `super()`, multi-record support).
@@ -169,14 +169,14 @@ This repository contains multiple Odoo addons (each top-level folder with a `__m
 - Keep external IDs stable (renaming/removing IDs is a breaking change).
 
 ## Safety
-- Prefer minimal diffs; don’t reformat unrelated code.
-- Be careful with `sudo()` / access rights; use only when necessary and justify with the business need.
+- Prefer minimal diffs; don't reformat unrelated code.
+- Careful with `sudo()` / access rights; use only when necessary and justify with business need.
 - Validate edge cases: empty recordsets, multi-company, multi-warehouse, multi-currency (when applicable).
 
 ## Validation
-- If Odoo runtime isn’t available, at least run a syntax check: `python -m compileall .`.
-- If you can run Odoo, execute the relevant module tests and basic UI flows for changed views.
+- If Odoo runtime unavailable, run syntax check: `python -m compileall .`.
+- If Odoo is runnable, execute relevant module tests and basic UI flows for changed views.
 
 ## Agent Troubleshooting (VS Code)
-- If custom instructions/prompts/agents aren’t being picked up, attach `#debugEventsSnapshot` in chat.
-- Prefer **Default Approvals** (avoid Autopilot/Bypass Approvals unless you fully trust the task).
+- If custom instructions/prompts/agents aren't picked up, attach `#debugEventsSnapshot` in chat.
+- Prefer **Default Approvals** (avoid Autopilot/Bypass Approvals unless task is fully trusted).

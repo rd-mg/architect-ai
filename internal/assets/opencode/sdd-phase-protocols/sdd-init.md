@@ -1,25 +1,16 @@
 <!-- architect-ai:prompt-caching-anchor:start -->
 # SDD Phase Protocol: sdd-init
-Project: architect-ai
-Adapter: OpenCode
-Version: 1.1
 <!-- architect-ai:prompt-caching-anchor:end -->
 
-## Dependencies
-- **Reads**: project files for detection
-- **Writes**: `sdd-init` artifact (project context)
+## Deps: Reads project files for detection | Writes `sdd-init` artifact (project context)
 
 ## Cognitive Posture
 None — detection and configuration.
 
-## Model
-sonnet — needs to read project structure intelligently
+## Trigger
+- User invokes `/sdd-init` explicitly; Orchestrator auto-runs when `mem_search(query: "sdd-init/{project}")` returns nothing before any other SDD command
 
-## When Triggered
-- User invokes `/sdd-init` explicitly
-- Orchestrator auto-runs when `mem_search(query: "sdd-init/{project}")` returns nothing before any other SDD command
-
-## Sub-Agent Launch Template
+## Template
 
 ```
 ## Project Standards (auto-resolved)
@@ -64,12 +55,6 @@ Identify entry points and public APIs affected by this change:
 
 Record in the sdd-init artifact.
 
-
-## Empirical Verification Loop (+++Empirical)
-- **MANDATORY**: Before concluding, you MUST perform an empirical verification of your findings/artifacts.
-- Examples: run a script, check a file, verify a tool output, or perform a manual check of the logic.
-- Record the evidence in the `empirical_proof` field of the return handshake.
-
 ## Artifact Store: {mode}
 
 ## Persistence (MANDATORY)
@@ -85,11 +70,9 @@ mem_save(
 ```
 
 ## Result Processing
-
 - Cache project context for the session
 - Orchestrator uses this for all subsequent phase delegations
 - Update state: `uninitialized` → `idle`
-
 ## Failure Handling
 
 - If project root cannot be determined → return `blocked`, ask user to run from project root

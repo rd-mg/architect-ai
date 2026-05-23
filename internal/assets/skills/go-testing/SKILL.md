@@ -11,7 +11,6 @@ metadata:
 
 ## When to Use
 
-Use this skill when:
 - Writing Go unit tests
 - Testing Bubbletea TUI components
 - Creating table-driven tests
@@ -23,8 +22,6 @@ Use this skill when:
 ## Critical Patterns
 
 ### Pattern 1: Table-Driven Tests
-
-Standard Go pattern for multiple test cases:
 
 ```go
 func TestSomething(t *testing.T) {
@@ -337,7 +334,7 @@ installer/internal/tui/
 
 ```bash
 go test ./...                           # Run all tests
-go test -v ./internal/tui/...          # Verbose TUI tests
+go test -v ./internal/tui/...           # Verbose TUI tests
 go test -run TestNavigation             # Run specific test
 go test -cover ./...                    # With coverage
 go test -update ./...                   # Update golden files
@@ -348,8 +345,8 @@ go test -short ./...                    # Skip integration tests
 
 ## Resources
 
-- **TUI Tests**: See `installer/internal/tui/*_test.go`
-- **Trainer Tests**: See `installer/internal/tui/trainer/*_test.go`
-- **System Tests**: See `installer/internal/system/*_test.go`
-- **Golden Files**: See `installer/internal/tui/testdata/`
+- **TUI Tests**: `installer/internal/tui/*_test.go`
+- **Trainer Tests**: `installer/internal/tui/trainer/*_test.go`
+- **System Tests**: `installer/internal/system/*_test.go`
+- **Golden Files**: `installer/internal/tui/testdata/`
 - **Teatest Docs**: https://github.com/charmbracelet/bubbletea/tree/master/teatest

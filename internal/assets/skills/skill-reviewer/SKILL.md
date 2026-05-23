@@ -17,7 +17,7 @@ Review Skill definition quality against best practices.
 
 **CRITICAL**: When user says "review skill", ALWAYS default to **Definition Review** mode. Only switch to Execution Review when user **explicitly** mentions execution-related keywords.
 
-**Default behavior**: Check the **Skill definition quality** (SKILL.md, structure, content).
+**Default behavior**: Check **Skill definition quality** (SKILL.md, structure, content).
 
 **Execution Review**: Only when user **explicitly** mentions:
 - "analyze execution"
@@ -61,7 +61,6 @@ Review Skill definition quality against best practices.
 **Purpose**: Check if a Skill follows best practices and standards.
 
 ### When to Use
-
 - Before publishing a new Skill
 - After modifying a Skill
 - Want to improve Skill quality
@@ -156,9 +155,8 @@ L1 Engineering Correctness ── L2 Goal Achievement ── L3 Optimization Spa
 ```
 
 ### When to Use
-
 - Skill/Tool execution results don't meet expectations
-- Agent behavior is abnormal and needs troubleshooting
+- Agent behavior abnormal, needs troubleshooting
 - Want to systematically improve implementation
 
 ### Four Input Dimensions
@@ -180,7 +178,7 @@ L1 Engineering Correctness ── L2 Goal Achievement ── L3 Optimization Spa
 
 - Are tool calls successful?
 - Do scripts execute without errors?
-- Any Linter/syntax errors?
+- Any linter/syntax errors?
 - Any infinite loops?
 
 **Judgment:** If errors found → Report and stop, fix L1 first
@@ -189,7 +187,7 @@ L1 Engineering Correctness ── L2 Goal Achievement ── L3 Optimization Spa
 
 **Question: Is the effect good?**
 
-- Is the goal correctly understood?
+- Is goal correctly understood?
 - Are key steps executed?
 - How is output format/quality?
 

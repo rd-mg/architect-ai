@@ -340,7 +340,7 @@ def action_confirm(self):
 
 ## v15 Checklist
 
-When generating a v15 module:
+When generating v15 module:
 
 - [ ] Use `tracking=True` for field tracking (NOT `track_visibility`)
 - [ ] Remove any `@api.multi` decorators
@@ -353,7 +353,7 @@ When generating a v15 module:
 
 ## AI Agent Instructions (v15)
 
-When generating an Odoo 15.0 module:
+When generating Odoo 15.0 module:
 
 1. **USE** `tracking=True` for tracked fields
 2. **REMOVE** any `@api.multi` or `@api.one` decorators

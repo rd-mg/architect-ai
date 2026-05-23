@@ -2,7 +2,7 @@
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  MODEL PATTERNS MIGRATION: 14.0 → 15.0                                       ║
+║  MODEL MIGRATION: 14.0 → 15.0                                                ║
 ║  @api.multi REMOVED, tracking=True standardized                              ║
 ║  VERIFY: https://github.com/odoo/odoo/tree/15.0/odoo/models.py               ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -12,65 +12,44 @@
 
 ### 1. @api.multi REMOVED
 
-This is the **most critical** breaking change. All methods using `@api.multi` will fail in v15.
+**Most critical.** All `@api.multi` methods fail in v15.
 
 ```python
-# v14 (BREAKS IN v15):
-from odoo import models, api
+# v14 (BREAKS in v15):
+@api.multi
+def action_confirm(self):
+    for record in self:
+        record.state = 'confirmed'
 
-class MyModel(models.Model):
-    _name = 'my.model'
-
-    @api.multi
-    def action_confirm(self):
-        for record in self:
-            record.state = 'confirmed'
-        return True
-
-    @api.multi
-    def action_cancel(self):
-        self.write({'state': 'cancelled'})
-
-# v15 (REQUIRED - remove @api.multi):
-from odoo import models
-
-class MyModel(models.Model):
-    _name = 'my.model'
-
-    def action_confirm(self):
-        for record in self:
-            record.state = 'confirmed'
-        return True
-
-    def action_cancel(self):
-        self.write({'state': 'cancelled'})
+# v15 (remove @api.multi):
+def action_confirm(self):
+    for record in self:
+        record.state = 'confirmed'
 ```
 
 ### 2. track_visibility → tracking
 
 ```python
-# v14 (deprecated, still works):
+# v14 (deprecated):
 name = fields.Char(track_visibility='always')
 state = fields.Selection([...], track_visibility='onchange')
 
-# v15 (RECOMMENDED):
+# v15:
 name = fields.Char(tracking=True)
 state = fields.Selection([...], tracking=True)
 ```
 
-### 3. super() Syntax (Best Practice)
+### 3. super() Syntax
 
 ```python
-# v14 (Python 2 style - works but outdated):
+# v14 (old style):
 return super(MyModel, self).create(vals)
 
-# v15 (Python 3 style - RECOMMENDED):
+# v15 (Python 3):
 return super().create(vals)
 ```
 
 ## Field Changes
-
-### Tracking Fields
 
 | v14 Syntax | v15 Syntax |
 |------------|------------|
@@ -82,32 +61,19 @@ return super().create(vals)
 # v14:
 class MyModel(models.Model):
     _inherit = 'mail.thread'
-
     name = fields.Char(track_visibility='always')
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('done', 'Done'),
-    ], track_visibility='onchange')
-    partner_id = fields.Many2one('res.partner', track_visibility='onchange')
-    amount = fields.Float(track_visibility='always')
+    state = fields.Selection([('draft','Draft'),('done','Done')], track_visibility='onchange')
 
 # v15:
 class MyModel(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
-
     name = fields.Char(tracking=True)
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('done', 'Done'),
-    ], tracking=True)
-    partner_id = fields.Many2one('res.partner', tracking=True)
-    amount = fields.Float(tracking=True)
+    state = fields.Selection([('draft','Draft'),('done','Done')], tracking=True)
 ```
 
 ## CRUD Methods Migration
 
-### Create Method
-
+### Create
 ```python
 # v14:
 @api.model
@@ -116,14 +82,14 @@ def create(self, vals):
         vals['code'] = self.env['ir.sequence'].next_by_code('my.model')
     return super(MyModel, self).create(vals)
 
-# v15 (single record - still valid):
+# v15 (single):
 @api.model
 def create(self, vals):
     if not vals.get('code'):
         vals['code'] = self.env['ir.sequence'].next_by_code('my.model')
     return super().create(vals)
 
-# v15 (batch - RECOMMENDED for performance):
+# v15 (batch — recommended):
 @api.model_create_multi
 def create(self, vals_list):
     for vals in vals_list:
@@ -132,8 +98,7 @@ def create(self, vals_list):
     return super().create(vals_list)
 ```
 
-### Write Method
-
+### Write
 ```python
 # v14:
 @api.multi
@@ -153,8 +118,7 @@ def write(self, vals):
     return super().write(vals)
 ```
 
-### Unlink Method
-
+### Unlink
 ```python
 # v14:
 @api.multi
@@ -172,8 +136,7 @@ def unlink(self):
     return super().unlink()
 ```
 
-### Copy Method
-
+### Copy
 ```python
 # v14:
 @api.multi
@@ -199,46 +162,32 @@ def copy(self, default=None):
 def action_confirm(self):
     for record in self:
         if record.state != 'draft':
-            raise UserError(_("Only draft records can be confirmed."))
+            raise UserError(_("Only draft can be confirmed."))
         record.state = 'confirmed'
     return True
 
 @api.multi
 def action_view_partner(self):
     self.ensure_one()
-    return {
-        'type': 'ir.actions.act_window',
-        'name': _('Partner'),
-        'res_model': 'res.partner',
-        'res_id': self.partner_id.id,
-        'view_mode': 'form',
-    }
+    return {'type': 'ir.actions.act_window', 'res_model': 'res.partner',
+            'res_id': self.partner_id.id, 'view_mode': 'form'}
 
 # v15:
 def action_confirm(self):
     for record in self:
         if record.state != 'draft':
-            raise UserError(_("Only draft records can be confirmed."))
+            raise UserError(_("Only draft can be confirmed."))
         record.state = 'confirmed'
     return True
 
 def action_view_partner(self):
     self.ensure_one()
-    return {
-        'type': 'ir.actions.act_window',
-        'name': _('Partner'),
-        'res_model': 'res.partner',
-        'res_id': self.partner_id.id,
-        'view_mode': 'form',
-    }
+    return {'type': 'ir.actions.act_window', 'res_model': 'res.partner',
+            'res_id': self.partner_id.id, 'view_mode': 'form'}
 ```
 
 ## Computed Fields (No Change)
-
-Computed fields work the same way in both versions:
-
 ```python
-# v14 and v15 (same):
 total = fields.Float(compute='_compute_total', store=True)
 
 @api.depends('line_ids.amount')
@@ -248,68 +197,44 @@ def _compute_total(self):
 ```
 
 ## Constraints (No Change)
-
 ```python
-# v14 and v15 (same):
 @api.constrains('date_start', 'date_end')
 def _check_dates(self):
     for record in self:
-        if record.date_start and record.date_end:
-            if record.date_start > record.date_end:
-                raise ValidationError(_("End date must be after start date."))
+        if record.date_start and record.date_end and record.date_start > record.date_end:
+            raise ValidationError(_("End after start."))
 ```
 
 ## Migration Script
-
-Use this script to find and fix v14 patterns:
-
 ```bash
-#!/bin/bash
-# find_v14_patterns.sh
-
-echo "=== Finding @api.multi decorators ==="
 grep -rn "@api.multi" --include="*.py"
-
-echo ""
-echo "=== Finding track_visibility ==="
 grep -rn "track_visibility" --include="*.py"
-
-echo ""
-echo "=== Finding old super() patterns ==="
 grep -rn "super(.*self)" --include="*.py"
 ```
 
-## Search and Replace Patterns
+## Search and Replace
 
-| Find | Replace With |
-|------|--------------|
+| Find | Replace |
+|------|---------|
 | `@api.multi\n    def` | `def` |
 | `track_visibility='always'` | `tracking=True` |
 | `track_visibility='onchange'` | `tracking=True` |
 | `track_visibility=True` | `tracking=True` |
 | `super(ClassName, self)` | `super()` |
 
-## Migration Checklist
+## Checklist
 
-- [ ] Remove ALL `@api.multi` decorators
-- [ ] Replace ALL `track_visibility` with `tracking=True`
-- [ ] Update `super()` calls to Python 3 style
+- [ ] Remove ALL `@api.multi`
+- [ ] Replace ALL `track_visibility` → `tracking=True`
+- [ ] Update `super()` to Python 3 style
 - [ ] Add `mail.activity.mixin` where appropriate
 - [ ] Consider `@api.model_create_multi` for batch creates
 - [ ] Test all action methods
 - [ ] Test all CRUD operations
-- [ ] Verify mail tracking works
+- [ ] Verify mail tracking
 
-## Common Errors After Migration
+## Common Errors
 
-### AttributeError: 'api' object has no attribute 'multi'
-**Cause**: @api.multi still in code
-**Solution**: Remove the decorator, keep the method
-
-### DeprecationWarning: track_visibility is deprecated
-**Cause**: track_visibility used
-**Solution**: Replace with tracking=True
-
-### TypeError: create() got multiple values for argument 'vals'
-**Cause**: Mixing @api.model and @api.model_create_multi
-**Solution**: Choose one pattern consistently
+**`AttributeError: 'api' object has no attribute 'multi'`** → Remove `@api.multi`
+**`DeprecationWarning: track_visibility deprecated`** → Replace with `tracking=True`
+**`TypeError: create() got multiple values for argument 'vals'`** → Use consistent pattern

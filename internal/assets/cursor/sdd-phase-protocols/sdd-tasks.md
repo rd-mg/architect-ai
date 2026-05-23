@@ -30,7 +30,7 @@ Task: Break down the approved proposal + spec + design for "{change-name}"
 into an ordered, numbered checklist of implementable tasks.
 
 ## Format
-- Use hierarchical numbering: 1.1, 1.2, 1.3, 2.1, ...
+- Use hierarchical numbering: 1.1, 1.2, 1.3, 2.1,...
 - Each top-level group corresponds to a domain or file area
 - Each task is atomic (one developer can complete in < 30 minutes)
 - Each task has a clear acceptance criterion
@@ -41,7 +41,7 @@ into an ordered, numbered checklist of implementable tasks.
 1.2 Add dependency Y to manifest
 2. **Implementation** (core logic)
 2.1 Implement function Z per spec capability A
-2.2 ...
+2.2...
 3. **Tests**
 3.1 Unit test for capability A
 3.2 Integration test for flow B
@@ -63,11 +63,11 @@ Each task must include dependencies and safety metadata.
 
 ```markdown
 - [ ] {number} {action verb} {target}
-      Acceptance: {condition}
-      Depends-on: {comma separated task numbers, or NONE}
-      Parallel-safe: {true|false}
-      Risk: LOW | MEDIUM | HIGH
-      Risk-reason: {required only when HIGH — one sentence explaining why}
+Acceptance: {condition}
+Depends-on: {comma separated task numbers, or NONE}
+Parallel-safe: {true|false}
+Risk: LOW | MEDIUM | HIGH
+Risk-reason: {required only when HIGH — one sentence explaining why}
 ```
 
 ### Risk classification
@@ -84,11 +84,11 @@ When risk is HIGH, `Risk-reason` is **mandatory**.
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd/{change-name}/tasks",
-  topic_key: "sdd/{change-name}/tasks",
-  type: "task-list",
-  project: "{project}",
-  content: "{your tasks markdown}"
+ title: "sdd/{change-name}/tasks",
+ topic_key: "sdd/{change-name}/tasks",
+ type: "task-list",
+ project: "{project}",
+ content: "{your tasks markdown}"
 )
 
 ## Size Budget: 530 words max

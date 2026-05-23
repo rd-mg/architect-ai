@@ -1,25 +1,24 @@
 ## Engram Persistent Memory — Protocol
 
-You have access to Engram, a persistent memory system that survives across sessions and compactions.
-This protocol is MANDATORY and ALWAYS ACTIVE — not something you activate on demand.
+Engram: persistent memory system surviving across sessions and compactions. MANDATORY and ALWAYS ACTIVE.
 
 ### PROACTIVE SAVE TRIGGERS (mandatory — do NOT wait for user to ask)
 
-Call `mem_save` IMMEDIATELY and WITHOUT BEING ASKED after any of these:
+Call `mem_save` IMMEDIATELY and WITHOUT BEING ASKED after:
 - Architecture or design decision made
-- Team convention documented or established
+- Team convention documented/established
 - Workflow change agreed upon
-- Tool or library choice made with tradeoffs
+- Tool/library choice made with tradeoffs
 - Bug fix completed (include root cause)
 - Feature implemented with non-obvious approach
-- Notion/Jira/GitHub artifact created or updated with significant content
+- Notion/Jira/GitHub artifact created/updated with significant content
 - Configuration change or environment setup done
 - Non-obvious discovery about the codebase
 - Gotcha, edge case, or unexpected behavior found
 - Pattern established (naming, structure, convention)
 - User preference or constraint learned
 
-Self-check after EVERY task: "Did I make a decision, fix a bug, learn something non-obvious, or establish a convention? If yes, call mem_save NOW."
+Self-check after EVERY task: "Did I decide, fix a bug, learn something non-obvious, or establish a convention? If yes, call mem_save NOW."
 
 Format for `mem_save`:
 - **title**: Verb + what — short, searchable (e.g. "Fixed N+1 query in UserList")
@@ -34,31 +33,31 @@ Format for `mem_save`:
 
 Topic update rules:
 - Different topics MUST NOT overwrite each other
-- Same topic evolving → ALWAY USE same `topic_key` (upsert). This ensures each topic has exactly ONE high-signal source of truth.
+- Same topic evolving → ALWAYS use same `topic_key` (upsert). Each topic gets exactly ONE high-signal source of truth.
 - Unsure about key → call `mem_suggest_topic_key` first
 - Know exact ID to fix → use `mem_update`
 
 ### STRATEGIC RESUMPTION (mandatory)
-Before starting ANY new task or phase, you MUST catch up on state:
+Before starting ANY new task or phase, catch up on state:
 1. Call `mem_context` for recent session history.
-2. Search for relevant stable `topic_key`s (e.g., `sdd/{change-name}/state`) to find the latest "source of truth".
+2. Search for relevant stable `topic_key`s (e.g., `sdd/{change-name}/state`) to find latest "source of truth".
 3. Use `mem_get_observation` for full untruncated content before making new decisions.
 
 ### WHEN TO SEARCH MEMORY
 
-On any variation of "remember", "recall", "what did we do", "how did we solve", or references to past work (including Spanish equivalents "recordar" / "qué hicimos"): <!-- trigger-phrase-allowlist -->
-1. Call `mem_context` — checks recent session history (fast, cheap)
+On any variation of "remember", "recall", "what did we do", "how did we solve", or references to past work (including Spanish "recordar" / "qué hicimos"): <!-- trigger-phrase-allowlist -->
+1. Call `mem_context` — recent session history (fast, cheap)
 2. If not found, call `mem_search` with relevant keywords
 3. If found, use `mem_get_observation` for full untruncated content
 
-Also search PROACTIVELY when:
+Proactive searches when:
 - Starting work on something that might have been done before
 - User mentions a topic you have no context on
 - User's FIRST message references the project, a feature, or a problem — call `mem_search` with keywords from their message to check for prior work before responding
 
 ### SESSION CLOSE PROTOCOL (mandatory)
 
-Before ending a session or saying "done" / "that's it" (including Spanish equivalent "listo"), call `mem_session_summary`: <!-- trigger-phrase-allowlist -->
+Before ending a session or saying "done" / "that's it" (including Spanish "listo"), call `mem_session_summary`: <!-- trigger-phrase-allowlist -->
 
 ## Goal
 [What we were working on this session]
@@ -78,12 +77,12 @@ Before ending a session or saying "done" / "that's it" (including Spanish equiva
 ## Relevant Files
 - path/to/file — [what it does or what changed]
 
-This is NOT optional. If you skip this, the next session starts blind.
+NOT optional. Skipping this means the next session starts blind.
 
 ### AFTER COMPACTION
 
 If you see a compaction message or "FIRST ACTION REQUIRED":
-1. IMMEDIATELY call `mem_session_summary` with the compacted summary content — this persists what was done before compaction
+1. IMMEDIATELY call `mem_session_summary` with the compacted summary content — persists what was done before compaction
 2. Call `mem_context` to recover additional context from previous sessions
 3. Only THEN continue working
 

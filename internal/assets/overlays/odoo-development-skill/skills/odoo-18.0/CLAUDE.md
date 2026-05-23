@@ -1,17 +1,17 @@
 # Odoo 18 Development Guide
 
-This file provides guidance to AI agents when working with Odoo 18 code in this repository.
+Guidance for AI agents working with Odoo 18 code.
 
-> **For setup instructions with different AI IDEs, see [AGENTS.md](./AGENTS.md)**
+> **Setup instructions for different AI IDEs: [AGENTS.md](./AGENTS.md)**
 
 ## Documentation Structure
 
-The `skills/odoo-18.0/references/` directory contains modular guides for Odoo 18 development:
+`skills/odoo-18.0/references/` contains modular guides:
 
 ```
 skills/odoo-18.0/
 ├── SKILL.md                       # Master index
-├── references/                    # Development guides (18 files)
+├── references/                    # Dev guides (18 files)
 │   ├── odoo-18-actions-guide.md     # ir.actions.*, cron, bindings
 │   ├── odoo-18-controller-guide.md  # HTTP, routing, controllers
 │   ├── odoo-18-data-guide.md        # XML/CSV data files, records
@@ -38,24 +38,24 @@ skills/odoo-18.0/
 
 | Task | Guide |
 |------|-------|
-| Creating actions, menus, cron jobs | `references/odoo-18-actions-guide.md` |
-| Creating a new module | `references/odoo-18-development-guide.md` |
-| Configuring __manifest__.py | `references/odoo-18-manifest-guide.md` |
-| Creating XML/CSV data files | `references/odoo-18-data-guide.md` |
-| Writing ORM queries/search | `references/odoo-18-model-guide.md` |
-| Defining model fields | `references/odoo-18-field-guide.md` |
-| Using @api decorators | `references/odoo-18-decorator-guide.md` |
-| Writing XML views | `references/odoo-18-view-guide.md` |
-| Fixing slow code/N+1 queries | `references/odoo-18-performance-guide.md` |
-| Handling database errors | `references/odoo-18-transaction-guide.md` |
-| Creating HTTP endpoints | `references/odoo-18-controller-guide.md` |
-| Building OWL components | `references/odoo-18-owl-guide.md` |
-| Upgrading modules/migrating data | `references/odoo-18-migration-guide.md` |
-| Using mail.thread, activities, mixins | `references/odoo-18-mixins-guide.md` |
-| Creating QWeb reports | `references/odoo-18-reports-guide.md` |
-| Configuring security (ACL, rules) | `references/odoo-18-security-guide.md` |
-| Writing tests | `references/odoo-18-testing-guide.md` |
-| Adding translations/localization | `references/odoo-18-translation-guide.md` |
+| Create actions, menus, cron jobs | `references/odoo-18-actions-guide.md` |
+| Create new module | `references/odoo-18-development-guide.md` |
+| Configure __manifest__.py | `references/odoo-18-manifest-guide.md` |
+| Create XML/CSV data files | `references/odoo-18-data-guide.md` |
+| Write ORM queries/search | `references/odoo-18-model-guide.md` |
+| Define model fields | `references/odoo-18-field-guide.md` |
+| Use @api decorators | `references/odoo-18-decorator-guide.md` |
+| Write XML views | `references/odoo-18-view-guide.md` |
+| Fix slow code/N+1 queries | `references/odoo-18-performance-guide.md` |
+| Handle DB errors | `references/odoo-18-transaction-guide.md` |
+| Create HTTP endpoints | `references/odoo-18-controller-guide.md` |
+| Build OWL components | `references/odoo-18-owl-guide.md` |
+| Upgrade modules/migrate data | `references/odoo-18-migration-guide.md` |
+| Use mail.thread, activities, mixins | `references/odoo-18-mixins-guide.md` |
+| Create QWeb reports | `references/odoo-18-reports-guide.md` |
+| Configure security (ACL, rules) | `references/odoo-18-security-guide.md` |
+| Write tests | `references/odoo-18-testing-guide.md` |
+| Add translations/localization | `references/odoo-18-translation-guide.md` |
 
 ## Key Odoo 18 Changes
 
@@ -168,9 +168,9 @@ my_module/
 
 ## Base Code Reference
 
-The guides are based on Odoo 18 source code. Reference these files in your Odoo installation:
-- `odoo/models.py` - ORM implementation
-- `odoo/fields.py` - Field types
-- `odoo/api.py` - Decorators
-- `odoo/http.py` - HTTP layer
-- `odoo/exceptions.py` - Exception types
+Based on Odoo 18 source. Reference these in your Odoo installation:
+- `odoo/models.py` — ORM
+- `odoo/fields.py` — Field types
+- `odoo/api.py` — Decorators
+- `odoo/http.py` — HTTP layer
+- `odoo/exceptions.py` — Exception types

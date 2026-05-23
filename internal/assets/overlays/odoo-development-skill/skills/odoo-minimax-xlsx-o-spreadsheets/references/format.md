@@ -1,20 +1,20 @@
 # Financial Formatting & Output Standards — Complete Agent Guide
 
-> This document is the complete reference manual for the agent when applying professional financial formatting to xlsx files. All operations target direct XML surgery on `xl/styles.xml` without using openpyxl. Every operational step provides ready-to-use XML snippets.
+> Complete reference manual for agent when applying professional financial formatting to xlsx files. All operations target direct XML surgery on `xl/styles.xml` without using openpyxl. Every operational step provides ready-to-use XML snippets.
 
 ---
 
 ## 1. When to Use This Path
 
-This document (FORMAT path) applies to the following two scenarios:
+This document (FORMAT path) applies to following two scenarios:
 
-**Scenario A — Dedicated Formatting of an Existing File**
-The user provides an existing xlsx file and requests that financial modeling formatting standards be applied or unified. The starting point is to unpack the file, audit the existing `styles.xml`, then append missing styles and batch-update cell `s` attributes. No cell values or formulas are modified.
+**Scenario A — Dedicated Formatting of Existing File**
+User provides existing xlsx file and requests financial modeling formatting standards applied or unified. Starting point: unpack file, audit existing `styles.xml`, then append missing styles and batch-update cell `s` attributes. No cell values or formulas modified.
 
 **Scenario B — Applying Format Standards After CREATE/EDIT**
-After completing data entry or formula writing, formatting is applied as the final step. At this point, `styles.xml` may come from the minimal_xlsx template (which pre-defines 13 style slots) or from a user file. In either case, follow the principle of "append only, never modify existing xf entries."
+After completing data entry or formula writing, formatting applied as final step. At this point, `styles.xml` may come from minimal_xlsx template (pre-defines 13 style slots) or from user file. In either case, follow "append only, never modify existing xf entries."
 
-**Not applicable**: Reading or analyzing file contents only (use the READ path); modifying formulas or data (use the EDIT path).
+**Not applicable**: Reading or analyzing file contents only (use READ path); modifying formulas or data (use EDIT path).
 
 ---
 
@@ -22,12 +22,12 @@ After completing data entry or formula writing, formatting is applied as the fin
 
 ### 2.1 Font Color = Cell Role (Color = Role)
 
-The primary convention of financial modeling: **font color encodes the cell's role, not decoration**. A reviewer can glance at colors to determine which cells are adjustable parameters and which are model-calculated results. This is an industry-wide convention (followed by investment banks, the Big Four, and corporate finance teams).
+Primary convention of financial modeling: **font color encodes cell's role, not decoration**. Reviewer can glance at colors to determine which cells are adjustable parameters and which are model-calculated results. Industry-wide convention (followed by investment banks, Big Four, corporate finance teams).
 
 | Role | Font Color | AARRGGBB | Use Case |
 |------|-----------|----------|----------|
-| Hard-coded input / assumption | Blue | `000000FF` | Growth rates, discount rates, tax rates, and other user-modifiable parameters |
-| Formula / calculated result | Black | `00000000` | All cells containing a `<f>` element |
+| Hard-coded input / assumption | Blue | `000000FF` | Growth rates, discount rates, tax rates, other user-modifiable parameters |
+| Formula / calculated result | Black | `00000000` | All cells containing `<f>` element |
 | Same-workbook cross-sheet reference | Green | `00008000` | Cells whose formula starts with `SheetName!` |
 | External file link | Red | `00FF0000` | Cells whose formula contains `[FileName.xlsx]` (flagged as fragile links) |
 | Label / text | Black (default) | theme color | Row labels, category headings |
@@ -35,13 +35,13 @@ The primary convention of financial modeling: **font color encodes the cell's ro
 
 **Decision tree**:
 ```
-Does the cell contain a <f> element?
-  +-- Yes -> Does the formula start with [FileName]?
+Does cell contain <f> element?
+  +-- Yes -> Does formula start with [FileName]?
   |           +-- Yes -> Red (external link)
-  |           +-- No  -> Does the formula contain SheetName!?
+  |           +-- No  -> Does formula contain SheetName!?
   |                       +-- Yes -> Green (cross-sheet reference)
   |                       +-- No  -> Black (same-sheet formula)
-  +-- No  -> Is the value a user-adjustable parameter?
+  +-- No  -> Is value user-adjustable parameter?
               +-- Yes -> Blue (input/assumption)
               +-- No  -> Black default (label)
 ```
@@ -64,9 +64,9 @@ Does the cell contain a <f> element?
 | Date | `m/d/yyyy` | 14 (built-in, no declaration needed) | 3/21/2026 | Timelines |
 | General text | General | 0 (built-in, no declaration needed) | — | Label rows, cells with no format requirement |
 
-numFmtId 169–172 are custom formats that need to be appended beyond the 4 formats (164–167) pre-defined in the minimal_xlsx template. When appending, assign IDs according to the rules (see Section 3.4).
+numFmtId 169–172 are custom formats needing to be appended beyond 4 formats (164–167) pre-defined in minimal_xlsx template. When appending, assign IDs according to rules (see Section 3.4).
 
-**Built-in format IDs do not need to be declared in `<numFmts>`** (IDs 0–163 are built into Excel/LibreOffice; simply reference the numFmtId in `<xf>`):
+**Built-in format IDs do not need to be declared in `<numFmts>`** (IDs 0–163 built into Excel/LibreOffice; simply reference numFmtId in `<xf>`):
 
 | numFmtId | formatCode | Description |
 |----------|-----------|-------------|
@@ -79,7 +79,7 @@ numFmtId 169–172 are custom formats that need to be appended beyond the 4 form
 
 ### 2.3 Negative Number Display Standards
 
-Financial reports have two mainstream conventions for negative numbers — choose one and **maintain consistency** throughout the entire workbook:
+Financial reports have two mainstream conventions for negative numbers — choose one and **maintain consistency** throughout entire workbook:
 
 **Parenthetical style (investment banking standard, recommended for external deliverables)**
 
@@ -95,7 +95,7 @@ Positive: $1,234    Negative: -$1,234 (red)
 formatCode: $#,##0;[Red]-$#,##0;"-"
 ```
 
-Rule: Once a style is determined, maintain it across the entire workbook. Do not mix two negative number display styles within the same workbook.
+Rule: Once style determined, maintain it across entire workbook. Do not mix two negative number display styles within same workbook.
 
 ### 2.4 Zero Value Display Standards
 
@@ -104,7 +104,7 @@ In financial models, "0" and "no data" have different semantics and should be vi
 | Scenario | Recommended Display | formatCode Third Segment |
 |----------|-------------------|--------------------------|
 | Sparse matrix (most rows have zero-value periods) | Dash `-` | `"-"` |
-| Quantity counts (zero itself is meaningful) | `0` | `0` or omit |
+| Quantity counts (zero itself meaningful) | `0` | `0` or omit |
 | Placeholder row (explicitly empty) | Leave blank | Do not write to cell |
 
 Four-segment format syntax: `positive format;negative format;zero value format;text format`
@@ -116,9 +116,9 @@ Zero preserved as 0: `#,##0;(#,##0);0`
 
 ## 3. styles.xml Surgical Operations
 
-### 3.1 Auditing Existing Styles: Understanding the cellXfs Indirect Reference Chain
+### 3.1 Auditing Existing Styles: Understanding cellXfs Indirect Reference Chain
 
-A cell's `s` attribute points to a position index (0-based) in `cellXfs`, and each `<xf>` entry in `cellXfs` references its respective definition libraries through `fontId`, `fillId`, `borderId`, and `numFmtId`.
+Cell's `s` attribute points to position index (0-based) in `cellXfs`, and each `<xf>` entry in `cellXfs` references its respective definition libraries through `fontId`, `fillId`, `borderId`, and `numFmtId`.
 
 Reference chain diagram:
 
@@ -143,7 +143,7 @@ Audit steps:
   <numFmt numFmtId="167" formatCode="#,##0"/>
 </numFmts>
 ```
-Record: current maximum custom numFmtId = 167, next available ID = 168.
+Record: current max custom numFmtId = 167, next available ID = 168.
 
 **Step 2**: Read `<fonts>` and list each `<font>` by 0-based index with its color and style:
 ```
@@ -154,7 +154,7 @@ fontId=3 -> color rgb="00008000" (green, cross-sheet reference role)
 fontId=4 -> <b/> + color rgb="00000000" (bold black, header)
 ```
 
-**Step 3**: Read `<fills>` and confirm that fills[0] and fills[1] are spec-mandated reserved entries (never delete):
+**Step 3**: Read `<fills>` and confirm fills[0] and fills[1] are spec-mandated reserved entries (never delete):
 ```
 fillId=0 -> patternType="none" (spec-mandated)
 fillId=1 -> patternType="gray125" (spec-mandated)
@@ -170,17 +170,17 @@ index 6 -> numFmtId=164, fontId=2, fillId=0 -> Black font currency (currency for
 ...
 ```
 
-**Step 5**: Verify that all count attributes match the actual number of elements (count mismatches will cause Excel to refuse to open the file).
+**Step 5**: Verify all count attributes match actual number of elements (count mismatches cause Excel to refuse to open file).
 
 ### 3.2 Safely Appending New Styles (Golden Rule: Append Only, Never Modify Existing xf)
 
-**Never modify existing `<xf>` entries**. Modifications will affect all cells that already reference that index, breaking existing formatting. Only append new entries at the end.
+**Never modify existing `<xf>` entries**. Modifications affect all cells already referencing that index, breaking existing formatting. Only append new entries at end.
 
 Complete atomic operation sequence for appending new styles (all 5 steps must be executed):
 
-**Step 1**: Determine if a new `<numFmt>` is needed
+**Step 1**: Determine if new `<numFmt>` needed
 
-Built-in formats (ID 0–163) skip this step. Custom formats are appended to the end of `<numFmts>`:
+Built-in formats (ID 0–163) skip this step. Custom formats appended to end of `<numFmts>`:
 ```xml
 <numFmts count="5">  <!-- count +1 -->
   <!-- Keep existing entries unchanged -->
@@ -193,9 +193,9 @@ Built-in formats (ID 0–163) skip this step. Custom formats are appended to the
 </numFmts>
 ```
 
-**Step 2**: Determine if a new `<font>` is needed
+**Step 2**: Determine if new `<font>` needed
 
-Check whether the existing fonts already contain a matching color+style combination. If not, append to the end of `<fonts>`:
+Check whether existing fonts already contain matching color+style combination. If not, append to end of `<fonts>`:
 ```xml
 <fonts count="6">  <!-- count +1 -->
   <!-- Keep existing entries unchanged -->
@@ -208,11 +208,11 @@ Check whether the existing fonts already contain a matching color+style combinat
   </font>
 </fonts>
 ```
-New fontId = the count value before appending (when original count=5, new fontId=5).
+New fontId = count value before appending (when original count=5, new fontId=5).
 
-**Step 3**: Determine if a new `<fill>` is needed
+**Step 3**: Determine if new `<fill>` needed
 
-If a new background color is needed, append to the end of `<fills>` (note: fills[0] and fills[1] must never be modified):
+If new background color needed, append to end of `<fills>` (note: fills[0] and fills[1] must never be modified):
 ```xml
 <fills count="4">  <!-- count +1 -->
   <fill><patternFill patternType="none"/></fill>       <!-- 0: spec-mandated -->
@@ -233,7 +233,7 @@ If a new background color is needed, append to the end of `<fills>` (note: fills
 </fills>
 ```
 
-**Step 4**: Append a new `<xf>` combination at the end of `<cellXfs>`
+**Step 4**: Append new `<xf>` combination at end of `<cellXfs>`
 ```xml
 <cellXfs count="14">  <!-- count +1 -->
   <!-- Keep existing entries 0-12 unchanged -->
@@ -243,9 +243,9 @@ If a new background color is needed, append to the end of `<fills>` (note: fills
       applyFont="1" applyNumberFormat="1"/>
 </cellXfs>
 ```
-New style index = the count value before appending (when original count=13, new index=13).
+New style index = count value before appending (when original count=13, new index=13).
 
-**Step 5**: Record the new style index; subsequently set the `s` attribute of corresponding cells in the sheet XML to this value.
+**Step 5**: Record new style index; subsequently set `s` attribute of corresponding cells in sheet XML to this value.
 
 ### 3.3 AARRGGBB Color Format Explanation
 
@@ -257,8 +257,8 @@ AA  RR  GG  BB
 Alpha Red Green Blue
 ```
 
-- Alpha channel: `00` = fully opaque (normal use value); `FF` = fully transparent (invisible, never use this)
-- Financial color standards always use `00` as the Alpha prefix
+- Alpha channel: `00` = fully opaque (normal use value); `FF` = fully transparent (invisible, never use)
+- Financial color standards always use `00` as Alpha prefix
 
 | Color | AARRGGBB | Corresponding Role |
 |-------|----------|-------------------|
@@ -270,7 +270,7 @@ Alpha Red Green Blue
 | Light gray (projection period fill) | `00D3D3D3` | Distinguishing historical vs. forecast periods |
 | White | `00FFFFFF` | Pure white fill |
 
-**Common mistake**: Mistakenly writing HTML format `#0000FF` as `FF0000FF` (Alpha=FF makes the color fully transparent and invisible). Correct format: `000000FF`.
+**Common mistake**: Mistakenly writing HTML format `#0000FF` as `FF0000FF` (Alpha=FF makes color fully transparent and invisible). Correct format: `000000FF`.
 
 ### 3.4 numFmtId Assignment Rules
 
@@ -280,38 +280,38 @@ ID 164+     -> Custom formats, must be explicitly declared as <numFmt> elements 
 ```
 
 Rules for assigning new IDs:
-1. Read all `numFmtId` attribute values in the current `<numFmts>`
-2. Take the maximum value + 1 as the next custom format ID
+1. Read all `numFmtId` attribute values in current `<numFmts>`
+2. Take maximum value + 1 as next custom format ID
 3. Do not reuse existing IDs; do not skip numbers
 
-The minimal_xlsx template pre-defines IDs: 164, 165, 166, 167. The next available ID is 168.
+minimal_xlsx template pre-defines IDs: 164, 165, 166, 167. Next available ID is 168.
 
 ---
 
 ## 4. Pre-defined Style Index Complete Reference Table (13 Slots)
 
-The following are the 13 style slots (cellXfs index 0–12) pre-defined in the minimal_xlsx template's `styles.xml`, which can be directly referenced in the cell `s` attribute in sheet XML:
+Following are 13 style slots (cellXfs index 0–12) pre-defined in minimal_xlsx template's `styles.xml`, directly referenceable in cell `s` attribute in sheet XML:
 
 | Index | Semantic Role | Font Color | Fill | numFmtId | Format Display | Typical Use |
 |-------|--------------|------------|------|----------|---------------|-------------|
 | **0** | Default style | Theme black | None | 0 | General | Cells requiring no special formatting |
 | **1** | Input / assumption (general) | Blue `000000FF` | None | 0 | General | Text-type assumptions, flags |
 | **2** | Formula / calculated result (general) | Black `00000000` | None | 0 | General | Text concatenation formulas, non-numeric calculations |
-| **3** | Cross-sheet reference (general) | Green `00008000` | None | 0 | General | Values pulled from cross-sheet (general format) |
+| **3** | Cross-sheet reference (general) | Green `00008000` | None | 0 | General | Values pulled cross-sheet (general format) |
 | **4** | Header (bold) | Bold black | None | 0 | General | Row/column headings |
-| **5** | Currency input | Blue `000000FF` | None | 164 | $1,234 / ($1,234) / - | Amount inputs in the assumptions area |
-| **6** | Currency formula | Black `00000000` | None | 164 | $1,234 / ($1,234) / - | Amount calculations in the model area (revenue, EBITDA) |
-| **7** | Percentage input | Blue `000000FF` | None | 165 | 12.5% | Rate inputs in the assumptions area (growth rate, gross margin assumptions) |
-| **8** | Percentage formula | Black `00000000` | None | 165 | 12.5% | Rate calculations in the model area (actual gross margin) |
-| **9** | Integer (comma) input | Blue `000000FF` | None | 167 | 12,345 | Quantity inputs in the assumptions area (employee count) |
-| **10** | Integer (comma) formula | Black `00000000` | None | 167 | 12,345 | Quantity calculations in the model area |
+| **5** | Currency input | Blue `000000FF` | None | 164 | $1,234 / ($1,234) / - | Amount inputs in assumptions area |
+| **6** | Currency formula | Black `00000000` | None | 164 | $1,234 / ($1,234) / - | Amount calculations in model area (revenue, EBITDA) |
+| **7** | Percentage input | Blue `000000FF` | None | 165 | 12.5% | Rate inputs in assumptions area (growth rate, gross margin assumptions) |
+| **8** | Percentage formula | Black `00000000` | None | 165 | 12.5% | Rate calculations in model area (actual gross margin) |
+| **9** | Integer (comma) input | Blue `000000FF` | None | 167 | 12,345 | Quantity inputs in assumptions area (employee count) |
+| **10** | Integer (comma) formula | Black `00000000` | None | 167 | 12,345 | Quantity calculations in model area |
 | **11** | Year input | Blue `000000FF` | None | 1 | 2024 | Column header years (no thousands separator) |
 | **12** | Key assumption highlight | Blue `000000FF` | Yellow `00FFFF00` | 0 | General | Key parameters pending review or confirmation |
 
 **Selection guide**:
 - Determine "input" vs. "formula" -> Choose odd-numbered (input/blue) or even-numbered (formula/black) paired slots
-- Determine data type -> Choose the corresponding currency (5/6) / percentage (7/8) / integer (9/10) / year (11) slot
-- Cross-sheet reference needing number format -> Append a new green + number format combination (see Section 5.4)
+- Determine data type -> Choose corresponding currency (5/6) / percentage (7/8) / integer (9/10) / year (11) slot
+- Cross-sheet reference needing number format -> Append new green + number format combination (see Section 5.4)
 - Parameter pending review -> index 12
 
 ---
@@ -320,7 +320,7 @@ The following are the 13 style slots (cellXfs index 0–12) pre-defined in the m
 
 ### 5.1 Structural Design
 
-Assumption separation principle: **Input assumptions are centralized in a dedicated area (sheet or block); the model calculation area contains only formulas, no hard-coded values**.
+Assumption separation principle: **Input assumptions centralized in dedicated area (sheet or block); model calculation area contains only formulas, no hard-coded values**.
 
 Recommended structure:
 ```
@@ -388,7 +388,7 @@ Rows 7+:    [Model block - black/green font formulas referencing assumptions are
 <row r="2">
   <c r="A2" t="inlineStr"><is><t>Revenue</t></is></c>
   <!-- B2: Base year revenue, cross-sheet reference from Assumptions, green, s="3" (general format) -->
-  <!-- If currency format is needed, append new style s="13" (see Section 5.4) -->
+  <!-- If currency format needed, append new style s="13" (see Section 5.4) -->
   <c r="B2" s="3"><f>Assumptions!B4</f><v></v></c>
   <!-- C2, D2: Next year revenue = prior year * (1 + growth rate), black font currency formula, s="6" -->
   <c r="C2" s="6"><f>B2*(1+Assumptions!B2)</f><v></v></c>
@@ -414,10 +414,10 @@ Rows 7+:    [Model block - black/green font formulas referencing assumptions are
 
 ### 5.4 Appending "Green + Number Format" Combinations
 
-Pre-defined index 3 is green font + general format. If a cross-sheet reference involves a currency amount, a green style with a number format must be appended:
+Pre-defined index 3 is green font + general format. If cross-sheet reference involves currency amount, green style with number format must be appended:
 
 ```xml
-<!-- Append at the end of <cellXfs> in styles.xml (assuming current count=13, new index=13) -->
+<!-- Append at end of <cellXfs> in styles.xml (assuming current count=13, new index=13) -->
 <!-- index 13: cross-sheet reference + currency format (green font + $#,##0) -->
 <xf numFmtId="164" fontId="3" fillId="0" borderId="0" xfId="0"
     applyFont="1" applyNumberFormat="1"/>
@@ -443,7 +443,7 @@ After appending, cross-sheet reference currency cells use `s="13"`.
         |
   Step 4: Append missing styles (numFmt -> font -> fill -> xf, update counts)
         |
-  Step 5: Batch-update the s attribute of each cell in the sheet XML
+  Step 5: Batch-update s attribute of each cell in sheet XML
         |
   Step 6: XML validity + style reference integrity verification
         |
@@ -456,7 +456,7 @@ After appending, cross-sheet reference currency cells use `s="13"`.
 python3 SKILL_DIR/scripts/xlsx_unpack.py input.xlsx /tmp/xlsx_fmt/
 ```
 
-If the script is unavailable, unpack manually:
+If script unavailable, unpack manually:
 ```bash
 mkdir -p /tmp/xlsx_fmt && cp input.xlsx /tmp/xlsx_fmt/input.xlsx
 cd /tmp/xlsx_fmt && unzip input.xlsx -d unpacked/
@@ -464,23 +464,23 @@ cd /tmp/xlsx_fmt && unzip input.xlsx -d unpacked/
 
 ### 6.3 Step 2 — Audit styles.xml
 
-Execute according to the method in Section 3.1. Quick check for minimal_xlsx template initial state:
-- `<cellXfs count="13">` and `<numFmts count="4">` -> Template initial state, all 13 pre-defined slots can be used directly
-- Otherwise -> A complete review of the existing index mapping is required
+Execute according to method in Section 3.1. Quick check for minimal_xlsx template initial state:
+- `<cellXfs count="13">` and `<numFmts count="4">` -> Template initial state, all 13 pre-defined slots usable directly
+- Otherwise -> Complete review of existing index mapping required
 
 ### 6.4 Step 3 — Audit Sheet XML, Build Formatting Plan
 
 Read `xl/worksheets/sheet*.xml` and evaluate each cell:
-1. Does it contain a `<f>` element (formula)? -> Requires black/green/red style
-2. Is it a hard-coded numeric parameter? -> Requires blue style
-3. Is the data type currency/percentage/integer/year? -> Select the corresponding number format slot
-4. Is it a header? -> Bold style (index 4)
+1. Does it contain `<f>` element (formula)? -> Requires black/green/red style
+2. Is it hard-coded numeric parameter? -> Requires blue style
+3. Is data type currency/percentage/integer/year? -> Select corresponding number format slot
+4. Is it header? -> Bold style (index 4)
 
-Build a formatting mapping table: `{cell coordinate: target style index}`
+Build formatting mapping table: `{cell coordinate: target style index}`
 
 ### 6.5 Step 4 — Append Styles
 
-Execute according to the atomic operation sequence in Section 3.2. Update the corresponding count attribute immediately after appending each component.
+Execute according to atomic operation sequence in Section 3.2. Update corresponding count attribute immediately after appending each component.
 
 ### 6.6 Step 5 — Batch-Update Cell s Attributes
 
@@ -500,7 +500,7 @@ Execute according to the atomic operation sequence in Section 3.2. Update the co
 <c r="C10" s="6"><f>B10*(1+Assumptions!B2)</f><v></v></c>
 ```
 
-For consecutive rows of the same type, row-level default styles can be used to reduce repetition:
+For consecutive rows of same type, row-level default styles can reduce repetition:
 ```xml
 <!-- Entire row uses style=6, only override for exception cells -->
 <row r="5" s="6" customFormat="1">
@@ -513,13 +513,13 @@ For consecutive rows of the same type, row-level default styles can be used to r
 ### 6.7 Step 6 — Verification
 
 ```bash
-# XML validity verification is handled automatically by xlsx_pack.py, no need to manually run xmllint
-# The pack script validates styles.xml and sheet XML legality before packaging; it aborts and reports on errors
+# XML validity verification handled automatically by xlsx_pack.py, no need to manually run xmllint
+# Pack script validates styles.xml and sheet XML legality before packaging; aborts and reports errors
 
-# Style audit (optional, audit the entire unpacked directory after formatting is complete)
+# Style audit (optional, audit entire unpacked directory after formatting complete)
 python3 SKILL_DIR/scripts/style_audit.py /tmp/xlsx_fmt/unpacked/
 
-# Formula error static scan (must specify a single .xlsx file, does not accept directories)
+# Formula error static scan (must specify single .xlsx file, does not accept directories)
 # Pack first, then scan:
 python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_fmt/unpacked/ /tmp/output.xlsx
 python3 SKILL_DIR/scripts/formula_check.py /tmp/output.xlsx
@@ -527,11 +527,11 @@ python3 SKILL_DIR/scripts/formula_check.py /tmp/output.xlsx
 
 Manual style reference integrity check:
 ```bash
-# Find the maximum s attribute value in the sheet XML
+# Find max s attribute value in sheet XML
 grep -o 's="[0-9]*"' /tmp/xlsx_fmt/unpacked/xl/worksheets/sheet1.xml \
   | grep -o '[0-9]*' | sort -n | tail -1
 
-# Compare with the cellXfs count attribute (max s value must be < count)
+# Compare with cellXfs count attribute (max s value must be < count)
 grep 'cellXfs count' /tmp/xlsx_fmt/unpacked/xl/styles.xml
 ```
 
@@ -541,7 +541,7 @@ grep 'cellXfs count' /tmp/xlsx_fmt/unpacked/xl/styles.xml
 python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_fmt/unpacked/ output.xlsx
 ```
 
-If the script is unavailable, pack manually:
+If script unavailable, pack manually:
 ```bash
 cd /tmp/xlsx_fmt/unpacked/
 zip -r ../output.xlsx . -x "*.DS_Store"
@@ -558,7 +558,7 @@ Verify each item before delivery:
 - [ ] All hard-coded numeric values that are user-adjustable parameters: fontId corresponds to blue (input)
 - [ ] Cross-sheet references (formula contains `SheetName!`): fontId corresponds to green
 - [ ] External file references (formula contains `[FileName.xlsx]`): fontId corresponds to red
-- [ ] No cell simultaneously contains a `<f>` element and uses blue font (color role contradiction)
+- [ ] No cell simultaneously contains `<f>` element and uses blue font (color role contradiction)
 
 ### Number Format Correctness
 - [ ] Year columns: numFmtId="1" (`0` format), displays as 2024 not 2,024
@@ -566,7 +566,7 @@ Verify each item before delivery:
 - [ ] Percentage rows: values stored as decimals (0.08 = 8%), format numFmtId="165", displays as 8.0%
 - [ ] Zero values: displayed as `-` in sparse matrices rather than `0` (formatCode third segment contains `"-"`)
 - [ ] Multiple rows (EV/EBITDA, etc.): numFmtId="166" (`0.0x` format)
-- [ ] Negative number display style is consistent throughout the entire workbook (parenthetical or red minus sign)
+- [ ] Negative number display style consistent throughout entire workbook (parenthetical or red minus sign)
 
 ### styles.xml Structural Integrity
 - [ ] `<numFmts count>` = actual number of `<numFmt>` elements
@@ -574,16 +574,16 @@ Verify each item before delivery:
 - [ ] `<fills count>` = actual number of `<fill>` elements (including spec-mandated fills[0] and fills[1])
 - [ ] `<cellXfs count>` = actual number of `<xf>` elements
 - [ ] fills[0] is `patternType="none"`, fills[1] is `patternType="gray125"` (spec-mandated)
-- [ ] All `<xf>` referenced fontId / fillId / borderId are within the valid range of their respective collections
+- [ ] All `<xf>` referenced fontId / fillId / borderId within valid range of their respective collections
 - [ ] All cell `s` attribute values < `cellXfs count` (no out-of-bounds references)
 
 ### Assumption Separation Verification
-- [ ] No black-font numeric cells in the assumptions area/sheet (black numeric = formula, should not be in assumptions)
-- [ ] No blue-font non-year numeric cells in the model area/sheet (blue numeric = hard-coded, should be in assumptions)
-- [ ] Input parameters in the model area reference the assumptions area via formulas, not by directly copying values
+- [ ] No black-font numeric cells in assumptions area/sheet (black numeric = formula, should not be in assumptions)
+- [ ] No blue-font non-year numeric cells in model area/sheet (blue numeric = hard-coded, should be in assumptions)
+- [ ] Input parameters in model area reference assumptions area via formulas, not by directly copying values
 
 ### Formula and Format Linkage
-- [ ] All cells with `<f>` elements have an explicit `s` attribute (must not use default style=0, whose font color is not explicitly black)
+- [ ] All cells with `<f>` elements have explicit `s` attribute (must not use default style=0, whose font color not explicitly black)
 - [ ] SUM summary rows: style uses black font + corresponding number format (e.g., s="6" for currency summaries)
 - [ ] Percentage formulas: values stored as decimals, format is `0.0%`; do not multiply values by 100 before applying percentage format
 
@@ -596,12 +596,12 @@ Verify each item before delivery:
 
 ## 8. Prohibited Actions (What You Must NOT Do)
 
-- **Do not modify existing `<xf>` entries**: This will batch-change the style of all cells referencing that index
+- **Do not modify existing `<xf>` entries**: Batch-changes style of all cells referencing that index
 - **Do not delete fills[0] and fills[1]**: Required by OOXML specification; deletion causes file corruption
-- **Do not modify cell values or formulas**: The FORMAT path only changes styles, not content
-- **Do not use openpyxl for formatting**: openpyxl rewrites the entire styles.xml on save, losing unsupported features
-- **Do not apply global override styles**: Do not cover the entire workbook with a single style; assign precisely by semantic role
-- **Do not write FF in the Alpha channel**: `rgb="FF0000FF"` makes the color fully transparent; the correct format is `rgb="000000FF"`
+- **Do not modify cell values or formulas**: FORMAT path only changes styles, not content
+- **Do not use openpyxl for formatting**: openpyxl rewrites entire styles.xml on save, losing unsupported features
+- **Do not apply global override styles**: Do not cover entire workbook with single style; assign precisely by semantic role
+- **Do not write FF in Alpha channel**: `rgb="FF0000FF"` makes color fully transparent; correct format is `rgb="000000FF"`
 
 ---
 
@@ -609,7 +609,7 @@ Verify each item before delivery:
 
 ### Error 1: Year displays as 2,024
 
-Cause: The year cell's `s` attribute uses a format with thousands separator (e.g., numFmtId="3" or numFmtId="167").
+Cause: Year cell's `s` attribute uses format with thousands separator (e.g., numFmtId="3" or numFmtId="167").
 
 ```xml
 <!-- Incorrect -->
@@ -619,9 +619,9 @@ Cause: The year cell's `s` attribute uses a format with thousands separator (e.g
 <c r="B1" s="11"><v>2024</v></c>
 ```
 
-### Error 2: Percentage displays as 800% (value was multiplied by 100)
+### Error 2: Percentage displays as 800% (value multiplied by 100)
 
-Cause: 8% was stored as `<v>8</v>` instead of `<v>0.08</v>`. Excel's `%` format automatically multiplies the value by 100 for display.
+Cause: 8% stored as `<v>8</v>` instead of `<v>0.08</v>`. Excel's `%` format automatically multiplies value by 100 for display.
 
 ```xml
 <!-- Incorrect -->
@@ -633,11 +633,11 @@ Cause: 8% was stored as `<v>8</v>` instead of `<v>0.08</v>`. Excel's `%` format 
 
 ### Error 3: File corruption after appending styles without updating count
 
-Cause: A `<font>` or `<xf>` element was appended but the count attribute was not updated; Excel reads beyond bounds using the old count.
+Cause: `<font>` or `<xf>` element appended but count attribute not updated; Excel reads beyond bounds using old count.
 
-Fix: Update the corresponding count immediately after appending each element:
+Fix: Update corresponding count immediately after appending each element:
 ```xml
-<!-- After appending the 6th font, count must be changed from 5 to 6 -->
+<!-- After appending 6th font, count must be changed from 5 to 6 -->
 <fonts count="6">
   ...
 </fonts>
@@ -645,7 +645,7 @@ Fix: Update the corresponding count immediately after appending each element:
 
 ### Error 4: Blue font + formula (color role contradiction)
 
-Cause: A formula cell mistakenly uses an input style (e.g., s="5" for currency input).
+Cause: Formula cell mistakenly uses input style (e.g., s="5" for currency input).
 
 ```xml
 <!-- Incorrect: Formula cell uses blue input style -->
@@ -667,17 +667,17 @@ Cause: A formula cell mistakenly uses an input style (e.g., s="5" for currency i
 
 ### Error 6: Modifying existing xf (affects all cells referencing that index)
 
-Cause: Directly modifying attributes of the Nth `<xf>` in cellXfs, causing all cells with `s="N"` to be batch-changed.
+Cause: Directly modifying attributes of Nth `<xf>` in cellXfs, causing all cells with `s="N"` batch-changed.
 
-Fix: Keep existing entries unchanged, append a new entry at the end, and only change the `s` attribute of cells that need the new style to the new index:
+Fix: Keep existing entries unchanged, append new entry at end, only change `s` attribute of cells needing new style to new index:
 ```xml
-<!-- Incorrect: Modified the existing xf at index=6 -->
+<!-- Incorrect: Modified existing xf at index=6 -->
 <xf numFmtId="164" fontId="2" fillId="0" borderId="0" xfId="0"
     applyFont="1" applyNumberFormat="1" applyAlignment="1">
   <alignment horizontal="right"/>  <!-- New attribute added, affects ALL cells already using s="6" -->
 </xf>
 
-<!-- Fix: Append new index (when original count=13, new index=13), only change the s attribute of cells needing right alignment -->
+<!-- Fix: Append new index (when original count=13, new index=13), only change s attribute of cells needing right alignment -->
 <!-- Keep index=6 as-is -->
 <xf numFmtId="164" fontId="2" fillId="0" borderId="0" xfId="0"
     applyFont="1" applyNumberFormat="1" applyAlignment="1">
@@ -692,8 +692,8 @@ Fix: Keep existing entries unchanged, append a new entry at the end, and only ch
 ### 10.1 Header Rows
 
 - Bold font (corresponds to style index 4 in this skill's template)
-- Year columns: use number format `0` (numFmtId="1", no thousands separator) to prevent 2024 from displaying as 2,024
-- A unit description row may be added below headers: gray or italic text, e.g., "$ thousands" or "% of Revenue"
+- Year columns: use number format `0` (numFmtId="1", no thousands separator) to prevent 2024 displaying as 2,024
+- Unit description row may be added below headers: gray or italic text, e.g., "$ thousands" or "% of Revenue"
 
 ### 10.2 Row Type Standards
 
@@ -733,12 +733,12 @@ Complete XML example of parameters passing from assumptions sheet to model sheet
 
 ## 11. Assumption Categories
 
-In the assumptions area (Assumptions sheet or assumptions block), organize assumptions in the following standard order for ease of review and maintenance:
+In assumptions area (Assumptions sheet or assumptions block), organize assumptions in following standard order for ease of review and maintenance:
 
 1. **Revenue assumptions**: Growth rates, pricing, sales volume
 2. **Cost assumptions**: Gross margin, fixed/variable cost ratios
 3. **Working capital**: DSO (Days Sales Outstanding), DPO (Days Payable Outstanding), inventory days
-4. **Capital expenditures (CapEx)**: As a percentage of revenue or absolute amounts
+4. **Capital expenditures (CapEx)**: As percentage of revenue or absolute amounts
 5. **Financing assumptions**: Interest rates, debt repayment schedules
 6. **Tax and other**: Effective tax rate, depreciation & amortization (D&A)
 
@@ -747,22 +747,22 @@ In the assumptions area (Assumptions sheet or assumptions block), organize assum
 ## 12. Audit Trail Best Practices
 
 - Use `s="12"` (blue font + yellow fill highlight) to mark cells requiring review or pending changes, making them immediately visible to reviewers
-- In sensitivity analysis rows or a separate Sensitivity tab, show the impact of +/-1% changes in key assumptions on results
-- **Do not hide rows containing assumptions**: Assumption rows must be visible to reviewers; do not use the `hidden="1"` attribute
-- Note a "Last Updated" date at the top of the assumptions area or in a dedicated cell, recording the last modification time of the model
+- In sensitivity analysis rows or separate Sensitivity tab, show impact of +/-1% changes in key assumptions on results
+- **Do not hide rows containing assumptions**: Assumption rows must be visible to reviewers; do not use `hidden="1"` attribute
+- Note "Last Updated" date at top of assumptions area or in dedicated cell, recording last modification time of model
 
 ---
 
 ## 13. Pre-Delivery Checklist (Common Financial Model Checklist)
 
-Before outputting the final file, confirm each item:
+Before outputting final file, confirm each item:
 
-- [ ] Formula rows contain no hard-coded values (can use `formula_check.py` to scan the packaged `.xlsx` file)
+- [ ] Formula rows contain no hard-coded values (can use `formula_check.py` to scan packaged `.xlsx` file)
 - [ ] Year columns display as 2024 not 2,024 (numFmtId="1", format `0`)
 - [ ] Negative numbers display as (1,234) not -1,234 (use parenthetical style for externally delivered financial reports)
 - [ ] Zero values display as `-` in sparse rows rather than `0` (formatCode third segment is `"-"`)
-- [ ] Growth rates and percentages are stored as decimals (0.08 = 8%), format is `0.0%`
-- [ ] All cross-sheet reference cells use green font (style index 3 or an appended green + number format combination)
-- [ ] Assumptions block and model block are clearly separated (different sheets or separated by empty rows within the same sheet)
+- [ ] Growth rates and percentages stored as decimals (0.08 = 8%), format is `0.0%`
+- [ ] All cross-sheet reference cells use green font (style index 3 or appended green + number format combination)
+- [ ] Assumptions block and model block clearly separated (different sheets or separated by empty rows within same sheet)
 - [ ] Summary rows use `SUM()` formulas, not manually hard-coded totals
-- [ ] Balance verification: summary rows = sum of their respective line items (a check row can be added at the end of the model to verify)
+- [ ] Balance verification: summary rows = sum of respective line items (check row can be added at end of model to verify)

@@ -2,11 +2,11 @@
 
 ## Mode Resolution
 
-The orchestrator passes `artifact_store.mode` with one of: `engram | openspec | hybrid | none`.
+Orchestrator passes `artifact_store.mode` with one of: `engram | openspec | hybrid | none`.
 
-The orchestrator ASKs the user which mode they want when `/sdd-new`, `/sdd-ff`, or `/sdd-continue` is invoked for the first time in a session. The choice is cached for the session.
+Orchestrator ASKs user which mode when `/sdd-new`, `/sdd-ff`, or `/sdd-continue` is invoked first time in session. Choice cached for session.
 
-Default (if user doesn't specify): if Engram is available → `engram`. Otherwise → `none`.
+Default (if user doesn't specify): if Engram available → `engram`. Otherwise → `none`.
 
 ## Mode Roles
 
@@ -28,7 +28,7 @@ Default (if user doesn't specify): if Engram is available → `engram`. Otherwis
 
 ### `engram` mode limitation
 
-Engram uses `topic_key`-based upserts. Re-running a phase for the same change **overwrites** the previous version — no revision history is kept. The archive phase saves a summary report, not the full artifact folder. For iteration history or team collaboration, use `openspec` or `hybrid`.
+Engram uses `topic_key`-based upserts. Re-running a phase for same change **overwrites** previous version — no revision history kept. Archive phase saves summary report, not full artifact folder. For iteration history or team collaboration, use `openspec` or `hybrid`.
 
 ## Behavior Per Mode
 
@@ -41,19 +41,19 @@ Engram uses `topic_key`-based upserts. Re-running a phase for the same change **
 
 ### Hybrid Mode
 
-Persists every artifact to BOTH Engram and OpenSpec simultaneously:
+Persists every artifact to BOTH Engram and OpenSpec:
 - Engram: cross-session recovery, compaction survival, deterministic search
 - OpenSpec: human-readable files, version-controllable artifacts
 
 Write to Engram (per `engram-convention.md`) AND to filesystem (per `openspec-convention.md`) for every artifact.
 
 Read priority: Engram first; fall back to filesystem if Engram returns no results.
-Write behavior: both writes MUST succeed for the operation to be complete.
-Token cost warning: hybrid consumes MORE tokens per operation. Use only when you need both cross-session persistence AND local file artifacts.
+Write: both writes MUST succeed for operation to be complete.
+Token cost: hybrid consumes MORE tokens per operation. Use only when you need both cross-session persistence AND local file artifacts.
 
 ## State Persistence (Orchestrator)
 
-The orchestrator persists DAG state after each phase transition to enable SDD recovery after compaction.
+Orchestrator persists DAG state after each phase transition for SDD recovery after compaction.
 
 | Mode | Persist State | Recover State |
 |------|--------------|---------------|
@@ -64,16 +64,16 @@ The orchestrator persists DAG state after each phase transition to enable SDD re
 
 ## Common Rules
 
-- `none` → do NOT create or modify any project files; return results inline only
-- `engram` → do NOT write any project files; persist to Engram and return observation IDs
+- `none` → do NOT create or modify project files; return results inline only
+- `engram` → do NOT write project files; persist to Engram and return observation IDs
 - `openspec` → write files ONLY to paths defined in `openspec-convention.md`
 - `hybrid` → persist to BOTH Engram AND filesystem; follow both conventions
 - NEVER force `openspec/` creation unless orchestrator explicitly passed `openspec` or `hybrid`
-- If unsure which mode to use, default to `none`
+- If unsure which mode, default to `none`
 
 ## Sub-Agent Context Rules
 
-Sub-agents launch with a fresh context and NO access to the orchestrator's instructions or memory protocol.
+Sub-agents launch with fresh context and NO access to orchestrator's instructions or memory protocol.
 
 Who reads, who writes:
 - Non-SDD (general task): orchestrator searches engram, passes summary in prompt; sub-agent saves discoveries via `mem_save`
@@ -81,9 +81,9 @@ Who reads, who writes:
 - SDD (phase without dependencies, e.g. explore): nobody reads; sub-agent saves its artifact
 
 Why this split:
-- Orchestrator reads for non-SDD: it knows what context is relevant; sub-agents doing their own searches waste tokens on irrelevant results
-- Sub-agents read for SDD: SDD artifacts are large; inlining them in the orchestrator prompt would consume the entire context window
-- Sub-agents always write: they have the complete detail on what happened; nuance is lost by the time results flow back to the orchestrator
+- Orchestrator reads for non-SDD: knows what context is relevant; sub-agents doing own searches waste tokens on irrelevant results
+- Sub-agents read for SDD: SDD artifacts are large; inlining in orchestrator prompt would consume entire context window
+- Sub-agents always write: they have complete detail; nuance lost by time results flow back to orchestrator
 
 ## Orchestrator Prompt Instructions for Sub-Agents
 
@@ -133,12 +133,12 @@ If you return without calling mem_save, the next phase CANNOT find your artifact
 
 ## Skill Registry
 
-The orchestrator pre-resolves compact rules from the skill registry and injects them as `## Project Standards (auto-resolved)` in your launch prompt. Sub-agents do NOT read the registry or individual SKILL.md files — rules arrive pre-digested.
+Orchestrator pre-resolves compact rules from skill registry and injects as `## Project Standards (auto-resolved)` in launch prompt. Sub-agents do NOT read registry or individual SKILL.md files — rules arrive pre-digested.
 
-To generate/update: run the `skill-registry` skill, or run `sdd-init`.
+To generate/update: run `skill-registry` skill, or `sdd-init`.
 
-Sub-agent skill loading: check for a `## Project Standards (auto-resolved)` block in your prompt — if present, follow those rules. If not present, check for `SKILL: Load` instructions as a fallback. If neither exists, proceed without — this is not an error.
+Sub-agent skill loading: check for `## Project Standards (auto-resolved)` block in prompt — if present, follow those rules. If not present, check for `SKILL: Load` instructions as fallback. If neither exists, proceed without — this is not an error.
 
 ## Detail Level
 
-The orchestrator may pass `detail_level`: `concise | standard | deep`. This controls output verbosity but does NOT affect what gets persisted — always persist the full artifact.
+Orchestrator may pass `detail_level`: `concise | standard | deep`. Controls output verbosity but does NOT affect what gets persisted — always persist full artifact.

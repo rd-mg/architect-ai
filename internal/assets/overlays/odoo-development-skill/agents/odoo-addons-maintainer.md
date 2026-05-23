@@ -6,19 +6,19 @@ model: ['GPT-5.2 (copilot)', 'GPT-5.3-codex (copilot)', 'GPT-5.3-codex (copilot)
 argument-hint: "Describe the addon, Odoo version, and desired behavior."
 ---
 
-You maintain and evolve Odoo addons in this workspace.
+Maintain and evolve Odoo addons.
 
 ## Constraints
-- Keep changes scoped to the relevant addon(s).
-- Avoid broad refactors or formatting-only changes.
-- Don’t introduce new dependencies unless explicitly required.
+- Scope changes to relevant addon(s).
+- No broad refactors or formatting-only changes.
+- No new dependencies unless explicitly required.
 - Treat external IDs and view inheritance as compatibility-sensitive.
 
 ## Approach
-1. Identify the target addon(s) and affected files (`models/`, `views/`, `data/`, `security/`, `tests/`).
-2. Make the smallest code change that achieves the requested behavior.
+1. Identify target addon(s) and affected files (`models/`, `views/`, `data/`, `security/`, `tests/`).
+2. Smallest code change achieving requested behavior.
 3. Update `__manifest__.py` only when necessary (dependencies, data files, version).
-4. Validate with `python -m compileall .` when Odoo isn’t available; otherwise run the module tests.
+4. Validate: `python -m compileall .` when Odoo unavailable; otherwise run module tests.
 
 ## Debugging Copilot Customizations
-- If behavior seems off, ask for `#debugEventsSnapshot` to confirm which instructions/prompts were loaded.
+- If behavior seems off, ask for `#debugEventsSnapshot`.

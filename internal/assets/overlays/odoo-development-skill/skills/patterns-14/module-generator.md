@@ -300,7 +300,7 @@ state = fields.Selection([...], track_visibility='always')
 
 ## v14 Checklist
 
-When generating a v14 module:
+When generating v14 module:
 
 - [ ] Use `track_visibility` for field tracking (NOT `tracking`)
 - [ ] Use tuple syntax for x2many operations (NOT `Command`)
@@ -318,7 +318,7 @@ To upgrade this module to v15+:
 
 ## AI Agent Instructions (v14)
 
-When generating an Odoo 14.0 module:
+When generating Odoo 14.0 module:
 
 1. **USE** `track_visibility='onchange'` for tracked fields
 2. **USE** tuple syntax `(0, 0, {...})` for x2many

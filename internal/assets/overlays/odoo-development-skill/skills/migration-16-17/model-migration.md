@@ -1,4 +1,4 @@
-# Odoo Model Patterns Migration Guide: 16.0 → 17.0
+# Odoo Model Patterns Migration: 16.0 → 17.0
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -17,7 +17,7 @@
 
 ## MANDATORY: @api.model_create_multi
 
-### Before (v16)
+**v16:**
 ```python
 @api.model
 def create(self, vals):
@@ -26,7 +26,7 @@ def create(self, vals):
     return super().create(vals)
 ```
 
-### After (v17)
+**v17:**
 ```python
 @api.model_create_multi
 def create(self, vals_list):
@@ -36,80 +36,50 @@ def create(self, vals_list):
     return super().create(vals_list)
 ```
 
-## View Visibility Changes (Affects Model Logic)
+## View Visibility Changes
 
-Models that reference view visibility in their logic need updates:
-
-### Before (v16)
+**v16:**
 ```python
 def get_view_attrs(self):
-    return {
-        'invisible': [('state', '!=', 'draft')],
-        'readonly': [('locked', '=', True)],
-    }
+    return {'invisible': [('state','!=','draft')], 'readonly': [('locked','=',True)]}
 ```
 
-### After (v17)
+**v17:**
 ```python
 def get_view_visibility(self):
-    # Return Python expressions instead of domains
-    return {
-        'invisible': "state != 'draft'",
-        'readonly': "locked",
-    }
+    return {'invisible': "state != 'draft'", 'readonly': "locked"}
 ```
 
 ## Command Class (Already Required in v16)
 
-Ensure all x2many operations use Command class:
-
+All x2many must use Command class:
 ```python
 from odoo import Command
-
-# Correct for both v16 and v17
-self.write({
-    'line_ids': [
-        Command.create({'name': 'New'}),
-        Command.update(1, {'name': 'Updated'}),
-        Command.delete(2),
-        Command.link(3),
-        Command.unlink(4),
-        Command.clear(),
-        Command.set([5, 6, 7]),
-    ]
-})
+self.write({'line_ids': [Command.create({'name':'New'}), Command.delete(1), Command.clear()]})
 ```
 
-## Python Version Updates
+## Python Version
 
-- v16: Python 3.8+
-- v17: Python 3.10+
+v16: 3.8+ → v17: 3.10+
 
-### New Python Features Available
-
+**New Python features:**
 ```python
-# Match statement (Python 3.10+)
 match self.state:
-    case 'draft':
-        self.action_confirm()
-    case 'confirmed':
-        self.action_done()
-    case _:
-        pass
+    case 'draft': self.action_confirm()
+    case 'confirmed': self.action_done()
+    case _: pass
 
-# Improved type hints
-def process(self, data: list[dict]) -> bool:
-    return True
+def process(self, data: list[dict]) -> bool: ...
 ```
 
-## Migration Checklist
+## Checklist
 
-### For Each Model
-- [ ] Update `create()` to use `@api.model_create_multi`
-- [ ] Change signature from `create(vals)` to `create(vals_list)`
-- [ ] Iterate over `vals_list` in create logic
-- [ ] Verify all x2many use `Command` class
-- [ ] Update any view visibility logic for Python expressions
+### Per Model
+- [ ] Update `create()` to `@api.model_create_multi`
+- [ ] Change signature `create(vals)` → `create(vals_list)`
+- [ ] Iterate `vals_list` in create logic
+- [ ] Verify all x2many use Command class
+- [ ] Update view visibility logic for Python expressions
 
 ### Testing
 - [ ] Test bulk create operations
@@ -117,24 +87,14 @@ def process(self, data: list[dict]) -> bool:
 - [ ] Test all form views for visibility
 - [ ] Test all buttons for state visibility
 
-## Common Errors and Fixes
+## Common Errors
 
-### Error: create() expects vals_list
-```
-TypeError: create() got an unexpected keyword argument 'vals'
-```
-**Fix**: Update method signature to accept `vals_list`.
+**`create() got an unexpected keyword argument 'vals'`** → Update signature for `vals_list`
+**`create() should return recordset`** → Ensure super().create() called with `vals_list`
 
-### Error: Missing return in create
-```
-TypeError: create() should return recordset
-```
-**Fix**: Ensure super().create() is called with `vals_list`.
-
-## Automated Migration Pattern
+## Automated Migration
 
 ```python
-# Find and replace pattern
 # Before:
 @api.model
 def create(self, vals):

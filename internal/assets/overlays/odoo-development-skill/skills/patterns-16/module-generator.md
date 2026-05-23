@@ -357,7 +357,7 @@ access_{model_name}_manager,{model_name}.manager,model_{module_name}_{model_name
 
 ## v16 Checklist
 
-When generating a v16 module:
+When generating v16 module:
 
 - [ ] Use `Command` class for x2many operations
 - [ ] Prefer direct `invisible`/`readonly` over `attrs` (v17 preparation)
@@ -369,7 +369,7 @@ When generating a v16 module:
 
 ## AI Agent Instructions (v16)
 
-When generating an Odoo 16.0 module:
+When generating Odoo 16.0 module:
 
 1. **USE** `Command` class for x2many operations (mandatory)
 2. **PREFER** direct `invisible`/`readonly` attributes (v17 preparation)

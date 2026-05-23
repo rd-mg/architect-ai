@@ -1,41 +1,41 @@
 # Build New xlsx from Scratch
 
-Create new, production-quality xlsx files using the XML approach. NEVER use openpyxl
-for writing. NEVER hardcode Python-computed values — every derived number must be a
+Create new, production-quality xlsx files using XML approach. NEVER use openpyxl
+for writing. NEVER hardcode Python-computed values — every derived number must be
 live Excel formula.
 
 ---
 
 ## When to Use This Path
 
-Use this document when the user wants:
-- A brand-new Excel file that does not yet exist
-- A generated report, financial model, or data table
+Use this document when user wants:
+- Brand-new Excel file that does not yet exist
+- Generated report, financial model, or data table
 - Any "create / build / generate / make" request
 
-If the user provides an existing file to modify, switch to `edit.md` instead.
+If user provides existing file to modify, switch to `edit.md` instead.
 
 ---
 
-## The Non-Negotiable Rules
+## Non-Negotiable Rules
 
 Before touching any file, internalize these four rules:
 
 1. **Formula-First**: Every calculated value (`SUM`, growth rate, ratio, subtotal, etc.)
-   MUST be written as `<f>SUM(B2:B9)</f>`, not as a hardcoded `<v>5000</v>`. Hardcoded
+   MUST be written as `<f>SUM(B2:B9)</f>`, not as hardcoded `<v>5000</v>`. Hardcoded
    numbers go stale when source data changes. Only raw inputs and assumption parameters
    may be hardcoded values.
 
-2. **No openpyxl for writing**: The entire file is built by editing XML directly. Python
-   is only allowed for reading/analysis (`pandas.read_excel()`) and for running helper
+2. **No openpyxl for writing**: Entire file built by editing XML directly. Python
+   only allowed for reading/analysis (`pandas.read_excel()`) and running helper
    scripts (`xlsx_pack.py`, `formula_check.py`).
 
 3. **Style encodes meaning**: Blue font = user input/assumption. Black font = formula
-   result. Green font = cross-sheet reference. See `format.md` for the full color system
+   result. Green font = cross-sheet reference. See `format.md` for full color system
    and style index table.
 
 4. **Validate before delivery**: Run `formula_check.py` and fix all errors before
-   handing the file to the user.
+   handing file to user.
 
 ---
 
@@ -43,15 +43,15 @@ Before touching any file, internalize these four rules:
 
 ### Step 1 — Plan Before Writing
 
-Define the full structure on paper before touching any XML:
+Define full structure on paper before touching any XML:
 
 - **Sheets**: names, order, purpose (e.g., Assumptions / Model / Summary)
 - **Layout per sheet**: which rows are headers, inputs, formulas, totals
-- **String inventory**: collect all text labels you will need in sharedStrings
+- **String inventory**: collect all text labels needed in sharedStrings
 - **Style choices**: what number format each column needs (currency, %, integer, year)
 - **Cross-sheet links**: which sheets pull data from other sheets
 
-This planning step prevents the costly cycle of adding strings to sharedStrings
+This planning step prevents costly cycle of adding strings to sharedStrings
 mid-way and recomputing all indices.
 
 ---
@@ -62,7 +62,7 @@ mid-way and recomputing all indices.
 cp -r SKILL_DIR/templates/minimal_xlsx/ /tmp/xlsx_work/
 ```
 
-The template gives you a complete, valid 7-file xlsx skeleton:
+Template gives complete, valid 7-file xlsx skeleton:
 
 ```
 /tmp/xlsx_work/
@@ -80,7 +80,7 @@ The template gives you a complete, valid 7-file xlsx skeleton:
 ```
 
 After copying, rename sheets and add content. Do not create files from scratch —
-always start from the template.
+always start from template.
 
 ---
 
@@ -88,7 +88,7 @@ always start from the template.
 
 #### Single-Sheet Workbook
 
-The template already has one sheet named "Sheet1". Just change the `name` attribute
+Template already has one sheet named "Sheet1". Just change `name` attribute
 in `xl/workbook.xml`:
 
 ```xml
@@ -97,13 +97,13 @@ in `xl/workbook.xml`:
 </sheets>
 ```
 
-No other files need to change for a single-sheet workbook.
+No other files need change for single-sheet workbook.
 
 #### Multi-Sheet Workbook
 
-Four files must be kept in sync. Work through them in this order:
+Four files must be kept in sync. Work through them in order:
 
-**IMPORTANT — rId collision rule**: In the template's `workbook.xml.rels`, the IDs
+**IMPORTANT — rId collision rule**: In template's `workbook.xml.rels`, IDs
 `rId1`, `rId2`, and `rId3` are already taken:
 - `rId1` → `worksheets/sheet1.xml`
 - `rId2` → `styles.xml`
@@ -172,7 +172,7 @@ Special characters in sheet names:
 
 **File 4 of 4 — Create new worksheet XML files**
 
-Copy `sheet1.xml` to `sheet2.xml` and `sheet3.xml`, then clear the `<sheetData>` content:
+Copy `sheet1.xml` to `sheet2.xml` and `sheet3.xml`, then clear `<sheetData>` content:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -191,7 +191,7 @@ Copy `sheet1.xml` to `sheet2.xml` and `sheet3.xml`, then clear the `<sheetData>`
 </worksheet>
 ```
 
-**Sync checklist** — every time you add a sheet, verify all four are consistent:
+**Sync checklist** — every time you add sheet, verify all four consistent:
 
 | Check | What to verify |
 |-------|---------------|
@@ -204,11 +204,11 @@ Copy `sheet1.xml` to `sheet2.xml` and `sheet3.xml`, then clear the `<sheetData>`
 
 ### Step 4 — Populate sharedStrings
 
-All text values (headers, row labels, category names, any string the user will read)
+All text values (headers, row labels, category names, any string user will read)
 must be stored in `xl/sharedStrings.xml`. Cells reference them by 0-based index.
 
-**Recommended workflow**: collect ALL text you need first, write the complete table once,
-then fill in indices while writing worksheet XML. This avoids re-counting indices mid-way.
+**Recommended workflow**: collect ALL text first, write complete table once,
+then fill in indices while writing worksheet XML. Avoids re-counting indices mid-way.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -228,8 +228,8 @@ then fill in indices while writing worksheet XML. This avoids re-counting indice
 ```
 
 **Attribute rules**:
-- `uniqueCount` = number of `<si>` elements (unique strings in the table)
-- `count` = total number of cell references to strings across the entire workbook
+- `uniqueCount` = number of `<si>` elements (unique strings in table)
+- `count` = total number of cell references to strings across entire workbook
   (if "Revenue" appears in 3 sheets, count is `uniqueCount + 2`)
 - For new files where each string appears once, `count == uniqueCount`
 - Both attributes MUST be accurate — wrong values trigger warnings in some Excel versions
@@ -242,8 +242,8 @@ then fill in indices while writing worksheet XML. This avoids re-counting indice
 <si><t xml:space="preserve">  (note)  </t></si>  <!-- preserve leading/trailing spaces -->
 ```
 
-**Helper script**: use `shared_strings_builder.py` to generate the complete
-`sharedStrings.xml` from a plain list of strings:
+**Helper script**: use `shared_strings_builder.py` to generate complete
+`sharedStrings.xml` from plain list of strings:
 
 ```bash
 python3 SKILL_DIR/scripts/shared_strings_builder.py \
@@ -251,7 +251,7 @@ python3 SKILL_DIR/scripts/shared_strings_builder.py \
   > /tmp/xlsx_work/xl/sharedStrings.xml
 ```
 
-Or interactively from a file listing one string per line:
+Or interactively from file listing one string per line:
 
 ```bash
 python3 SKILL_DIR/scripts/shared_strings_builder.py --file strings.txt \
@@ -262,7 +262,7 @@ python3 SKILL_DIR/scripts/shared_strings_builder.py --file strings.txt \
 
 ### Step 5 — Write Worksheet Data
 
-Edit each `xl/worksheets/sheetN.xml`. Replace the empty `<sheetData>` with rows
+Edit each `xl/worksheets/sheetN.xml`. Replace empty `<sheetData>` with rows
 and cells.
 
 #### Cell XML Anatomy
@@ -274,7 +274,7 @@ and cells.
 
   <v>3</v>
      ↑
-  value (for t="s": sharedStrings index; for numbers: the number itself)
+  value (for t="s": sharedStrings index; for numbers: number itself)
 ```
 
 #### Data Type Reference
@@ -288,7 +288,7 @@ and cells.
 | Formula | omit | `<c r="B4" s="2"><f>SUM(B2:B3)</f><v></v></c>` | `<v>` left empty |
 | Cross-sheet formula | omit | `<c r="C1" s="3"><f>Assumptions!B2</f><v></v></c>` | use s=3 (green) |
 
-#### A Full Sheet Data Example
+#### Full Sheet Data Example
 
 ```xml
 <cols>
@@ -341,7 +341,7 @@ and cells.
 Column widths go **before** `<sheetData>`, freeze pane goes inside `<sheetView>`:
 
 ```xml
-<!-- Inside <sheetViews><sheetView ...> — freeze the header row -->
+<!-- Inside <sheetViews><sheetView ...> — freeze header row -->
 <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>
 
 <!-- Before <sheetData> — set column widths -->
@@ -355,10 +355,10 @@ Column widths go **before** `<sheetData>`, freeze pane goes inside `<sheetView>`
 
 ### Step 6 — Apply Styles
 
-The template's `xl/styles.xml` has 13 pre-built semantic style slots (indices 0–12).
-**Read `format.md` for the complete style index table, color system, and how to add new styles.**
+Template's `xl/styles.xml` has 13 pre-built semantic style slots (indices 0–12).
+**Read `format.md` for complete style index table, color system, and how to add new styles.**
 
-Quick reference for the most common slots:
+Quick reference for most common slots:
 
 | `s` | Role | Example |
 |-----|------|---------|
@@ -369,7 +369,7 @@ Quick reference for the most common slots:
 
 Design principle: Blue = human sets this. Black = Excel computes this. Green = cross-sheet.
 
-If you need a style not in the 13 pre-built slots, follow the append-only procedure in `format.md` section 3.2.
+If you need style not in 13 pre-built slots, follow append-only procedure in `format.md` section 3.2.
 
 ---
 
@@ -427,25 +427,25 @@ Formulas in XML have **no leading `=`**:
 <!-- Ampersand in sheet name (XML-escaped in workbook.xml, but in formula: literal &) -->
 <c r="B3" s="3"><f>'R&amp;D'!B5</f><v></v></c>
 
-<!-- Cross-sheet range: SUM of a range in another sheet -->
+<!-- Cross-sheet range: SUM of range in another sheet -->
 <c r="B10" s="6"><f>SUM(Data!C2:C1000)</f><v></v></c>
 
 <!-- 3D reference: sum same cell across multiple sheets -->
 <c r="B5" s="6"><f>SUM(Jan:Dec!B5)</f><v></v></c>
 ```
 
-Cross-sheet formula cells should use `s="3"` (green) to signal the data origin.
+Cross-sheet formula cells should use `s="3"` (green) to signal data origin.
 
-#### Shared Formulas (Same Pattern Repeated Down a Column)
+#### Shared Formulas (Same Pattern Repeated Down Column)
 
-When many consecutive cells share the same formula structure with only the row number
-changing, use shared formulas to keep the XML compact:
+When many consecutive cells share same formula structure with only row number
+changing, use shared formulas to keep XML compact:
 
 ```xml
-<!-- D2: defines the shared group (si="0", ref="D2:D11") -->
+<!-- D2: defines shared group (si="0", ref="D2:D11") -->
 <c r="D2" s="8"><f t="shared" ref="D2:D11" si="0">C2/B2-1</f><v></v></c>
 
-<!-- D3 through D11: reference the same group, no formula text needed -->
+<!-- D3 through D11: reference same group, no formula text needed -->
 <c r="D3" s="8"><f t="shared" si="0"/><v></v></c>
 <c r="D4" s="8"><f t="shared" si="0"/><v></v></c>
 <c r="D5" s="8"><f t="shared" si="0"/><v></v></c>
@@ -463,11 +463,11 @@ If you have multiple shared formula groups, assign sequential `si` values (0, 1,
 #### Absolute References
 
 ```xml
-<!-- $B$2 locks to that cell when the formula is copied -->
+<!-- $B$2 locks to that cell when formula is copied -->
 <c r="C5" s="8"><f>B5/$B$2</f><v></v></c>
 ```
 
-The `$` character needs no XML escaping — write it literally.
+`$` character needs no XML escaping — write it literally.
 
 #### Lookup Formulas
 
@@ -493,9 +493,9 @@ python3 SKILL_DIR/scripts/xlsx_pack.py /tmp/xlsx_work/ /path/to/output.xlsx
 ```
 
 `xlsx_pack.py` will:
-1. Check that `[Content_Types].xml` exists at the root
+1. Check that `[Content_Types].xml` exists at root
 2. Parse every `.xml` and `.rels` file for well-formedness — abort if any fail
-3. Create the ZIP archive with correct compression
+3. Create ZIP archive with correct compression
 
 **Validate**:
 
@@ -514,14 +514,14 @@ Fix every reported error before delivery. Exit code 0 = safe to deliver.
 
 ## Pre-Delivery Checklist
 
-Run through this list before handing the file to the user:
+Run through this list before handing file to user:
 
 - [ ] `formula_check.py` reports 0 errors
-- [ ] Every calculated cell has `<f>` — not just `<v>` with a number
+- [ ] Every calculated cell has `<f>` — not just `<v>` with number
 - [ ] `sharedStrings.xml` `count` and `uniqueCount` match actual `<si>` count
-- [ ] Every cell `s` attribute value is in range `0` to `cellXfs count - 1`
-- [ ] Every sheet in `workbook.xml` has a matching entry in `workbook.xml.rels`
-- [ ] Every `worksheets/sheetN.xml` file has a matching `<Override>` in `[Content_Types].xml`
+- [ ] Every cell `s` attribute value in range `0` to `cellXfs count - 1`
+- [ ] Every sheet in `workbook.xml` has matching entry in `workbook.xml.rels`
+- [ ] Every `worksheets/sheetN.xml` file has matching `<Override>` in `[Content_Types].xml`
 - [ ] Year columns use `s="11"` (format `0`, no thousands separator)
 - [ ] Cross-sheet reference formulas use `s="3"` (green font)
 - [ ] Assumption inputs use `s="1"` or `s="5"` or `s="7"` (blue font)
@@ -535,7 +535,7 @@ Run through this list before handing the file to the user:
 | Formula has leading `=` | Cell shows `=SUM(...)` as text | Remove `=` from `<f>` content |
 | sharedStrings `count` not updated | Excel warning or blank cells | Count `<si>` elements, update both `count` and `uniqueCount` |
 | Style index out of range | File corruption / Excel repair | Ensure `s` < `cellXfs count`; append new `<xf>` if needed |
-| New sheet rId conflicts with styles/sharedStrings rId | Sheet missing or styles lost | New sheets use rId4, rId5, … (rId1-3 are reserved in template) |
+| New sheet rId conflicts with styles/sharedStrings rId | Sheet missing or styles lost | New sheets use rId4, rId5, … (rId1-3 reserved in template) |
 | Sheet name has `&` unescaped in XML | XML parse error | Use `&amp;` in `workbook.xml` name attribute |
 | Cross-sheet ref to sheet with space, no quotes | `#REF!` error | Wrap sheet name in single quotes: `'Sheet Name'!B5` |
 | Cross-sheet ref to non-existent sheet | `#REF!` error | Check `workbook.xml` sheet list vs formula |
@@ -633,7 +633,7 @@ Layout: rows 1-12 = Assumptions (blue inputs) / rows 14-30 = Model (black formul
 
 ### Scenario B — Data + Summary (Two Sheets)
 
-The `Summary` sheet pulls from `Data` using cross-sheet formulas (green, `s="3"`):
+`Summary` sheet pulls from `Data` using cross-sheet formulas (green, `s="3"`):
 
 ```xml
 <!-- Summary/sheet2.xml sheetData excerpt -->
@@ -659,7 +659,7 @@ The `Summary` sheet pulls from `Data` using cross-sheet formulas (green, `s="3"`
 
 ### Scenario C — Multi-Department Consolidation
 
-`Consolidated` sheet sums the same cells from multiple department sheets:
+`Consolidated` sheet sums same cells from multiple department sheets:
 
 ```xml
 <!-- Consolidated/sheet4.xml — summing across Dept_Eng and Dept_Mkt -->
@@ -680,12 +680,12 @@ The `Summary` sheet pulls from `Data` using cross-sheet formulas (green, `s="3"`
 
 ## What You Must NOT Do
 
-- Do NOT use openpyxl or any Python library to write the final xlsx file
+- Do NOT use openpyxl or any Python library to write final xlsx file
 - Do NOT hardcode any calculated value — use `<f>` formulas for every derived number
 - Do NOT deliver without running `formula_check.py` first
-- Do NOT set a cell's `s` attribute to a value >= `cellXfs count`
-- Do NOT modify an existing `<xf>` entry in `styles.xml` — only append new ones
-- Do NOT add a new sheet without updating all four sync points (workbook.xml,
+- Do NOT set cell's `s` attribute to value >= `cellXfs count`
+- Do NOT modify existing `<xf>` entry in `styles.xml` — only append new ones
+- Do NOT add new sheet without updating all four sync points (workbook.xml,
   workbook.xml.rels, [Content_Types].xml, actual .xml file)
 - Do NOT assign new worksheet rIds that overlap with rId1, rId2, or rId3 (reserved
-  for sheet1, styles, sharedStrings in the template)
+  for sheet1, styles, sharedStrings in template)

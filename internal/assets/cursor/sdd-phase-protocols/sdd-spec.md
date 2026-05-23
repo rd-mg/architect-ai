@@ -46,11 +46,11 @@ One spec entry per capability listed in proposal.md's Capabilities section.
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd/{change-name}/spec",
-  topic_key: "sdd/{change-name}/spec",
-  type: "architecture",
-  project: "{project}",
-  content: "{your spec markdown with FMEA, BDD, FSM, and A11y where applicable}"
+ title: "sdd/{change-name}/spec",
+ topic_key: "sdd/{change-name}/spec",
+ type: "architecture",
+ project: "{project}",
+ content: "{your spec markdown with FMEA, BDD, FSM, and A11y where applicable}"
 )
 
 ## Size Budget: 1000 words max

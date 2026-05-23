@@ -89,10 +89,10 @@ mem_save(
 | **SUGGESTION** | Note in report. Maintain `APPROVED`. |
 
 - Verdict field is AUTHORITATIVE for orchestrator decision:
-  - `APPROVED` → next recommended `sdd-archive`
-  - `CONDITIONALLY APPROVED` → present to user for manual decision
-  - `NEEDS CHANGES` → back to `sdd-apply` with new batch
-  - `UNRESOLVED` → escalate to user
+- `APPROVED` → next recommended `sdd-archive`
+- `CONDITIONALLY APPROVED` → present to user for manual decision
+- `NEEDS CHANGES` → back to `sdd-apply` with new batch
+- `UNRESOLVED` → escalate to user
 - Update state: `applying` → `verified` (or `verify-failed`)
 
 ## Failure Handling

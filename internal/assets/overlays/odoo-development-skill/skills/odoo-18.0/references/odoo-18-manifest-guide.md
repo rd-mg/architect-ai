@@ -111,7 +111,7 @@ Only `name` is truly required, but `version` and `depends` should always be spec
 'name': 'My Module',
 ```
 
-The display name shown in Apps menu.
+display name shown in Apps menu.
 
 ### version
 

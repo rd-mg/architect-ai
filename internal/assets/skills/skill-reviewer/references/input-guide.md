@@ -1,4 +1,4 @@
-# Four Input Dimensions - Detailed Guide
+# Four Input Dimensions
 
 ## Overview
 
@@ -78,19 +78,18 @@ Found 3 TODO items...
 User's original prompt.
 
 ### Key Points
-
 - Complete user input
-- Include context information
+- Include context
 - Clear expected results
 
 ### Example
 
 ```markdown
-Good example:
+Good:
 "Help me analyze chatId abc123's agent stuck issue,
  this agent keeps failing when executing replace_in_file"
 
-Bad example:
+Bad:
 "Help me check" ← Missing context
 ```
 
@@ -113,10 +112,7 @@ ls skills/${SKILL_NAME}/
 cat skills/${SKILL_NAME}/scripts/*.sh
 ```
 
-**Extract content:**
-- Design goals (Overview)
-- Workflow
-- Expected output (Output Format)
+**Extract:** Design goals (Overview), Workflow, Expected output (Output Format)
 
 ### Tool Analysis
 
@@ -128,11 +124,7 @@ cat path/to/tool/implementation.ts
 cat path/to/tools.json | jq '.[] | select(.name == "tool_name")'
 ```
 
-**Extract content:**
-- Parameter definitions
-- Processing logic
-- Return format
-- Error handling
+**Extract:** Parameter definitions, Processing logic, Return format, Error handling
 
 ### Mixed Analysis
 
@@ -142,7 +134,7 @@ When Skill uses custom Tools:
 # Read Skill first
 cat skills/${SKILL_NAME}/SKILL.md
 
-# Then read scripts/tools referenced in Skill
+# Then read scripts/tools referenced
 cat skills/${SKILL_NAME}/scripts/*.sh
 ```
 
@@ -180,45 +172,33 @@ cat ${AGENT_PATH}/handler.ts
 
 With Agent implementation, can analyze:
 
-1. **System Prompt Issues**
-   - Are instructions clear?
-   - Are there missing constraints?
-
-2. **Tool Definition Issues**
-   - Is parameter design reasonable?
-   - Is description accurate?
-
-3. **Decision Logic Issues**
-   - Tool selection logic
-   - Error handling strategy
+1. **System Prompt Issues** — Instructions clear? Missing constraints?
+2. **Tool Definition Issues** — Parameter design reasonable? Description accurate?
+3. **Decision Logic Issues** — Tool selection logic, Error handling strategy
 
 ---
 
 ## Input Combination Scenarios
 
 ### Scenario A: Minimal Analysis
-
 ```
 Input: Trace + Goal
 Can do: L1 basic check
 ```
 
 ### Scenario B: Skill Analysis
-
 ```
 Input: Trace + Goal + Skill
 Can do: L1 + L2 + L3 (for Skill)
 ```
 
 ### Scenario C: Tool Analysis
-
 ```
 Input: Trace + Goal + Tool
 Can do: L1 + L2 + L3 (for Tool)
 ```
 
 ### Scenario D: Deep Analysis
-
 ```
 Input: Trace + Goal + Skill + Agent
 Can do: L1 + L2 + L3 (Skill + Agent)
@@ -229,7 +209,7 @@ Can do: L1 + L2 + L3 (Skill + Agent)
 ## User Guidance Template
 
 ```markdown
-Please provide the following information for analysis:
+Please provide for analysis:
 
 **Required:**
 1. **Execution Trace** - Paste Agent's complete execution process
@@ -240,7 +220,7 @@ Please provide the following information for analysis:
 2. **Execution Goal** - Your original prompt to Agent
 
 **Optional (recommended):**
-3. **Analysis Target** - What do you want to analyze?
+3. **Analysis Target** - What to analyze?
    - [ ] Skill → Provide Skill name
    - [ ] Tool → Provide Tool name or source path
    

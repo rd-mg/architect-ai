@@ -44,11 +44,11 @@ and design. Determine if the change meets acceptance criteria.
 4. Check tasks.md — all tasks marked [x] or blocked with reason
 5. Read apply-progress — verify no open blockers
 6. **Baseline Comparison**: Run test suite. Compare against `sdd/{project}/test-baseline`.
-   - Report NEW failures vs baseline.
-   - Fixed baseline failures are NOTED but do not impact current change verdict.
+ - Report NEW failures vs baseline.
+ - Fixed baseline failures are NOTED but do not impact current change verdict.
 7. Apply adversarial-review (from adaptive-reasoning Mode 2):
-   - Pass A: happy-path correctness
-   - Pass B: failure-mode lens
+ - Pass A: happy-path correctness
+ - Pass B: failure-mode lens
 8. Classify findings: CRITICAL / BLOCKING / WARNING-REAL / WARNING-THEORETICAL / SUGGESTION
 9. Output verdict: APPROVED / CONDITIONALLY APPROVED / NEEDS CHANGES / UNRESOLVED
 
@@ -65,11 +65,11 @@ and design. Determine if the change meets acceptance criteria.
 
 ## Persistence (MANDATORY)
 mem_save(
-  title: "sdd/{change-name}/verify-report",
-  topic_key: "sdd/{change-name}/verify-report",
-  type: "verification-report",
-  project: "{project}",
-  content: "{your verify-report markdown with verdict, findings, and FMEA Cross-Validation table}"
+ title: "sdd/{change-name}/verify-report",
+ topic_key: "sdd/{change-name}/verify-report",
+ type: "verification-report",
+ project: "{project}",
+ content: "{your verify-report markdown with verdict, findings, and FMEA Cross-Validation table}"
 )
 
 ## Size Budget: 900 words max
@@ -89,10 +89,10 @@ mem_save(
 | **SUGGESTION** | Note in report. Maintain `APPROVED`. |
 
 - Verdict field is AUTHORITATIVE for orchestrator decision:
-  - `APPROVED` → next recommended `sdd-archive`
-  - `CONDITIONALLY APPROVED` → present to user for manual decision
-  - `NEEDS CHANGES` → back to `sdd-apply` with new batch
-  - `UNRESOLVED` → escalate to user
+- `APPROVED` → next recommended `sdd-archive`
+- `CONDITIONALLY APPROVED` → present to user for manual decision
+- `NEEDS CHANGES` → back to `sdd-apply` with new batch
+- `UNRESOLVED` → escalate to user
 - Update state: `applying` → `verified` (or `verify-failed`)
 
 ## Failure Handling

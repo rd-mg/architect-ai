@@ -13,36 +13,30 @@ Complete reference for DTG Base module utilities and helpers in Odoo 18.
 
 ## What is DTG Base?
 
-DTG Base is a custom abstract model (`dtg_base.DTGBase`) that provides common utility methods for Odoo development. It's designed to be inherited by other models to gain access to helpful utilities.
+Custom abstract model (`dtg_base.DTGBase`) providing common utility methods. Inherit for access.
 
 ## Quick Reference
 
 | Utility | Description |
 |---------|-------------|
-| [Date & Period](#date--period-utilities) | Find first/last date of period, period iteration |
-| [Timezone](#timezone-conversion) | Convert local to UTC, UTC to local |
-| [Barcode](#barcode-utilities) | Check barcode exists, generate EAN13 |
-| [Batch Processing](#batch-processing) | Split large recordsets into batches |
-| [after_commit](#after_commit-decorator) | Execute code after transaction commit |
-| [Vietnamese Text](#string--text-utilities) | Strip accents, convert to non-accent |
-| [File Utilities](#file-utilities) | Zip directories, get file size |
+| [Date & Period](#date--period-utilities) | First/last date of period, iteration |
+| [Timezone](#timezone-conversion) | Local ↔ UTC |
+| [Barcode](#barcode-utilities) | Check exists, generate EAN13 |
+| [Batch Processing](#batch-processing) | Split large recordsets |
+| [after_commit](#after_commit-decorator) | Execute after txn commit |
+| [Vietnamese Text](#string--text-utilities) | Strip accents |
+| [File Utilities](#file-utilities) | Zip dirs, file size |
 | [Number Utilities](#number-utilities) | Round to decimal places |
 
 ---
 
 ## Main Guide
 
-**File**: `odoo-18-dtg-base-guide.md`
+**File:** `odoo-18-dtg-base-guide.md`
 
-### When to use this skill
+### When to use
 
-- Working with DTG Odoo codebase
-- Need date/period calculations
-- Timezone conversions
-- Barcode validation
-- Batch processing large recordsets
-- Vietnamese text processing
-- File zipping utilities
+DTG Odoo codebase, date/period calcs, timezone conversions, barcode validation, batch processing, Vietnamese text, file zipping.
 
 ---
 
@@ -50,7 +44,7 @@ DTG Base is a custom abstract model (`dtg_base.DTGBase`) that provides common ut
 
 ### Inherit from DTGBase
 
-**Location**: `addons_customs/erp/dtg_base/models/dtg_base.py`
+**Location:** `addons_customs/erp/dtg_base/models/dtg_base.py`
 
 ```python
 from odoo import models
@@ -60,7 +54,6 @@ class MyModel(models.Model):
     _inherit = ['dtg_base.dtg_base']
 
     def my_method(self):
-        # Now you have access to all DTGBase utilities
         first_date = self.find_first_date_of_period('2024-01-15', 'month')
         utc_date = self.convert_local_to_utc('2024-01-15 10:00:00')
 ```
@@ -71,43 +64,43 @@ class MyModel(models.Model):
 
 ```
 agent-skills/skills/dtg-base/
-├── SKILL.md                       # This file - master index
-├── odoo-18-dtg-base-guide.md      # Complete DTG Base utilities reference
-└── README.md                      # Skill overview
+├── SKILL.md                       # Master index
+├── odoo-18-dtg-base-guide.md      # Complete ref
+└── README.md                      # Overview
 ```
 
 ---
 
 ## Utilities Overview
 
-### Date & Period Utilities
-- `find_first_date_of_period(date, period_type)` - Get first date of period
-- `find_last_date_of_period(date, period_type)` - Get last date of period
-- `period_iter(start_date, end_date, period_type)` - Iterate over periods
+### Date & Period
+- `find_first_date_of_period(date, period_type)` — First date of period
+- `find_last_date_of_period(date, period_type)` — Last date of period
+- `period_iter(start_date, end_date, period_type)` — Iterate periods
 
-### Timezone Conversion
-- `convert_local_to_utc(local_dt, tz=None)` - Convert local datetime to UTC
-- `convert_utc_to_local(utc_dt, tz=None)` - Convert UTC datetime to local
+### Timezone
+- `convert_local_to_utc(local_dt, tz=None)` — Local to UTC
+- `convert_utc_to_local(utc_dt, tz=None)` — UTC to local
 
-### Barcode Utilities
-- `barcode_exists(barcode, exclude_id=0)` - Check if barcode already exists
-- `get_ean13 barcode)` - Generate/check EAN13 barcode
+### Barcode
+- `barcode_exists(barcode, exclude_id=0)` — Check barcode exists
+- `get_ean13(barcode)` — Generate/check EAN13
 
-### Batch Processing
-- `splittor(limit=None)` - Split recordset into batches for processing
+### Batch
+- `splittor(limit=None)` — Split recordset into batches
 
-### String & Text Utilities
-- `strip_accents(text)` - Remove Vietnamese accents
-- `_no_accent_vietnamese(text)` - Convert Vietnamese text
+### String & Text
+- `strip_accents(text)` — Remove Vietnamese accents
+- `_no_accent_vietnamese(text)` — Convert Vietnamese text
 
-### File Utilities
-- `zip_dir(source_dir, output_file)` - Zip a directory
-- `zip_dirs(dirs, output_file)` - Zip multiple directories
-- `_get_file_size(file_path)` - Get human-readable file size
+### File
+- `zip_dir(source_dir, output_file)` — Zip directory
+- `zip_dirs(dirs, output_file)` — Zip multiple dirs
+- `_get_file_size(file_path)` — Human-readable file size
 
-### Number Utilities
-- `round_decimal(value, decimal_places)` - Round to specific decimal places
+### Number
+- `round_decimal(value, decimal_places)` — Round to decimal places
 
 ---
 
-**For detailed documentation, see [odoo-18-dtg-base-guide.md](./odoo-18-dtg-base-guide.md)**
+**Detailed docs:** [odoo-18-dtg-base-guide.md](./odoo-18-dtg-base-guide.md)

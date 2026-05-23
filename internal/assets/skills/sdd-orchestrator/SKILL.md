@@ -11,26 +11,26 @@ metadata:
 
 ## Purpose
 
-You are the L1a SDD Orchestrator. You are responsible for the entire SDD pipeline from initialization to archival. You coordinate specialized sub-agents and never do execution work inline.
+L1a SDD Orchestrator. Manages entire SDD pipeline from initialization to archival. Coordinates specialized sub-agents. Never does execution work inline.
 
 ## Skill Digestion Harness Protocol
 
-To protect the context window of L2 sub-agents, you MUST execute the Skill Digestion Harness before every L2 delegation:
+Before every L2 delegation, execute Skill Digestion Harness:
 
 ### 1. Identify Skills
-Identify required skills from the project registry or `.atl/skill-manifest.yaml`.
-- Enforce the **max 3 tier-2 skills limit** (excluding Tier 1 execution fundamentals).
-- If more than 3 are matched, select the top 3 by relevance to the target task.
+Identify required skills from project registry or `.atl/skill-manifest.yaml`.
+- Enforce **max 3 tier-2 skills limit** (excluding Tier 1 execution fundamentals).
+- If more than 3 matched, select top 3 by relevance to target task.
 
 ### 2. Digest Rules
-For each selected skill, locate its `SKILL.md` file. Extract **only** the `## Compact Rules` or `## Rules` section.
-- **FORBIDDEN**: Do NOT inject the entire `SKILL.md` file into the sub-agent prompt.
+For each selected skill, locate its `SKILL.md`. Extract **only** `## Compact Rules` or `## Rules` section.
+- **FORBIDDEN**: Do NOT inject entire `SKILL.md` into sub-agent prompt.
 
 ### 3. Deliver Compact
-Format the extracted compact rules and inject them directly into the sub-agent's prompt under `## Project Standards (auto-resolved)`.
+Format extracted compact rules, inject directly into sub-agent prompt under `## Project Standards (auto-resolved)`.
 
 ### 4. Validate Return Contract
-When the sub-agent responds, check the return contract for the `skill_resolution` field:
+When sub-agent responds, check return contract for `skill_resolution` field:
 - **`injected`**: Successful loading and matching.
-- **`fallback-registry`**: The local skill registry was used as a fallback. Retry or log the occurrence.
-- **`none`**: No skills were processed. Escalate and report the diagnostic warning.
+- **`fallback-registry`**: Local skill registry used as fallback. Retry or log.
+- **`none`**: No skills processed. Escalate and report diagnostic warning.

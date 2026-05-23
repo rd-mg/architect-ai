@@ -12,16 +12,16 @@ allowed-tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch, Task
 
 ## When to Create a Skill
 
-Create a skill when:
-- A pattern is used repeatedly and AI needs guidance
+Create when:
+- Pattern used repeatedly, AI needs guidance
 - Project-specific conventions differ from generic best practices
 - Complex workflows need step-by-step instructions
-- Decision trees help AI choose the right approach
+- Decision trees help AI choose right approach
 
-**Don't create a skill when:**
-- Documentation already exists (create a reference instead)
+**Don't create when:**
+- Documentation already exists (create reference instead)
 - Pattern is trivial or self-explanatory
-- It's a one-off task
+- One-off task
 
 ---
 
@@ -45,8 +45,8 @@ skills/{skill-name}/
 ---
 name: {skill-name}
 description: >
-  {One-line description of what this skill does}.
-  Trigger: {When the AI should load this skill}.
+  {One-line description}.
+  Trigger: {When AI should load this skill}.
 license: Apache-2.0
 metadata:
   author: rd-mg
@@ -55,11 +55,11 @@ metadata:
 
 ## When to Use
 
-{Bullet points of when to use this skill}
+{Bullet points}
 
 ## Critical Patterns
 
-{The most important rules - what AI MUST know}
+{Most important rules — what AI MUST know}
 
 ## Code Examples
 
@@ -100,7 +100,7 @@ Link to existing docs?      → references/
 Link to external guides?    → references/ (with local path)
 ```
 
-**Key Rule**: `references/` should point to LOCAL files, not web URLs.
+**Key Rule**: `references/` must point to LOCAL files, not web URLs.
 
 ---
 
@@ -119,7 +119,7 @@ Link to external guides?    → references/ (with local path)
 ## Content Guidelines
 
 ### DO
-- Start with the most critical patterns
+- Start with most critical patterns
 - Use tables for decision trees
 - Keep code examples minimal and focused
 - Include Commands section with copy-paste commands
@@ -135,7 +135,7 @@ Link to external guides?    → references/ (with local path)
 
 ## Registering the Skill
 
-After creating the skill, add it to `AGENTS.md`:
+Add to `AGENTS.md`:
 
 ```markdown
 | `{skill-name}` | {Description} | [SKILL.md](skills/{skill-name}/SKILL.md) |
@@ -148,9 +148,9 @@ After creating the skill, add it to `AGENTS.md`:
 - [ ] Skill doesn't already exist (check `skills/`)
 - [ ] Pattern is reusable (not one-off)
 - [ ] Name follows conventions
-- [ ] Frontmatter is complete (description includes trigger keywords)
-- [ ] Critical patterns are clear
-- [ ] Code examples are minimal
+- [ ] Frontmatter complete (description includes trigger keywords)
+- [ ] Critical patterns clear
+- [ ] Code examples minimal
 - [ ] Commands section exists
 - [ ] Added to AGENTS.md
 

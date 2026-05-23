@@ -7,7 +7,7 @@ argument-hint: "From Odoo X -> Y, which addon(s), and what breaks?"
 # Skill Instructions
 
 ## What this skill helps accomplish
-This skill helps you safely plan and execute Odoo addon migrations, including version upgrades, data migrations, and behavior changes. It provides a structured approach to identifying risks, making incremental changes, and validating the final result across different Odoo environments (versions 13.0 to 19.0).
+safely plan and execute Odoo addon migrations, including version upgrades, data migrations, and behavior changes. It provides a structured approach to identifying risks, making incremental changes, and validating the final result across different Odoo environments (versions 13.0 to 19.0).
 
 ## When to use this skill
 - Upgrading an addon to a newer Odoo major/minor version.

@@ -5,7 +5,7 @@
 - **Writes**: `verify-report` artifact
 
 ## Cognitive Posture
-+++Adversarial — Find defects. Assume nothing is correct until proven.
++++Adversarial — Find defects. Assume nothing correct until proven.
 
 ## Model
 sonnet — systematic validation
@@ -14,10 +14,10 @@ sonnet — systematic validation
 
 ```
 +++Adversarial
-Try to break the artifact under review. Find the failure modes the author
-missed. Assume nothing is correct until proven. Construct:
+Try to break artifact under review. Find failure modes author
+missed. Assume nothing correct until proven. Construct:
 - Counterexamples that violate stated invariants
-- Edge cases the happy path ignores
+- Edge cases happy path ignores
 - Hostile inputs that exploit assumptions
 - Race conditions in concurrent execution
 - Upgrade paths that corrupt existing data
@@ -34,8 +34,8 @@ missed. Assume nothing is correct until proven. Construct:
 
 ## Phase: sdd-verify
 
-Task: Validate the implementation of "{change-name}" against proposal, spec,
-and design. Determine if the change meets acceptance criteria.
+Task: Validate implementation of "{change-name}" against proposal, spec,
+and design. Determine if change meets acceptance criteria.
 
 ## Validation Procedure
 1. Re-read proposal Success Criteria — each MUST be verifiable
@@ -45,7 +45,7 @@ and design. Determine if the change meets acceptance criteria.
 5. Read apply-progress — verify no open blockers
 6. **Baseline Comparison**: Run test suite. Compare against `sdd/{project}/test-baseline`.
    - Report NEW failures vs baseline.
-   - Fixed baseline failures are NOTED but do not impact current change verdict.
+   - Fixed baseline failures NOTED but do not impact current change verdict.
 7. Apply adversarial-review (from adaptive-reasoning Mode 2):
    - Pass A: happy-path correctness
    - Pass B: failure-mode lens
@@ -53,7 +53,7 @@ and design. Determine if the change meets acceptance criteria.
 9. Output verdict: APPROVED / CONDITIONALLY APPROVED / NEEDS CHANGES / UNRESOLVED
 
 ## Deterministic Checks (in addition to adversarial review)
-- [ ] All success criteria from proposal are verifiable
+- [ ] All success criteria from proposal verifiable
 - [ ] All spec capabilities have implementation
 - [ ] All tasks marked [x] or with documented block reason
 - [ ] No TODO / FIXME / XXX in changed code
@@ -88,7 +88,7 @@ mem_save(
 | **WARNING-THEO** | Note in report. Maintain `APPROVED`. |
 | **SUGGESTION** | Note in report. Maintain `APPROVED`. |
 
-- Verdict field is AUTHORITATIVE for orchestrator decision:
+- Verdict field AUTHORITATIVE for orchestrator decision:
   - `APPROVED` → next recommended `sdd-archive`
   - `CONDITIONALLY APPROVED` → present to user for manual decision
   - `NEEDS CHANGES` → back to `sdd-apply` with new batch

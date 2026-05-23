@@ -27,8 +27,7 @@ Location: `.atl/overlays/odoo-development-skill/agents/`
 
 ### 3. SDD Phase → Supplement Auto-Injection
 
-When SDD runs on an Odoo project, the SDD orchestrator MUST inject the supplement
-alongside the base phase skill:
+SDD orchestrator MUST inject supplement alongside base phase skill on Odoo projects:
 
 | Phase | Base Skill | + Odoo Supplement |
 |---|---|---|
@@ -67,7 +66,7 @@ Multi-version → all detected + migration-{from}-{to}/ + patterns-agnostic/
 ```
 sdd-explore     → odoo-context-gatherer (module structure)
 sdd-explore     → odoo-database-query (schema inspection)
-sdd-design      → odoo-skill-finder (before designing new feature — avoid reinventing wheel)
+sdd-design      → odoo-skill-finder (avoid reinventing wheel)
 sdd-verify      → odoo-code-reviewer (Odoo-specific review)
 researcher      → odoo-database-query (schema investigation)
 solver          → odoo-expert (complex ORM/Python debugging)

@@ -1,6 +1,6 @@
 # HR & Project Patterns
 
-Consolidated from the following source files:
+Consolidated from following source files:
 - `hr-employee-patterns.md` (architect-ai)
 - `project-task-patterns.md` (architect-ai)
 
