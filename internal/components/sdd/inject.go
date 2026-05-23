@@ -681,6 +681,47 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 			}
 		}
 
+		// Write L1a (SDD Orchestrator) and L1b (General Orchestrator) as independent sub-agents
+		orchestrators := []struct {
+			name  string
+			asset string
+		}{
+			{"sdd-orchestrator.md", sddOrchestratorAsset(adapter.Agent())},
+			{"general-orchestrator.md", generalOrchestratorAsset(adapter.Agent())},
+		}
+
+		for _, orch := range orchestrators {
+			content := assets.MustRead(orch.asset)
+
+			overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
+			ctx := PromptContext{
+				SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
+				OverlayActive:   overlayActive,
+				OverlayName:     overlayName,
+				OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
+				Phase:           strings.TrimSuffix(orch.name, ".md"),
+			}
+			if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
+				ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
+			}
+			if resolved, err := resolvePromptTemplate(content, ctx); err == nil {
+				content = resolved
+			}
+
+			outPath := filepath.Join(agentsDir, orch.name)
+			writeResult, err := filemerge.WriteFileAtomicWithOptions(outPath, []byte(content), filemerge.WriteOptions{
+				Perm:  0o644,
+				Force: opts.Force,
+			})
+			if err != nil {
+				return InjectionResult{}, fmt.Errorf("write orchestrator agent %s: %w", orch.name, err)
+			}
+			changed = changed || writeResult.Changed
+			if writeResult.Changed {
+				files = append(files, outPath)
+			}
+		}
+
 		// Post-check: verify critical agent files exist
 		for _, phase := range []string{"sdd-apply", "sdd-verify"} {
 			checkPath := filepath.Join(agentsDir, phase+".md")
@@ -1241,9 +1282,11 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 		existing = stripBareOrchestratorForFilePrompt(existing)
 	}
 
-	// Clean up legacy sdd-orchestrator and general-orchestrator sections before writing new L0/L1a/L1b markers
+	// Clean up legacy sections and newly separated L1 markers to isolate L0 in the root prompt
 	existing = filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", "")
 	existing = filemerge.InjectMarkdownSection(existing, "general-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1a", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1b", "")
 
 	// 1. Inject L0 (Thinking Agent)
 	l0Content := assets.MustRead("_shared/architect-identity.md")
@@ -1266,29 +1309,6 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 	}
 	updated := filemerge.InjectMarkdownSection(existing, "L0", l0Content)
 
-	// 2. Inject L1a (SDD Orchestrator)
-	updated = filemerge.InjectMarkdownSection(updated, "L1a", content)
-
-	// 3. Inject L1b (General Orchestrator)
-	genContent := assets.MustRead(generalOrchestratorAsset(adapter.Agent()))
-	if len(options) > 0 {
-		opts := options[0]
-		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
-		ctx := PromptContext{
-			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
-			OverlayActive:   overlayActive,
-			OverlayName:     overlayName,
-			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
-			Phase:           "orchestrator",
-		}
-		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
-			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
-		}
-		if resolved, err := resolvePromptTemplate(genContent, ctx); err == nil {
-			genContent = resolved
-		}
-	}
-	updated = filemerge.InjectMarkdownSection(updated, "L1b", genContent)
 
 	writeResult, err := filemerge.WriteFileAtomicWithOptions(promptPath, []byte(updated), filemerge.WriteOptions{
 		Perm:  0o644,
@@ -1542,9 +1562,11 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 		existing = stripBareOrchestratorSection(existing)
 	}
 
-	// Clean up legacy sdd-orchestrator and general-orchestrator sections before writing new L0/L1a/L1b markers
+	// Clean up legacy sections and newly separated L1 markers to isolate L0 in the root prompt
 	existing = filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", "")
 	existing = filemerge.InjectMarkdownSection(existing, "general-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1a", "")
+	existing = filemerge.InjectMarkdownSection(existing, "L1b", "")
 
 	// 1. Inject L0 (Thinking Agent)
 	l0Content := assets.MustRead("_shared/architect-identity.md")
@@ -1567,29 +1589,6 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 	}
 	updated := filemerge.InjectMarkdownSection(existing, "L0", l0Content)
 
-	// 2. Inject L1a (SDD Orchestrator)
-	updated = filemerge.InjectMarkdownSection(updated, "L1a", content)
-
-	// 3. Inject L1b (General Orchestrator)
-	genContent := assets.MustRead(generalOrchestratorAsset(adapter.Agent()))
-	if len(options) > 0 {
-		opts := options[0]
-		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
-		ctx := PromptContext{
-			SharedAssetsDir: filepath.Join(opts.WorkspaceDir, "internal", "assets", "skills", "_shared"),
-			OverlayActive:   overlayActive,
-			OverlayName:     overlayName,
-			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
-			Phase:           "orchestrator",
-		}
-		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
-			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
-		}
-		if resolved, err := resolvePromptTemplate(genContent, ctx); err == nil {
-			genContent = resolved
-		}
-	}
-	updated = filemerge.InjectMarkdownSection(updated, "L1b", genContent)
 
 	writeResult, err := filemerge.WriteFileAtomicWithOptions(promptPath, []byte(updated), filemerge.WriteOptions{
 		Perm:  0o644,

@@ -257,15 +257,23 @@ func TestL1TacticalOrchestratorHeaderInjected(t *testing.T) {
 		t.Fatalf("Inject() error = %v", err)
 	}
 
-	promptPath := geminiAdapter.SystemPromptFile(home)
-	data, _ := os.ReadFile(promptPath)
+	// Verify L1 is written to the sub-agent directory, not the root prompt
+	sai, ok := geminiAdapter.(agents.SubAgentCapableAdapter)
+	if !ok {
+		t.Fatalf("Expected gemini adapter to support sub-agents")
+	}
+	agentPath := filepath.Join(sai.SubAgentsDir(home), "sdd-orchestrator.md")
+	data, readErr := os.ReadFile(agentPath)
+	if readErr != nil {
+		t.Fatalf("Failed to read sdd-orchestrator agent file: %v", readErr)
+	}
 	content := string(data)
 
 	// Check for L1 Tactical Orchestrator header and supervision note
 	if !strings.Contains(content, "# Agent Teams Lite — L1 Tactical Orchestrator") {
-		t.Error("System prompt missing L1 Tactical Orchestrator header")
+		t.Error("Agent prompt missing L1 Tactical Orchestrator header")
 	}
 	if !strings.Contains(content, "You operate under the strategic guidance of the **L0 Thinking Agent (Strategic Sentinel)**") {
-		t.Error("System prompt missing supervision link to L0 Sentinel")
+		t.Error("Agent prompt missing supervision link to L0 Sentinel")
 	}
 }
