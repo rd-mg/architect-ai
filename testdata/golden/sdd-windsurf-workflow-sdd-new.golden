@@ -1,216 +1,113 @@
 ---
-description: Initializes a new feature or medium/large task using SDD in Hybrid-First mode for Cascade in Windsurf
+description: Initializes new feature via SDD in Hybrid-First mode for Cascade in Windsurf
 ---
 
 # /sdd-new
 
-This workflow defines the mandatory behavior of **Cascade** when starting a new feature, medium/large scope change, or work with enough uncertainty to require formal planning.
+Defines **Cascade** behavior for new features, medium/large scope changes, or high-uncertainty work.
 
 ## Purpose
 
-Use Windsurf's native capabilities in a **Hybrid-First** way:
-
+Hybrid-First approach using Windsurf native capabilities:
 - **Plan Mode** for planning
-- **Memories / MCP (Engram)** to retrieve previous context
-- **Artifacts `.sdd/`** only as a formal planning contract
+- **Memories / MCP (Engram)** for context retrieval
+- **Artifacts `.sdd/`** as formal planning contract
 - **Code Mode** only after explicit user approval
 
-## When to use this workflow
+## When to Use
 
-Activate this workflow when any of these conditions occur:
-
-- The user starts a **new feature**
-- The task affects **multiple files or modules**
-- The change has **architectural risk** or uncertainty
-- The user explicitly asks to work with **SDD**
-- The implementation requires a formal contract before writing code
-
-If the task is small, specific, or clearly minor maintenance, this workflow is NOT the correct path.
+Activate when: new feature, multi-file/module change, architectural risk, explicit SDD request, or need for formal pre-code contract.
+Skip for small/specific/minor maintenance tasks.
 
 ---
 
 ## Mandatory Operating Rules
 
-### 1. Switch immediately to Plan Mode
+### 1. Enter Plan Mode Immediately
 
-When starting this workflow, **you MUST enter Plan Mode immediately**.
+1. Analyze request
+2. Formulate high-level plan
+3. Identify scope, risks, dependencies, likely files
 
-Mandatory actions:
-
-1. Analyze the user's request
-2. Formulate a high-level plan
-3. Identify scope, risks, dependencies, and likely files
-
-Prohibited actions at this stage:
-
-- DO NOT write production code
-- DO NOT enter Code Mode
-- DO NOT modify application logic
-- DO NOT execute partial implementation "to get ahead"
-- DO NOT assume implicit approval
+Prohibited: writing production code, entering Code Mode, modifying application logic, partial implementation, assuming approval.
 
 **This workflow is for formal planning, not execution.**
 
 ---
 
-### 2. Retrieve context before proposing anything
+### 2. Retrieve Context First
 
-Before drafting any SDD artifact, **you MUST retrieve architectural context and project constraints**.
+Retrieve context before drafting any SDD artifact.
 
-Order of preference:
+Priority order:
+1. **Engram** MCP: `mem_search` for decisions, `mem_context` for recent context
+2. Fallback: `AGENTS.md`
+3. Incorporate any existing SDD/architecture context
 
-1. Use **Engram** via canonical MCP tools: `mem_search` to find previous decisions and `mem_context` to retrieve recent project context
-2. If Engram is not available or does not return enough context, read `AGENTS.md`
-3. If additional project context related to SDD or architecture exists, incorporate it as well
+Search for: architectural decisions, repo conventions, implementation constraints, quality rules, established patterns.
 
-You must search, at a minimum, for:
-
-- Previous architectural decisions
-- Repository conventions
-- Implementation constraints
-- Quality or review rules
-- Established patterns for similar changes
-
-If you don't find enough context, you must state it explicitly in the plan. **Do not invent conventions.**
+**Do not invent conventions.** If insufficient context, state it explicitly.
 
 ---
 
-### 3. Create the initial formal contract in `.sdd/`
+### 3. Create Formal Contract in `.sdd/`
 
-You must create the `.sdd/` directory if it doesn't exist.
+Create `.sdd/` directory if needed. Generate these two mandatory files:
 
-Then you must generate exactly these two initial files:
+**`.sdd/proposal.md`** — minimum: title, problem, objective, included/excluded scope, approach, risks, assumptions, pending questions.
 
-- `.sdd/proposal.md`
-- `.sdd/spec.md`
+**`.sdd/spec.md`** — minimum: functional requirements, non-functional requirements, use cases, acceptance criteria, technical constraints, edge cases.
 
-In this phase, those two files are **mandatory**.
-
-#### Minimum content of `.sdd/proposal.md`
-
-It must capture, at a minimum:
-
-- Change title
-- Problem to solve
-- Objective
-- Included scope
-- Excluded scope
-- Proposed approach
-- Main risks
-- Open assumptions
-- Pending questions or decisions
-
-#### Minimum content of `.sdd/spec.md`
-
-It must capture, at a minimum:
-
-- Functional requirements
-- Non-functional requirements if applicable
-- Use cases
-- Acceptance criteria
-- Relevant technical constraints
-- Known edge cases or important assumptions
-
-Artifacts must be:
-
-- Clear
-- Reviewable
-- Executable as an implementation contract
-- Consistent with retrieved project context
+Artifacts must be: clear, reviewable, executable as implementation contract, consistent with project context.
 
 ---
 
-### 4. Present planning summary to the user
+### 4. Present Summary
 
-After creating `.sdd/proposal.md` and `.sdd/spec.md`, you must present a brief and clear summary in chat.
-
-That summary must include:
-
-- Feature objective
-- Proposed scope
-- Main risks or doubts
-- Confirmation that the files were created:
-  - `.sdd/proposal.md`
-  - `.sdd/spec.md`
-
-Do not show an unnecessary wall of text. Summarize the essentials for review.
+Present brief summary: feature objective, proposed scope, main risks, confirmation of `.sdd/proposal.md` and `.sdd/spec.md` files. No wall of text.
 
 ---
 
 ### 5. Absolute Approval Gate
 
-Once the documents are generated, you must **ABSOLUTELY stop**.
-
-You must ask **exactly**:
+Once documents generated, **stop** and ask:
 
 **Do you approve this implementation plan?**
 
-Then:
+Rules:
+- MUST wait for explicit confirmation
+- CANNOT proceed to Code Mode without approval
+- CANNOT start implementation "in the meantime"
+- CANNOT interpret silence as approval
+- CANNOT skip this pause
 
-- You **must wait for explicit confirmation**
-- You CANNOT proceed to Code Mode without approval
-- You CANNOT start implementation "in the meantime"
-- You CANNOT interpret silence as approval
-- You CANNOT replace this pause with an informal summary
+Valid answers: "yes", "approved", "agreed", "go ahead", or equivalent explicit confirmation.
 
-Valid answers to continue:
-
-- "yes"
-- "approved"
-- "agreed"
-- "go ahead"
-- any equivalent explicit confirmation
-
-If the user requests changes:
-
-- You must stay in Plan Mode
-- You must adjust `.sdd/proposal.md` and/or `.sdd/spec.md`
-- You must present the plan again
-- You must ask again: **Do you approve this implementation plan?**
+If changes requested: stay in Plan Mode, adjust `.sdd/` files, present plan again, re-ask approval.
 
 ---
 
 ## Strict Execution Sequence
 
-Follow this sequence without skips:
-
-1. Detect that the work warrants `/sdd-new`
+1. Detect work warrants `/sdd-new`
 2. Enter **Plan Mode**
-3. Retrieve context with **Engram** or, failing that, read `AGENTS.md`
-4. Synthesize constraints, scope, and risks
-5. Create `.sdd/` if it doesn't exist
+3. Retrieve context via **Engram** (fallback: `AGENTS.md`)
+4. Synthesize constraints, scope, risks
+5. Create `.sdd/` if absent
 6. Generate `.sdd/proposal.md`
 7. Generate `.sdd/spec.md`
-8. Present a brief summary to the user
-9. Ask exactly: **Do you approve this implementation plan?**
-10. **Stop and wait for a response**
+8. Present brief summary
+9. Ask: **Do you approve this implementation plan?**
+10. **Stop and wait**
 
 ---
 
 ## Explicit Prohibitions
 
-While this workflow has not been approved by the user:
-
-- DO NOT write production code
-- DO NOT edit implementation files
-- DO NOT execute application tasks
-- DO NOT switch to Code Mode
-- DO NOT create commits
-- DO NOT run a partial implementation
-- DO NOT continue automatically to the next SDD step
+Before user approval: NO production code, NO file edits, NO application tasks, NO Code Mode, NO commits, NO partial implementation, NO auto-continuation to next SDD step.
 
 ---
 
-## Exit Criteria for this workflow
+## Exit Criteria
 
-This workflow is considered correctly executed only if:
-
-- Cascade used **Plan Mode**
-- Context was retrieved with **Engram** or `AGENTS.md`
-- Generated `.sdd/proposal.md`
-- Generated `.sdd/spec.md`
-- Presented a summary to the user
-- Asked exactly: **Do you approve this implementation plan?**
-- Stopped to wait for explicit approval
-
-If any of those points do not occur, the workflow is poorly executed.
+Workflow correct only if: Plan Mode used, context retrieved via Engram or AGENTS.md, `.sdd/proposal.md` generated, `.sdd/spec.md` generated, summary presented, approval asked, stopped for explicit confirmation.

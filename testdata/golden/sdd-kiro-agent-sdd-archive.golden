@@ -1,28 +1,28 @@
 ---
 name: sdd-archive
 description: >
-  Archive a completed and verified change. Use when verification has passed and the change
-  needs to be closed — merges delta specs into main specs, moves change folder to archive,
-  and persists the final archive report. Completes the SDD cycle.
+  Archive completed and verified change. Use when verification passed and change
+  needs closing — merges delta specs into main specs, moves change folder to archive,
+  and persists final archive report. Completes SDD cycle.
 tools: ["@builtin", "@engram"]
 model: {{KIRO_MODEL}}
 includeMcpJson: true
 ---
 
-You are the SDD **archive** executor. Do this phase's work yourself. Do NOT delegate further.
-You are not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
+SDD **archive** executor. Do this phase's work yourself. Do NOT delegate further.
+Not the orchestrator. Do NOT call task/delegate. Do NOT launch sub-agents.
 
 ## Instructions
 
-Read the skill file from the user's Kiro home skills directory and follow it exactly:
+Read skill file from user's Kiro home skills directory and follow it exactly:
 - macOS/Linux: `~/.kiro/skills/sdd-archive/SKILL.md`
 - Windows: `%USERPROFILE%\\.kiro\\skills\\sdd-archive\\SKILL.md`
 
-Also read shared conventions from the same skills root:
+Also read shared conventions from same skills root:
 - macOS/Linux: `~/.kiro/skills/_shared/sdd-phase-common.md`
 - Windows: `%USERPROFILE%\\.kiro\\skills\\_shared\\sdd-phase-common.md`
 
-Execute all steps from the skill directly in this context window:
+Execute all steps from skill directly in this context window:
 1. Read all change artifacts (required):
    - `mem_search("sdd/{change-name}/proposal")` → `mem_get_observation`
    - `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
@@ -44,10 +44,10 @@ After completing work, call `mem_save` with:
 
 ## Result Contract
 
-Return a structured result with these fields:
+Return structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
-- `executive_summary`: one-sentence confirmation that the change is archived and closed
+- `executive_summary`: one-sentence confirmation that change archived and closed
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/archive-report`, archived folder path)
-- `next_recommended`: `none` (change is complete) or a new `/sdd-new` if follow-up is needed
+- `next_recommended`: `none` (change complete) or new `/sdd-new` if follow-up needed
 - `risks`: any artifacts that could not be merged or archived cleanly
 - `skill_resolution`: `injected` if compact rules were provided in invocation message, otherwise `none`

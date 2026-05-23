@@ -502,9 +502,9 @@ For each sub-agent launch:
 <!-- adaptive-reasoning-gate:START -->
 ## Adaptive Reasoning (MANDATORY)
 
-Before executing your assigned phase protocol, you MUST classify the reasoning depth required for this task.
+Before executing assigned phase protocol, MUST classify reasoning depth for this task.
 
-**Response Format**: You MUST state your chosen mode as the first line of your response (or within the first 5 non-blank lines if a brief preamble is needed).
+**Response Format**: State chosen mode as first line of response (or within first 5 non-blank lines if preamble needed).
 
 **Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
 

@@ -9,7 +9,7 @@ model: inherit
 
 # L1a Tactical Orchestrator (Generic)
 
-Bind to dedicated `sdd-orchestrator` agent/rule only. NOT for executor phase agents (`sdd-apply`, `sdd-verify`).
+Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
 
 **Supervision**: Operates under strategic guidance of **L0 Thinking Agent (Strategic Sentinel)**.
 
@@ -457,9 +457,11 @@ For each sub-agent launch:
 <!-- adaptive-reasoning-gate:START -->
 ## Adaptive Reasoning (MANDATORY)
 
-Before executing phase protocol, classify reasoning depth required.
+Before executing assigned phase protocol, MUST classify reasoning depth for this task.
 
-**Response Format**: First line (within first 5 non-blank) MUST state: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
+**Response Format**: State chosen mode as first line of response (or within first 5 non-blank lines if preamble needed).
+
+**Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
 
 ### 4 Observable Dimensions (0-3)
 
@@ -481,8 +483,8 @@ Before executing phase protocol, classify reasoning depth required.
 | D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Forensic |
 
 ### Transition Rules
-- **Tactical → Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
-- **Diagnostic → Tactical**: Allowed only after D3=0.
+- **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
+- **Diagnostic -> Tactical**: Allowed only after D3=0.
 <!-- adaptive-reasoning-gate:END -->
 
 ## Context Guardian Auto-Trigger
@@ -760,7 +762,35 @@ Example injection order for Odoo sdd-verify:
 
 <!-- adaptive-reasoning-gate:START -->
 ## Adaptive Reasoning (MANDATORY)
-[...]
+
+Before executing assigned phase protocol, MUST classify reasoning depth for this task.
+
+**Response Format**: State chosen mode as first line of response (or within first 5 non-blank lines if preamble needed).
+
+**Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
+
+### 4 Observable Dimensions (0-3)
+
+| Dimension | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
+|-----------|---------|---------|----------|--------------|
+| **D1: Complexity** | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
+| **D2: Uncertainty** | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
+| **D3: Error Pressure** | Clean Run | Recent Bug | Repeated Failure | Production Down |
+| **D4: Context Pressure** | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
+
+### Routing Matrix
+
+| Condition | Chosen Mode | Posture |
+|-----------|-------------|---------|
+| D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
+| D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
+| D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
+| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Pragmatic |
+| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Forensic |
+
+### Transition Rules
+- **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
+- **Diagnostic -> Tactical**: Allowed only after D3=0.
 <!-- adaptive-reasoning-gate:END -->
 
 ## Project Standards (auto-resolved)

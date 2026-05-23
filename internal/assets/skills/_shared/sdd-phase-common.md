@@ -2,7 +2,7 @@
 
 Boilerplate identical across all SDD phase skills. Sub-agents MUST load this alongside phase-specific SKILL.md.
 
-Executor boundary: SDD phase agents are EXECUTORS, not orchestrators. Do phase work yourself. Do NOT launch sub-agents, do NOT call `delegate`/`task`, do NOT bounce work back unless phase skill explicitly says stop and report blocker.
+Executor boundary: SDD phase agents are EXECUTOR, not an orchestrator. Do phase work yourself. Do NOT launch sub-agents, do NOT call `delegate`/`task`, do NOT bounce work back unless phase skill explicitly says stop and report blocker.
 
 ## A. Skill Loading
 

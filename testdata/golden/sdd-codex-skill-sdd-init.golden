@@ -13,10 +13,9 @@ metadata:
 
 Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your response per the gate instructions in your prompt.
 
+Sub-agent for initializing SDD context in a project. Detect project stack, conventions, testing capabilities, bootstrap active persistence backend.
 
-You are a sub-agent responsible for initializing the Spec-Driven Development (SDD) context in a project. You detect the project stack, conventions, and testing capabilities, then bootstrap the active persistence backend.
-
-You are an EXECUTOR for this phase, not the orchestrator. Do the initialization work yourself. Do NOT launch sub-agents, do NOT call `delegate` or `task`, and do NOT hand execution back unless you hit a real blocker that must be reported upstream.
+EXECUTOR for this phase, not orchestrator. Do initialization work yourself. Do NOT launch sub-agents, do NOT call `delegate` or `task`, do NOT hand execution back unless hitting real blocker that must be reported upstream.
 
 ## Persistence
 
@@ -36,45 +35,45 @@ Follow `_shared/mode-branching.md` for artifact-store branching.
 
 ### Step 0: Pre-flight Validation (MANDATORY)
 
-Before any analysis, you MUST validate that the environment is fit for SDD. Failure here gates all further work.
+Validate environment fit for SDD before any analysis. Failure gates all further work.
 
 ```markdown
 VALIDATE:
-├── Required Tools: Check if `rg`, `git`, and the project's build tool (npm, go, etc.) are available.
-├── Writable Paths: Verify project root and `openspec/` (if mode includes openspec) are writable.
-└── Critical MCPs: Verify `engram` and `context7` are listed in `## Available Tools`.
+├── Required Tools: Check `rg`, `git`, project's build tool (npm, go, etc.) available.
+├── Writable Paths: Verify project root and `openspec/` (if mode includes openspec) writable.
+└── Critical MCPs: Verify `engram` and `context7` listed in `## Available Tools`.
 ```
 
 If any critical validation fails:
 1. STOP immediately.
 2. Return status `pre-flight-fail`.
-3. List the missing/failing items in the `risks` section of the envelope.
+3. List missing/failing items in `risks` section of envelope.
 4. Set `executive_summary` to "Pre-flight validation failed. [Reason]".
 
 ### Step 1: Detect Project Context
 
-Read the project to understand:
+Read project to understand:
 - Tech stack (check package.json, go.mod, pyproject.toml, etc.)
 - Existing conventions (linters, test frameworks, CI)
 - Architecture patterns in use
 
 ### Step 1b: Surface Mapping (MANDATORY)
 
-Identify the project's public interface and entry points to guide exploration.
+Identify project's public interface and entry points.
 
 ```markdown
 SCAN FOR:
 ├── Entry Points: CLI commands (`main.go`, `cli.ts`), server routes (`routes/`), or hooks.
-├── Public APIs: Exported functions, classes, and REST/GraphQL endpoints.
-├── Core Interfaces: Key data structures or domain interfaces that define the system.
+├── Public APIs: Exported functions, classes, REST/GraphQL endpoints.
+├── Core Interfaces: Key data structures or domain interfaces defining the system.
 └── Key Dependencies: External services or critical internal modules.
 ```
 
-Return a brief "Surface Map" in your detailed report or executive summary.
+Return brief "Surface Map" in detailed report or executive summary.
 
 ### Step 2: Detect Testing Capabilities
 
-Scan the project for ALL testing infrastructure. This determines what testing modes are available.
+Scan project for ALL testing infrastructure.
 
 ```
 Detect testing capabilities:
@@ -118,34 +117,34 @@ Detect testing capabilities:
 
 ### Step 3: Resolve STRICT TDD MODE
 
-Determine whether Strict TDD Mode should be enabled. The resolution follows a priority chain — first match wins:
+Determine whether Strict TDD Mode enabled. Priority chain — first match wins:
 
 ```
 1. Read from system prompt / agent config (highest priority):
-   ├── Search for "strict-tdd-mode" marker in the agent's system prompt file
+   ├── Search for "strict-tdd-mode" marker in agent's system prompt file
    │   (e.g., CLAUDE.md, GEMINI.md, .cursorrules, etc.)
-   ├── If found and says "enabled" → strict_tdd: true
-   ├── If found and says "disabled" → strict_tdd: false
-   └── This is the preference set by the user in the architect-ai TUI
+   ├── If found and "enabled" → strict_tdd: true
+   ├── If found and "disabled" → strict_tdd: false
+   └── Preference set by user in architect-ai TUI
 
 2. If no marker found, check openspec config:
    ├── Read openspec/config.yaml → strict_tdd field
    └── If found → use that value
 
-3. If nothing found AND test runner was detected in Step 2:
-   ├── Default: strict_tdd: true (enable if the project CAN do TDD)
-   └── This ensures TDD is active even without architect-ai TUI setup
+3. If nothing found AND test runner detected in Step 2:
+   ├── Default: strict_tdd: true (enable if project CAN do TDD)
+   └── Ensures TDD active even without architect-ai TUI setup
 
 4. If no test runner detected:
    ├── strict_tdd: false (cannot enable without test runner)
-   └── Include NOTE in summary: "Strict TDD Mode unavailable — no test runner detected"
+   └── Include NOTE: "Strict TDD Mode unavailable — no test runner detected"
 ```
 
-**Do NOT ask the user interactively.** The preference is resolved from existing config. If the user wants to change it, they run `architect-ai sync` with the TUI or set `strict_tdd` in `openspec/config.yaml`.
+**Do NOT ask user interactively.** Preference resolved from existing config. To change, user runs `architect-ai sync` with TUI or sets `strict_tdd` in `openspec/config.yaml`.
 
 ### Step 4: Initialize Persistence Backend
 
-If mode resolves to `openspec`, create this directory structure:
+If mode resolves to `openspec`, create:
 
 ```
 openspec/
@@ -157,7 +156,7 @@ openspec/
 
 ### Step 5: Generate Config (openspec mode)
 
-Based on what you detected, create the config when in `openspec` mode:
+Based on detected context, create config when in `openspec` mode:
 
 ```yaml
 # openspec/config.yaml
@@ -187,7 +186,7 @@ rules:
     - Keep tasks small enough to complete in one session
   apply:
     - Follow existing code patterns and conventions
-    - Load relevant coding skills for the project stack
+    - Load relevant coding skills for project stack
   verify:
     - Run tests if test infrastructure exists
     - Compare implementation against every spec scenario
@@ -197,12 +196,12 @@ rules:
 
 ### Step 6: Persist Testing Capabilities
 
-**This step is MANDATORY — do NOT skip it.**
+**MANDATORY — do NOT skip.**
 
-Persist detected testing capabilities as a separate Engram observation (or section in config.yaml for openspec). This cache prevents re-detection on every `sdd-apply` and `sdd-verify` run.
+Persist detected testing capabilities as separate Engram observation (or section in config.yaml for openspec). Cache prevents re-detection on every `sdd-apply` and `sdd-verify` run.
 
-If mode is `engram` or `hybrid`:
-Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md` using **Artifact 2** metadata.
+If mode `engram` or `hybrid`:
+Follow persistence rules in Step 2 of `_shared/mode-branching.md` using **Artifact 2** metadata.
 
 **Testing Capabilities format**:
 
@@ -235,33 +234,32 @@ Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md` us
 | Formatter |  /  | {command or —} |
 ```
 
-If mode is `openspec` or `hybrid`, also write this as a section in `openspec/config.yaml` under `testing:`.
+If mode `openspec` or `hybrid`, also write as section in `openspec/config.yaml` under `testing:`.
 
 ### Step 7: Build Skill Registry
 
-Follow the same logic as the `skill-registry` skill (`skills/skill-registry/SKILL.md`):
+Follow same logic as `skill-registry` skill (`skills/skill-registry/SKILL.md`):
 
 1. Scan user skills: glob `*/SKILL.md` across ALL known skill directories. **User-level**: `~/.claude/skills/`, `~/.config/opencode/skills/`, `~/.gemini/skills/`, `~/.cursor/skills/`, `~/.copilot/skills/`, parent of this skill file. **Project-level**: `.claude/skills/`, `.gemini/skills/`, `.agent/skills/`, `skills/`. Skip `sdd-*`, `_shared`, `skill-registry`. Deduplicate by name (project-level wins). Read frontmatter triggers.
-2. Scan project conventions: check for `agents.md`, `AGENTS.md`, `CLAUDE.md` (project-level), `.cursorrules`, `GEMINI.md`, `copilot-instructions.md` in the project root. If an index file is found (e.g., `agents.md`), READ it and extract all referenced file paths — include both the index and its referenced files in the registry.
-3. **ALWAYS write `.atl/skill-registry.md`** in the project root (create `.atl/` if needed). This file is mode-independent — it's infrastructure, not an SDD artifact.
-4. If engram is available, **ALSO save to engram**: `mem_save(title: "skill-registry", topic_key: "skill-registry", type: "config", project: "{project}", content: "{registry markdown}")`
+2. Scan project conventions: check `agents.md`, `AGENTS.md`, `CLAUDE.md` (project-level), `.cursorrules`, `GEMINI.md`, `copilot-instructions.md` in project root. If index file found (e.g., `agents.md`), READ it and extract all referenced file paths — include both index and referenced files in registry.
+3. **ALWAYS write `.atl/skill-registry.md`** in project root (create `.atl/` if needed). Mode-independent — infrastructure, not SDD artifact.
+4. If engram available, **ALSO save to engram**: `mem_save(title: "skill-registry", topic_key: "skill-registry", type: "config", project: "{project}", content: "{registry markdown}")`
 
-See `skills/skill-registry/SKILL.md` for the full registry format and scanning details.
+See `skills/skill-registry/SKILL.md` for full registry format and scanning details.
 
 ### Step 8: Persist Project Context
 
-**This step is MANDATORY — do NOT skip it.**
-Follow the persistence rules defined in Step 2 of `_shared/mode-branching.md` using **Artifact 1** metadata.
+**MANDATORY — do NOT skip.**
+Follow persistence rules in Step 2 of `_shared/mode-branching.md` using **Artifact 1** metadata.
 
 ### Step 9: Return Summary
 
-Return a structured summary adapted to the resolved mode:
+Return structured summary adapted to resolved mode:
 
-#### If mode is `engram`:
+#### If mode `engram`:
 
 Persist project context following `skills/_shared/engram-convention.md` with title and topic_key `sdd-init/{project-name}`.
 
-Return:
 ```
 ## SDD Initialized
 
@@ -290,19 +288,19 @@ Project context persisted to Engram.
 
 No project files created.
 
-###  Engram Mode Limitations
-Engram mode is ideal for **solo developers** doing fast iteration. Be aware:
-- **No iteration history**: re-running a phase (e.g., `sdd-spec`) overwrites the previous version. Only the latest artifact is retained.
-- **Not shareable**: engram is a local database — team members cannot see your SDD artifacts.
-- **Partial audit trail**: the archive phase saves a summary report, but not the full artifact folder.
+### Engram Mode Limitations
+Engram mode ideal for **solo developers** doing fast iteration. Be aware:
+- **No iteration history**: re-running phase (e.g., `sdd-spec`) overwrites previous version. Only latest artifact retained.
+- **Not shareable**: engram is local database — team members cannot see SDD artifacts.
+- **Partial audit trail**: archive phase saves summary report, not full artifact folder.
 
-For **team projects** or work that needs a full audit trail, consider switching to `openspec` (file-based, git-friendly) or `hybrid` (files + engram recovery).
+For **team projects** or work needing full audit trail, consider switching to `openspec` (file-based, git-friendly) or `hybrid` (files + engram recovery).
 
 ### Next Steps
 Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 ```
 
-#### If mode is `openspec`:
+#### If mode `openspec`:
 ```
 ## SDD Initialized
 
@@ -323,7 +321,7 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 ```
 
-#### If mode is `none`:
+#### If mode `none`:
 ```
 ## SDD Initialized
 
@@ -339,7 +337,7 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 {summary of detected stack and conventions}
 
 ### Recommendation
-Enable `engram` or `openspec` for artifact persistence across sessions. Without persistence, all SDD artifacts will be lost when the conversation ends.
+Enable `engram` or `openspec` for artifact persistence across sessions. Without persistence, all SDD artifacts lost when conversation ends.
 
 ### Next Steps
 Ready for /sdd-explore <topic> or /sdd-new <change-name>.
@@ -347,13 +345,13 @@ Ready for /sdd-explore <topic> or /sdd-new <change-name>.
 
 ## Rules
 
-- NEVER create placeholder spec files - specs are created via sdd-spec during a change
-- ALWAYS detect the real tech stack, don't guess
-- NEVER behave like the orchestrator from this phase - execute directly and return results
-- If the project already has an `openspec/` directory, report what exists and ask the orchestrator if it should be updated
-- Keep config.yaml context CONCISE - no more than 10 lines
-- ALWAYS perform a Surface Mapping scan and return it in the summary
-- ALWAYS detect testing capabilities — this is not optional
-- ALWAYS persist testing capabilities as a separate observation/section — downstream phases depend on it
-- If Strict TDD Mode is requested but no test runner exists, set strict_tdd: false and explain why
-- Return a structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, and `risks`
+- NEVER create placeholder spec files — specs created via sdd-spec during change
+- ALWAYS detect real tech stack, don't guess
+- NEVER behave like orchestrator from this phase — execute directly, return results
+- If project already has `openspec/` directory, report what exists and ask orchestrator if should be updated
+- Keep config.yaml context CONCISE — no more than 10 lines
+- ALWAYS perform Surface Mapping scan, return in summary
+- ALWAYS detect testing capabilities — not optional
+- ALWAYS persist testing capabilities as separate observation/section — downstream phases depend on it
+- If Strict TDD Mode requested but no test runner exists, set strict_tdd: false and explain why
+- Return structured envelope with: `status`, `executive_summary`, `detailed_report` (optional), `artifacts`, `next_recommended`, `risks`

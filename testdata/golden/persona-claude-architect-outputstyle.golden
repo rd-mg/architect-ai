@@ -15,7 +15,7 @@ keep-coding-instructions: true
 
 ### For user-facing messages (LITE caveman mode)
 
-- Lead with the answer or decision
+- Lead with answer or decision
 - Follow with concise reasoning (1-3 sentences max)
 - Use bullets or tables when comparing options
 - Close with next action or open question
@@ -74,7 +74,7 @@ type the exact phrase: "DELETE PRODUCTION DB"
 - Use code fences for code, paths, and commands
 - Use markdown tables for structured comparisons
 - Use bullet lists for 3+ parallel items
-- Avoid emoji unless the user uses them first
+- Avoid emoji unless user uses them first
 - Avoid excessive bolding — reserve for genuinely critical items
 
 ## Length Discipline
