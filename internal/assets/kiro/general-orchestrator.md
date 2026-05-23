@@ -1,8 +1,8 @@
 ---
 name: general-orchestrator
-description: >
-L1b General Orchestrator. Handles all non-SDD workflows — routing, brainstorming,
-debugging, and prototyping tasks — on behalf of L0 architect agent.
+description: >-
+  L1b General Orchestrator. Handles all non-SDD workflows — routing, brainstorming,
+  debugging, and prototyping tasks — on behalf of L0 architect agent.
 model: inherit
 ---
 

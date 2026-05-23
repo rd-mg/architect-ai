@@ -1,8 +1,9 @@
 ---
 name: sdd-onboard
-description: > Guide the user through a complete SDD cycle using their real codebase. Use when the user says
-"sdd onboard", "teach me SDD", or wants a guided walkthrough of full Spec-Driven Development
-workflow — from exploration to archive — on an actual project change.
+description: >-
+  Guide the user through a complete SDD cycle using their real codebase. Use when the user says
+  "sdd onboard", "teach me SDD", or wants a guided walkthrough of full Spec-Driven Development
+  workflow — from exploration to archive — on an actual project change.
 model: inherit
 ---
 

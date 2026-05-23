@@ -1,8 +1,9 @@
 ---
 name: sdd-orchestrator
-description: > L1a SDD Orchestrator. Coordinates the full Spec-Driven Development lifecycle
-(explore → propose → spec → design → tasks → apply → verify → archive) on
-behalf of L0 architect agent.
+description: >-
+  L1a SDD Orchestrator. Coordinates the full Spec-Driven Development lifecycle
+  (explore → propose → spec → design → tasks → apply → verify → archive) on
+  behalf of L0 architect agent.
 model: inherit
 ---
 

@@ -1,8 +1,9 @@
 ---
 name: sdd-apply
-description: > Implement code changes from task definitions. Use when tasks are ready and implementation
-should begin. Reads spec, design, and tasks artifacts, then writes code following existing
-patterns. Marks tasks complete as it goes.
+description: >-
+  Implement code changes from task definitions. Use when tasks are ready and implementation
+  should begin. Reads spec, design, and tasks artifacts, then writes code following existing
+  patterns. Marks tasks complete as it goes.
 model: inherit
 ---
 

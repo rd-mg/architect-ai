@@ -1,7 +1,9 @@
 ---
 name: sdd-init
-description: > Initialize Spec-Driven Development context in a project. Use when the user says "sdd init",
-"iniciar sdd", or wants to bootstrap SDD persistence (engram, openspec, or hybrid) for first time in a project. Detects tech stack and writes the skill registry.
+description: >-
+  Initialize Spec-Driven Development context in a project. Use when the user says "sdd init",
+  "iniciar sdd", or wants to bootstrap SDD persistence (engram, openspec, or hybrid) for
+  first time in a project. Detects tech stack and writes the skill registry.
 model: inherit
 ---
 

@@ -1,8 +1,9 @@
 ---
 name: sdd-propose
-description: > Create a change proposal with intent, scope, and approach. Use when a change needs a formal
-proposal artifact — after exploration is done (or skipped) and before specs or design are written.
-Produces proposal.md or the engram proposal artifact.
+description: >-
+  Create a change proposal with intent, scope, and approach. Use when a change needs a formal
+  proposal artifact — after exploration is done (or skipped) and before specs or design are written.
+  Produces proposal.md or the engram proposal artifact.
 model: inherit
 ---
 

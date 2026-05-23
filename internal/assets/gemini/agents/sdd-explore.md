@@ -1,9 +1,9 @@
 ---
 name: sdd-explore
-description: >
-Explore and investigate ideas before committing to a change. Use when asked to think through
-feature, investigate codebase, understand current architecture, compare approaches, or
-clarify requirements — before any proposal or spec is written.
+description: >-
+  Explore and investigate ideas before committing to a change. Use when asked to think through
+  feature, investigate codebase, understand current architecture, compare approaches, or
+  clarify requirements — before any proposal or spec is written.
 model: inherit
 # sdd-explore/sdd-verify need terminal and MCP access for codebase investigation and test execution
 ---

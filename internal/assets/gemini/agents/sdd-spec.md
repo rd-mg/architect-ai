@@ -1,9 +1,9 @@
 ---
 name: sdd-spec
-description: >
-Write specifications with requirements and acceptance scenarios for a change. Use when
-proposal exists and formal requirements need to be captured in Given/When/Then format.
-Produces spec artifact that sdd-tasks depends on.
+description: >-
+  Write specifications with requirements and acceptance scenarios for a change. Use when
+  proposal exists and formal requirements need to be captured in Given/When/Then format.
+  Produces spec artifact that sdd-tasks depends on.
 model: inherit
 ---
 

@@ -1,9 +1,9 @@
 ---
 name: sdd-archive
-description: >
-Archive completed and verified change. Use when verification passed and change needs to
-be closed — merges delta specs into main specs, moves change folder to archive, persists
-final archive report. Completes SDD cycle.
+description: >-
+  Archive completed and verified change. Use when verification passed and change needs to
+  be closed — merges delta specs into main specs, moves change folder to archive, persists
+  final archive report. Completes SDD cycle.
 model: inherit
 ---
 

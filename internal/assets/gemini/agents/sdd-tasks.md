@@ -1,9 +1,9 @@
 ---
 name: sdd-tasks
-description: >
-Break down change into implementation task checklist. Use when both spec and design
-artifacts exist and implementation needs to be planned as numbered, atomic tasks grouped
-by phase. Produces tasks artifact that sdd-apply consumes.
+description: >-
+  Break down change into implementation task checklist. Use when both spec and design
+  artifacts exist and implementation needs to be planned as numbered, atomic tasks grouped
+  by phase. Produces tasks artifact that sdd-apply consumes.
 model: inherit
 ---
 

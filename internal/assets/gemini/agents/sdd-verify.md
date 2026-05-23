@@ -1,9 +1,9 @@
 ---
 name: sdd-verify
-description: >
-Validate implementation against specs and tasks. Use when code is written and needs
-verification — runs tests, checks spec compliance, validates design coherence. Reports
-CRITICAL / WARNING / SUGGESTION findings. Read-only: does not modify code.
+description: >-
+  Validate implementation against specs and tasks. Use when code is written and needs
+  verification — runs tests, checks spec compliance, validates design coherence. Reports
+  CRITICAL / WARNING / SUGGESTION findings. Read-only: does not modify code.
 model: inherit
 # sdd-explore/sdd-verify need terminal and MCP access for codebase investigation and test execution
 ---

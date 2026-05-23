@@ -1,9 +1,9 @@
 ---
 name: sdd-design
-description: >
-Create technical design document with architecture decisions and implementation approach.
-Use when proposal exists and technical architecture needs to be decided before tasks
-are broken down. Produces design artifact that sdd-tasks depends on.
+description: >-
+  Create technical design document with architecture decisions and implementation approach.
+  Use when proposal exists and technical architecture needs to be decided before tasks
+  are broken down. Produces design artifact that sdd-tasks depends on.
 model: inherit
 ---
 
