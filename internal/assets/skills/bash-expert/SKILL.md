@@ -114,16 +114,9 @@ echo "$MY_VAR"
 
 # RIGHT (fish style)
 set -x MY_VAR "value"    # export
-set -gx MY_VAR "value"   # global export
 set MY_VAR "value"       # local
 echo $MY_VAR             # no quotes needed in fish
 set -e MY_VAR            # unset
-```
-
-### Path manipulation (fish)
-```fish
-# Add to PATH safely
-fish_add_path /custom/path
 ```
 
 ### Conditionals and loops (fish)
@@ -134,11 +127,6 @@ else if test -d dir/
     echo "directory"
 else
     echo "not found"
-end
-
-# Check for substring match (not string match)
-if not string match -q "*substr*" $var
-    echo "substring not found"
 end
 
 for file in *.go
@@ -209,7 +197,3 @@ echo "Estimated ${AFFECTED} files to change"
 rg --json "function_name" --type go \
   | jq -r 'select(.type=="match") | "\(.data.path.text):\(.data.line_number)"'
 ```
-
-### Tool Preference
-- `fd` is preferred over `find` for file listings.
-- `rg` is preferred over `grep` for file search.

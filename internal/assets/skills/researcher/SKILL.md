@@ -45,41 +45,41 @@ architectural decisions. You return a structured summary and terminate.
 ### Tier 1: Engram (Project Memory) — ALWAYS FIRST
 ```
 result = mem_search(query: research_query, project: current_project)
-if result.count > 0:
+IF result.count > 0:
   observations = [mem_get_observation(id) for id in result.ids[:3]]
-  if observations sufficiently answer the query:
+  IF observations sufficiently answer the query:
     → RETURN immediately with source: "engram"
     → DO NOT escalate to Tier 2
 ```
 
 ### Tier 2: ripgrep (Local Codebase) — if query is code-related
 ```
-if scope_hint IN ["local", "broad"] OR query mentions function/file/class/pattern:
+IF scope_hint IN ["local", "broad"] OR query mentions function/file/class/pattern:
   rg_results = bash: rg "{derived_pattern}" --type {lang} -l -C 2
-  if results answer the query:
+  IF results answer the query:
     → RETURN with source: "local_codebase"
     → DO NOT escalate
 ```
 
 ### Tier 3: Context7 (Official Docs) — if query is framework/library-related
 ```
-if query mentions library/framework/API/version:
+IF query mentions library/framework/API/version:
   lib_id = context7.resolve_library_id("{library_name}")
   docs = context7.get_library_docs(lib_id, topic: "{query_topic}", tokens: 3000)
-  if docs answer the query:
+  IF docs answer the query:
     → RETURN with source: "context7"
 ```
 
 ### Tier 4: NotebookLM — ONLY if configured AND max_depth="deep"
 ```
-if notebooklm_available AND scope_hint="broad" AND max_depth="deep":
+IF notebooklm_available AND scope_hint="broad" AND max_depth="deep":
   result = notebooklm.query("{research_query}")
-  if result answers: → RETURN with source: "notebooklm"
+  IF result answers: → RETURN with source: "notebooklm"
 ```
 
 ### Tier 5: Web — last resort, max_depth="deep" only
 ```
-if max_depth="deep" AND all prior tiers missed:
+IF max_depth="deep" AND all prior tiers missed:
   → Use web search tool
   → RETURN with source: "web"
 ```
@@ -103,11 +103,11 @@ if max_depth="deep" AND all prior tiers missed:
 
 ## Engram Persistence (MANDATORY if durable finding)
 ```
-if finding is novel AND architecturally relevant:
+IF finding is novel AND architecturally relevant:
   suggested_key = mem_suggest_topic_key(query: research_query)
-  if suggested_key conflicts with existing:
+  IF suggested_key conflicts with existing:
     → use mem_update(existing_key) not mem_save (prevent duplicates)
-  else:
+  ELSE:
     → mem_save(suggested_key, {summary, key_findings, evidence, source})
 ```
 
@@ -125,3 +125,4 @@ After 2 failed attempts to find useful information:
 researcher MUST terminate after returning the output contract.
 It does NOT continue to next task. It does NOT suggest solutions.
 It returns findings and stops.
+```
