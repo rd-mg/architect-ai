@@ -1144,19 +1144,19 @@ func sddOrchestratorAsset(agent model.AgentID) string {
 func generalOrchestratorAsset(agent model.AgentID) string {
 	switch agent {
 	case model.AgentGeminiCLI:
-		return "gemini/thinking-agent.md"
+		return "gemini/general-orchestrator.md"
 	case model.AgentCodex:
-		return "codex/thinking-agent.md"
+		return "codex/general-orchestrator.md"
 	case model.AgentAntigravity:
-		return "antigravity/thinking-agent.md"
+		return "antigravity/general-orchestrator.md"
 	case model.AgentWindsurf:
-		return "windsurf/thinking-agent.md"
+		return "windsurf/general-orchestrator.md"
 	case model.AgentCursor:
-		return "cursor/thinking-agent.md"
+		return "cursor/general-orchestrator.md"
 	case model.AgentClaudeCode:
-		return "claude/thinking-agent.md"
+		return "claude/general-orchestrator.md"
 	default:
-		return "generic/thinking-agent.md"
+		return "generic/general-orchestrator.md"
 	}
 }
 
@@ -1241,8 +1241,12 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 		existing = stripBareOrchestratorForFilePrompt(existing)
 	}
 
+	// Clean up legacy sdd-orchestrator and general-orchestrator sections before writing new L0/L1a/L1b markers
+	existing = filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "general-orchestrator", "")
+
 	// 1. Inject L0 (Thinking Agent)
-	l0Content := assets.MustRead("generic/thinking-agent.md")
+	l0Content := assets.MustRead("_shared/architect-identity.md")
 	if len(options) > 0 {
 		opts := options[0]
 		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
@@ -1251,7 +1255,7 @@ func injectFileAppend(homeDir string, adapter agents.Adapter, force bool, manife
 			OverlayActive:   overlayActive,
 			OverlayName:     overlayName,
 			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
-			Phase:           "thinking-agent",
+			Phase:           "architect",
 		}
 		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
 			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")
@@ -1538,8 +1542,12 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 		existing = stripBareOrchestratorSection(existing)
 	}
 
+	// Clean up legacy sdd-orchestrator and general-orchestrator sections before writing new L0/L1a/L1b markers
+	existing = filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", "")
+	existing = filemerge.InjectMarkdownSection(existing, "general-orchestrator", "")
+
 	// 1. Inject L0 (Thinking Agent)
-	l0Content := assets.MustRead("generic/thinking-agent.md")
+	l0Content := assets.MustRead("_shared/architect-identity.md")
 	if len(options) > 0 {
 		opts := options[0]
 		overlayName, overlayActive := detectActiveOverlay(opts.WorkspaceDir)
@@ -1548,7 +1556,7 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 			OverlayActive:   overlayActive,
 			OverlayName:     overlayName,
 			OverlaySupplDir: filepath.Join(opts.WorkspaceDir, ".atl", "overlays", overlayName, "sdd-supplements"),
-			Phase:           "thinking-agent",
+			Phase:           "architect",
 		}
 		if projectRoot, found := findProjectRoot(opts.WorkspaceDir); found {
 			ctx.SharedAssetsDir = filepath.Join(projectRoot, "internal", "assets", "skills", "_shared")

@@ -342,7 +342,7 @@ func TestInjectCursorWritesSDDOrchestratorAndSkills(t *testing.T) {
 	}
 
 	text := string(content)
-	if !strings.Contains(text, "Spec-Driven Development") {
+	if !strings.Contains(text, "L1 Tactical Orchestrator") {
 		t.Fatal("Cursor system prompt missing SDD orchestrator content")
 	}
 	if !strings.Contains(text, "sub-agent") {
@@ -375,7 +375,7 @@ func TestInjectGeminiWritesSDDOrchestratorAndSkills(t *testing.T) {
 	}
 
 	text := string(content)
-	if !strings.Contains(text, "Spec-Driven Development") {
+	if !strings.Contains(text, "L1 Tactical Orchestrator") {
 		t.Fatal("Gemini system prompt missing SDD orchestrator content")
 	}
 
@@ -412,7 +412,7 @@ func TestInjectVSCodeWritesSDDOrchestratorAndSkills(t *testing.T) {
 	}
 
 	text := string(content)
-	if !strings.Contains(text, "Spec-Driven Development") {
+	if !strings.Contains(text, "L1 Tactical Orchestrator") {
 		t.Fatal("VS Code system prompt missing SDD orchestrator content")
 	}
 
@@ -2504,7 +2504,7 @@ func TestInjectCodexWritesSDDOrchestratorAndSkills(t *testing.T) {
 	}
 
 	text := string(content)
-	if !strings.Contains(text, "Spec-Driven Development") {
+	if !strings.Contains(text, "L1 Tactical Orchestrator") {
 		t.Fatal("agents.md missing SDD orchestrator content")
 	}
 
