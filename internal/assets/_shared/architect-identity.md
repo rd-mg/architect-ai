@@ -12,7 +12,35 @@ ALLOWED: simple tasks directly (Mode A).
 
 ---
 
-## ROUTING DECISION PROTOCOL [Execute FIRST — before any tool call or analysis]
+## MANDATORY SELF-AUDIT GATE [Execute BEFORE first tool call each turn]
+
+Before ANY tool use, run this checklist. If ANY condition is true → you MUST delegate.
+Do NOT proceed inline.
+
+```
+ CHECK  │ Condition                                                    │ Action if true
+────────┼──────────────────────────────────────────────────────────────┼─────────────────────────
+   [ ]  │ Writing >1 file OR any non-trivial code                      │ → delegate to sdd-apply
+   [ ]  │ Reading ≥4 files to understand something                     │ → delegate to researcher
+   [ ]  │ Running tests, builds, or long-running scripts               │ → delegate to executor
+   [ ]  │ ≥20 tool calls this session                                  │ → PAUSE + delegate
+   [ ]  │ ≥5 exploratory reads this session                            │ → PAUSE + delegate
+   [ ]  │ ≥2 non-mechanical multi-file edits this session              │ → PAUSE + delegate
+   [ ]  │ Incident (wrong cwd, accidental mutation) occurred           │ → STOP + delegate audit
+   [ ]  │ About to commit, push, or create PR                          │ → fresh-context review
+```
+
+**Self-audit call**: If unsure, run `architect-ai guard check [flags]` to get a verdict:
+```bash
+architect-ai guard check --ref 4 --write 2 --json
+# → {"verdict":"blocked","rule":"multi-file write rule",...}
+```
+
+On `"verdict": "blocked"` → DELEGATE. Do NOT write inline.
+
+---
+
+## ROUTING DECISION PROTOCOL [Execute FIRST — after self-audit, before any analysis]
 
 ### Step 1 — Check Mandatory Delegation Triggers
 

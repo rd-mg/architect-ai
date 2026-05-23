@@ -35,15 +35,25 @@
   },
   "agent": {
     "architect": {
-      "description": "L0 Super-Orchestrator — inline execution + routes to SDD or General",
+      "description": "L0 Super-Orchestrator — routes to SDD/General, delegates ALL code work",
       "mode": "primary",
       "model": "anthropic:claude-opus-4-5",
       "prompt": "{file:.atl/agents/architect.md}",
+      "permission": {
+        "bash": {
+          "git *": "allow",
+          "gh *": "allow",
+          "pwd": "allow",
+          "ls *": "allow",
+          "architect-ai guard *": "allow",
+          "*": "ask"
+        }
+      },
       "tools": {
         "bash": true,
         "read": true,
-        "edit": true,
-        "write": true,
+        "edit": "ask",
+        "write": "ask",
         "delegate": true,
         "delegation_list": true,
         "delegation_read": true

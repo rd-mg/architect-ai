@@ -38,17 +38,37 @@ type SDDState struct {
 }
 
 type ApplyTask struct {
-	ID          string `yaml:"id"`
-	Description string `yaml:"description"`
-	Status      string `yaml:"status"`
-	CompletedAt string `yaml:"completed_at"`
+	ID            string   `yaml:"id"`
+	Description   string   `yaml:"description"`
+	Status        string   `yaml:"status"`
+	CompletedAt   string   `yaml:"completed_at"`
+	FilesModified []string `yaml:"files_modified"`
+	CommitHash    string   `yaml:"commit_hash"`
+	LinesAdded    int      `yaml:"lines_added"`
+	LinesDeleted  int      `yaml:"lines_deleted"`
+}
+
+type ApplyTotals struct {
+	Completed    int `yaml:"completed"`
+	Running      int `yaml:"running"`
+	Pending      int `yaml:"pending"`
+	Failed       int `yaml:"failed"`
+	LinesAdded   int `yaml:"lines_added"`
+	LinesDeleted int `yaml:"lines_deleted"`
 }
 
 type ApplyProgress struct {
-	ChangeName string      `yaml:"change_name"`
-	StartedAt  string      `yaml:"started_at"`
-	UpdatedAt  string      `yaml:"updated_at"`
-	Tasks      []ApplyTask `yaml:"tasks"`
+	Version          string       `yaml:"version"`
+	ChangeName       string       `yaml:"change_name"`
+	ApplyBranch      string       `yaml:"apply_branch"`
+	StartedAt        string       `yaml:"started_at"`
+	LastUpdated      string       `yaml:"last_updated"`
+	ArtifactStore    string       `yaml:"artifact_store"`
+	DeliveryStrategy string       `yaml:"delivery_strategy"`
+	CurrentSlice     int          `yaml:"current_slice"`
+	TotalSlices      int          `yaml:"total_slices"`
+	Tasks            []ApplyTask  `yaml:"tasks"`
+	Totals           ApplyTotals  `yaml:"totals"`
 }
 
 // InitialState generates the starter sdd-state.yaml content
@@ -163,7 +183,7 @@ func (s *SDDState) RecordAttempt(phase string) (bool, error) {
 	}
 	s.CircuitBreaker.AttemptCounts[phase]++
 	attempts := s.CircuitBreaker.AttemptCounts[phase]
-	if s.CircuitBreaker.Enabled && attempts > s.CircuitBreaker.MaxAttempts {
+	if s.CircuitBreaker.Enabled && attempts >= s.CircuitBreaker.MaxAttempts {
 		pState, exists := s.Phases[phase]
 		if exists {
 			pState.Status = "abandoned"

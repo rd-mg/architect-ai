@@ -216,15 +216,10 @@ func TestCircuitBreaker_MaxAttempts(t *testing.T) {
 		t.Error("should not trip on attempt 2")
 	}
 
-	tripped, err = s.RecordAttempt("sdd-apply")
-	if tripped {
-		t.Error("should not trip on attempt 3")
-	}
-
-	// 4th attempt should trip, because max_attempts is 3.
+	// 3rd attempt should trip — max_attempts is 3, trip on >= 3.
 	tripped, err = s.RecordAttempt("sdd-apply")
 	if !tripped {
-		t.Error("should trip on attempt 4")
+		t.Error("should trip on attempt 3")
 	}
 
 	if s.Phases["sdd-apply"].Status != "abandoned" {

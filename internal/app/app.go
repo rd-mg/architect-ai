@@ -169,6 +169,8 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return cli.RunSDDStatus(args[1:], stdout, os.Stderr)
 	case "sdd-archive-preflight":
 		return cli.RunSDDArchivePreflight(args[1:], stdout, os.Stderr)
+	case "guard":
+		return cli.RunGuard(args[1:], stdout)
 	case "cleanup":
 		return cli.RunCleanup(args[1:], stdout)
 	case "restore":
