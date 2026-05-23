@@ -12,15 +12,15 @@ version: "2.0"
 
 # Shell Expert (bash + fish) v2.0
 
-## Shell Detection (MANDATORY — first step, every script)
+## Shell Detection (MANDATORY first step in any script)
 ```bash
 ACTIVE_SHELL=$(basename "${SHELL:-bash}")
-# Use appropriate section below
+# Use appropriate section below based on result
 ```
 
-## BASH Rules
+## BASH Expert Rules
 
-### Strict mode header (every script)
+### Strict mode header (every script, no exceptions)
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -86,7 +86,7 @@ mv "${tmp}" "${target}"
 [ -n "${DIR}" ] && [ -d "${DIR}" ] && rm -rf "${DIR}"
 ```
 
-## FISH Rules
+## FISH Expert Rules
 
 ### NO set -euo pipefail in fish
 ```fish
@@ -114,9 +114,16 @@ echo "$MY_VAR"
 
 # RIGHT (fish style)
 set -x MY_VAR "value"    # export
+set -gx MY_VAR "value"   # global export
 set MY_VAR "value"       # local
 echo $MY_VAR             # no quotes needed in fish
 set -e MY_VAR            # unset
+```
+
+### Path manipulation (fish)
+```fish
+# Add to PATH safely
+fish_add_path /custom/path
 ```
 
 ### Conditionals and loops (fish)
@@ -129,6 +136,11 @@ else
     echo "not found"
 end
 
+# Check for substring match (not string match)
+if not string match -q "*substr*" $var
+    echo "substring not found"
+end
+
 for file in *.go
     echo $file
 end
@@ -139,7 +151,8 @@ set files (rg -l "pattern" .)
 
 ### Error propagation (fish)
 ```fish
-# Fish doesn't propagate pipe errors like bash — use explicit checks
+# Fish doesn't propagate pipe errors like bash
+# Use explicit checks
 rg "pattern" . ; or begin
     echo "rg failed or no results" >&2
     exit 1
@@ -161,7 +174,7 @@ for line in sys.stdin:
 "
 ```
 
-## Cross-Shell rg Patterns
+## Cross-Shell rg Optimization Patterns
 
 ### Pattern 1: Domain-specific search
 ```bash
@@ -196,3 +209,7 @@ echo "Estimated ${AFFECTED} files to change"
 rg --json "function_name" --type go \
   | jq -r 'select(.type=="match") | "\(.data.path.text):\(.data.line_number)"'
 ```
+
+### Tool Preference
+- `fd` is preferred over `find` for file listings.
+- `rg` is preferred over `grep` for file search.

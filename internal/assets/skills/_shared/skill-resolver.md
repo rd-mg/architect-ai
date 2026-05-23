@@ -1,141 +1,93 @@
-# Skill Resolver — Universal Protocol
+# Skill Resolver — Universal Protocol v3.0
 
-Any agent that **delegates work to sub-agents** MUST follow this protocol to resolve and inject relevant skills. Applies to ATL orchestrator, judgment-day, pr-review, and ANY future skill/workflow launching sub-agents.
+Any agent that **delegates work to sub-agents** MUST follow this protocol to resolve and inject relevant skills. This applies to the ATL orchestrator, judgment-day, pr-review, and ANY future skill or workflow that launches sub-agents.
 
-## Why
+## Why This Exists
 
-Sub-agents are born with NO context about skills. Without injection, a judge reviewing Next.js won't know React 19 patterns, fix agent won't follow conventions, PR creator won't use project's PR template.
+Sub-agents are born with NO context about what skills exist. Without skill injection, a judge reviewing a Next.js project won't know React 19 patterns, a fix agent won't follow project conventions, and a PR creator won't use the project's PR template.
 
-## When
+## TIERED INJECTION PROTOCOL [MANDATORY]
 
-Before EVERY sub-agent launch involving **reading, writing, or reviewing code**. Skip only for purely mechanical delegations (e.g., "run this test command").
-
-## Protocol
-
-### Step 1: Obtain Skill Registry (once per session)
-
-Registry contains **Compact Rules** section with pre-digested rules per skill (5-15 lines each). Inject this — NOT full SKILL.md paths.
-
-Resolution order:
-1. Cached from earlier session? → use cache
-2. `mem_search(query: "skill-registry", project: "{project}")` → `mem_get_observation(id)` for full content
-3. Fallback: read `.atl/skill-registry.md` from project root if exists
-4. No registry? → proceed without skills (warn user: "No skill registry found — sub-agents work without project-specific standards. Run `skill-registry` to fix.")
-
-### Step 2: Match Relevant Skills
-
-**Mandatory Skills (ALWAYS injected)**
-Regardless of task matcher, always inject:
-- `ripgrep` — pattern search (replaces grep)
-- `bash-expert` — safe shell scripting
-- `mcp-notebooklm-orchestrator` — optional research source
-- `context-guardian` — context pressure detection
-
-Match additional skills on TWO dimensions:
-
-**A. Code Context** — what files will sub-agent touch or review?
-
-Compact rules provided by resolver are **immutable** for session. Override via specific skill file at project root (`./SKILL.md`) or project skills directory (`.architect/skills/`).
-
-Map file patterns to skills from registry (always defer to registry's Trigger field):
-- `.tsx`, `.jsx` → react skills
-- `.ts` → typescript skills
-- `app/**`, `pages/**` → nextjs/angular/framework skills
-- `.py` → python/django skills
-- `.go` → go skills
-- `*.test.*`, `*.spec.*` → testing skills
-- Style files → tailwind/css skills
-
-Use `Trigger` field in registry's User Skills table to match.
-
-**B. Task Context** — what ACTIONS will sub-agent perform?
-
-| Sub-agent action | Match skills with triggers mentioning... |
-|-----------------|------------------------------------------|
-| Create PR | "PR", "pull request" |
-| Write/review code | Specific framework/language |
-| Create Jira tickets | "Jira", "epic", "task" |
-| Write Notion docs | "Notion", "RFC", "PRD" |
-| Write comments | "comment" |
-| Run tests | "test", "vitest", "pytest", "playwright" |
-
-### Step 3: Inject into Sub-Agent Prompt
-
-From registry's **Compact Rules** section, copy matching skill blocks directly into sub-agent's prompt.
+The V3.0 architecture organizes all skills into 3 tiers to optimize context budget:
 
 ```
-## Project Standards (auto-resolved)
-
-{paste compact rules blocks for each matching skill}
++-----------------------------------------------------------------+
+| Tier 1: Foundation (Always Merged into _generated/foundation.md) |
+|   - Injected into ALL sub-agent prompts via a single file read  |
++-----------------------------------------------------------------+
+                               |
+                               v
++-----------------------------------------------------------------+
+| Tier 2: Context-Activated (Injected dynamically)               |
+|   - File Diff Match (e.g. *.go -> go-testing)                   |
+|   - Task Keyword Match (e.g. "PR" -> branch-pr)                  |
+|   - Max 3 Tier 2 skills injected per task                       |
++-----------------------------------------------------------------+
+                               |
+                               v
++-----------------------------------------------------------------+
+| Tier 3: On-Demand (Never injected automatically)                |
+|   - Explicitly requested by name (e.g. researcher, solver)     |
++-----------------------------------------------------------------+
 ```
 
-Goes BEFORE sub-agent's task-specific instructions. Standards loaded before work begins.
+---
 
-**Key**: inject COMPACT RULES text, not paths. Sub-agent should NOT read SKILL.md files — rules arrive pre-digested in prompt.
+## When to Apply
 
-### Step 4: Include Project Conventions
+Before EVERY sub-agent launch that involves **reading, writing, or reviewing code**. Skip only for purely mechanical delegations (e.g., "run this test command").
 
-If registry has **Project Conventions** section and sub-agent works on project code:
+---
 
-```
-## Project Conventions
-Read these files for project-specific patterns:
-- {path1} — {notes}
-- {path2} — {notes}
-```
+## The Protocol
 
-Conventions are short references (paths + notes), cheap to pass. Sub-agent reads only if relevant.
+### Step 1: Load Tier 1 (Foundation Block)
 
-## Adaptive Routing Contract Integration
+Every sub-agent prompt MUST start with the merged foundation standards block:
+1. Read `.atl/_generated/foundation.md`.
+2. Inject it at the very top of the system prompt under `## Project Foundation Standards`.
+3. If the file is missing, the generator MUST be run first (`skill-registry --refresh`).
 
-When `adaptive-reasoning` used before delegation, resolver SHOULD consume routing record directly.
+### Step 2: Match Tier 2 Skills (Context-Activated)
 
-Required fields: `owner`, `scope`, `ambiguity`, `dependency_shape`, `risk`, `verification_burden`, `cost_sensitivity`, `route`, `reason`.
+Match dynamically on TWO dimensions:
 
-Resolver behavior by `route`:
-- `native-owner`: delegate to owner skill only when extra delegation still needed
-- `deterministic-validators`: prioritize machine-checkable validation flow; do not substitute judge route
-- `judgment-day`: launch adversarial review for defect discovery
-- `autoreason-lite`: only for bounded proposal/spec/design comparison with incumbent + competitor
-- `native-sdd-first`: route to SDD owner phase before narrower overlays
+#### A. File Diff Match (what files will the sub-agent touch?)
+- `.go` → go-testing
+- `__manifest__.py` or Odoo directories → odoo-development-skill
+- `go.mod` → go-testing
 
-Routing record missing/incomplete: fallback to normal resolver matching, log warning.
+#### B. Task Keyword Match (what actions will the sub-agent perform?)
+- "PR", "pull request", "git push" → branch-pr
+- "commit", "apply", "sdd-apply" → work-unit-commits
+- "issue", "bug report", "Jira" → issue-creation
+
+**Max limit**: Inject a maximum of 3 Tier 2 skills to prevent context bloat. If more match, prioritize by the match type:
+1. File Diff Match (highest priority)
+2. Task Keyword Match
+
+### Step 3: Tier 3 (On-Demand) Routing
+
+Tier 3 skills (e.g. `researcher`, `solver`, `ideator`, `generalist`, `skill-creator`, `mcp-notebooklm-orchestrator`) are NEVER injected automatically. They are only invoked when the orchestrator explicitly routes a task to them.
+
+---
 
 ## Token Budget
 
-Compact rules add **50-150 tokens per skill** to sub-agent prompt. Typical delegation matching 3-4 skills = ~400-600 tokens — negligible vs. code sub-agent reads.
+- **Tier 1 (Foundation)**: ~400-600 tokens (merged block of 6 core skills).
+- **Tier 2 (Context-Activated)**: Max 3 skills (~150 tokens each) → ~450 tokens.
+- **Total Skill Overhead**: ~1000 tokens. This is highly optimized and fits comfortably in the context window.
 
-More than **5 skill blocks** match → keep only 5 most relevant (prioritize code context over task context).
-
-## Compaction Safety
-
-Protocol is compaction-safe:
-- Registry lives in engram/filesystem, not orchestrator memory
-- Each delegation re-reads registry if needed (Step 1 handles cache miss)
-- Compact rules copied into each sub-agent prompt at launch — even if orchestrator forgets, sub-agents already have rules
+---
 
 ## Feedback Loop
 
-Sub-agents MUST report skill resolution status in return envelope:
-- `injected` — received `## Project Standards (auto-resolved)` from orchestrator (ideal)
+Sub-agents MUST report their skill resolution status in their return envelope:
+- `injected` — received `## Project Standards (auto-resolved)` from the orchestrator (ideal path)
 - `fallback-registry` — no standards received, self-loaded from skill registry
-- `fallback-path` — loaded via `SKILL: Load` path
-- `none` — no skills loaded
+- `none` — no skills loaded at all
 
-**Orchestrator self-correction**: if sub-agent reports anything other than `injected`, orchestrator MUST:
-1. Re-read skill registry immediately (may be lost to compaction)
+**Orchestrator self-correction rule**: if a sub-agent reports anything other than `injected`, the orchestrator MUST:
+1. Re-read the skill registry immediately (it may have been lost to compaction)
 2. Ensure ALL subsequent delegations include `## Project Standards (auto-resolved)`
-3. Log warning: "Skill cache miss detected — reloaded registry for future delegations."
-
-Prevents silent degradation where orchestrator forgets skills after compaction.
-
-## Integration Points
-
-- **ATL Orchestrator**: follows protocol for ALL delegations (SDD and non-SDD)
-- **judgment-day**: follows protocol before launching Judge A, Judge B, Fix Agent
-- **pr-review**: has internal skill loading — should migrate to this protocol
-- **Any future skill delegating**: MUST reference this protocol
-
-## Context Assembly Integration
-
-When invoking `context-guardian` to build context pack, map resolved Compact Rules directly into `working_rules:` section of context pack.
+3. Log a warning to the user: "Skill cache miss detected — reloaded registry for future delegations."

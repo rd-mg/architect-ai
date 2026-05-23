@@ -10,22 +10,22 @@ bridge: always
 applies-when: "any delegation that involves file search, pattern matching, or code-wide refactor discovery"
 metadata:
   author: rd-mg
-  version: "1.0"
+  version: "2.0"
 ---
 
 # Ripgrep (rg) — Mandatory Skill
 
-## Why `bridge: always`
+## Why this is `bridge: always`
 
-Every SDD phase touches file search:
-- **Explore**: find all callers of function
+Every SDD phase touches file search at some point:
+- **Explore**: find all callers of a function
 - **Propose/Spec**: survey existing patterns
 - **Apply**: find edit targets
-- **Verify**: check pattern NOT present (negative assertions)
+- **Verify**: check that a pattern is NOT present (negative assertions)
 
-`grep -r` or `find ... -exec grep` on medium repo is 10-50× slower than `rg` and ignores `.gitignore`, causing hits in `node_modules/`, `.venv/`, `dist/`, polluting sub-agent context.
+Using `grep -r` or `find ... -exec grep` on a medium-sized repo is 10-50× slower than `rg` and ignores `.gitignore`, causing hits in `node_modules/`, `.venv/`, `dist/`, etc. that pollute the sub-agent's context.
 
-`bridge: always` means orchestrator injects into **every** sub-agent prompt, unconditionally.
+Marking this skill `bridge: always` means the orchestrator injects it into **every** sub-agent prompt, unconditionally.
 
 ---
 
@@ -53,61 +53,38 @@ When reporting findings, quote file:line:content, never just a file path.
 
 ---
 
-## Typical patterns
+## Advanced Search Patterns
 
-### Find all usages of a symbol
-```bash
-rg -w "computeTotal" --type go
-# -w = word boundary (doesn't match computeTotalPrice)
-# --type go restricts to .go files
-```
+### AST-level Function Signature Search (Go, Python, TypeScript)
+- **Go Function Search**: Find Go functions with receiver or standard signatures:
+  `rg -U "func\s+\([^)]+\)\s+\w+\s*\([^)]*\)" --type go`
+  `rg -w "func \w+" --type go`
+- **Python Method/Class Search**: Find class definitions or methods:
+  `rg "class \w+(\(\w+\))?:" --type py`
+  `rg "def \w+\([^)]*\):" --type py`
+- **TypeScript/JavaScript Method Search**: Find functions/classes/interfaces:
+  `rg "export (class|interface|type) \w+" --type ts`
+  `rg "function \w+\s*\(" --type ts --type js`
 
-### Find negative — "nothing imports this"
-```bash
-rg -l "import.*mypkg" || echo "no callers"
-```
+### Import and Dependency Graph Search Patterns
+- **Go Imports**: Find where a specific package is imported:
+  `rg -U "import\s+\(\s*[^)]*\"github.com/rd-mg/architect-ai/[^\"]+\"\s*\)" --type go`
+  `rg "import\s+\"github.com/rd-mg/architect-ai/[^\"]+\"" --type go`
+- **Python Imports**: Find imports of standard or local modules:
+  `rg "^(import \w+|from \w+ import)" --type py`
+- **TypeScript/ES6 Imports**: Find imports of packages:
+  `rg "import\s+.*\s+from\s+'[^']+'" --type ts --type js`
 
-### Multi-line match — function signatures
-```bash
-rg -U "func\s+\w+\s*\([^)]*\)\s+error"
-```
+### Multi-File Context Patterns
+- **Context lines around match (A=after, B=before)**:
+  `rg "pattern" -A 5 -B 3 --no-heading --type go`
+- **Include line numbers and path details**:
+  `rg -n --with-filename "pattern" --type go`
 
-### Count occurrences across repo
-```bash
-rg -c "TODO" | sort -t: -k2 -n -r | head
-```
-
-### Find + replace (stream to xargs sed — read-only rg)
-```bash
-rg -l "old_name" | xargs sed -i 's/old_name/new_name/g'
-```
-
----
-
-## When NOT to use ripgrep
-
-- **Structured code queries**: use language server / tree-sitter / `gopls`, not regex. Example: finding all implementers of interface.
-- **Symbol rename**: use IDE refactor, not rg | sed (regex can't distinguish `foo.bar` from `foo_bar` in wrong contexts).
-- **Cross-file semantic checks**: regex is text. Use `go vet`, `eslint`, etc.
-
-If task needs semantic understanding, orchestrator should note in sub-agent prompt; sub-agent should use language toolchain.
-
----
-
-## Installation check
-
-Sub-agents should never fail silently on missing `rg`. First command in any search-heavy sub-agent:
-
-```bash
-command -v rg >/dev/null || {
-  echo "ripgrep not installed. Install: brew install ripgrep / apt-get install ripgrep / pacman -S ripgrep" >&2
-  exit 127
-}
-```
-
----
-
-## See also
-
-- `bash-expert/SKILL.md` — shell patterns complementing ripgrep
-- `_shared/research-routing.md` — when ripgrep vs. NotebookLM/Context7
+### Performance & Filtering Patterns
+- **Target specific globs**:
+  `rg "pattern" --glob "internal/skills/**"`
+- **Limit results to avoid flooding context**:
+  `rg "pattern" --max-count 10`
+- **Select specific language type**:
+  `rg "pattern" --type go --type-not-add python`

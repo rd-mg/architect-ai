@@ -1,5 +1,3 @@
-// internal/skill/registry/generator.go
-// Generates .atl/skill-manifest.yaml and .atl/_generated/foundation.md
 package registry
 
 import (
@@ -10,25 +8,22 @@ import (
 	"time"
 )
 
-// SkillTier represents the injection tier for a skill
 type SkillTier string
 
 const (
-	TierFoundation       SkillTier = "foundation"        // Always inject
-	TierContextActivated SkillTier = "context_activated"  // Conditional inject
-	TierOnDemand         SkillTier = "on_demand"          // Never auto-inject
+	TierFoundation       SkillTier = "foundation"
+	TierContextActivated SkillTier = "context_activated"
+	TierOnDemand         SkillTier = "on_demand"
 )
 
-// SkillEntry describes a single skill in the manifest
 type SkillEntry struct {
 	Name          string
 	Path          string
 	Tier          SkillTier
-	ActivatesWhen string // For Tier 2 only
+	ActivatesWhen string
 	CompactLines  int
 }
 
-// FoundationSkills are the 6 always-injected skills (Tier 1)
 var FoundationSkills = []SkillEntry{
 	{Name: "ripgrep", Tier: TierFoundation, CompactLines: 15},
 	{Name: "bash-expert", Tier: TierFoundation, CompactLines: 20},
@@ -38,7 +33,6 @@ var FoundationSkills = []SkillEntry{
 	{Name: "cognitive-mode", Tier: TierFoundation, CompactLines: 18},
 }
 
-// ContextActivatedSkills are Tier 2 — conditional injection
 var ContextActivatedSkills = []SkillEntry{
 	{Name: "go-testing", ActivatesWhen: "*.go files in diff OR task mentions 'test'"},
 	{Name: "odoo-development-skill", ActivatesWhen: "__manifest__.py detected"},
@@ -47,7 +41,7 @@ var ContextActivatedSkills = []SkillEntry{
 	{Name: "issue-creation", ActivatesWhen: "task involves creating GitHub/GitLab issue"},
 }
 
-// GenerateManifest creates .atl/skill-manifest.yaml
+// GenerateManifest creates .atl/skill-manifest.yaml based on Tiers
 func GenerateManifest(atDir string, extraSkills []SkillEntry) error {
 	manifest := buildManifestYAML(extraSkills)
 	path := filepath.Join(atDir, "skill-manifest.yaml")

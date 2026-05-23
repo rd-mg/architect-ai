@@ -1,4 +1,3 @@
-// internal/skill/registry/generator_test.go
 package registry
 
 import (
@@ -15,7 +14,10 @@ func TestGenerateManifest_ContainsTiers(t *testing.T) {
 		t.Fatalf("GenerateManifest: %v", err)
 	}
 
-	data, _ := os.ReadFile(filepath.Join(dir, "skill-manifest.yaml"))
+	data, err := os.ReadFile(filepath.Join(dir, "skill-manifest.yaml"))
+	if err != nil {
+		t.Fatalf("read manifest: %v", err)
+	}
 	content := string(data)
 
 	for _, section := range []string{"foundation:", "context_activated:", "on_demand:"} {
@@ -27,9 +29,15 @@ func TestGenerateManifest_ContainsTiers(t *testing.T) {
 
 func TestGenerateManifest_NotebookLMIsOnDemand(t *testing.T) {
 	dir := t.TempDir()
-	GenerateManifest(dir, nil)
+	err := GenerateManifest(dir, nil)
+	if err != nil {
+		t.Fatalf("GenerateManifest: %v", err)
+	}
 
-	data, _ := os.ReadFile(filepath.Join(dir, "skill-manifest.yaml"))
+	data, err := os.ReadFile(filepath.Join(dir, "skill-manifest.yaml"))
+	if err != nil {
+		t.Fatalf("read manifest: %v", err)
+	}
 	content := string(data)
 
 	// notebooklm must be in on_demand, NOT in foundation
@@ -41,7 +49,6 @@ func TestGenerateManifest_NotebookLMIsOnDemand(t *testing.T) {
 		t.Error("notebooklm not found in manifest")
 	}
 	if nlmIdx < onDemandIdx || nlmIdx < foundationIdx {
-		// It's before on_demand section — could be in foundation (wrong!)
 		if nlmIdx > foundationIdx && nlmIdx < onDemandIdx {
 			t.Error("notebooklm is in foundation tier — should be on_demand")
 		}
@@ -51,14 +58,17 @@ func TestGenerateManifest_NotebookLMIsOnDemand(t *testing.T) {
 func TestGenerateFoundationBlock_CreatesMergedFile(t *testing.T) {
 	dir := t.TempDir()
 
-	// Create a minimal skill file for testing
-	skillDir := filepath.Join(dir, "skills", "ripgrep")
-	if err := os.MkdirAll(skillDir, 0755); err != nil {
-		t.Fatalf("MkdirAll skillDir: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"),
-		[]byte("## Compact Rules\n- use rg not grep\n- always use --type"), 0644); err != nil {
-		t.Fatalf("WriteFile: %v", err)
+	// Create minimal skill files for testing all 6 foundation skills
+	for _, skill := range FoundationSkills {
+		skillDir := filepath.Join(dir, "skills", skill.Name)
+		if err := os.MkdirAll(skillDir, 0755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"),
+			[]byte("## Compact Rules\n- sample rule for "+skill.Name), 0644)
+		if err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
 	}
 
 	err := GenerateFoundationBlock(dir)
@@ -71,9 +81,15 @@ func TestGenerateFoundationBlock_CreatesMergedFile(t *testing.T) {
 		t.Error("foundation.md not created")
 	}
 
-	data, _ := os.ReadFile(foundationPath)
+	data, err := os.ReadFile(foundationPath)
+	if err != nil {
+		t.Fatalf("read foundation.md: %v", err)
+	}
 	if !strings.Contains(string(data), "Project Foundation Standards") {
 		t.Error("foundation.md missing header")
+	}
+	if !strings.Contains(string(data), "ripgrep") {
+		t.Error("foundation.md missing ripgrep compact rule")
 	}
 }
 
