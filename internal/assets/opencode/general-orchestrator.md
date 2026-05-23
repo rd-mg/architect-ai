@@ -1,3 +1,11 @@
+---
+name: general-orchestrator
+description: >
+  L1b General Orchestrator. Handles all non-SDD workflows — routing, brainstorming,
+  debugging, and prototyping tasks — on behalf of the L0 architect agent.
+model: inherit
+---
+
 # Agent Teams Lite — General Orchestrator Core (Opencode)
 
 Bind this to the dedicated `general-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `solver`, `ideator`, or `researcher`.
