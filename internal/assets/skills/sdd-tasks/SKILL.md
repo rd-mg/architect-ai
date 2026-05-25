@@ -165,7 +165,58 @@ Phase 5: Cleanup
 Ready for implementation (sdd-apply).
 ```
 
-## Rules
+## Review Workload Forecast [MANDATORY — compute before returning result]
+
+After decomposing tasks, estimate the review workload:
+
+### Step 1: Estimate lines of code
+
+For each task, estimate:
+- lines_added: new code lines (estimates OK, be conservative/over-estimate)
+- lines_deleted: removed code lines
+- files_affected: list of files that will change
+
+Total: sum all task estimates.
+
+### Step 2: Classify budget risk
+
+```
+total_lines = sum(lines_added + lines_deleted for all tasks)
+
+if total_lines <= 200:     budget_risk = "low"
+elif total_lines <= 400:   budget_risk = "low"   # still within budget
+elif total_lines <= 800:   budget_risk = "medium" # approaching limit
+else:                      budget_risk = "high"   # exceeds safe PR size
+```
+
+### Step 3: Recommend chain strategy
+
+```
+chained_prs_recommended = total_lines > 400
+decision_needed = budget_risk in ["medium", "high"]
+```
+
+### Step 4: Include in Result Contract
+
+Add to the standard Result Contract:
+```json
+{
+  "review_workload": {
+    "estimated_lines_changed": {total_lines},
+    "budget_risk": "{low|medium|high}",
+    "chained_prs_recommended": {true|false},
+    "decision_needed_before_apply": {true|false},
+    "tasks_count": {total},
+    "parallel_tasks": {count},
+    "sequential_tasks": {count},
+    "task_dependency_order": [
+      {"task_id": "T1", "depends_on": [], "parallel_with": ["T2"]},
+      {"task_id": "T2", "depends_on": [], "parallel_with": ["T1"]},
+      {"task_id": "T3", "depends_on": ["T1", "T2"], "parallel_with": []}
+    ]
+  }
+}
+```
 
 - ALWAYS include Mermaid `## Dependency Graph`
 - ALWAYS reference concrete file paths in tasks

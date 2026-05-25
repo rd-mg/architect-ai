@@ -13,7 +13,53 @@ metadata:
 
 L1a SDD Orchestrator. Manages entire SDD pipeline from initialization to archival. Coordinates specialized sub-agents. Never does execution work inline.
 
-## Skill Digestion Harness Protocol
+
+## REVIEW WORKLOAD GUARD [L1a sdd-orchestrator — MANDATORY between sdd-tasks and sdd-apply]
+
+Location in orchestrator flow: AFTER sdd-tasks result received, BEFORE launching sdd-apply.
+
+### Check flow
+
+```
+sdd-tasks returns result_contract
+       │
+       ▼
+READ result_contract.review_workload
+       │
+       ├── budget_risk = "low" AND chained_prs_recommended = false
+       │     → Proceed to sdd-apply normally
+       │     → Pass delivery_strategy = session.delivery_strategy
+       │
+       ├── budget_risk = "medium" OR "high"
+       │     ├── delivery_strategy = "ask-on-risk"
+       │     │     → Emit forecast to user (LITE)
+       │     │     → Ask: split / single-pr+exception / stop
+       │     │     → Wait for user response
+       │     │     → Cache choice in session.current_change_delivery_decision
+       │     │
+       │     ├── delivery_strategy = "auto-chain"
+       │     │     → Compute slice 1 (SliceForDelivery(tasks, maxLines=400))
+       │     │     → Launch sdd-apply with slice 1 ONLY
+       │     │     → After PR for slice 1: continue to slice 2, etc.
+       │     │
+       │     ├── delivery_strategy = "single-pr"
+       │     │     → Ask user for size:exception rationale
+       │     │     → mem_save("sdd/{change}/size-exception", rationale)
+       │     │     → Proceed with single PR
+       │     │
+       │     └── delivery_strategy = "exception-ok"
+       │           → mem_save("sdd/{change}/size-exception", "auto-approved by exception-ok strategy")
+       │           → Proceed with single PR
+       │
+       └── No review_workload in result (old format)
+             → WARN: sdd-tasks did not include workload forecast
+             → Estimate manually: count task files × avg 50 lines
+             → Apply same decision logic
+```
+
+### IMPORTANT: Automatic mode does NOT skip this guard.
+Even with execution_mode = automatic, the Review Workload Guard ALWAYS runs.
+Automatic means "no pause between phases", not "skip reviewer protection".
 
 Before every L2 delegation, execute Skill Digestion Harness:
 

@@ -64,13 +64,13 @@
         "task": { "*": "deny", "sdd-*": "allow" }
       },
       "tools": {
-        "bash": true,
-        "read": true,
-        "edit": true,
-        "write": true,
         "delegate": true,
         "delegation_list": true,
-        "delegation_read": true
+        "delegation_read": true,
+        "mem_search": true,
+        "mem_get_observation": true,
+        "mem_save": true,
+        "mem_context": true
       }
     },
     "general-orchestrator": {
@@ -88,11 +88,13 @@
         }
       },
       "tools": {
-        "bash": true,
-        "read": true,
         "delegate": true,
         "delegation_list": true,
-        "delegation_read": true
+        "delegation_read": true,
+        "mem_search": true,
+        "mem_get_observation": true,
+        "mem_save": true,
+        "mem_context": true
       }
     },
     "sdd-init": {
