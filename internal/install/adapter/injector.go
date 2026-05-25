@@ -22,13 +22,11 @@ type Platform struct {
 }
 
 var Supported = map[string]Platform{
-	"opencode":    {ID: "opencode", EntryFile: "opencode.json", SupportsRealSubagents: true, SupportsParallel: true, SupportsNativeMCP: true, CompressCommand: "/compact"},
-	"claude":      {ID: "claude", EntryFile: "CLAUDE.md", SupportsRealSubagents: true, SupportsParallel: true, SupportsNativeMCP: true, CompressCommand: "/compact"},
-	"cursor":      {ID: "cursor", EntryFile: ".cursorrules", SupportsRealSubagents: false, SupportsParallel: false, SupportsNativeMCP: false, HasDegradedMode: true},
-	"copilot":     {ID: "copilot", EntryFile: ".github/copilot-instructions.md", SupportsRealSubagents: false, SupportsParallel: false, SupportsNativeMCP: false, HasDegradedMode: true},
-	"vscode":      {ID: "vscode", EntryFile: ".vscode/settings.json", SupportsRealSubagents: false, SupportsParallel: false, SupportsNativeMCP: false, HasDegradedMode: true},
-	"antigravity": {ID: "antigravity", EntryFile: ".antigravity/agent.md", SupportsRealSubagents: false, SupportsParallel: false, SupportsNativeMCP: false, HasDegradedMode: true},
-	"gemini":      {ID: "gemini", EntryFile: "GEMINI.md", SupportsRealSubagents: true, SupportsParallel: true, SupportsNativeMCP: true, CompressCommand: "/compress"},
+	"opencode":    {ID: "opencode",    EntryFile: "opencode.json",                          SupportsRealSubagents: true,  SupportsParallel: true,  SupportsNativeMCP: true,  CompressCommand: "/compact"},
+	"claude":      {ID: "claude",      EntryFile: "CLAUDE.md",                              SupportsRealSubagents: true,  SupportsParallel: true,  SupportsNativeMCP: true,  CompressCommand: "/compact"},
+	"cursor":      {ID: "cursor",      EntryFile: ".github/copilot-instructions.md",        SupportsRealSubagents: false, SupportsParallel: false, SupportsNativeMCP: false, HasDegradedMode: true},
+	"antigravity": {ID: "antigravity", EntryFile: ".antigravity/agent.md",                  SupportsRealSubagents: false, SupportsParallel: false, SupportsNativeMCP: false, HasDegradedMode: true},
+	"gemini":      {ID: "gemini",      EntryFile: "GEMINI.md",                              SupportsRealSubagents: true,  SupportsParallel: true,  SupportsNativeMCP: true,  CompressCommand: "/compress"},
 }
 
 // contentHash computes a short SHA256 hash of content for marker idempotency

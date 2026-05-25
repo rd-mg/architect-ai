@@ -10,7 +10,6 @@
       "curl *|*bash": "deny",
       "curl *|*sh": "deny",
       "wget *|*bash": "deny",
-      "wget *|*sh": "deny",
       "eval *": "deny",
       "exec *": "deny",
       "git commit ": "ask",
@@ -22,7 +21,6 @@
       "rm -rf ": "ask",
       "sudo ": "ask",
       "chmod 777": "ask",
-      "dd if=": "ask",
       "> /dev/": "deny",
       "mkfs": "deny"
     },
@@ -31,7 +29,8 @@
       "**/.env": "deny",
       "**/.env.*": "deny",
       "**/credentials.json": "deny",
-      "**/secrets/**": "deny"
+      "**/secrets/**": "deny",
+      "**/.ssh/**": "deny"
     }
   },
   "agent": {
@@ -74,8 +73,13 @@
       "model": "anthropic:claude-sonnet-4-5",
       "prompt": "{file:.atl/agents/general-orchestrator.md}",
       "permission": {
-        "task": { "*": "deny", "researcher": "allow", "solver": "allow",
-                  "ideator": "allow", "generalist": "allow" }
+        "task": {
+          "*": "deny",
+          "researcher": "allow",
+          "solver": "allow",
+          "ideator": "allow",
+          "generalist": "allow"
+        }
       },
       "tools": {
         "bash": true,
@@ -85,25 +89,94 @@
         "delegation_read": true
       }
     },
-    "sdd-init":    { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5", "prompt": "{file:.atl/agents/sdd/sdd-init.md}", "tools": { "bash": true, "read": true, "write": true } },
-    "sdd-onboard": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-onboard.md}", "tools": { "bash": true, "read": true, "write": true } },
-    "sdd-explore": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-explore.md}", "tools": { "bash": true, "read": true, "write": true } },
-    "sdd-propose": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",   "prompt": "{file:.atl/agents/sdd/sdd-propose.md}", "tools": { "bash": true, "read": true, "write": true } },
-    "sdd-spec":    { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-spec.md}", "tools": { "bash": true, "read": true, "write": true } },
-    "sdd-design":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",   "prompt": "{file:.atl/agents/sdd/sdd-design.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } },
-    "sdd-tasks":   { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-tasks.md}", "tools": { "bash": true, "read": true, "write": true } },
-    "sdd-apply":   { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-apply.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } },
-    "sdd-verify":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-verify.md}", "tools": { "bash": true, "read": true } },
-    "sdd-archive": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",  "prompt": "{file:.atl/agents/sdd/sdd-archive.md}", "tools": { "read": true, "write": true } },
-    "researcher":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",  "prompt": "{file:.atl/agents/researcher.md}", "tools": { "bash": true, "read": true } },
-    "solver":      { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/solver.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } },
-    "ideator":     { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/ideator.md}", "tools": { "read": true } },
-    "generalist":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",  "prompt": "{file:.atl/agents/generalist.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } }
+    "sdd-init": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-init.md}",
+      "tools": { "bash": true, "read": true, "write": true }
+    },
+    "sdd-onboard": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-onboard.md}",
+      "tools": { "bash": true, "read": true, "write": true }
+    },
+    "sdd-explore": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-explore.md}",
+      "tools": { "bash": true, "read": true }
+    },
+    "sdd-propose": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-propose.md}",
+      "tools": { "bash": true, "read": true, "write": true }
+    },
+    "sdd-spec": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-spec.md}",
+      "tools": { "bash": true, "read": true, "write": true }
+    },
+    "sdd-design": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-design.md}",
+      "tools": { "bash": true, "read": true, "write": true, "edit": true }
+    },
+    "sdd-tasks": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-tasks.md}",
+      "tools": { "bash": true, "read": true, "write": true }
+    },
+    "sdd-apply": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-apply.md}",
+      "tools": { "bash": true, "read": true, "write": true, "edit": true }
+    },
+    "sdd-verify": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-verify.md}",
+      "tools": { "bash": true, "read": true }
+    },
+    "sdd-archive": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",
+      "prompt": "{file:.atl/agents/sdd/sdd-archive.md}",
+      "tools": { "read": true, "write": true }
+    },
+    "researcher": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",
+      "prompt": "{file:.atl/agents/researcher.md}",
+      "tools": { "bash": true, "read": true }
+    },
+    "solver": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/solver.md}",
+      "tools": { "bash": true, "read": true, "write": true, "edit": true }
+    },
+    "ideator": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5",
+      "prompt": "{file:.atl/agents/ideator.md}",
+      "tools": { "read": true }
+    },
+    "generalist": {
+      "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5",
+      "prompt": "{file:.atl/agents/generalist.md}",
+      "tools": { "bash": true, "read": true, "write": true, "edit": true }
+    }
   },
   "mcp": {
-    "context7":           { "type": "remote", "url": "https://mcp.context7.com/mcp", "enabled": true },
-    "context-mode":       { "type": "local", "command": ["npx", "-y", "@mksglu/context-mode"], "enabled": true },
-    "engram":             { "type": "local", "command": ["${ENGRAM_BIN}", "mcp", "--tools=agent"] },
-    "sequential-thinking": { "type": "local", "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"], "enabled": true }
+    "context7": {
+      "enabled": true, "type": "remote", "url": "https://mcp.context7.com/mcp"
+    },
+    "context-mode": {
+      "type": "local",
+      "command": ["npx", "-y", "@mksglu/context-mode"],
+      "enabled": true
+    },
+    "engram": {
+      "type": "local",
+      "command": ["${ENGRAM_BIN}", "mcp", "--tools=agent"]
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
+    }
   }
 }

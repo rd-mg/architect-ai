@@ -1,0 +1,57 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(rg*)",
+      "Bash(find*)",
+      "Bash(cat*)",
+      "Bash(echo*)",
+      "Bash(ls*)",
+      "Bash(pwd)",
+      "Read(**)",
+      "Write(.atl/**)",
+      "Write(openspec/**)",
+      "Edit(**)",
+      "Task(**)",
+      "mcp__engram__mem_*",
+      "mcp__context7__*",
+      "mcp__sequential_thinking__*",
+      "mcp__context_mode__*"
+    ],
+    "deny": [
+      "Bash(curl * | *bash)",
+      "Bash(curl * | *sh)",
+      "Bash(eval *)",
+      "Bash(sudo *)",
+      "Bash(rm -rf *)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/credentials.json)",
+      "Read(**/.ssh/**)"
+    ]
+  },
+  "mcp_servers": {
+    "engram": {
+      "command": "${ENGRAM_BIN:-engram}",
+      "args": ["mcp", "--tools=agent"],
+      "type": "stdio"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "type": "stdio"
+    },
+    "sequential_thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "type": "stdio"
+    },
+    "context_mode": {
+      "command": "npx",
+      "args": ["-y", "@mksglu/context-mode"],
+      "type": "stdio"
+    }
+  }
+}

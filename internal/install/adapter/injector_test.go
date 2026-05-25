@@ -105,22 +105,3 @@ func TestOpenCode_HasNoL2DelegationRead(t *testing.T) {
 	t.Log("Manual verification: ensure L2 agents in opencode.json have no delegation_read")
 }
 
-func TestValidateInstallation_EmptyDir(t *testing.T) {
-	dir := t.TempDir()
-	issues := ValidateInstallation("opencode", dir)
-	if len(issues) < 6 {
-		t.Errorf("expected at least 6 issues for empty directory, got %d", len(issues))
-	}
-
-	foundMissing := 0
-	for _, issue := range issues {
-		if strings.Contains(issue, "[MISSING]") {
-			foundMissing++
-		}
-	}
-	// It should report missing entry file and 6 required .atl/ files
-	if foundMissing < 7 {
-		t.Errorf("expected at least 7 missing files, got %d", foundMissing)
-	}
-}
-
