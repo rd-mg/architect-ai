@@ -148,6 +148,75 @@ func TestOpenCodeEmbeddedAssetLayout(t *testing.T) {
 	}
 }
 
+// TestArchitectL0Identity validates the L0 Super-Orchestrator identity.
+// L0 is a pure orchestrator — it routes ALL work to L1a (sdd-orchestrator)
+// or L1b (general-orchestrator) and NEVER executes inline (Mode A removed).
+func TestArchitectL0Identity(t *testing.T) {
+	// Verify shared architect identity has correct TWO-mode structure
+	sharedIdentity := MustRead("_shared/architect-identity.md")
+	if len(sharedIdentity) == 0 {
+		t.Fatal("_shared/architect-identity.md is empty")
+	}
+
+	// Must have TWO operating modes (NOT three — Mode A inline was removed)
+	if !strings.Contains(sharedIdentity, "TWO operating modes") {
+		t.Error("architect-identity.md must say 'TWO operating modes' (Mode A inline removed)")
+	}
+	if strings.Contains(sharedIdentity, "THREE operating modes") {
+		t.Error("architect-identity.md must NOT say 'THREE operating modes'")
+	}
+
+	// Must be a pure orchestrator — no inline execution
+	if !strings.Contains(sharedIdentity, "pure orchestrator") {
+		t.Error("architect-identity.md must describe itself as a 'pure orchestrator'")
+	}
+	if strings.Contains(sharedIdentity, "Mode A (inline") {
+		t.Error("architect-identity.md must NOT reference Mode A inline execution")
+	}
+	if strings.Contains(sharedIdentity, "simple tasks directly") {
+		t.Error("architect-identity.md must NOT allow simple tasks directly")
+	}
+
+	// Must route to both L1 orchestrators
+	if !strings.Contains(sharedIdentity, "L1a") || !strings.Contains(sharedIdentity, "L1b") {
+		t.Error("architect-identity.md must reference L1a (sdd-orchestrator) and L1b (general-orchestrator)")
+	}
+	if !strings.Contains(sharedIdentity, "sdd-orchestrator") {
+		t.Error("architect-identity.md must reference sdd-orchestrator")
+	}
+	if !strings.Contains(sharedIdentity, "general-orchestrator") {
+		t.Error("architect-identity.md must reference general-orchestrator")
+	}
+
+	// Verify all platform architect.md files exist and reference the shared identity
+	platformArchitects := []string{
+		"opencode/architect.md",
+		"claude/architect.md",
+		"cursor/architect.md",
+		"gemini/architect.md",
+		"antigravity/architect.md",
+	}
+	for _, path := range platformArchitects {
+		t.Run(path, func(t *testing.T) {
+			content, err := Read(path)
+			if err != nil {
+				t.Fatalf("Read(%q) error = %v", path, err)
+			}
+			if len(strings.TrimSpace(content)) == 0 {
+				t.Fatalf("%q is empty", path)
+			}
+			// Platform files must include the shared identity
+			if !strings.Contains(content, "_shared/architect-identity.md") {
+				t.Errorf("%q must include the shared architect-identity.md", path)
+			}
+			// Platform files must NOT reference Mode A inline execution
+			if strings.Contains(content, "Mode A (") && strings.Contains(content, "inline") {
+				t.Errorf("%q must NOT have Mode A inline section", path)
+			}
+		})
+	}
+}
+
 // TestMustReadPanicsOnMissingFile verifies that MustRead panics for a
 // nonexistent file, confirming the safety mechanism works.
 func TestMustReadPanicsOnMissingFile(t *testing.T) {

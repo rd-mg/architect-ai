@@ -119,6 +119,19 @@ echo $MY_VAR             # no quotes needed in fish
 set -e MY_VAR            # unset
 ```
 
+### Path management (fish)
+```fish
+# Add directories to PATH (persistent across sessions)
+fish_add_path ~/.local/bin
+fish_add_path /opt/homebrew/bin
+fish_add_path (go env GOPATH)/bin
+
+# Check if directory is in PATH before adding
+if not contains ~/.cargo/bin $PATH
+    fish_add_path ~/.cargo/bin
+end
+```
+
 ### Conditionals and loops (fish)
 ```fish
 if test -f file.txt
