@@ -7,6 +7,12 @@
   "permission": {
     "bash": {
       "*": "allow",
+      "curl *|*bash": "deny",
+      "curl *|*sh": "deny",
+      "wget *|*bash": "deny",
+      "wget *|*sh": "deny",
+      "eval *": "deny",
+      "exec *": "deny",
       "git commit ": "ask",
       "git push": "ask",
       "git push ": "ask",
@@ -14,7 +20,11 @@
       "git rebase ": "ask",
       "git reset --hard ": "ask",
       "rm -rf ": "ask",
-      "sudo ": "ask"
+      "sudo ": "ask",
+      "chmod 777": "ask",
+      "dd if=": "ask",
+      "> /dev/": "deny",
+      "mkfs": "deny"
     },
     "read": {
       "*": "allow",
@@ -77,7 +87,7 @@
     },
     "sdd-init":    { "hidden": true, "mode": "subagent", "model": "anthropic:claude-haiku-4-5", "prompt": "{file:.atl/agents/sdd/sdd-init.md}", "tools": { "bash": true, "read": true, "write": true } },
     "sdd-onboard": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-onboard.md}", "tools": { "bash": true, "read": true, "write": true } },
-    "sdd-explore": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-explore.md}", "tools": { "bash": true, "read": true } },
+    "sdd-explore": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-explore.md}", "tools": { "bash": true, "read": true, "write": true } },
     "sdd-propose": { "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",   "prompt": "{file:.atl/agents/sdd/sdd-propose.md}", "tools": { "bash": true, "read": true, "write": true } },
     "sdd-spec":    { "hidden": true, "mode": "subagent", "model": "anthropic:claude-sonnet-4-5", "prompt": "{file:.atl/agents/sdd/sdd-spec.md}", "tools": { "bash": true, "read": true, "write": true } },
     "sdd-design":  { "hidden": true, "mode": "subagent", "model": "anthropic:claude-opus-4-5",   "prompt": "{file:.atl/agents/sdd/sdd-design.md}", "tools": { "bash": true, "read": true, "write": true, "edit": true } },

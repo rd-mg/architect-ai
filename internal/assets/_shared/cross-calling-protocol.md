@@ -1,47 +1,87 @@
-# Cross-Calling Protocol v2
+## Cross-Agent Cross-Calling Protocol v2.0
 
-Strict communication rules and safety mechanisms for inter-agent interactions.
+Defines who can call whom. Prevents circular dependencies and Ralph Loops.
 
-## 1. Calling Allowed Matrix
+### Calling Matrix
 
-| Tier | Caller | Allowed Callees | Constraints |
-| :--- | :--- | :--- | :--- |
-| **L0** | `architect` | `sdd-orchestrator`, `general-orchestrator` | Core system router |
-| **L1** | `sdd-orchestrator` | `sdd-*` (explore, apply, verify, etc.) | SDD lifecycle phases |
-| **L1** | `general-orchestrator` | `researcher`, `solver`, `ideator`, `generalist`, `analyst` | General non-SDD tasks |
-| **L2** | `sdd-*` (phases) | `researcher`, `solver` | SDD execution sub-agents |
-| **L2** | `researcher` | `context7`, `notebooklm`, `engram`, `web` | External research |
-| **L2** | `solver` | `researcher`, `generalist`, `odoo-*` | Bug resolution |
-| **L2** | `ideator` | `researcher`, `generalist` | Brainstorming |
-| **L2** | `generalist` | `researcher`, `odoo-*` | Mechanical tasks |
-| **L3** | `odoo-*` | `engram`, `rg`, `bash` | Version-gated Odoo |
+| Caller | CAN call | CANNOT call |
+|---|---|---|
+| L0 architect | L1a sdd-orchestrator, L1b general-orchestrator | No one else |
+| L1a sdd-orchestrator | L2 SDD phases | L1b general-orchestrator |
+| L1b general-orchestrator | researcher, solver, ideator, generalist | L1a sdd-orchestrator |
+| L2 SDD phases | researcher (investigation), solver (specific fix) | ideator, general-orchestrator |
+| L2 researcher | Context7, NotebookLM, Engram tools, web | Other L2 agents |
+| L2 solver | researcher, generalist, Odoo L3 agents | ideator, SDD phases, another solver |
+| L2 ideator | researcher, generalist | solver, SDD phases, another ideator |
+| L2 generalist | researcher, Odoo L3 agents | solver, ideator, another generalist |
+| L3 Odoo agents | Engram tools, rg, bash | Other Odoo L3 (except as designed) |
 
----
+### Cross-Calling Rules (non-negotiable)
 
-## 2. Core Protocol Rules
+**Rule 1: Single-Purpose Call**
+A sub-agent calls another for ONE specific task. Never hands off its entire job.
+```
+CORRECT: sdd-explore delegates "find all callers of process_payment()" to researcher
+WRONG:   sdd-explore delegates "do all the exploration" to researcher
+```
 
-### Rule 1: Single-Purpose Call
-Every sub-agent call MUST be single-purpose, bounded, single cohesive outcome. Multi-purpose/open-ended calls prohibited.
+**Rule 2: Return Contract (mandatory)**
+Every cross-called agent MUST return structured result:
+```json
+{
+  "status": "completed|partial|failed|blocked",
+  "result": "the actual answer or artifact",
+  "source": "engram|local|context7|web",
+  "confidence": "high|medium|low",
+  "reason_if_failed": "string|null"
+}
+```
 
-### Rule 2: Return Contract
-Every sub-agent response must conclude with JSON block:
-- `status`: `COMPLETE` | `PARTIAL` | `FAILED` | `BLOCKED`
-- `result`: string description of outcome
-- `source`: `engram` | `local` | `context7` | `web`
-- `confidence`: `high` | `medium` | `low`
-- `reason_if_failed`: non-empty when `FAILED`/`BLOCKED` (otherwise nil/empty)
+**Rule 3: Termination After Delivery**
+Cross-called agent MUST terminate after returning result.
+Does NOT continue to next task. Does NOT start new investigation.
 
-### Rule 3: Termination After Delivery
-Sub-agents MUST terminate immediately after return contract JSON. No trailing chat or filler.
+**Rule 4: No Circular Calls (anti-loop)**
+A → B → A is FORBIDDEN.
+If B needs info from A: A must include it in the initial call context.
+```
+FORBIDDEN: solver calls researcher calls solver (circular)
+CORRECT: solver includes all context in researcher call
+```
 
-### Rule 4: No Loops (A → B → A FORBIDDEN)
-Calling relationships strictly acyclic. Callee B forbidden from calling Caller A. Loop detection verified dynamically.
+**Rule 5: Antigravity Single-Thread Simulation**
+On Antigravity (no real sub-agent delegation):
+```
+ULTRA: "[{caller}→{called}] task: {task}"
+Execute the called agent's workflow inline
+ULTRA: "[{called}→{caller}] result: {summary}"
+Clear called agent identity
+Resume caller identity
+```
 
-### Rule 5: Antigravity Single-Thread Simulation
-Prevent parallel state corruption:
-- Only one agent holds active execution token at any time
-- Standard I/O buffered and serialized
-- Agents MUST explicitly yield execution to parent coordinator
+**Rule 6: L2 Sub-agents have NO delegation_read**
+L2 sub-agents cannot read the L1 orchestrator's context.
+They receive their task via description only (clean room context).
+They report results via write/return only.
+L1 orchestrators use delegation_read to read L2 results.
 
-### Rule 6: No delegation_read for L2 Sub-agents
-L2 sub-agents (`sdd-apply`, `sdd-explore`, `researcher`, `solver`, `ideator`, `generalist`) have **NO** `delegation_read` or `delegation_list`. Only L1 orchestrators retain these tools.
+### Delegation Template (for orchestrators)
+
+```
+[{caller_id} → {called_id}] Cross-agent call
+Task: {specific_task — one sentence, ULTRA caveman}
+Context: {why this is needed — 2-3 sentences max, ULTRA}
+Expected output: {format/content you need back}
+Constraints: {restrictions — language, scope, file limits}
+Model: {haiku|sonnet|opus from Phase 01 model routing table}
+```
+
+### Platform-Specific Implementation
+
+| Platform | Mechanism | L2 isolation guarantee |
+|---|---|---|
+| OpenCode | Task tool (delegate) | ✅ REAL — clean description only if delegation_read removed |
+| Claude Code | Task tool | ✅ REAL — clean room via description |
+| Gemini CLI | run_subagent | ✅ REAL |
+| VSCode Copilot | Simulated (inline) | ⚠️ LOGICAL — ULTRA caveman framing |
+| Antigravity | Simulated (inline) | ⚠️ LOGICAL — ULTRA caveman framing |
