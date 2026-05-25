@@ -1,56 +1,45 @@
+// internal/reasoning/gate/validator.go
+// Validates that agent responses contain the mandatory Gate header.
+// Used during golden testing and E2E test runs.
 package gate
 
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
 // GateHeader represents a parsed Adaptive Reasoning Gate header
 type GateHeader struct {
-	Mode                          int
-	D1, D2, D3, D4, D5            int
-	Posture1                      string
-	Posture2                      string // empty if only one posture
-	Raw                           string
+	Mode    int
+	D1, D2, D3, D4, D5 int
+	Posture1 string
+	Posture2 string // empty if only one posture
+	Raw      string
 }
 
 // headerPattern matches: [MODE N | D1=X D2=X D3=X D4=X D5=X | POSTURE: +++P1 [+++P2]]
 var headerPattern = regexp.MustCompile(
-	`^\[MODE ([1-3]) \| D1=([0-3]) D2=([0-3]) D3=([0-3]) D4=([0-3]) D5=([0-3]) \| POSTURE: (\+\+\+\w+)(?: (\+\+\+\w+))?\]`,
-)
+	`^\[MODE ([123]) \| D1=([0-3]) D2=([0-3]) D3=([0-3]) D4=([0-3]) D5=([0-3]) \| POSTURE: (\+\+\+\w+)(?: (\+\+\+\w+))?\]`)
 
-// ParseHeader parses the gate header line from the first line of a response
+// ParseHeader parses the gate header from the first line of a response
 func ParseHeader(firstLine string) (*GateHeader, error) {
-	firstLine = strings.TrimSpace(firstLine)
-	matches := headerPattern.FindStringSubmatch(firstLine)
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("invalid header format: %q", firstLine)
+	m := headerPattern.FindStringSubmatch(strings.TrimSpace(firstLine))
+	if m == nil {
+		return nil, fmt.Errorf("invalid or missing gate header: %q\nExpected format: [MODE N | D1=X D2=X D3=X D4=X D5=X | POSTURE: +++P]", firstLine)
 	}
 
-	mode, _ := strconv.Atoi(matches[1])
-	d1, _ := strconv.Atoi(matches[2])
-	d2, _ := strconv.Atoi(matches[3])
-	d3, _ := strconv.Atoi(matches[4])
-	d4, _ := strconv.Atoi(matches[5])
-	d5, _ := strconv.Atoi(matches[6])
-
-	p1 := matches[7]
-	p2 := ""
-	if len(matches) > 8 && matches[8] != "" {
-		p2 = matches[8]
-	}
+	parseInt := func(s string) int { var n int; fmt.Sscan(s, &n); return n }
 
 	return &GateHeader{
-		Mode:     mode,
-		D1:       d1,
-		D2:       d2,
-		D3:       d3,
-		D4:       d4,
-		D5:       d5,
-		Posture1: p1,
-		Posture2: p2,
+		Mode:     parseInt(m[1]),
+		D1:       parseInt(m[2]),
+		D2:       parseInt(m[3]),
+		D3:       parseInt(m[4]),
+		D4:       parseInt(m[5]),
+		D5:       parseInt(m[6]),
+		Posture1: m[7],
+		Posture2: m[8],
 		Raw:      firstLine,
 	}, nil
 }
@@ -59,20 +48,42 @@ func ParseHeader(firstLine string) (*GateHeader, error) {
 func ValidateDecision(h *GateHeader) []string {
 	var issues []string
 
-	// D5 security override
+	// D5 >= 2 must have +++Adversarial
 	if h.D5 >= 2 {
-		if h.Posture1 != "+++Adversarial" && h.Posture2 != "+++Adversarial" {
-			issues = append(issues, "D5 >= 2 requires +++Adversarial posture")
+		hasAdversarial := h.Posture1 == "+++Adversarial" || h.Posture2 == "+++Adversarial"
+		if !hasAdversarial {
+			issues = append(issues, fmt.Sprintf("D5=%d requires +++Adversarial posture", h.D5))
 		}
 		if h.Mode < 2 {
-			issues = append(issues, "D5 >= 2 requires minimum Mode 2")
+			issues = append(issues, fmt.Sprintf("D5=%d requires Mode >= 2, got Mode %d", h.D5, h.Mode))
 		}
 	}
 
-	// D3 overrides
-	if h.D3 >= 2 && h.Mode != 3 {
-		issues = append(issues, "D3 >= 2 forces Mode 3")
+	// D3 >= 2 must be Mode 3
+	if h.D3 >= 2 && h.Mode < 3 {
+		issues = append(issues, fmt.Sprintf("D3=%d requires Mode 3, got Mode %d", h.D3, h.Mode))
+	}
+
+	// Two postures must not be the same
+	if h.Posture2 != "" && h.Posture1 == h.Posture2 {
+		issues = append(issues, fmt.Sprintf("duplicate postures: %s and %s", h.Posture1, h.Posture2))
+	}
+
+	// Divergent/Lateral/Diamond only valid in ideator context (warning, not error)
+	creativePostures := map[string]bool{"+++Divergent": true, "+++Lateral": true, "+++Diamond": true}
+	if creativePostures[h.Posture1] && h.Mode == 3 {
+		issues = append(issues, "creative postures (Divergent/Lateral/Diamond) are unusual for Mode 3")
 	}
 
 	return issues
+}
+
+// ExtractFirstLine returns the first non-empty line of a response
+func ExtractFirstLine(response string) string {
+	for _, line := range strings.Split(response, "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			return line
+		}
+	}
+	return ""
 }
