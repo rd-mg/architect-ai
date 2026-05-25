@@ -1,28 +1,52 @@
-## Skill Resolver Protocol v3.0 [Orchestrators L1a + L1b — before EVERY delegation]
+## Skill Digestion Harness [L1 Orchestrators L1a + L1b — before EVERY delegation]
 
-Purpose: Inject the right skills into each sub-agent without overloading context.
+Purpose: Prevent sub-agents from being overwhelmed by full SKILL.md files.
+The orchestrator "digests" complex skills into actionable compact rules.
 Rule: Load Tier 1 always. Load Tier 2 only if condition matches. Never load Tier 3 inline.
 
-### Step 1: Load Tier 1 (Foundation)
+### Protocol
+
+**Step 1: Identify required skills for this delegation**
 ```
-foundation_block = read(".atl/_generated/foundation.md")
-# This file is pre-generated at install time — no runtime reading of 6 separate files.
-# Inject as ## Project Foundation Standards block in sub-agent prompt.
+From internal/assets/skills/ (skill-manifest.yaml when available):
+  ALWAYS include: foundation block (Tier 1 — project conventions)
+
+  Tier 2 check:
+    IF task involves .go files → include go-testing compact rules
+    IF project is Odoo → include odoo-development-skill compact rules
+    IF task involves PR → include branch-pr compact rules
+    IF sdd-apply task → include work-unit-commits compact rules
 ```
 
-### Step 2: Detect Tier 2 Conditions
+Detection script for Tier 2 conditions:
 ```bash
 DIFF_FILES=$(git diff --cached --name-only 2>/dev/null || echo "")
 PROJECT_FILES=$(find . -maxdepth 3 -name "*.go" -o -name "__manifest__.py" | head -20)
 
-# Check conditions
 HAS_GO=$(echo "${PROJECT_FILES}" | grep -c "\.go$" || echo 0)
 HAS_ODOO=$([ -f "$(find . -name '__manifest__.py' -maxdepth 5 | head -1)" ] && echo 1 || echo 0)
 TASK_HAS_PR=$(echo "${TASK_DESCRIPTION}" | grep -ci "PR\|pull request\|push\|review" || echo 0)
 TASK_HAS_COMMIT=$(echo "${TASK_DESCRIPTION}" | grep -ci "commit\|sdd-apply" || echo 0)
 ```
 
-### Step 3: Build Skill Injection List
+**Step 2: Extract compact rules (NOT full SKILL.md)**
+```bash
+# Extract only the ## Compact Rules section from a SKILL.md
+SKILL_PATH="internal/assets/skills/${SKILL_NAME}/SKILL.md"
+COMPACT=$(awk '/^## Compact Rules/,/^## [^C]/' "${SKILL_PATH}" 2>/dev/null | head -20)
+
+# If no Compact Rules section: take first 15 lines after frontmatter
+if [ -z "${COMPACT}" ]; then
+  COMPACT=$(sed '/^---$/,/^---$/d' "${SKILL_PATH}" 2>/dev/null | head -15)
+fi
+
+# If skill file doesn't exist at path, fall back to skill name reference
+if [ ! -f "${SKILL_PATH}" ]; then
+  COMPACT="[${SKILL_NAME} — skill file not found at ${SKILL_PATH}. Reference directly.]"
+fi
+```
+
+**Step 3: Build injection list and inject into delegation**
 ```
 SKILLS_TO_INJECT = [foundation_block]  # Always starts with Tier 1
 
@@ -38,16 +62,25 @@ if TASK_HAS_PR > 0:
 if TASK_HAS_COMMIT > 0:
     SKILLS_TO_INJECT += compact_rules("work-unit-commits")
 
-# Hard ceiling: max 3 additional skills beyond foundation
-SKILLS_TO_INJECT = SKILLS_TO_INJECT[:4]  # foundation + max 3
+# Hard limit: 4 total blocks (1 foundation + 3 tier-2)
+# Never inject full SKILL.md files — only compact rules
+SKILLS_TO_INJECT = SKILLS_TO_INJECT[:4]
 ```
 
-### Step 4: Record Skill Resolution in Delegation
-Include in sub-agent task description:
+Inject into sub-agent task description:
 ```
 ## Project Standards (auto-resolved)
-[foundation block content]
-[tier-2 compact rules if applicable]
+
+{foundation block — always first}
+
+{go-testing compact rules — if applicable}
+  Example: "Use table-driven tests. Run: go test ./... -race -count=1"
+
+{odoo compact rules — if Odoo project}
+  Example: "v18: use <list> not <tree>. Use invisible= not attrs=."
+
+{work-unit-commits compact rules — if sdd-apply}
+  Example: "1 commit = 1 deliverable behavior. Tests in same commit as implementation."
 
 skill_resolution: {
   "status": "paths-injected",  # paths-injected | fallback-registry | none
@@ -57,10 +90,21 @@ skill_resolution: {
 }
 ```
 
-### Step 5: Post-Delegation Feedback Check
-After sub-agent returns Result Contract:
-IF result.skill_resolution.status == "fallback-registry" OR "none":
-  → Re-read .atl/skill-manifest.yaml
-  → Rebuild skill injection for that agent
-  → Retry phase once (circuit breaker allows it)
+**Step 4: Skill Resolution Feedback — auto-correction**
+After sub-agent returns Result Contract, inspect `result.skill_resolution.status`:
+
+```
+IF "fallback-registry":
+  → "Sub-agent fell back to generic behavior — skill wasn't applied"
+  → Re-read skill-manifest.yaml (or scan internal/assets/skills/)
+  → Rebuild skill injection
+  → Retry phase (circuit breaker permits 1 retry for skill failure)
+
+IF "none":
+  → "Sub-agent ran without any skill injection — serious gap"
+  → Log to Engram: topic_key="skill-resolution-failure/{phase}/{timestamp}"
+  → Escalate to human if D5 >= 2 (adaptive reasoning severity)
+
+IF "paths-injected":
+  → "Skills correctly applied" — proceed
 ```
