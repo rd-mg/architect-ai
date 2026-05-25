@@ -3,6 +3,7 @@ package state
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -159,30 +160,22 @@ func TestResultContractValidation_ShellScript(t *testing.T) {
 	// Run with valid JSON
 	// We can use exec.Command to run it
 	importExec := func(script string, jsonFile string) error {
-		importOS := os.NewFile(0, "stdin")
-		defer importOS.Close()
-		cmd := strings.Join([]string{script, jsonFile}, " ")
-		importCmd := os.Getenv("SHELL")
-		if importCmd == "" {
-			importCmd = "/bin/bash"
-		}
-		// Run shell command
-		importProc, err := os.StartProcess(importCmd, []string{importCmd, "-c", cmd}, &os.ProcAttr{
-			Files: []*os.File{importOS, os.Stdout, os.Stderr},
-		})
+		file, err := os.Open(jsonFile)
 		if err != nil {
 			return err
 		}
-		state, err := importProc.Wait()
+		defer file.Close()
+
+		cmd := exec.Command(script)
+		cmd.Stdin = file
+		
+		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return err
-		}
-		if !state.Success() {
-			return fmt.Errorf("exit status %d", state.ExitCode())
+			return fmt.Errorf("exit status %d: %s", cmd.ProcessState.ExitCode(), string(out))
 		}
 		return nil
 	}
-
+	
 	if err := importExec(scriptPath, validFile); err != nil {
 		t.Errorf("validation script failed on valid JSON: %v", err)
 	}
