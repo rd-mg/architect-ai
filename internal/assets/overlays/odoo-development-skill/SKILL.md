@@ -31,11 +31,11 @@ Version bridges:
 Search BEFORE developing:
 
 #### 2a. Odoo Official Source (Community)
-- Local: `~/gitproj/odoo/community/{version}/addons/`
+- Local: `${ODOO_COMMUNITY}/{version}/addons/` (resolved via `.atl/config.yaml` or auto-discovery — see `_shared/odoo-path-resolution.md`)
 - GitHub: `https://github.com/odoo/odoo/tree/{version}/addons` (14.0–19.0)
 
 #### 2b. Odoo Enterprise
-- Local: `~/gitproj/odoo/enterprise/{version}/`
+- Local: `~/gitproj/odoo/enterprise/{version}/` (or configured via `odoo_enterprise_path` in `.atl/config.yaml`)
 - GitHub: `https://github.com/odoo/enterprise`
 
 #### 2c. OCA (Odoo Community Association)
@@ -97,13 +97,15 @@ Preferred workflow: SDD flow (explore → propose → design → tasks → apply
 
 ## Local Knowledge Sources
 
-- **Community source**: `~/gitproj/odoo/community/{14.0-19.0}/addons/`
-- **Enterprise source**: `~/gitproj/odoo/enterprise/{16.0-19.0}/`
-- **OCA repositories**: `~/gitproj/odoo/OCA/{repo}/{14.0-19.0}/`
+Path resolution via `${ODOO_COMMUNITY}` (set in `.atl/config.yaml` or auto-discovered). Falls back to Engram + Context7 if source unavailable.
+
+- **Community source**: `${ODOO_COMMUNITY}/{version}/addons/`
+- **Enterprise source**: `${ODOO_ENTERPRISE:-~/gitproj/odoo/enterprise}/{version}/`
+- **OCA repositories**: `~/gitproj/odoo/OCA/{repo}/{version}/`
 - **OWL source**: `~/gitproj/odoo/owl/master/`
-- **Spreadsheets**: `~/gitproj/odoo/o-spreadsheet/{16.0-19.0}/`
-- **Developer docs**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/developer/`
-- **Functional docs**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/applications/`
+- **Spreadsheets**: `~/gitproj/odoo/o-spreadsheet/{version}/`
+- **Developer docs**: `~/gitproj/odoo/documentation/{version}/content/developer/`
+- **Functional docs**: `~/gitproj/odoo/documentation/{version}/content/applications/`
 
 ## Pattern Bundles (Version-Gated)
 

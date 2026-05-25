@@ -1,48 +1,44 @@
 ---
 name: odoo-spreadsheet-ecosystem
-description: "Unified router and ecosystem for ALL Odoo spreadsheet tasks: Dashboards (.osps), quote calculators, XLSX creation, and direct XML edits."
+description: >
+  Unified skill for ALL Odoo Spreadsheet tasks: dashboards (.osheet.json),
+  quote calculators, XLSX manipulation, pivot-based reports.
+  Routes internally to correct sub-guide based on intent.
+  Zero new MCP servers — local scripts only.
 bridge: false
 on-demand: true
-risk_level: high
+output: "A complete .osheet.json file OR modified .xlsx file"
 ---
 
-# Odoo Spreadsheet Ecosystem Skill [UNIFIED ROUTER]
+## Routing Table [Execute FIRST — classify intent before anything else]
 
-Primary router and source of truth for all Odoo-related spreadsheet tasks. Do NOT spawn sub-agents. Handle all tasks through this ecosystem.
+| Intent keywords | Sub-guide | Script |
+|---|---|---|
+| dashboard, KPI, scorecard, chart | `dashboard/GUIDE.md` | `odoo_sheet_tool.py build --type dashboard` |
+| quote, pricing, margin, discount | `quote-calculator/GUIDE.md` | `odoo_sheet_tool.py build --type quote` |
+| xlsx, Excel, OOXML, spreadsheet analysis | `xlsx-tools/GUIDE.md` | `odoo_sheet_tool.py xlsx --action {read\|validate}` |
+| .osheet.json, pivot report, generic | `_shared/osheet-schema-notes.md` | `odoo_sheet_tool.py build --type generic` |
 
-## Task Routing Table
-
-| Intent | Target Sub-Guide | Execution Script |
-|--------|------------------|------------------|
-| **Native Dashboard** (.osheet/.osps JSON) | `features/pivots-lists.md` | `python3 scripts/osheet_build.py` |
-| **Strict XLSX Import** (Formulas & Colors) | `references/create.md` | `python3 scripts/xlsx_pack.py` |
-| **XLSX Direct Editing** (Insert/Shift/Append) | `references/edit.md` | `python3 scripts/xlsx_insert_row.py` |
-| **Quote Calculator** (.osps Base64) | `references/quotes.md` | `python3 scripts/adapt_spreadsheet.py` |
-
-## Universal Rules
-
-1. **Formula-First**: Every calculated cell MUST use Excel formula (`<f>SUM(...)</f>`) or Odoo JSON `=formula`. Never write hardcoded values for computed data.
-2. **No openpyxl Round-Trip**: Editing spreadsheets must be done using unpack → XML direct-edit → repack workflow to prevent losing VBA, macros, or pivot linkages.
-3. **Strict Linter Audit**: Always validate outputs via `formula_check.py` or `osheet_validate.py` before presenting results to user.
+## Universal Rules (apply to ALL output types)
+- All cell content MUST be string: `"B4": "2026"` not `"B4": 2026`
+- All divisions protected: `=IFERROR(IF(B5=0,0,C5/B5),0)`
+- No invented model fields — verify with rg before using
+- No hardcoded team_id unless user requests
+- Months Jan-Dec always visible (explicit PIVOT.VALUE per month)
+- Scorecards point to summary cells, not isolated pivots
+- Run validate after build: `python3 scripts/odoo_sheet_tool.py validate --file {output}`
 
 ## Standard Color Palette
-
-| Cell Role | Font Color | Hex Code |
-|-----------|-----------|----------|
-| **Hard-coded Input / Assumption** | Blue | `0000FF` |
-| **Formula / Computed Result** | Black | `000000` |
-| **Cross-sheet Reference Formula** | Green | `00B050` |
-
-## Odoo Research Priority [MANDATORY]
-
-All research query flows MUST respect Local-First Fallback Chain:
-1. Engram: `mem_search("odoo ${ODOO_VERSION} <topic>")`
-2. rg in Local Workspace (`${ODOO_COMMUNITY}/addons/`, etc.)
-3. Context7 MCP: `context7.resolve_library_id("odoo")`
-4. researcher agent: `scope_hint="docs"`, `max_depth="standard"`
-5. Web Search (Google/GitHub): ONLY if all local sources exhausted or fail.
+```
+#6C4E65  Primary header
+#E4D9E1  Alternate rows
+#FFFFFF  Text on dark
+#D9EAD3  Positive
+#FFF2CC  Warning
+#F4CCCC  Alert
+```
 
 ## Recovery Strategies [MANDATORY in every Odoo SKILL.md]
-- **XML Ordering Breakage**: Use standard Python `xml.etree.ElementTree` serialization or manual regex patching to preserve original tag order and attributes.
-- **Chart/Global Filter Mismatch**: Inspect pivot/list `formulaId` linkages and ensure chart fields match global filter domain keys.
-- **Workspace Source Missing**: fallback to Engram knowledge nodes and Context7 docs.
+- Script fails → construct minimal valid JSON from `_shared/osheet-schema-notes.md`
+- Validation fails → fix each issue one-by-one; re-validate after each
+- JSON too large (>500KB) → simplify; note limitations to user

@@ -82,6 +82,10 @@ def build_generic(spec: dict) -> dict:
 
 def xlsx_validate(args):
     p = Path(args.file)
+    MAX_SIZE = 10 * 1024 * 1024  # 10MB
+    if p.stat().st_size > MAX_SIZE:
+        print(f"BLOCKED: file > 10MB — potential Zip Bomb ({p})", file=sys.stderr)
+        sys.exit(1)
     if not zipfile.is_zipfile(p):
         print(f"NOT VALID XLSX: {p}", file=sys.stderr); sys.exit(1)
     with zipfile.ZipFile(p) as z:

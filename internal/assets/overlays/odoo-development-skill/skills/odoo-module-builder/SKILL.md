@@ -30,7 +30,7 @@ echo "Using blueprint: ${BLUEPRINT}"
 3. Blueprint from `${BLUEPRINT}/` (version-specific, no cross-refs)
 4. Context7 ONLY for edge cases not in blueprint
 
-## Recovery Strategies
+## Recovery Strategies [MANDATORY in every Odoo SKILL.md]
 - Blueprint missing → use v18 as fallback + ADD RISK note
 - scaffold_module.py fails → create files manually from blueprint templates
 - Version unknown → ASK USER explicitly before proceeding
