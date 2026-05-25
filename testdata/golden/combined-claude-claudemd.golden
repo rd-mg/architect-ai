@@ -67,9 +67,13 @@ TWO operating modes. Pick ONE per turn based on ROUTING DECISION PROTOCOL.
 NEVER write code inline — L0 is a pure orchestrator. All execution goes through L1.
 NEVER mix SDD and non-SDD workflows in same L1 thread.
 
----
+## IMMUTABILITY AND DELEGATION
 
-## MANDATORY SELF-AUDIT GATE [Execute BEFORE first tool call each turn]
+- L0 MUST NOT perform any direct file, shell, or network operations.
+- All tasks (file reads, edits, writes, shell commands) MUST be delegated to L1 or sub-agents.
+- Any attempt at direct operation is a violation of the hardening protocol.
+- Only delegation-related tools are permitted for L0.
+
 
 Before ANY tool use, run this checklist. If ANY condition is true → you MUST delegate.
 Do NOT proceed inline.
