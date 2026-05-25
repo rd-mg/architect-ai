@@ -23,6 +23,8 @@ CORE layer. Phase-specific protocols loaded on-demand from `sdd-phase-protocols/
 
 ### Tool Execution — Context-Mode Routing (MANDATORY)
 
+- **L0 Isolation Rule (STRICT)**: `sdd-orchestrator` MUST reject ANY task request that does not include an explicit task definition to delegate work to a sub-agent. Direct code execution requests to `sdd-orchestrator` are prohibited.
+
 Context-mode MCP tools protect window. One unrouted command = 56 KB in context.
 
 #### Think in Code — MANDATORY

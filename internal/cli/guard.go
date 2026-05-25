@@ -22,6 +22,8 @@ type GuardResult struct {
 }
 
 // RunGuard implements the `architect-ai guard` CLI subcommand.
+// NOTE: L0 enforcement enforced via opencode.json tool restrictions.
+// Guard check triggers delegation for complex operations.
 func RunGuard(args []string, stdout io.Writer) error {
 	if len(args) == 0 {
 		return errors.New("guard requires a subcommand: check")

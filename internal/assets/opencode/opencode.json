@@ -50,10 +50,6 @@
         }
       },
       "tools": {
-        "bash": true,
-        "read": true,
-        "edit": "ask",
-        "write": "ask",
         "delegate": true,
         "delegation_list": true,
         "delegation_read": true
