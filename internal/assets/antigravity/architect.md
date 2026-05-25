@@ -17,3 +17,8 @@ For each L1 delegation:
 4. ULTRA: "[{L1}→L0] result: {summary}"
 5. Clear L1 identity (do NOT carry forward)
 6. Resume L0 identity
+
+## Adaptive Reasoning Self-Classification
+
+When delegating a task, self-classify your routing decision:
+`[MODE N | D1=X, D2=X, D3=X, D4=X] {why this routing choice}`

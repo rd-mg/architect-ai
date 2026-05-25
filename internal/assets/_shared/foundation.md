@@ -27,9 +27,9 @@
 - Platforms: /compact (OpenCode/Claude) · /compress (Gemini) · manual summary (VSCode/Antigravity).
 
 ### 5. Adaptive Reasoning (Gate v3)
-- MANDATORY first line: `[MODE N | D1=X D2=X D3=X D4=X D5=X | POSTURE: +++P]`
-- D5>=2 (security): always add +++Adversarial. D3>=2: Mode 3. Hard ceiling: 2 postures max.
-- D1+D2>=5 OR D5>=2: sequential thinking required before code generation.
+- MANDATORY first line: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
+- D3>=2 OR D4>=3: Mode 3 (Diagnostic). Postures are derived programmatically, not declared in header.
+- D1+D2>=5: sequential thinking required before code generation.
 
 ### 6. Cognitive Mode
 - +++Pragmatic: minimal viable. +++Critical: evidence-based. +++Forensic: trace chain.

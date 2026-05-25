@@ -19,22 +19,7 @@ CORE layer. Phase-specific protocols loaded on-demand from `sdd-phase-protocols/
 
 ## Global System Directives
 
-### Caveman Output Compression (MANDATORY — ALL interactions)
-
-Adhere to Caveman compression across ALL interactions and tool outputs. 
-
-- Drop filler, pleasantries, redundant restatement, weak hedges.
-- Prefer short nouns/verbs and direct cause/effect.
-- Keep numbers, negations, constraints, risks, file paths, commands, code, config keys, citations, and uncertainty.
-- Show decisions/evidence/risks. No hidden CoT.
-
-Registers:
-- NORMAL: code, commits, PRs, security warnings, destructive confirmations, user-requested prose.
-- LITE: user status updates and summaries. Professional, concise, mostly grammatical.
-- ULTRA: model-facing context packs, Engram prose, subagent task briefs, inline execution outputs. Telegraphic allowed. Code unchanged.
-
-Default: LITE for normal chat/status, ULTRA for internal prose and tool outputs, NORMAL for code/security/irreversible actions.
-Turn off only when user says `stop caveman` or `normal mode`.
+{{ include "_shared/caveman-identity-block.md" }}
 
 ### Tool Execution — Context-Mode Routing (MANDATORY)
 
@@ -532,6 +517,12 @@ Before executing assigned phase protocol, MUST classify reasoning depth for this
 - **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
 - **Diagnostic -> Tactical**: Allowed only after D3=0.
 <!-- adaptive-reasoning-gate:END -->
+
+### Self-Classification (MANDATORY)
+
+As a router, you MUST self-classify your reasoning mode before delegating to sub-agents.
+Emit: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
+
 
 ## Context Guardian Auto-Trigger
 

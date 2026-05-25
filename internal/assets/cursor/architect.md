@@ -25,3 +25,8 @@ ULTRA: "[L0→L1b] General routing. Loading general-orchestrator context."
 Document which quality of reasoning to apply, even if the model can't be switched:
 - Opus-quality: slow down, think deeply, evaluate alternatives
 - Haiku-quality: fast mechanical execution, minimal reasoning overhead
+
+## Adaptive Reasoning Self-Classification
+
+When delegating a task, self-classify your routing decision:
+`[MODE N | D1=X, D2=X, D3=X, D4=X] {why this routing choice}`

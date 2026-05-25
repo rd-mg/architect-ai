@@ -438,6 +438,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 				"engram-convention.md",
 				"openspec-convention.md",
 				"sdd-phase-common.md",
+				"mode-branching.md",
 				"skill-resolver.md",
 				"consensus-evaluation.md",
 				"research-routing.md",

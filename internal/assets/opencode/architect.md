@@ -35,3 +35,8 @@ if result.count == 0:
   await result
 // then proceed with original SDD command
 ```
+
+## Adaptive Reasoning Self-Classification
+
+When delegating a task, self-classify your routing decision:
+`[MODE N | D1=X, D2=X, D3=X, D4=X] {why this routing choice}`

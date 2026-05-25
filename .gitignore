@@ -36,6 +36,10 @@ dist/
 openspec/changes/
 !openspec/changes/archive/
 
+# Python
+__pycache__/
+*.pyc
+
 # Temporary files
 tmp/
 *.tmp

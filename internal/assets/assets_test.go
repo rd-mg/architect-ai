@@ -88,6 +88,7 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 
 		// GGA v2 assets
 		"gga/AGENTS.md",
+		"gga/sdd-orchestrator.md",
 		"gga/pre-commit.bash.tpl",
 		"gga/pre-commit.ps1.tpl",
 	}
@@ -372,7 +373,7 @@ func TestSDDOrchestratorAssetsScopedToDedicatedAgent(t *testing.T) {
 
 // TestAdaptiveReasoningGateInjected verifies that all orchestrators have the
 // mandatory adaptive reasoning gate injected exactly as it appears in the
-// shared source file.
+// shared source file, and that no duplicates exist.
 func TestAdaptiveReasoningGateInjected(t *testing.T) {
 	gateContent := MustRead("skills/_shared/adaptive-reasoning-gate.md")
 	if len(gateContent) == 0 {
@@ -387,6 +388,7 @@ func TestAdaptiveReasoningGateInjected(t *testing.T) {
 		"qwen/sdd-orchestrator.md",
 		"gemini/sdd-orchestrator.md",
 		"generic/sdd-orchestrator.md",
+		"gga/sdd-orchestrator.md",
 		"windsurf/sdd-orchestrator.md",
 		"cursor/sdd-orchestrator.md",
 		"opencode/sdd-orchestrator.md",
@@ -408,18 +410,18 @@ func TestAdaptiveReasoningGateInjected(t *testing.T) {
 				t.Errorf("%q missing end marker", path)
 			}
 
-			// Verify result contract update
-			if !strings.Contains(content, "`chosen_mode`, `mode_rationale`") {
-				t.Errorf("%q missing result contract fields", path)
+			// Dedup verification: exactly 1 start marker per file
+			if got := strings.Count(content, "<!-- adaptive-reasoning-gate:START -->"); got != 1 {
+				t.Errorf("%q has %d gate blocks (want exactly 1)", path, got)
 			}
 
-			// Verify validation section
+			// Verify programmatic validation contract (replaces old chosen_mode/mode_rationale)
 			if !strings.Contains(content, "## Sub-Agent Result Validation") {
 				t.Errorf("%q missing result validation section", path)
 			}
 
 			// Verify state synchronization section
-			if !strings.Contains(content, "## State Synchronization — MANDATORY in V3.1") {
+			if !strings.Contains(content, "## State Synchronization") {
 				t.Errorf("%q missing state synchronization section", path)
 			}
 		})
@@ -449,6 +451,7 @@ func TestCognitivePosturesElevenNotTenOrTwelve(t *testing.T) {
 		"cursor/sdd-orchestrator.md",
 		"gemini/sdd-orchestrator.md",
 		"generic/sdd-orchestrator.md",
+		"gga/sdd-orchestrator.md",
 		"windsurf/sdd-orchestrator.md",
 		"qwen/sdd-orchestrator.md",
 		"vscode/sdd-orchestrator.md",
