@@ -79,8 +79,7 @@ func (idx *OdooIndexer) IndexAll(project string) ([]IndexResult, error) {
 		})
 	}
 
-	err = g.Wait()
-	return results, err
+	return results, g.Wait()
 }
 
 // collectGuides builds map of topic_key → file_path for all Odoo reference guides
@@ -107,7 +106,7 @@ func (idx *OdooIndexer) collectGuides() (map[string]string, error) {
 }
 
 func walkMDs(dir, prefix string, out map[string]string) {
-	_ = filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error { //nolint
+	filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error { //nolint
 		if err != nil || d.IsDir() || !strings.HasSuffix(d.Name(), ".md") {
 			return nil
 		}
