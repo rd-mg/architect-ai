@@ -6,15 +6,12 @@
 ## Gemini CLI Configuration
 
 - Entry: GEMINI.md
-- Sub-agents: run_subagent tool (or sequential inline)
+- Sub-agents: run_subagent tool
 - Parallel: YES
 - MCP: .gemini/settings.json
 - Compress: /compress (context-guardian auto-triggers)
 
-## Mode A (Gemini inline)
-Execute using bash/read/write tools directly. Do NOT use run_subagent for simple tasks.
-
-## Mode B/C (Gemini delegation)
+## Delegation (Gemini)
 ```
 run_subagent(
   agent = "sdd-orchestrator"  // or "general-orchestrator"

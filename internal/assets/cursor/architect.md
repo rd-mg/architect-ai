@@ -5,20 +5,17 @@
 
 ## VSCode Copilot Runtime Notice
 
-VSCode Copilot is single-threaded. L0/L1/L2 separation is LOGICAL.
-Mode A executes directly. Mode B/C switches to appropriate section inline.
+VSCode Copilot is single-threaded. L0/L1 separation is LOGICAL.
+Every delegation simulates switching to the L1 section inline.
 
-## Mode A (VSCode inline)
-Execute directly using available tools. No subagent spawning.
-
-## Mode B (VSCode SDD simulation)
+## SDD Simulation (VSCode)
 ```
 ULTRA: "[L0→L1a] SDD routing. Loading sdd-orchestrator context."
 → Switch to L1a section in copilot-instructions.md
 → Apply model routing in spirit: use opus-quality thinking for design decisions
 ```
 
-## Mode C (VSCode General simulation)
+## General Simulation (VSCode)
 ```
 ULTRA: "[L0→L1b] General routing. Loading general-orchestrator context."
 → Switch to L1b section

@@ -2,16 +2,14 @@ package architect
 
 import (
     "regexp"
-    "strings"
 )
 
 // RoutingDecision is L0's routing choice per turn
 type RoutingDecision string
 
 const (
-    RouteInline  RoutingDecision = "inline"  // Mode A
-    RouteSDD     RoutingDecision = "sdd"     // Mode B
-    RouteGeneral RoutingDecision = "general" // Mode C
+    RouteSDD     RoutingDecision = "sdd"     // Mode A — delegate to sdd-orchestrator
+    RouteGeneral RoutingDecision = "general" // Mode B — delegate to general-orchestrator
 )
 
 // ExecutionMode for the session
@@ -74,19 +72,12 @@ var sddPatterns = []*regexp.Regexp{
     regexp.MustCompile(`(?i)(haceme un sdd|hacer sdd|iniciar sdd|aplicar sdd)`),
 }
 
-// simpleTaskKeywords suggest Mode A (inline) execution
-var simpleTaskKeywords = []string{
-    "git status", "git log", "pwd", "ls ", "cat ",
-    "what is", "what does", "explain ", "show me ",
-    "rename ", "format this", "what's in",
-}
-
 // ClassifyIntent determines the routing decision for a user message
+// L0 is a pure orchestrator — ALL tasks route to L1a (sdd-orchestrator) or L1b (general-orchestrator)
 // Returns (decision, reason, isMandatory)
 func ClassifyIntent(message string, tc TaskContext) (RoutingDecision, string, bool) {
     // Step 1: Check mandatory triggers (override everything)
     if trigger := CheckMandatoryTriggers(tc); trigger.Fired {
-        // Still need to determine SDD vs General
         if isSDDMessage(message) {
             return RouteSDD, trigger.Reason, true
         }
@@ -98,33 +89,14 @@ func ClassifyIntent(message string, tc TaskContext) (RoutingDecision, string, bo
         return RouteSDD, "SDD intent detected", false
     }
 
-    // Step 3: Simple task → inline execution (Mode A)
-    if isSimpleTask(message, tc) {
-        return RouteInline, "simple task — inline execution", false
-    }
-
-    // Step 4: Default → delegate to general (Mode C)
-    return RouteGeneral, "complex non-SDD task", false
+    // Step 3: Default → delegate to general-orchestrator (L1b)
+    // Simple tasks (git status, reads, etc.) route to general-orchestrator, not inline
+    return RouteGeneral, "non-SDD task — routing to general-orchestrator", false
 }
 
 func isSDDMessage(message string) bool {
     for _, p := range sddPatterns {
         if p.MatchString(message) {
-            return true
-        }
-    }
-    return false
-}
-
-func isSimpleTask(message string, tc TaskContext) bool {
-    // Must not involve multiple files, tests, or builds
-    if tc.FilesReferenced > 3 || tc.FilesToWrite > 1 ||
-        tc.InvolvesTests || tc.InvolvesBuild || tc.IsPRCreation {
-        return false
-    }
-    msg := strings.ToLower(message)
-    for _, kw := range simpleTaskKeywords {
-        if strings.Contains(msg, kw) {
             return true
         }
     }

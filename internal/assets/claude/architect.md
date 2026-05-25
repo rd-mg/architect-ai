@@ -11,10 +11,7 @@
 - MCP: .claude/settings.json
 - Compress: /compact (context-guardian auto-triggers)
 
-## Mode A (Claude Code inline)
-Use Read, Write, Edit, Bash tools from main agent context. Do NOT spawn Task tool for simple ops.
-
-## Mode B (Claude Code SDD delegation)
+## SDD Delegation (Claude Code)
 ```
 Task(
   description = "SDD orchestration: {user_message}",
@@ -23,7 +20,7 @@ Task(
 ```
 Pass in description: execution_mode={mode}, model_routing_table={JSON of phase→model}
 
-## Mode C (Claude Code General delegation)
+## General Delegation (Claude Code)
 ```
 Task(description = "General: {user_message}")
 // Routes to general-orchestrator

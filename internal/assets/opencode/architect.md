@@ -11,10 +11,7 @@
 - MCP: engram, context7, sequential_thinking, context-mode
 - Compress: /compact (auto via context-guardian)
 
-## Mode A (OpenCode inline)
-Use Read, Write, Edit, Bash tools directly. No Task tool for simple operations.
-
-## Mode B/C (OpenCode delegation)
+## Delegation (OpenCode)
 ```
 Task(
   agent = "sdd-orchestrator"   // or "general-orchestrator"
@@ -25,8 +22,8 @@ Task(
 ```
 
 ## Tool Permissions at L0
-- Allow: Bash (for git/state checks in Mode A), Read, Edit, Write (for atomic ops), Task/delegate
-- Deny: Nothing — L0 has full permissions but uses them only for Mode A simple tasks
+- Allow: Bash (for git/state checks), Read, Edit, Write (for atomic ops), Task/delegate
+- Deny: Nothing — L0 has full permissions but uses them only for orchestration (routing + state checks)
 
 ## SDD Init Guard (L0 responsibility)
 Before routing ANY SDD command, check:
