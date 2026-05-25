@@ -19,12 +19,12 @@ When working on this project, load the relevant skill(s) BEFORE writing any code
 | architecture-guardrails | Any change that affects system boundaries, state flow, or cross-package responsibilities. | `internal/assets/skills/architecture-guardrails/SKILL.md` |
 | bash-expert | Safe, portable shell scripting for bash AND fish | `internal/assets/skills/bash-expert/SKILL.md` |
 | branch-pr | When creating a pull request, opening a PR, or preparing changes for review. | `internal/assets/skills/branch-pr/SKILL.md` |
-| cognitive-mode | Defines eleven cognitive postures that can be injected as a prompt prefix to shape how an agent approaches a task | `internal/assets/skills/cognitive-mode/SKILL.md` |
+| cognitive-mode | 11 cognitive postures for structured reasoning | `internal/assets/skills/cognitive-mode/SKILL.md` |
 | context-guardian | Context assembly contract and automated compaction hook | `internal/assets/skills/context-guardian/SKILL.md` |
 | general-orchestrator | Manages general user requests. | `internal/assets/skills/general-orchestrator/SKILL.md` |
-| generalist | "Delegated by General Orchestrator for implicit general tasks or /prototype." | `internal/assets/skills/generalist/SKILL.md` |
+| generalist | General-purpose executor for implicit or prototype tasks | `internal/assets/skills/generalist/SKILL.md` |
 | go-testing | When writing Go tests, using teatest, or adding test coverage. | `internal/assets/skills/go-testing/SKILL.md` |
-| ideator | "Delegated by General Orchestrator for /brainstorm intents." | `internal/assets/skills/ideator/SKILL.md` |
+| ideator | Creative generation and brainstorming | `internal/assets/skills/ideator/SKILL.md` |
 | issue-creation | When creating a GitHub issue, reporting a bug, or requesting a feature. | `internal/assets/skills/issue-creation/SKILL.md` |
 | mcp-context7-skill | Tertiary research source | `internal/assets/skills/mcp-context7-skill/SKILL.md` |
 | mcp-notebooklm-orchestrator | OPTIONAL research source | `internal/assets/skills/mcp-notebooklm-orchestrator/SKILL.md` |
@@ -44,6 +44,7 @@ When working on this project, load the relevant skill(s) BEFORE writing any code
 | skill-creator | When user asks to create a new skill, add agent instructions, or document patterns for AI. | `internal/assets/skills/skill-creator/SKILL.md` |
 | skill-registry | When user says "update skills", "skill registry", "actualizar skills", "update registry", or after installing/removing skills. | `internal/assets/skills/skill-registry/SKILL.md` |
 | skill-reviewer | "When the user asks to review a skill, check skill quality, or validate skill best practices." | `internal/assets/skills/skill-reviewer/SKILL.md` |
-| solver | "Delegated by General Orchestrator for /solve or /debug intents." | `internal/assets/skills/solver/SKILL.md` |
+| solver | Debugging, root cause analysis, and problem resolution | `internal/assets/skills/solver/SKILL.md` |
+| work-unit-commits | implementation, commit splitting, chained PRs, keeping tests with code." | `internal/assets/skills/work-unit-commits/SKILL.md` |
 
 <!-- architect-ai:skills-index:end -->
