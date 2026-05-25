@@ -42,15 +42,15 @@ test -d "$ODOO_ENTERPRISE_PATH" && \
 Before proposing new functionality, verify OCA:
 ```bash
 # Or browse: https://github.com/OCA?q={keyword}&type=repositories
-rg "class ModelName" ~/gitproj/odoo/oca/ -t py
+rg "class ModelName" "${ODOO_OCA_PATH}/" -t py
 ```
 
 ## Don't Reinvent the Wheel
 
 Before proposing new functionality, verify it doesn't already exist:
-- Odoo community (`~/gitproj/odoo/community/`)
-- Odoo Enterprise (`~/gitproj/odoo/enterprise/`, if path configured)
-- OCA repositories (`~/gitproj/odoo/oca/` or https://github.com/OCA)
+- Odoo community (`${ODOO_COMMUNITY}/`)
+- Odoo Enterprise (`${ODOO_ENTERPRISE}/`, if path configured)
+- OCA repositories (`${ODOO_OCA_PATH}` or https://github.com/OCA)
 
 If similar exists, explore it. Decide: inherit/extend, use as reference, or combine.
 

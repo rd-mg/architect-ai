@@ -359,7 +359,9 @@ func stableEngramCommandForMergedConfig(path string, agentID model.AgentID) stri
 	raw, err := osReadFile(path)
 	if err == nil {
 		if cmd, ok := existingMergedEngramCommand(raw, agentID); ok {
-			return cmd
+			if _, err := exec.LookPath(cmd); err == nil {
+				return cmd
+			}
 		}
 	}
 

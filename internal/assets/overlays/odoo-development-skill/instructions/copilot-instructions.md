@@ -81,7 +81,7 @@ projects/
 └── .github/agents/              # Agent configurations
 ```
 
-**OCA Modules**: `~/gitproj/odoo/OCA/{14.0-19.0}/`
+**OCA Modules**: `${ODOO_OCA_PATH}/{14.0-19.0}/`
 
 ### Port Reference
 #todo: update this table
@@ -135,13 +135,13 @@ Always use `hasclass()` for class selectors:
 
 1. **NotebookLM Oracle**: For architectural insights and high-level strategy, load and apply `mcp-notebooklm-orchestrator` skill.
 2. **Local Intelligence**: For implementation patterns and version-specific code, use `ripgrep` skill on:
-   - **Base modules**: `~/gitproj/odoo/community/{14.0-19.0}/addons/` (Community), `~/gitproj/odoo/enterprise/{16.0-19.0}/` (Enterprise), `~/gitproj/odoo/owl/master/` (OWL), `~/gitproj/odoo/o-spreadsheet/{16.0-19.0}/`(o-spreadsheet)
-   - **Developer Documentation**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/developer/`
-   - **User Documentation**: `~/gitproj/odoo/documentation/{14.0-19.0}/content/applications/`
-   - **OCA server-tools**: `~/gitproj/odoo/OCA/server-tools/{14.0-19.0}/`
-   - **OCA web**: `~/gitproj/odoo/OCA/web/{14.0-19.0}/`
-   - **OCA server-backend**: `~/gitproj/odoo/OCA/server-backend/{14.0-19.0}/`
-   - **OCA server-ux**: `~/gitproj/odoo/OCA/server-ux/{14.0-19.0}/`
+   - **Base modules**: `${ODOO_COMMUNITY}/{14.0-19.0}/addons/` (Community), `${ODOO_ENTERPRISE}/{16.0-19.0}/` (Enterprise), `${ODOO_OWL_PATH}/master/` (OWL), `${ODOO_SPREADSHEETS_PATH}/{16.0-19.0}/`(o-spreadsheet)
+   - **Developer Documentation**: `${ODOO_DOCUMENTATION_PATH}/{14.0-19.0}/content/developer/`
+   - **User Documentation**: `${ODOO_DOCUMENTATION_PATH}/{14.0-19.0}/content/applications/`
+   - **OCA server-tools**: `${ODOO_OCA_PATH}/server-tools/{14.0-19.0}/`
+   - **OCA web**: `${ODOO_OCA_PATH}/web/{14.0-19.0}/`
+   - **OCA server-backend**: `${ODOO_OCA_PATH}/server-backend/{14.0-19.0}/`
+   - **OCA server-ux**: `${ODOO_OCA_PATH}/server-ux/{14.0-19.0}/`
 
 3. **Context7 (External Documentation)**: THIRD-TIER fallback only if local research yields no results:
    - Use Context7 MCP tools (`resolve-library-id`, `get-library-docs`).

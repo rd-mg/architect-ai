@@ -1,5 +1,7 @@
 # ripgrep-odoo — Local Codebase Discovery Skill (Odoo Monorepo)
 
+> **Note**: Paths resolved via `_shared/odoo-path-resolution.md` — source that script before using these commands.
+
 ## Purpose
 
 Search code patterns in local Odoo monorepo to obtain real evidence
@@ -19,7 +21,7 @@ before designing or implementing. Uses the `rg` binary directly.
 ## Monorepo Structure (base paths)
 
 ```
-~/gitproj/odoo/
+${ODOO_COMMUNITY}/
 ├── odoo/            → core CE (models, controllers, views)
 ├── enterprise/      → EE modules (if available)
 ├── oca/             → OCA modules (by subfolder per category)
@@ -35,7 +37,7 @@ before designing or implementing. Uses the `rg` binary directly.
 ### backend_orm (Python models, ORM, business logic)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/community/ \
+rg "{QUERY}" ${ODOO_COMMUNITY}/ \
   -t py \
   -g "!__manifest__.py" \
   -g "!__init__.py" \
@@ -51,7 +53,7 @@ Excludes: manifests, inits, tests, migrations. Python business logic only.
 ### frontend_owl (OWL components, JavaScript, view XML)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/community/addons/web/static/src/ \
+rg "{QUERY}" ${ODOO_COMMUNITY}/addons/web/static/src/ \
   -t js -t xml \
   -g "static/src/**" \
   -g "!*.min.js" \
@@ -66,7 +68,7 @@ For specific addon: replace `addons/web/static/src/` with `addons/{addon}/static
 ### o_spreadsheet (o-spreadsheet components)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/o-spreadsheet/src/ \
+rg "{QUERY}" ${ODOO_SPREADSHEETS_PATH}/src/ \
   -t js -t ts \
   -g "!*.min.js" \
   --max-columns 150 \
@@ -77,7 +79,7 @@ rg "{QUERY}" ~/gitproj/odoo/o-spreadsheet/src/ \
 ### views_xml (Odoo views, actions, menus)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/community/ \
+rg "{QUERY}" ${ODOO_COMMUNITY}/ \
   -t xml \
   -g "!static/" \
   -g "!*/i18n/*" \
@@ -89,7 +91,7 @@ rg "{QUERY}" ~/gitproj/odoo/community/ \
 ### security (ACLs, security rules, groups)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/community/ \
+rg "{QUERY}" ${ODOO_COMMUNITY}/ \
   -g "security/**" \
   -g "*/ir.model.access.csv" \
   --max-count 5
@@ -98,7 +100,7 @@ rg "{QUERY}" ~/gitproj/odoo/community/ \
 ### manifest (module dependencies, version gates)
 
 ```bash
-rg "{QUERY}" ~/gitproj/odoo/community/ \
+rg "{QUERY}" ${ODOO_COMMUNITY}/ \
   -g "__manifest__.py" \
   --max-count 10
 ```
@@ -113,13 +115,13 @@ rg "{QUERY}" ~/gitproj/odoo/community/ \
 
 ```bash
 # First: which files contain what I'm looking for?
-rg "{QUERY}" ~/gitproj/odoo/community/ \
+rg "{QUERY}" ${ODOO_COMMUNITY}/ \
   -t py \           # (or the domain type)
   -l \              # only file names
   --max-count 5
 
 # Example:
-rg "class AccountMove" ~/gitproj/odoo/community/ -t py -l
+rg "class AccountMove" ${ODOO_COMMUNITY}/ -t py -l
 # Output: 2-3 file paths (~10 tokens)
 ```
 
@@ -127,13 +129,13 @@ rg "class AccountMove" ~/gitproj/odoo/community/ -t py -l
 
 ```bash
 # Only if Step 1 returns the correct file:
-rg "{SPECIFIC_QUERY}" ~/gitproj/odoo/community/addons/account/models/account_move.py \
+rg "{SPECIFIC_QUERY}" ${ODOO_COMMUNITY}/addons/account/models/account_move.py \
   --max-count 2 \
   -C 4
 
 # Example:
 rg "def _compute_payment_state" \
-  ~/gitproj/odoo/community/addons/account/models/account_move.py \
+  ${ODOO_COMMUNITY}/addons/account/models/account_move.py \
   --max-count 2 -C 4
 # Output: 15-20 lines of code (~60 tokens)
 ```
@@ -164,10 +166,10 @@ If output exceeds 80 lines or search takes more than 5 seconds:
 
 ```bash
 # Step 1:
-rg "class AccountMove" ~/gitproj/odoo/community/ -t py -l
+rg "class AccountMove" ${ODOO_COMMUNITY}/ -t py -l
 
 # Step 2 (in the found file):
-rg "class AccountMove" ~/gitproj/odoo/community/addons/account/models/account_move.py -C 1
+rg "class AccountMove" ${ODOO_COMMUNITY}/addons/account/models/account_move.py -C 1
 # → see: class AccountMove(models.Model) or class AccountMove(account_move, models.Model)
 ```
 
@@ -175,11 +177,11 @@ rg "class AccountMove" ~/gitproj/odoo/community/addons/account/models/account_mo
 
 ```bash
 # Step 1:
-rg "useService" ~/gitproj/odoo/community/addons/web/static/src/ -t js -l --max-count 3
+rg "useService" ${ODOO_COMMUNITY}/addons/web/static/src/ -t js -l --max-count 3
 
 # Step 2:
 rg "const .* = useService" \
-  ~/gitproj/odoo/community/addons/web/static/src/core/utils/hooks.js \
+  ${ODOO_COMMUNITY}/addons/web/static/src/core/utils/hooks.js \
   --max-count 2 -C 2
 ```
 
@@ -187,11 +189,11 @@ rg "const .* = useService" \
 
 ```bash
 # Step 1:
-rg "registry.category" ~/gitproj/odoo/community/addons/spreadsheet/static/src/ -t js -l
+rg "registry.category" ${ODOO_COMMUNITY}/addons/spreadsheet/static/src/ -t js -l
 
 # Step 2:
 rg "registry.category\(\"spreadsheet" \
-  ~/gitproj/odoo/community/addons/spreadsheet/static/src/ \
+  ${ODOO_COMMUNITY}/addons/spreadsheet/static/src/ \
   -t js --max-count 2 -C 3
 ```
 
@@ -199,7 +201,7 @@ rg "registry.category\(\"spreadsheet" \
 
 ```bash
 rg "account.bank.statement" \
-  ~/gitproj/odoo/community/addons/account/ \
+  ${ODOO_COMMUNITY}/addons/account/ \
   -g "*/ir.model.access.csv" \
   --max-count 10
 ```
@@ -208,11 +210,11 @@ rg "account.bank.statement" \
 
 ```bash
 # Step 1: files only
-rg "bank_statement" ~/gitproj/odoo/oca/ -t py -l --max-count 10
+rg "bank_statement" ${ODOO_OCA_PATH}/ -t py -l --max-count 10
 
 # Step 2: specific pattern in the relevant module
 rg "def _import_bank_statement" \
-  ~/gitproj/odoo/oca/account-financial-tools/ \
+  ${ODOO_OCA_PATH}/account-financial-tools/ \
   -t py --max-count 2 -C 3
 ```
 
@@ -228,7 +230,7 @@ topic_key: knowledge/odoo-v{N}/pattern/{descriptive-slug}
 content: {
   "query": "the exact rg command that worked",
   "pattern": "the relevant code snippet (max 20 lines)",
-  "source": "relative path from ~/gitproj/odoo/",
+  "source": "relative path from ${ODOO_COMMUNITY}/",
   "odoo_version": "18",  # or the confirmed version
   "use_when": "description of when to use this pattern",
   "propose_to_skill": true  # if it should be added to patterns-{v}
@@ -243,15 +245,15 @@ save is executed by the **Orchestrator's after_model hook** (defined in Step 05)
 
 ```bash
 #  NEVER — domain-less search on full monorepo
-rg "account_move" ~/gitproj/odoo/
+rg "account_move" ${ODOO_COMMUNITY}/
 
 #  NEVER — no --max-count in content search
-rg "def compute" ~/gitproj/odoo/community/ -t py
+rg "def compute" ${ODOO_COMMUNITY}/ -t py
 
 #  NEVER — too generic term without specific file
-rg "def " ~/gitproj/odoo/community/addons/account/ -t py
+rg "def " ${ODOO_COMMUNITY}/addons/account/ -t py
 
 #  ALWAYS — 2 steps: files-only first
-rg "class BankStatementLine" ~/gitproj/odoo/community/ -t py -l
+rg "class BankStatementLine" ${ODOO_COMMUNITY}/ -t py -l
 rg "_compute_amount" {file_from_step_1} --max-count 2 -C 3
 ```
