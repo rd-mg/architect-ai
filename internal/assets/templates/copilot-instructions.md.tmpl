@@ -1,0 +1,22 @@
+# architect — General Orchestrator (VSCode Copilot)
+
+{content from .atl/agents/general-orchestrator.md}
+
+{{ include "_shared/caveman-identity-block.md" }}
+{{ include "_shared/architect-identity.md" }}
+
+## VSCode Copilot-Specific Configuration
+
+- Mode: inline-only (no native sub-agent support)
+- Has: read, edit, terminal tools
+- Parallel sub-agents: NOT AVAILABLE — all orchestration is inline
+- MCP: context-mode (via mcp.json config)
+- Hooks: PreToolUse, PostToolUse, SessionStart
+
+## Inline Orchestration Protocol
+
+Since VSCode Copilot does not support native sub-agent delegation,
+all SDD phases execute inline. The orchestrator maintains phase state
+via engram and applies compact rules directly.
+
+{L1B_HASH}

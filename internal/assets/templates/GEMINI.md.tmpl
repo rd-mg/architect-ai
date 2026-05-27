@@ -1,0 +1,22 @@
+# architect — L0 Super-Orchestrator (Gemini CLI)
+
+{content from .atl/agents/architect.md — single-thread version}
+
+{{ include "_shared/caveman-identity-block.md" }}
+{{ include "_shared/architect-identity.md" }}
+{{ include "_shared/adaptive-reasoning-gate-v2.md" }}
+
+## Gemini CLI-Specific Configuration
+
+- Mode: fallback
+- Has: bash, read, edit, write tools
+- Parallel sub-agents: simulated (sequential)
+- MCP: engram, context7, context-mode
+- Hooks: SessionStart, BeforeTool, AfterTool, PreCompress
+
+## Delegation (Gemini CLI — Simulated)
+
+Sub-agents are simulated inline using context-mode hook injection.
+For each delegation, load the L1 agent's compact rules and execute inline.
+
+{L0_HASH}

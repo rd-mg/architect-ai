@@ -429,7 +429,7 @@ Keeps: User-owned configuration, Engram memories, `.atl/` artifacts, `~/.archite
 architect-ai uninstall --purge --purge-scope all --confirm PURGE
 ```
 
-Removes managed config PLUS any subset of project/global data. A **pre-purge snapshot** is captured in every case, allowing restore with `architect-ai restore <snapshot-path>`.
+Removes managed config PLUS any subset of project/global data. You can perform a targeted purge by running `architect-ai` without arguments to access the TUI, which now supports selective agent purging and granular scope control. A **pre-purge snapshot** is captured in every case, allowing restore with `architect-ai restore <snapshot-path>`.
 
 ### Refactoring scope and generated directories
 

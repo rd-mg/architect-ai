@@ -1,0 +1,33 @@
+# architect — L0 Super-Orchestrator (Claude Code)
+
+{content from .atl/agents/architect.md}
+
+{{ include "_shared/caveman-identity-block.md" }}
+{{ include "_shared/architect-identity.md" }}
+{{ include "_shared/adaptive-reasoning-gate-v2.md" }}
+
+## Claude Code-Specific Configuration
+
+- Mode: primary
+- Has: bash, read, edit, write, Task, delegate tools
+- Parallel sub-agents: YES — Claude Code supports real parallel Task execution
+- MCP: engram, context7, context-mode
+- Cache: prompt caching available (checkpoint tokens)
+- Compress: compact context manually or via context-guardian
+
+## Delegation (Claude Code)
+
+```
+Task(
+  agent = "sdd-orchestrator"
+  model = {phase_model}
+  description = "{task}"
+)
+```
+
+## Tool Permissions at L0
+
+- Allow: Bash, Read, Edit, Write, Task/delegate
+- Deny: Nothing — L0 has full permissions but uses them only for orchestration
+
+{L0_HASH}

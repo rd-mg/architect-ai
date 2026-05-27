@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "agents": {
+    "antigravity": { "dir": "antigravity", "files": ["architect.md", "sdd-orchestrator.md", "thinking-agent.md"] },
+    "claude":      { "dir": "claude",      "files": ["sdd-orchestrator.md", "thinking-agent.md", "persona-architect.md"] },
+    "codex":       { "dir": "codex",       "files": ["sdd-orchestrator.md", "thinking-agent.md"] },
+    "cursor":      { "dir": "cursor",      "files": ["sdd-orchestrator.md", "thinking-agent.md"] },
+    "gemini":      { "dir": "gemini",      "files": ["sdd-orchestrator.md", "thinking-agent.md"] },
+    "generic":     { "dir": "generic",     "files": ["sdd-orchestrator.md"] },
+    "kiro":        { "dir": "kiro",        "files": ["sdd-orchestrator.md", "thinking-agent.md"] },
+    "opencode":    { "dir": "opencode",    "files": ["sdd-orchestrator.md", "persona-architect.md"] },
+    "qwen":        { "dir": "qwen",        "files": ["sdd-orchestrator.md"] },
+    "vscode":      { "dir": "vscode",      "files": ["sdd-orchestrator.md", "thinking-agent.md", "general-orchestrator.md"] },
+    "windsurf":    { "dir": "windsurf",    "files": ["sdd-orchestrator.md"] }
+  },
+  "templates": {
+    "dir": "templates"
+  },
+  "placeholders": {
+    "{content from .atl/agents/architect.md}": "internal/assets/opencode/architect.md",
+    "{content from .atl/agents/sdd-orchestrator.md}": "internal/assets/opencode/sdd-orchestrator.md",
+    "{content from .atl/agents/general-orchestrator.md}": "internal/assets/opencode/general-orchestrator.md",
+    "{content from .atl/agents/architect.md — single-thread version}": "internal/assets/generic/persona-architect.md",
+    "{content from .atl/_generated/foundation.md}": ".atl/_generated/foundation.md"
+  },
+  "hash_sources": {
+    "L0_HASH": "internal/assets/opencode/architect.md",
+    "L1A_HASH": "internal/assets/opencode/sdd-orchestrator.md",
+    "L1B_HASH": "internal/assets/opencode/general-orchestrator.md",
+    "FOUNDATION_HASH": ".atl/_generated/foundation.md"
+  },
+  "includes_base": "internal/assets"
+}
