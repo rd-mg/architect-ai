@@ -179,6 +179,16 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return cli.RunRestore(args[1:], stdout)
 	case "check":
 		return cli.RunCheck(args[1:], stdout)
+	case "build":
+		return cli.RunBuild(args[1:])
+	case "setup":
+		return cli.RunSetup(args[1:], stdout, os.Stderr)
+	case "gate":
+		return cli.RunGate(args[1:], stdout, os.Stderr)
+	case "firewall":
+		return cli.RunFirewall(args[1:], stdout, os.Stderr)
+	case "foundation":
+		return cli.RunFoundation(args[1:], stdout, os.Stderr)
 	default:
 		return fmt.Errorf("unknown command %q — run 'architect-ai help' for available commands", args[0])
 	}

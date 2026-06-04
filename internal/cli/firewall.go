@@ -1,17 +1,18 @@
-package main
+package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/rd-mg/architect-ai/internal/firewall"
 	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
-func main() {
+func RunFirewall(args []string, stdout io.Writer, stderr io.Writer) error {
 	devMode := false
 	var filteredArgs []string
-	for _, arg := range os.Args[1:] {
+	for _, arg := range args {
 		if arg == "--dev" {
 			devMode = true
 		} else {
@@ -21,8 +22,7 @@ func main() {
 	ctx := paths.New(".", devMode)
 
 	if len(filteredArgs) < 1 {
-		fmt.Fprintln(os.Stderr, "Usage: architect-ai firewall [check|inject] [--dev]")
-		os.Exit(1)
+		return fmt.Errorf("usage: architect-ai firewall [check|inject] [--dev]")
 	}
 
 	targets := firewall.GetTargets(ctx)
@@ -35,32 +35,37 @@ func main() {
 			if !r.Present {
 				status = "MISSING"
 			}
-			fmt.Printf("FIREWALL %-60s %s (pattern: %s)\n", r.File, status, r.Pattern)
+			fmt.Fprintf(stdout, "FIREWALL %-60s %s (pattern: %s)\n", r.File, status, r.Pattern)
 		}
 		if !ok {
-			os.Exit(1)
+			return fmt.Errorf("firewall check failed")
 		}
+		return nil
 
 	case "inject":
 		// Ensure source file exists
 		if _, err := os.Stat(firewall.FirewallSource); os.IsNotExist(err) {
-			fmt.Fprintf(os.Stderr, "ERROR: %s not found — create it first\n", firewall.FirewallSource)
-			os.Exit(1)
+			return fmt.Errorf("ERROR: %s not found — create it first", firewall.FirewallSource)
 		}
 
 		results := firewall.Inject(targets)
+		hasError := false
 		for _, r := range results {
 			if r.Error == "already present" {
-				fmt.Printf("SKIP  %s: already present\n", r.File)
+				fmt.Fprintf(stdout, "SKIP  %s: already present\n", r.File)
 			} else if !r.OK {
-				fmt.Printf("FAIL  %s: %s\n", r.File, r.Error)
+				fmt.Fprintf(stderr, "FAIL  %s: %s\n", r.File, r.Error)
+				hasError = true
 			} else {
-				fmt.Printf("OK    %s: firewall %s\n", r.File, r.Error)
+				fmt.Fprintf(stdout, "OK    %s: firewall %s\n", r.File, r.Error)
 			}
 		}
+		if hasError {
+			return fmt.Errorf("firewall injection failed")
+		}
+		return nil
 
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown subcommand: %s\n", filteredArgs[0])
-		os.Exit(1)
+		return fmt.Errorf("unknown subcommand: %s", filteredArgs[0])
 	}
 }

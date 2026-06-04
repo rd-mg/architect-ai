@@ -1,10 +1,9 @@
-package main
+package cli
 
 import (
 	"flag"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -12,18 +11,14 @@ import (
 	"github.com/rd-mg/architect-ai/internal/setup"
 )
 
-type config struct {
+type setupConfig struct {
 	PlatformOverride string
 	Yes              bool
 	DryRun           bool
 }
 
-func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
-}
-
-func run(args []string, stdout io.Writer, stderr io.Writer) int {
-	cfg := parseFlags(args)
+func RunSetup(args []string, stdout io.Writer, stderr io.Writer) error {
+	cfg := parseSetupFlags(args)
 
 	fmt.Fprintln(stdout, "=== architect-ai Platform Setup ===")
 	fmt.Fprintln(stdout)
@@ -40,7 +35,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	if err := checkNodeJS(); err != nil {
 		fmt.Fprintf(stderr, "ERROR: %v\n", err)
 		fmt.Fprintln(stderr, "Install Node.js 18+ from https://nodejs.org/")
-		return 1
+		return fmt.Errorf("node dependency missing")
 	}
 	fmt.Fprintln(stdout, "Node.js: OK")
 
@@ -48,7 +43,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	cmVersion, err := setup.EnsureContextMode(cfg.DryRun)
 	if err != nil {
 		fmt.Fprintf(stderr, "ERROR installing context-mode: %v\n", err)
-		return 1
+		return fmt.Errorf("context-mode install failed: %w", err)
 	}
 	fmt.Fprintf(stdout, "context-mode: %s\n", cmVersion)
 
@@ -57,7 +52,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		files, err := setup.ConfigurePlatform(p)
 		if err != nil {
 			fmt.Fprintf(stderr, "ERROR configuring platform: %v\n", err)
-			return 1
+			return fmt.Errorf("platform config failed: %w", err)
 		}
 		for _, f := range files {
 			fmt.Fprintf(stdout, "  Written: %s\n", f)
@@ -91,16 +86,17 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 
 	// Step 7: Print next steps
 	printNextSteps(p, stdout)
-	return 0
+	return nil
 }
 
-func parseFlags(args []string) config {
-	var cfg config
+func parseSetupFlags(args []string) setupConfig {
+	var cfg setupConfig
 	fs := flag.NewFlagSet("setup", flag.ContinueOnError)
 	fs.StringVar(&cfg.PlatformOverride, "platform", "", "Override auto-detection")
 	fs.BoolVar(&cfg.Yes, "yes", false, "Non-interactive (no prompts)")
 	fs.BoolVar(&cfg.DryRun, "dry-run", false, "Show what would be done, no changes")
-	fs.Parse(args)
+	// Ignore errors from Parse as it might just be unknown flags, or log them
+	_ = fs.Parse(args)
 	return cfg
 }
 

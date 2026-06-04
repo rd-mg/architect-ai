@@ -1,9 +1,8 @@
-package main
+package cli
 
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/rd-mg/architect-ai/internal/gate"
 	"github.com/rd-mg/architect-ai/internal/paths"
@@ -35,11 +34,7 @@ var TemplateTargets = []string{
 
 var GateSourceFile = "internal/assets/_shared/adaptive-reasoning-gate-v2.md"
 
-func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
-}
-
-func run(args []string, stdout io.Writer, stderr io.Writer) int {
+func RunGate(args []string, stdout io.Writer, stderr io.Writer) error {
 	devMode := false
 	var filteredArgs []string
 	for _, arg := range args {
@@ -52,8 +47,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 	ctx := paths.New(".", devMode)
 
 	if len(filteredArgs) < 1 {
-		fmt.Fprintln(stderr, "Usage: architect-ai gate [check|inject|purge|l2-purge] [--dev]")
-		return 1
+		return fmt.Errorf("usage: architect-ai gate [check|inject|purge|l2-purge] [--dev]")
 	}
 
 	g := gate.New(GateSourceFile)
@@ -74,7 +68,10 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 			}
 			fmt.Fprintf(stdout, "GATE %-60s %s (version: %s)\n", r.File, status, version)
 		}
-		return exitCode
+		if exitCode != 0 {
+			return fmt.Errorf("gate check failed")
+		}
+		return nil
 
 	case "inject":
 		results := g.Inject(GateTargets)
@@ -96,7 +93,10 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		}
 		// Also ensure {{ include }} is in template targets
 		g.EnsureIncludeInTemplates(TemplateTargets)
-		return exitCode
+		if exitCode != 0 {
+			return fmt.Errorf("gate injection failed")
+		}
+		return nil
 
 	case "purge":
 		results := g.Purge(GateTargets)
@@ -107,7 +107,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 				fmt.Fprintf(stdout, "OK    %s: gate removed\n", r.File)
 			}
 		}
-		return 0
+		return nil
 
 	case "l2-purge":
 		results := g.PurgeL2AutoScoring(ctx.L2SkillGlob())
@@ -124,10 +124,12 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 				}
 			}
 		}
-		return exitCode
+		if exitCode != 0 {
+			return fmt.Errorf("l2-purge failed")
+		}
+		return nil
 
 	default:
-		fmt.Fprintf(stderr, "Unknown subcommand: %s\n", filteredArgs[0])
-		return 1
+		return fmt.Errorf("unknown subcommand: %s", filteredArgs[0])
 	}
 }

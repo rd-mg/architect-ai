@@ -1,9 +1,10 @@
-package main
+package cli
 
 import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/rd-mg/architect-ai/internal/foundation"
@@ -21,7 +22,7 @@ var tier1Skills = []foundation.SkillRef{
 	{Name: "ripgrep", CompactLines: 40},
 }
 
-func main() {
+func RunFoundation(args []string, stdout io.Writer, stderr io.Writer) error {
 	os.MkdirAll(".atl/_generated", 0755)
 
 	// Extract compact rules from /internal/assets/skills/
@@ -45,27 +46,25 @@ func main() {
 
 	// Write foundation.md
 	if err := block.WriteToFile(".atl/_generated/foundation.md"); err != nil {
-		fmt.Fprintf(os.Stderr, "FOUNDATION_ERROR: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("FOUNDATION_ERROR: %w", err)
 	}
-	fmt.Printf("  OK   .atl/_generated/foundation.md (%d bytes)\n", len(block.Content))
+	fmt.Fprintf(stdout, "  OK   .atl/_generated/foundation.md (%d bytes)\n", len(block.Content))
 
 	// Compute and write skills-lock.json
 	lock := computeLock(tier1Skills)
 	lockData, err := json.MarshalIndent(lock, "", "  ")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "FOUNDATION_ERROR: cannot marshal lock: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("FOUNDATION_ERROR: cannot marshal lock: %w", err)
 	}
 	if err := os.WriteFile(".atl/_generated/skills-lock.json", lockData, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "FOUNDATION_ERROR: cannot write lock: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("FOUNDATION_ERROR: cannot write lock: %w", err)
 	}
-	fmt.Printf("  OK   .atl/_generated/skills-lock.json (%d bytes)\n", len(lockData))
+	fmt.Fprintf(stdout, "  OK   .atl/_generated/skills-lock.json (%d bytes)\n", len(lockData))
 
 	for _, w := range warnings {
-		fmt.Fprintln(os.Stderr, w)
+		fmt.Fprintln(stderr, w)
 	}
+	return nil
 }
 
 type skillsLock struct {
