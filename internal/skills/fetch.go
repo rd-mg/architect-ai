@@ -14,7 +14,18 @@ import (
 var (
 	ErrSkillNotFound = errors.New("SKILL.md not found at the specified path")
 	ErrRateLimited   = errors.New("GitHub API rate limited (60 req/hour unauthenticated)")
+	httpClient       = &http.Client{Timeout: timeout}
 )
+
+// SetHTTPClient overrides the default HTTP client used for fetching.
+// Useful for injecting mock transports during tests.
+func SetHTTPClient(client *http.Client) {
+	if client == nil {
+		httpClient = &http.Client{Timeout: timeout}
+	} else {
+		httpClient = client
+	}
+}
 
 const (
 	rawURL    = "https://raw.githubusercontent.com/%s/%s/HEAD/%s/SKILL.md"
@@ -38,8 +49,7 @@ func FetchSkillMD(ctx context.Context, owner, repo, path string) (FetchResult, e
 	}
 	req.Header.Set("User-Agent", userAgent)
 
-	client := &http.Client{Timeout: timeout}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return FetchResult{}, err
 	}
@@ -72,8 +82,7 @@ func ListSkillPathsInRepo(ctx context.Context, owner, repo string) ([]string, er
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept", "application/vnd.github+json")
 
-	client := &http.Client{Timeout: timeout}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

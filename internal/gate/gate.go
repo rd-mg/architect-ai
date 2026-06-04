@@ -28,7 +28,7 @@ RULES:
 - DO NOT re-compute D1-D4. DO NOT choose a different mode.`
 
 	// L2 SKILL.md files to patch
-	L2SkillGlob = ".agent/skills/*/SKILL.md"
+	// L2SkillGlob = ".agent/skills/*/SKILL.md" - Handled by paths.Context now.
 )
 
 // Target represents a file where the gate should be injected.
@@ -191,8 +191,8 @@ func (g *Gate) Purge(targets []Target) []PurgeResult {
 }
 
 // PurgeL2AutoScoring removes old auto-scoring patterns from L2 SKILL.md files.
-func (g *Gate) PurgeL2AutoScoring() []PurgeResult {
-	matches, _ := filepath.Glob(L2SkillGlob)
+func (g *Gate) PurgeL2AutoScoring(glob string) []PurgeResult {
+	matches, _ := filepath.Glob(glob)
 	results := make([]PurgeResult, 0, len(matches))
 
 	patterns := []*regexp.Regexp{

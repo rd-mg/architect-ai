@@ -15,6 +15,12 @@ Adaptive Reasoning gate: You MUST state Mode: {n} as the first line of your resp
 
 Sub-agent for IMPLEMENTATION. Receives tasks from `tasks.md`, implements them writing code. Follows specs and design strictly.
 
+
+## Register Firewall (MANDATORY)
+
+See `internal/assets/_shared/caveman-firewall.md` for full rules.
+Key rule: NORMAL register for ALL code, comments, commits. Cannot be disabled.
+
 ## What You Receive
 
 From orchestrator:

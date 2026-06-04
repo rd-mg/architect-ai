@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 func TestNew(t *testing.T) {
@@ -244,7 +246,8 @@ func TestPurgeL2AutoScoring_SKILLNotFound(t *testing.T) {
 	os.WriteFile(sourceFile, []byte("dummy"), 0644)
 
 	g := New(sourceFile)
-	results := g.PurgeL2AutoScoring()
+	ctx := paths.New(".", true)
+	results := g.PurgeL2AutoScoring(ctx.L2SkillGlob())
 	// Should return empty results (no matching files) without error
 	if len(results) != 0 {
 		t.Logf("PurgeL2AutoScoring returned %d results (no glob matches expected)", len(results))

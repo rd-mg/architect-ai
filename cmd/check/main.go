@@ -8,6 +8,7 @@ import (
 
 	"github.com/rd-mg/architect-ai/internal/checker"
 	"github.com/rd-mg/architect-ai/internal/config"
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 var (
@@ -18,25 +19,41 @@ var (
 
 func main() {
 	target := "all"
-	if len(os.Args) > 1 {
-		target = os.Args[1]
+	devMode := false
+	for _, arg := range os.Args[1:] {
+		if arg == "--dev" {
+			devMode = true
+		} else if !strings.HasPrefix(arg, "-") {
+			target = arg
+		}
 	}
+	ctx := paths.New(".", devMode)
 
 	var checks []checker.Check
 
 	switch target {
 	case "all":
-		checks = append(checks, checkFoundation())
+		if !ctx.IsDevMode {
+			checks = append(checks, checkFoundation(ctx))
+			checks = append(checks, checkRegistry(ctx))
+		}
 		checks = append(checks, checkConfigs())
-		checks = append(checks, checkRegistry())
 	case "foundation":
-		checks = append(checks, checkFoundation())
+		if !ctx.IsDevMode {
+			checks = append(checks, checkFoundation(ctx))
+		} else {
+			fmt.Fprintln(os.Stderr, "foundation check is not applicable in dev mode")
+		}
 	case "configs":
 		checks = append(checks, checkConfigs())
 	case "registry":
-		checks = append(checks, checkRegistry())
+		if !ctx.IsDevMode {
+			checks = append(checks, checkRegistry(ctx))
+		} else {
+			fmt.Fprintln(os.Stderr, "registry check is not applicable in dev mode")
+		}
 	default:
-		fmt.Fprintf(os.Stderr, "Usage: architect-ai check [foundation|configs|registry|all]\n")
+		fmt.Fprintf(os.Stderr, "Usage: architect-ai check [foundation|configs|registry|all] [--dev]\n")
 		os.Exit(2)
 	}
 
@@ -54,18 +71,18 @@ func main() {
 	}
 }
 
-func checkFoundation() checker.Check {
+func checkFoundation(ctx paths.Context) checker.Check {
 	return checker.Check{
 		Name: "foundation",
 		Run: func() error {
-			fi, err := os.Stat(".atl/_generated/foundation.md")
+			fi, err := os.Stat(ctx.FoundationPath())
 			if os.IsNotExist(err) {
 				return fmt.Errorf("not found")
 			}
 			if err != nil {
 				return err
 			}
-			data, err := os.ReadFile(".atl/_generated/foundation.md")
+			data, err := os.ReadFile(ctx.FoundationPath())
 			if err != nil {
 				return err
 			}
@@ -115,11 +132,14 @@ func checkConfigs() checker.Check {
 	}
 }
 
-func checkRegistry() checker.Check {
+func checkRegistry(ctx paths.Context) checker.Check {
 	return checker.Check{
 		Name: "registry",
 		Run: func() error {
-			data, err := os.ReadFile(".atl/skill-registry.md")
+			if ctx.RegistryPath() == "" {
+				return nil
+			}
+			data, err := os.ReadFile(ctx.RegistryPath())
 			if err != nil {
 				return fmt.Errorf("file not found")
 			}

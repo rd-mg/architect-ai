@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/rd-mg/architect-ai/internal/builder"
 	"github.com/rd-mg/architect-ai/internal/config"
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 func main() {
@@ -15,11 +17,22 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer, stderr io.Writer) int {
-	// Verify foundation.md exists (prerequisite)
-	if _, err := os.Stat(".atl/_generated/foundation.md"); os.IsNotExist(err) {
-		fmt.Fprintln(stderr, "BUILD_ERROR: .atl/_generated/foundation.md not found.")
-		fmt.Fprintln(stderr, "  Run: architect-ai foundation")
-		return 1
+	devMode := false
+	for _, arg := range args {
+		if arg == "--dev" {
+			devMode = true
+			break
+		}
+	}
+	ctx := paths.New(".", devMode)
+
+	// Verify foundation.md exists (prerequisite) - only if in target mode
+	if !ctx.IsDevMode {
+		if _, err := os.Stat(ctx.FoundationPath()); os.IsNotExist(err) {
+			fmt.Fprintln(stderr, "BUILD_ERROR: .atl/_generated/foundation.md not found.")
+			fmt.Fprintln(stderr, "  Run: architect-ai foundation")
+			return 1
+		}
 	}
 
 	// Build each deployed config
@@ -49,6 +62,10 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 
 			// Atomic write
 			tmpPath := dstPath + ".tmp"
+			dirDest := filepath.Dir(dstPath)
+			if dirDest != "." {
+				os.MkdirAll(dirDest, 0755)
+			}
 			if err := os.WriteFile(tmpPath, []byte(result.Content), 0644); err != nil {
 				fmt.Fprintf(stderr, "  FAIL %s: write error (%v)\n", dstPath, err)
 				exitCode = 1

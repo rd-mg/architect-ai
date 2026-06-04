@@ -18,22 +18,44 @@ NOT a file type dump (don't do "add models", "add services", "add tests" as 3 co
 - [ ] Docs for user-visible changes are INCLUDED in the same commit
 - [ ] Rollback is possible without reverting unrelated work
 
-## Commit Message Format (Conventional Commits)
+## Commit Message Format (NORMAL register MANDATORY)
 
+**Full template (copy verbatim, fill slots in NORMAL register):**
+```text
+{type}({scope}): {imperative-verb} {object} {for/to/that} {user-visible outcome}  [≤72 chars]
+
+[Optional body — include ONLY if reason is non-obvious:]
+- Reason: {concrete technical or business reason}
+- Impact: {what breaks or regresses if not done}
+- Ref: #{issue-number} or N/A
+
+[Optional footer:]
+BREAKING CHANGE: {description} — only if API/contract changes
+Closes #{issue-number}
 ```
-type(scope): description [≤72 chars]
 
-[optional body: why this change, not what files changed]
-[optional: Closes #{issue_number}]
-```
-
-Types: feat · fix · refactor · docs · test · chore · perf · ci · revert
+**Type vocabulary (lowercase):**
+feat | fix | refactor | test | docs | chore | perf | build | ci | style | revert
 
 cudio-git format (for Odoo projects):
-```
+```text
 [TAG][TASK_ID] module_name: description
 ```
 TAG values: ADD · FIX · IMP · REF · REM · MOV · REV
+
+**Anti-patterns (PROHIBITED in all commit messages):**
+- Abbreviations from ULTRA mode: "impl", "chk", "auth drop", "no filler"
+- Vague objects: "add stuff", "fix things", "update code"
+- Single-word messages: "fix", "auth", "tests"
+- AI attribution: "Co-authored-by: Claude", "AI-generated"
+- Subject > 72 chars (use body for additional context)
+
+**Verification before committing:**
+1. Subject ≤ 72 chars? ✓
+2. Starts with type(scope): ? ✓
+3. Imperative mood? ✓ ("add", not "added")
+4. No ULTRA abbreviations? ✓
+5. BREAKING CHANGE footer if contract changed? ✓
 
 ## Split Examples
 

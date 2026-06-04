@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 	"testing"
+
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 func TestCheckFoundation(t *testing.T) {
@@ -14,7 +16,8 @@ func TestCheckFoundation(t *testing.T) {
 	content := []byte("architect-ai:foundation:start")
 	os.WriteFile(".atl/_generated/foundation.md", content, 0644)
 	
-	c := checkFoundation()
+	ctx := paths.New(".", false)
+	c := checkFoundation(ctx)
 	err := c.Run()
 	// checkFoundation returns error if file exists (returns age/size error), 
 	// which is how it signals success ("not found" is the failure condition)

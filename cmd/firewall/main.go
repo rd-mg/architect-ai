@@ -5,17 +5,31 @@ import (
 	"os"
 
 	"github.com/rd-mg/architect-ai/internal/firewall"
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Usage: architect-ai firewall [check|inject]")
+	devMode := false
+	var filteredArgs []string
+	for _, arg := range os.Args[1:] {
+		if arg == "--dev" {
+			devMode = true
+		} else {
+			filteredArgs = append(filteredArgs, arg)
+		}
+	}
+	ctx := paths.New(".", devMode)
+
+	if len(filteredArgs) < 1 {
+		fmt.Fprintln(os.Stderr, "Usage: architect-ai firewall [check|inject] [--dev]")
 		os.Exit(1)
 	}
 
-	switch os.Args[1] {
+	targets := firewall.GetTargets(ctx)
+
+	switch filteredArgs[0] {
 	case "check":
-		results, ok := firewall.Check(firewall.Targets)
+		results, ok := firewall.Check(targets)
 		for _, r := range results {
 			status := "OK"
 			if !r.Present {
@@ -34,7 +48,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		results := firewall.Inject(firewall.Targets)
+		results := firewall.Inject(targets)
 		for _, r := range results {
 			if r.Error == "already present" {
 				fmt.Printf("SKIP  %s: already present\n", r.File)
@@ -46,7 +60,7 @@ func main() {
 		}
 
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown subcommand: %s\n", os.Args[1])
+		fmt.Fprintf(os.Stderr, "Unknown subcommand: %s\n", filteredArgs[0])
 		os.Exit(1)
 	}
 }

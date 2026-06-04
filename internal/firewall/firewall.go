@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 const (
@@ -12,8 +14,6 @@ const (
 	FirewallEnd     = "<!-- caveman-firewall:v1:END -->"
 
 	SddApplyProtocol = "internal/assets/opencode/sdd-phase-protocols/sdd-apply.md"
-	SddApplySkill    = ".agent/skills/sdd-apply/SKILL.md"
-	SkillRegistry    = ".atl/skill-registry.md"
 )
 
 // FirewallTarget represents a file where the caveman firewall should be present.
@@ -24,26 +24,32 @@ type FirewallTarget struct {
 	InjectBefore string
 }
 
-// Targets are the default files to check/inject.
-var Targets = []FirewallTarget{
-	{
-		File:         SddApplyProtocol,
-		CheckPattern: "caveman-firewall",
-		InjectMode:   "include",
-		InjectBefore: "## Atomic Commit Protocol",
-	},
-	{
-		File:         SddApplySkill,
-		CheckPattern: "caveman-firewall",
-		InjectMode:   "reference",
-		InjectBefore: "## What You Receive",
-	},
-	{
-		File:         SkillRegistry,
-		CheckPattern: "caveman_firewall_active",
-		InjectMode:   "patch",
-		InjectBefore: "protected_facts MUST always include",
-	},
+// GetTargets returns the firewall targets according to the path context.
+func GetTargets(ctx paths.Context) []FirewallTarget {
+	targets := []FirewallTarget{
+		{
+			File:         SddApplyProtocol,
+			CheckPattern: "caveman-firewall",
+			InjectMode:   "include",
+			InjectBefore: "## Atomic Commit Protocol",
+		},
+		{
+			File:         ctx.SddApplySkillPath(),
+			CheckPattern: "caveman-firewall",
+			InjectMode:   "reference",
+			InjectBefore: "## What You Receive",
+		},
+	}
+	
+	if reg := ctx.RegistryPath(); reg != "" {
+		targets = append(targets, FirewallTarget{
+			File:         reg,
+			CheckPattern: "caveman_firewall_active",
+			InjectMode:   "patch",
+			InjectBefore: "protected_facts MUST always include",
+		})
+	}
+	return targets
 }
 
 // CheckResult holds the result of checking a single target file.

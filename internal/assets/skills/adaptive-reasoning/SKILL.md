@@ -18,15 +18,17 @@ Language: English. Caveman: LITE for user output. ULTRA for Gate header and inte
 
 ## Operating Contract (non-negotiable)
 
-1. **Self-Classification FIRST**: Declare D1-D4 before EVERY response. No exceptions.
-2. **Response Header MANDATORY**: First line of every response MUST match:
-   `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
-   If this line is absent from your response, the orchestrator will retry the phase.
-3. **Deterministic Routing**: Mode AND postures are decided programmatically by the runtime CognitiveScorer. The header you declare is validated against the expected mode; mismatches are logged.
-4. **Hard Ceiling**: MAX 2 active postures simultaneously. Three postures = cognitive incoherence.
-5. **POSTURE Field Removed**: Postures are DERIVED by the orchestrator, not declared in the header. Do NOT include `POSTURE: +++P` in your response.
-6. **Circuit Breaker Integration**: After classifying, check .atl/sdd-state.yaml for the
-   current phase's attempt_count. If attempt_count >= 2, escalate to Mode 3 automatically.
+1. **Mode is pre-computed by orchestrator** — your prompt contains an injected
+   `[MODE N | D1=X, D2=X, D3=X, D4=X]` header. USE it. DO NOT recompute.
+2. **Response Header MANDATORY**: Reproduce the injected header as your FIRST LINE.
+   If absent from your response → orchestrator retries. No exceptions.
+3. **If header missing from your prompt** → emit [GATE_ERROR: mode not injected]
+   → set status: blocked → stop work.
+4. **Circuit Breaker (MANDATORY)**: If `attempt_count >= 2` (from gate) →
+   override to MODE 3 + +++Forensic + +++Adversarial. Non-negotiable.
+5. **Max 2 postures** simultaneously. Never stack more.
+6. **Posture received from orchestrator** as `+++{Posture}` directive.
+   Apply it. Do not choose a different posture.
 
 ## Dimensions (D1-D4)
 

@@ -34,34 +34,30 @@ Always operates under **+++Forensic**:
 - Never assume — verify
 - Mark validation state per fact
 
-## Auto-Trigger Rules
+## Auto-Trigger Rules (Orchestrator evaluates BEFORE each delegation)
 
 Orchestrator MUST invoke when ANY condition holds:
 
-1. **Token threshold**: Estimated token usage > 50% of context window (heuristic: char count ≥ ~100K for 200K window)
-2. **Compaction detected**: Recent context summarized/truncated (e.g., sub-agent reports `skill_resolution: fallback-registry` or `fallback-path`)
-3. **Sub-agent context loss**: Sub-agent explicitly reports context loss in Result Contract
-4. **D4 pressure**: Adaptive Reasoning Gate returns D4 (context pressure) >= 2
-5. **Long-session exploration**: 3+ exploratory file/knowledge reads in same context window
-6. **Explicit invocation**: User requests "compact context", "reset context", "what's my current state"
+1. `char_count(context_history) >= 100_000` → invoke
+2. Sub-agent `skill_resolution: none` in last 2 turns → invoke
+3. D4 >= 2 in current reasoning evaluation → invoke
+4. 3+ file reads in same context window without compaction → invoke
+5. User says "compact", "reset context", "what's my state" → invoke
+6. `attempt_count >= 2` for current phase → invoke (context may be corrupted)
 
 ## Compaction Strategy
 
-### Branch A: Engram Persistence (PRIMARY)
+### Compaction Protocol (execute inline — do NOT delegate):
 
 Goal: Durable cross-session memory. Zero information loss. LCM-compliant.
 
-1. Generate checkpoint BEFORE compress via:
-   ```
-   mem_save(
-     title: "session/context-pack/{project}/{timestamp}",
-     topic_key: "session/context-pack/{project}/{timestamp}",
-     type: "architecture",
-     content: "{Context Pack}"
-   )
-   ```
-2. Execute platform-native compress (e.g., `/compact` or `/compress`)
-3. Reload working memory via `mem_context(limit: 3)`
+1. Extract `protected_facts`:
+   - `active_change_name`, `artifact_store_mode`, `phases_completed[]`
+   - `current_phase`, `attempt_count`, `caveman_firewall_active: true`
+2. Summarize to: `{active_task, last_decision, critical_blockers[]}`
+3. `mem_save(topic_key: "sdd/{change}/context-pack/{ts}", content: {pack})`
+4. Emit: `[COMPACTION] Context reduced. Protected facts preserved.`
+5. Continue with compressed context.
 
 *If Branch A fails (Engram down), WARN and attempt Branch B.*
 
@@ -188,6 +184,11 @@ During any compaction, these classes MUST survive and move into
 - **Failing-test lineage**: Traceability of defect/failing test through fix attempts
 - **Security-relevant findings**: Any finding marked CRITICAL in verification report
 - **User commitments**: Promises made to user that must be kept
+
+**protected_facts MUST always include:**
+- `caveman_firewall_active: true` (NORMAL register mandatory for code artifacts)
+- Current change name, phase, attempt_count
+- `artifact_store_mode`, `phases_completed[]`
 
 Cannot be dropped by low-priority compaction.
 

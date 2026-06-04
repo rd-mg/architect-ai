@@ -32,6 +32,9 @@ Write failing test → verify red → implement → verify green → refactor.
 - Identify parallel-safe tasks vs sequence-locked tasks.
 - If current batch violates graph order, STOP and report.
 
+
+{{ include "_shared/caveman-firewall.md" }}
+
 ## Atomic Commit Protocol
 - Each [x] task MUST be accompanied by a clean commit (if using Git).
 - Format: `type(scope): message` (Conventional Commits).

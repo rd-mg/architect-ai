@@ -5,12 +5,15 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 func TestCheck_SourceExists(t *testing.T) {
 	t.Parallel()
+	ctx := paths.New(".", true)
 	// Check should report source file exists (it does in the real repo)
-	results, allOK := Check(Targets)
+	results, allOK := Check(GetTargets(ctx))
 	// At minimum we should get results
 	if len(results) == 0 {
 		t.Fatal("expected at least 1 check result")

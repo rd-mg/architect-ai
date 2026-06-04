@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/rd-mg/architect-ai/internal/gate"
+	"github.com/rd-mg/architect-ai/internal/paths"
 )
 
 // Targets where the gate MUST exist
@@ -39,14 +40,25 @@ func main() {
 }
 
 func run(args []string, stdout io.Writer, stderr io.Writer) int {
-	if len(args) < 1 {
-		fmt.Fprintln(stderr, "Usage: architect-ai gate [check|inject|purge|l2-purge]")
+	devMode := false
+	var filteredArgs []string
+	for _, arg := range args {
+		if arg == "--dev" {
+			devMode = true
+		} else {
+			filteredArgs = append(filteredArgs, arg)
+		}
+	}
+	ctx := paths.New(".", devMode)
+
+	if len(filteredArgs) < 1 {
+		fmt.Fprintln(stderr, "Usage: architect-ai gate [check|inject|purge|l2-purge] [--dev]")
 		return 1
 	}
 
 	g := gate.New(GateSourceFile)
 
-	switch args[0] {
+	switch filteredArgs[0] {
 	case "check":
 		results := g.Check(GateTargets)
 		exitCode := 0
@@ -98,7 +110,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		return 0
 
 	case "l2-purge":
-		results := g.PurgeL2AutoScoring()
+		results := g.PurgeL2AutoScoring(ctx.L2SkillGlob())
 		exitCode := 0
 		for _, r := range results {
 			if r.Error != nil {
@@ -115,7 +127,7 @@ func run(args []string, stdout io.Writer, stderr io.Writer) int {
 		return exitCode
 
 	default:
-		fmt.Fprintf(stderr, "Unknown subcommand: %s\n", args[0])
+		fmt.Fprintf(stderr, "Unknown subcommand: %s\n", filteredArgs[0])
 		return 1
 	}
 }
