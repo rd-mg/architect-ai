@@ -171,6 +171,8 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return cli.RunSDDArchivePreflight(args[1:], stdout, os.Stderr)
 	case "guard":
 		return cli.RunGuard(args[1:], stdout)
+	case "install-hooks":
+		return cli.RunInstallHooks(args[1:], stdout)
 	case "cleanup":
 		return cli.RunCleanup(args[1:], stdout)
 	case "restore":

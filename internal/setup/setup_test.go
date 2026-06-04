@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/rd-mg/architect-ai/internal/platform"
@@ -270,6 +271,162 @@ func TestEnsureContextMode_DryRun(t *testing.T) {
 	// If not installed, dryRun returns "dry-run". Either is acceptable.
 	// If context-mode is found but behaves unexpectedly (server mode), the version may be empty.
 	t.Logf("EnsureContextMode(dryRun=true) returned version=%q", version)
+}
+
+func TestConfigurePlatform_MergeJSON(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+
+	existingFile := filepath.Join(dir, "config.json")
+	os.WriteFile(existingFile, []byte(`{"a": 1}`), 0644)
+
+	p := platform.Platform{
+		Name:        "test-platform",
+		ConfigFiles: []platform.ConfigFile{
+			{Path: existingFile, Content: `{"b": 2}`, Merge: true},
+		},
+	}
+
+	written, err := ConfigurePlatform(p)
+	if err != nil {
+		t.Fatalf("ConfigurePlatform failed: %v", err)
+	}
+	if len(written) != 1 {
+		t.Fatalf("expected 1 file written, got %d", len(written))
+	}
+	data, _ := os.ReadFile(existingFile)
+	if !strings.Contains(string(data), `"a": 1`) || !strings.Contains(string(data), `"b": 2`) {
+		t.Errorf("Merge failed: %s", string(data))
+	}
+}
+
+func TestConfigurePlatform_RoutingFile(t *testing.T) {
+	// Not parallel, mutates env
+	dir := t.TempDir()
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	t.Cleanup(func() { os.Chdir(origDir) })
+	
+	// Create a mock routing file source
+	mockHome := filepath.Join(dir, "home")
+	origHome := os.Getenv("HOME")
+	os.Setenv("HOME", mockHome)
+	t.Cleanup(func() { os.Setenv("HOME", origHome) })
+	
+	mockSrc := filepath.Join(mockHome, "node_modules", "context-mode", "configs", "test", "DEST_ROUTING.md")
+	os.MkdirAll(filepath.Dir(mockSrc), 0755)
+	os.WriteFile(mockSrc, []byte("routing content"), 0644)
+
+	destRouting := "DEST_ROUTING.md"
+
+	p := platform.Platform{
+		Name: "test",
+		RoutingFileRequired: true,
+		RoutingFile: destRouting,
+		ConfigFiles: []platform.ConfigFile{},
+	}
+
+	written, err := ConfigurePlatform(p)
+	if err != nil {
+		t.Fatalf("ConfigurePlatform failed: %v", err)
+	}
+	if len(written) != 1 {
+		t.Fatalf("expected 1 file written, got %d", len(written))
+	}
+
+	data, _ := os.ReadFile(destRouting)
+	if string(data) != "routing content" {
+		t.Errorf("expected 'routing content', got %q", string(data))
+	}
+}
+
+func TestConfigurePlatform_RoutingFileMissing(t *testing.T) {
+	// Not parallel, mutates env
+	dir := t.TempDir()
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	t.Cleanup(func() { os.Chdir(origDir) })
+	
+	mockHome := filepath.Join(dir, "home_missing")
+	origHome := os.Getenv("HOME")
+	os.Setenv("HOME", mockHome)
+	t.Cleanup(func() { os.Setenv("HOME", origHome) })
+
+	p := platform.Platform{
+		Name: "test",
+		RoutingFileRequired: true,
+		RoutingFile: "DEST_ROUTING.md",
+		ConfigFiles: []platform.ConfigFile{},
+	}
+
+	written, err := ConfigurePlatform(p)
+	if err != nil {
+		t.Fatalf("ConfigurePlatform failed: %v", err)
+	}
+	if len(written) != 0 {
+		t.Fatalf("expected 0 files written, got %d", len(written))
+	}
+}
+
+func TestConfigurePlatform_Errors(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+
+	// Mkdir error: make file instead of dir
+	badDir := filepath.Join(dir, "bad")
+	os.WriteFile(badDir, []byte("dummy"), 0644)
+
+	p1 := platform.Platform{
+		ConfigFiles: []platform.ConfigFile{
+			{Path: filepath.Join(badDir, "config.json"), Content: "{}"},
+		},
+	}
+	if _, err := ConfigurePlatform(p1); err == nil {
+		t.Error("expected mkdir error")
+	}
+
+	// Merge error: invalid JSON
+	validJSONFile := filepath.Join(dir, "valid.json")
+	os.WriteFile(validJSONFile, []byte(`{"a": 1}`), 0644)
+	p2 := platform.Platform{
+		ConfigFiles: []platform.ConfigFile{
+			{Path: validJSONFile, Content: `invalid json`, Merge: true},
+		},
+	}
+	if _, err := ConfigurePlatform(p2); err == nil {
+		t.Error("expected merge error")
+	}
+}
+
+func TestWritePlatformConfig_Errors(t *testing.T) {
+	// Not parallel, mutates working directory
+	dir := t.TempDir()
+	origDir, _ := os.Getwd()
+	os.Chdir(dir)
+	t.Cleanup(func() { os.Chdir(origDir) })
+
+	// Make .atl a file to force MkdirAll error
+	os.WriteFile(".atl", []byte("dummy"), 0644)
+	p := platform.Platform{Name: "test", HookLevel: platform.HookLevelNone}
+	err := WritePlatformConfig(p, "0.0.1")
+	if err == nil {
+		t.Error("expected error")
+	}
+}
+
+func TestEnsureContextMode_NotInstalled_DryRun(t *testing.T) {
+	// Not parallel, mutates env
+	oldPath := os.Getenv("PATH")
+	os.Setenv("PATH", "")
+	t.Cleanup(func() { os.Setenv("PATH", oldPath) })
+	
+	version, err := EnsureContextMode(true)
+	if err != nil {
+		t.Fatalf("EnsureContextMode failed: %v", err)
+	}
+	if version != "dry-run" {
+		t.Errorf("expected 'dry-run', got %q", version)
+	}
 }
 
 // helper
