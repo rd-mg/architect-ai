@@ -11,7 +11,7 @@ Rebuild all architect-ai deployed configs from internal/assets sources.
 
 1. Generate foundation: `go run ./cmd/foundation`
 2. Build deployed configs: `go run ./cmd/build`
-3. Validate: `go run ./cmd/check`
+3. Validate: `go run ./cmd/architect-ai check`
 
 ## Artifacts
 

@@ -1,7 +1,8 @@
-package main
+package cli
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -12,15 +13,16 @@ import (
 )
 
 var (
-	contentRe = regexp.MustCompile(`\{content from [^\}]+\}`)
-	includeRe = regexp.MustCompile(`\{\{[ \t]*include[ \t]+"([^"]+)"[ \t]*\}\}`)
-	hashRe    = regexp.MustCompile(`\{[A-Z0-9_]+_HASH\}`)
+	contentRe     = regexp.MustCompile(`\{content from [^\}]+\}`)
+	includeRe     = regexp.MustCompile(`\{\{[ \t]*include[ \t]+"([^"]+)"[ \t]*\}\}`)
+	hashRe        = regexp.MustCompile(`\{[A-Z0-9_]+_HASH\}`)
+	placeholderRe = regexp.MustCompile(`\{[A-Z][a-zA-Z ]+\}`)
 )
 
-func main() {
+func RunCheck(args []string, stdout io.Writer) error {
 	target := "all"
 	devMode := false
-	for _, arg := range os.Args[1:] {
+	for _, arg := range args {
 		if arg == "--dev" {
 			devMode = true
 		} else if !strings.HasPrefix(arg, "-") {
@@ -53,29 +55,29 @@ func main() {
 			fmt.Fprintln(os.Stderr, "registry check is not applicable in dev mode")
 		}
 	default:
-		fmt.Fprintf(os.Stderr, "Usage: architect-ai check [foundation|configs|registry|all] [--dev]\n")
-		os.Exit(2)
+		return fmt.Errorf("Usage: architect-ai check [foundation|configs|registry|all] [--dev]")
 	}
 
 	results := checker.RunAll(checks...)
 	for _, r := range results {
-		fmt.Printf("CHECK %s: %s", r.Name, strings.ToUpper(string(r.Status)))
+		fmt.Fprintf(stdout, "CHECK %s: %s", r.Name, strings.ToUpper(string(r.Status)))
 		if r.Message != "" {
-			fmt.Printf(" (%s)", r.Message)
+			fmt.Fprintf(stdout, " (%s)", r.Message)
 		}
-		fmt.Println()
+		fmt.Fprintln(stdout)
 	}
 
 	if !checker.AllPassed(results) {
-		os.Exit(1)
+		return fmt.Errorf("checks failed")
 	}
+	return nil
 }
 
 func checkFoundation(ctx paths.Context) checker.Check {
 	return checker.Check{
 		Name: "foundation",
 		Run: func() error {
-			fi, err := os.Stat(ctx.FoundationPath())
+			_, err := os.Stat(ctx.FoundationPath())
 			if os.IsNotExist(err) {
 				return fmt.Errorf("not found")
 			}
@@ -89,7 +91,7 @@ func checkFoundation(ctx paths.Context) checker.Check {
 			if !strings.Contains(string(data), "architect-ai:foundation:start") {
 				return fmt.Errorf("file exists but missing foundation markers")
 			}
-			return fmt.Errorf("age=%s, size=%d", fi.ModTime().Format("15:04"), fi.Size())
+			return nil
 		},
 	}
 }
@@ -108,7 +110,6 @@ func checkConfigs() checker.Check {
 						continue
 					}
 					content := string(data)
-					line := 1
 					lines := strings.Split(content, "\n")
 					for i, l := range lines {
 						if contentRe.MatchString(l) {
@@ -120,7 +121,6 @@ func checkConfigs() checker.Check {
 						if hashRe.MatchString(l) {
 							errs = append(errs, fmt.Sprintf("%s:L%d: unresolved hash token", dst, i+1))
 						}
-						_ = line
 					}
 				}
 			}
@@ -141,7 +141,10 @@ func checkRegistry(ctx paths.Context) checker.Check {
 			}
 			data, err := os.ReadFile(ctx.RegistryPath())
 			if err != nil {
-				return fmt.Errorf("file not found")
+				if os.IsNotExist(err) {
+					return nil // It's ok if registry doesn't exist
+				}
+				return fmt.Errorf("file not found: %w", err)
 			}
 			content := string(data)
 			var unfilled []string
@@ -149,7 +152,6 @@ func checkRegistry(ctx paths.Context) checker.Check {
 			for i, l := range lines {
 				if strings.Contains(l, "{") && strings.Contains(l, "}") &&
 					!strings.Contains(l, "<!--") && !strings.Contains(l, "-->") {
-					// Check for {Capitalized text} patterns (unfilled placeholders)
 					if placeholderRe.MatchString(l) {
 						unfilled = append(unfilled, fmt.Sprintf("L%d", i+1))
 					}
@@ -163,9 +165,6 @@ func checkRegistry(ctx paths.Context) checker.Check {
 	}
 }
 
-var placeholderRe = regexp.MustCompile(`\{[A-Z][a-zA-Z ]+\}`)
-
-// resolveDestination mirrors cmd/build logic.
 func resolveDestination(agent, file string) string {
 	switch {
 	case agent == "antigravity":

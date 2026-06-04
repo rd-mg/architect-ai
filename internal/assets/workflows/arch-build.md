@@ -20,7 +20,7 @@ STEP 2 — Build deployed configs:
   → If exit code != 0: report BUILD_FAILED with error. Stop.
 
 STEP 3 — Validate:
-  ctx_execute("shell", `architect-ai check all 2>&1 || go run ./cmd/check all 2>&1`)
+  ctx_execute("shell", `architect-ai check all 2>&1 || go run ./cmd/architect-ai check all 2>&1`)
 
 STEP 4 — Report result in Return Envelope format:
   status: success|blocked

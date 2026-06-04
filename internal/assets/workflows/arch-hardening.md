@@ -27,7 +27,7 @@ PHASE A — Config Materialization:
     → Exit != 0: ABORT with phase A blocked message
 
   STEP A3: Validate build
-    ctx_execute("shell", `go run ./cmd/check all 2>&1`)
+    ctx_execute("shell", `go run ./cmd/architect-ai check all 2>&1`)
 
 PHASE B — Adaptive Reasoning Gate:
   STEP B1: Inject gate into orchestrators
@@ -58,7 +58,7 @@ PHASE D — context-mode Setup:
     ctx_execute("shell", `context-mode doctor 2>&1`)
 
 FINAL: Full system check
-  ctx_execute("shell", `go run ./cmd/check all 2>&1`)
+  ctx_execute("shell", `go run ./cmd/architect-ai check all 2>&1`)
 
 RETURN ENVELOPE:
   status: success|partial|blocked

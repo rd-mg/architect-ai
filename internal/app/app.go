@@ -177,6 +177,8 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return cli.RunCleanup(args[1:], stdout)
 	case "restore":
 		return cli.RunRestore(args[1:], stdout)
+	case "check":
+		return cli.RunCheck(args[1:], stdout)
 	default:
 		return fmt.Errorf("unknown command %q — run 'architect-ai help' for available commands", args[0])
 	}

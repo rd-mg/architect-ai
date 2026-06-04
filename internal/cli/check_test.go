@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"os"
@@ -19,9 +19,7 @@ func TestCheckFoundation(t *testing.T) {
 	ctx := paths.New(".", false)
 	c := checkFoundation(ctx)
 	err := c.Run()
-	// checkFoundation returns error if file exists (returns age/size error), 
-	// which is how it signals success ("not found" is the failure condition)
-	if err == nil {
-		t.Errorf("Expected foundation check to return error (age/size info)")
+	if err != nil {
+		t.Errorf("Expected foundation check to succeed, got %v", err)
 	}
 }
