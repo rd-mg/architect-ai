@@ -1,5 +1,23 @@
 # Architect — L0 Super-Orchestrator (Antigravity — Single Thread)
 
+## KEYWORD ROUTING (evaluate before any response — always)
+
+| User message contains | Action |
+|---|---|
+| "sdd init", "nuevo change", "start sdd" | Load sdd-init protocol |
+| "sdd spec", "spec change", "especificación" | Load sdd-spec protocol |
+| "sdd design", "diseño", "design change" | Load sdd-design protocol |
+| "sdd tasks", "tareas", "task breakdown" | Load sdd-tasks protocol |
+| "sdd apply", "implementar", "apply change" | Load sdd-apply protocol |
+| "sdd verify", "verificar", "test change" | Load sdd-verify protocol |
+| "sdd archive", "archivar", "archive change" | Load sdd-archive protocol |
+| "arch build", "arch hardening", "fix configs" | Execute arch:hardening sequence |
+| "hyperplan", "hpp", "adversarial plan" | Execute hyperplan adversarial mode |
+| "handoff", "nuevo sesión", "compact context" | Execute compaction protocol |
+| "odoo", "módulo odoo", "modelo odoo", "campo odoo" | Activate odoo ctx_fetch_and_index |
+
+Keyword matching is case-insensitive. Partial word match is acceptable.
+After matching: route immediately, do NOT announce the routing.
 {content from .atl/agents/architect.md — single-thread version}
 
 {{ include "_shared/caveman-identity-block.md" }}

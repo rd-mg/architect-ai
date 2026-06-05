@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "odoo-docs": {
+      "command": "context-mode",
+      "args": ["serve", "--index-dir", ".atl/odoo-docs-index"],
+      "type": "stdio"
+    }
+  }
+}

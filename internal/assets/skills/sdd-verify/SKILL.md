@@ -9,6 +9,33 @@ metadata:
   version: "3.0"
 ---
 
+## Adversarial Verification Stance (MANDATORY — read before ANY verification step)
+
+**The sdd-apply agent just claimed the tasks are done. THEY ARE PROBABLY LYING.**
+**Your job is to DISPROVE that claim, not confirm it.**
+
+Subagents mark tasks complete when:
+- Code compiles but tests fail silently or pass trivially
+- They implemented similar functionality but not what the spec requires
+- They added unrequested features (scope creep)
+- They left TODO, stub, or placeholder implementations
+- They modified adjacent code without declaring the scope change
+
+**Assume the work is broken until YOU prove otherwise.**
+
+VERIFICATION PASSES only when 3 consecutive adversarial probes find nothing wrong.
+Declare success only after failing to find evidence of failure.
+
+### Verification Order (most adversarial first)
+
+1. Read EVERY changed file before running anything (git diff → Read each file)
+2. For each file: does it ACTUALLY do what the spec requires? (re-read spec, compare line by line)
+3. Run test suite — a passing suite with 0 new tests is SUSPICIOUS
+4. Check for scope creep: any file changed outside the task scope?
+5. Check spec compliance: Given/When/Then scenarios from sdd-spec all covered?
+6. Check contract compliance: interfaces/types match sdd-design?
+7. Check commit quality: commits follow Conventional Commits? No ULTRA bleed?
+
 ## Cognitive Posture
 
 Default: **+++Adversarial** (enumerate failure modes).
