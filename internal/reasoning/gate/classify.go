@@ -69,19 +69,29 @@ func Score(dims [5]int) (int, []string) {
 }
 
 // posturePriority selects the appropriate postures for Mode 3 based on dimension context.
+//
+// State machine invariant: (D3>=2 AND D4>=3) is a joint critical state that
+// requires +++Forensic (investigate root cause) and +++Pragmatic (avoid aggravation).
+// This case must be evaluated BEFORE the plain D4>=3 branch, which only uses
+// +++Pragmatic and would suppress forensic investigation during a production incident.
 func posturePriority(d1, d3, d4 int) []string {
 	switch {
+	case d3 >= 2 && d4 >= 3:
+		// Joint critical: production incident (D3>=2) + context saturated (D4>=3).
+		// +++Forensic investigates; +++Pragmatic prevents aggravating the incident
+		// with unnecessary work under context pressure.
+		return []string{"+++Forensic", "+++Pragmatic"}
 	case d4 >= 3:
-		// Context saturated — stabilize
+		// Context saturated only — stabilize output, defer heavy analysis.
 		return []string{"+++Pragmatic"}
 	case d1 >= 3:
-		// Architectural/paradigm change — full impact analysis
+		// Architectural/paradigm change — full impact analysis required.
 		return []string{"+++Systemic", "+++Adversarial"}
 	case d3 >= 2:
-		// Error pressure — forensic investigation
+		// Production error pressure — forensic investigation primary.
 		return []string{"+++Forensic", "+++Pragmatic"}
 	default:
-		// Default Mode 3 — adversarial + systemic review
+		// Default Mode 3 — adversarial + systemic review.
 		return []string{"+++Adversarial", "+++Systemic"}
 	}
 }

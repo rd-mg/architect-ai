@@ -165,7 +165,7 @@ func TestValidateDecision_D3ZeroMode3(t *testing.T) {
 }
 
 func TestValidateDecision_ValidMode3(t *testing.T) {
-	h := &GateHeader{Mode: 3, D3: 2, D4: 1}
+	h := &GateHeader{Mode: 3, D3: 2, D4: 1, Rationale: "production incident"}
 	issues := ValidateDecision(h)
 	if len(issues) > 0 {
 		t.Errorf("valid Mode 3 with D3=2 should have no issues, got: %v", issues)
@@ -173,7 +173,7 @@ func TestValidateDecision_ValidMode3(t *testing.T) {
 }
 
 func TestValidateDecision_ValidMode2(t *testing.T) {
-	h := &GateHeader{Mode: 2, D3: 0, D4: 0}
+	h := &GateHeader{Mode: 2, D3: 0, D4: 0, Rationale: "complex task"}
 	issues := ValidateDecision(h)
 	if len(issues) > 0 {
 		t.Errorf("valid Mode 2 should have no issues, got: %v", issues)

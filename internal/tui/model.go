@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -390,6 +391,17 @@ type Model struct {
 
 	// AgentBuilder holds the transient state for the agent-builder TUI flow.
 	AgentBuilder AgentBuilderState
+
+	// Program is the running tea.Program instance. Set by main after
+	// construction via SetProgram(). Enables goroutines to send messages
+	// back to the Update loop in real time.
+	Program *tea.Program
+}
+
+// SetProgram stores a reference to the running tea.Program so that goroutines
+// launched by startInstalling and startGeneration can send messages back.
+func (m *Model) SetProgram(p *tea.Program) {
+	m.Program = p
 }
 
 func NewModel(detection system.DetectionResult, version string) Model {
@@ -1918,17 +1930,22 @@ func (m Model) startInstalling() (tea.Model, tea.Cmd) {
 	selection := m.Selection
 	resolved := m.DependencyPlan
 	detection := m.Detection
+	program := m.Program
 
 	return m, tea.Batch(tickCmd(), func() tea.Msg {
 		onProgress := func(event pipeline.ProgressEvent) {
-			// NOTE: ProgressFunc is called synchronously from the pipeline goroutine.
-			// We cannot use p.Send() here because we don't have a reference to the
-			// tea.Program. Instead, these events are collected in the ExecutionResult
-			// and the PipelineDoneMsg handles the final state. For real-time updates,
-			// we rely on the pipeline calling this synchronously from each step.
+			if program == nil {
+				return
+			}
+			program.Send(StepProgressMsg{
+				StepID: event.StepID,
+				Status: pipeline.StepStatus(event.Status),
+				Err:    event.Err,
+			})
 		}
 
 		result := executeFn(selection, resolved, detection, onProgress)
+		writeInstallLog(result)
 		return PipelineDoneMsg{Result: result}
 	})
 }
@@ -3451,4 +3468,83 @@ func agentBuilderSystemPromptPath(agentID model.AgentID) (string, bool) {
 	default:
 		return "", false
 	}
+}
+
+func writeInstallLog(result pipeline.ExecutionResult) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return
+	}
+	logDir := filepath.Join(homeDir, ".architect-ai")
+	if mkErr := os.MkdirAll(logDir, 0o755); mkErr != nil {
+		return
+	}
+	logPath := filepath.Join(logDir, "install-log.jsonl")
+
+	type failedStep struct {
+		ID     string `json:"id"`
+		Status string `json:"status"`
+		Err    string `json:"error,omitempty"`
+	}
+	type logEntry struct {
+		Timestamp   string       `json:"ts"`
+		Status      string       `json:"status"`
+		FailedSteps []failedStep `json:"failed_steps,omitempty"`
+	}
+
+	overallStatus := "ok"
+	var failed []failedStep
+
+	for _, step := range result.Apply.Steps {
+		if step.Status == pipeline.StepStatusFailed {
+			overallStatus = "failed"
+			errMsg := ""
+			if step.Err != nil {
+				errMsg = step.Err.Error()
+			}
+			failed = append(failed, failedStep{
+				ID:     step.StepID,
+				Status: string(step.Status),
+				Err:    errMsg,
+			})
+		}
+	}
+
+	entry := logEntry{
+		Timestamp:   time.Now().UTC().Format(time.RFC3339),
+		Status:      overallStatus,
+		FailedSteps: failed,
+	}
+	line, jsonErr := json.Marshal(entry)
+	if jsonErr != nil {
+		return
+	}
+	line = append(line, '\n')
+
+	f, openErr := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if openErr != nil {
+		return
+	}
+	defer f.Close()
+	_, _ = f.Write(line)
+
+	rotateInstallLog(logPath, 500)
+}
+
+func rotateInstallLog(logPath string, maxLines int) {
+	data, err := os.ReadFile(logPath)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(data), "\n")
+	if len(lines) <= maxLines {
+		return
+	}
+	lines = lines[len(lines)-maxLines:]
+	trimmed := strings.Join(lines, "\n")
+	tmp := logPath + ".rotate.tmp"
+	if writeErr := os.WriteFile(tmp, []byte(trimmed), 0o644); writeErr != nil {
+		return
+	}
+	_ = os.Rename(tmp, logPath)
 }

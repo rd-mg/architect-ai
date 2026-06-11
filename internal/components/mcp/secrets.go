@@ -38,11 +38,38 @@ func readDotEnv(path string) map[string]string {
 
 func ensureGitignored(path, pattern string) {
 	data, _ := os.ReadFile(path)
-	if strings.Contains(string(data), pattern) { return }
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil { return }
+	if gitignoreCovers(string(data), pattern) {
+		return
+	}
+
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return
+	}
 	defer f.Close()
-	fmt.Fprintf(f, "\n# MCP secrets\n%s\n", pattern)
+	fmt.Fprintf(f, "\n# MCP secrets — do not commit\n%s\n", pattern)
+}
+
+func gitignoreCovers(content, pattern string) bool {
+	for _, rawLine := range strings.Split(content, "\n") {
+		line := strings.TrimSpace(rawLine)
+		if line == "" {
+			continue
+		}
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		if strings.HasPrefix(line, "!") {
+			continue
+		}
+		if line == pattern {
+			return true
+		}
+		if matched, err := filepath.Match(line, pattern); err == nil && matched {
+			return true
+		}
+	}
+	return false
 }
 
 func WriteConfig(targetPath string, config map[string]interface{}) error {

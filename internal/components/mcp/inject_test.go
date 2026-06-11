@@ -93,8 +93,8 @@ func TestInjectClaudeWritesContext7FileAndIsIdempotent(t *testing.T) {
 
 func TestInjectCursorWithMalformedMCPJsonRecovery(t *testing.T) {
 	// Real Windows users may have a ~/.cursor/mcp.json that starts with non-JSON
-	// content (e.g. "allow: all" or just "a"). The installer should recover by
-	// treating the broken file as {} and proceeding with the overlay merge.
+	// content (e.g. "allow: all" or just "a"). In v0.3+, this should return an error
+	// instead of silently discarding the user's configuration.
 	home := t.TempDir()
 	adapter := cursorAdapter(t)
 
@@ -108,24 +108,11 @@ func TestInjectCursorWithMalformedMCPJsonRecovery(t *testing.T) {
 	}
 
 	result, err := Inject(home, adapter)
-	if err != nil {
-		t.Fatalf("Inject(cursor) with malformed mcp.json error = %v; want nil (should recover)", err)
+	if err == nil {
+		t.Fatal("Inject(cursor) with malformed mcp.json should return error, got nil")
 	}
-	if !result.Changed {
-		t.Fatalf("Inject(cursor) changed = false; want true")
-	}
-
-	content, err := os.ReadFile(mcpPath)
-	if err != nil {
-		t.Fatalf("ReadFile(mcp.json) error = %v", err)
-	}
-
-	text := string(content)
-	if !strings.Contains(text, `"servers"`) {
-		t.Fatalf("mcp.json missing servers key; got:\n%s", text)
-	}
-	if !strings.Contains(text, `"context7"`) {
-		t.Fatalf("mcp.json missing context7 server entry; got:\n%s", text)
+	if result.Changed {
+		t.Fatal("Inject(cursor) should not change file when base is malformed")
 	}
 }
 

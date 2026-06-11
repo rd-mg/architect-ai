@@ -74,9 +74,92 @@ general-orch    → odoo-plan (Odoo feature planning)
 ```
 
 ### 7. Odoo Rules Injection (alongside base guardrails)
+
+Rules are injected in two tiers to minimize token overhead. The orchestrator
+reads `current_phase` from sdd-state.yaml and selects the appropriate tier.
+
+#### Tier A — Read-only phases (sdd-explore, sdd-propose, sdd-spec, sdd-design, sdd-tasks, sdd-archive)
+
 ```
-.atl/overlays/odoo-development-skill/rules/coding-style.md     → compact rules
-.atl/overlays/odoo-development-skill/rules/security.md          → compact rules
-.atl/overlays/odoo-development-skill/rules/CAUTION_POLICY.md    → full (critical)
-.atl/overlays/odoo-development-skill/rules/cudio-git.md         → compact rules
+.atl/overlays/odoo-development-skill/rules/coding-style.md → compact rules  (~1.5KB)
+.atl/overlays/odoo-development-skill/rules/security.md     → compact rules  (~2KB)
+.atl/overlays/odoo-development-skill/rules/CAUTION_POLICY.md → SUMMARY ONLY (~500 chars)
+  Full CAUTION_POLICY available via: mem_search("knowledge/odoo/caution-policy")
+  Load full version only when: task involves write ops OR D1 >= 2 OR security risk detected
+```
+
+**Tier A total injection: ~4KB per sub-agent** (vs ~13KB before — 69% reduction)
+
+#### Tier B — Write phases (sdd-apply, sdd-verify)
+
+```
+.atl/overlays/odoo-development-skill/rules/coding-style.md     → compact rules  (~1.5KB)
+.atl/overlays/odoo-development-skill/rules/security.md          → compact rules  (~2KB)
+.atl/overlays/odoo-development-skill/rules/CAUTION_POLICY.md    → FULL           (~8KB)
+.atl/overlays/odoo-development-skill/rules/cudio-git.md         → compact rules  (~1KB)
+```
+
+**Tier B total injection: ~14KB per sub-agent** (same as before — no quality regression on write phases)
+
+#### Tier Selection Logic (inject at orchestrator launch prompt construction)
+
+```
+IF current_phase IN [sdd-explore, sdd-propose, sdd-spec, sdd-design, sdd-tasks, sdd-archive]:
+  → USE Tier A injection
+ELIF current_phase IN [sdd-apply, sdd-verify]:
+  → USE Tier B injection
+ELSE (general-orchestrator non-SDD tasks with IS_ODOO=true):
+  → USE Tier A injection (default to minimal)
+```
+
+### 8. Odoo MCP Pagination Guard (MANDATORY for ALL mcp_odoo_search_records calls)
+
+Every call to `mcp_odoo_search_records` MUST include an explicit `limit` parameter.
+
+**Maximum limit per call: 50 records.**
+
+PROHIBITED patterns (will exceed context budget and trigger D4 saturation):
+```
+mcp_odoo_search_records(model="sale.order", domain=[])
+mcp_odoo_search_records(model="account.move", domain=[], limit=None)
+mcp_odoo_search_records(model="stock.move", fields=["all"], domain=[])
+```
+
+REQUIRED pattern:
+```
+mcp_odoo_search_records(model="sale.order", domain=[("state","=","sale")], limit=50)
+```
+
+For volume/count analysis: use `mcp_odoo_aggregate_records` (returns metadata only, no payload).
+For specific record exploration: filter `domain` to target ≤ 50 records before calling.
+
+If more than 50 records are needed: paginate with `offset` in sequential calls, processing
+one page at a time and summarizing to masked_evidence before fetching the next page.
+
+### 9. YOLO Mode Guard (MANDATORY when ODOO_YOLO=true)
+
+When `ODOO_YOLO=true` is set in the MCP environment:
+
+**CHECK before ANY write operation (create, write, delete, unlink):**
+
+```
+IF D3 >= 2 OR D4 >= 2:
+  BLOCK the write operation.
+  EMIT: "[YOLO_GUARD] Context degraded (D3={D3}, D4={D4}). Write operation suspended."
+  EMIT: "Resolve context pressure before executing mutations. Run context-guardian or /compact."
+  DO NOT proceed with the write — return status: "blocked", blocked_reason: "yolo_guard_d_score"
+
+IF D3 < 2 AND D4 < 2:
+  Proceed with YOLO write (normal behavior).
+```
+
+**CHECK for large-volume writes:**
+
+```
+IF records_to_modify > 100 AND ODOO_YOLO=true:
+  STOP and emit to user:
+  "[YOLO_GUARD] About to modify {N} records in {model}.
+   This operation cannot be undone automatically.
+   Confirm? Type: confirm-yolo-{model}-{N}"
+  Wait for exact confirmation string before proceeding.
 ```

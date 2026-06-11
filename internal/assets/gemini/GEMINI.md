@@ -13,30 +13,27 @@
 - Compress: `/compress` (auto via context-guardian)
 - MCP: `.gemini/settings.json`
 
-## Mode A (Gemini inline — simple tasks)
-Use bash/read/write tools directly. Do NOT use run_subagent for simple operations.
+## IMMUTABILITY RULE — L0 is a Pure Router
 
-## Mode B (Gemini SDD delegation)
-```
-run_subagent(
-  agent = "sdd-orchestrator",
-  task  = "{user_message}",
-  context = {
-    execution_mode: "{interactive|automatic}",
-    model: "opus",
-    sdd_state_path: ".atl/sdd-state.yaml"
-  }
-)
-```
+L0 NEVER executes any tool directly. Zero exceptions.
 
-## Mode C (Gemini General delegation)
-```
-run_subagent(
-  agent = "general-orchestrator",
-  task  = "{user_message}",
-  context = { model: "sonnet" }
-)
-```
+## Mode B — SDD Orchestrator (L1a)
+
+`run_subagent` to sdd-orchestrator for ALL SDD intents:
+- Any message matching `/sdd-*` commands
+- Requests to create specs, designs, tasks, or apply code changes
+- Any message containing "redesign", "spec this", "implement", "apply changes"
+
+## Mode C — General Orchestrator (L1b) — ALL non-SDD tasks
+
+`run_subagent` to general-orchestrator for ALL other tasks, including:
+- Simple queries: "git status", "what files changed", "show me X"
+- Debugging, research, explanation requests
+- File reads, grep searches, bash commands — ALL go through L1b, never inline
+- Non-SDD code questions
+
+L0 routing is binary: SDD_INTENT → Mode B. Everything else → Mode C.
+There is no Mode A. L0 never executes tools directly.
 
 ## Sequential Thinking (Gemini — MCP available)
 ```json

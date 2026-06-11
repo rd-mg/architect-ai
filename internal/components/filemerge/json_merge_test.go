@@ -2,6 +2,7 @@ package filemerge
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 )
 
@@ -66,49 +67,36 @@ func TestMergeJSONObjectsSupportsJSONCBase(t *testing.T) {
 	}
 }
 
-func TestMergeJSONObjectsMalformedBaseReturnsOverlayOnly(t *testing.T) {
+func TestMergeJSONObjectsMalformedBaseReturnsError(t *testing.T) {
 	// Real user machines (e.g. Windows) may have a malformed ~/.cursor/mcp.json.
-	// The installer should recover by treating the broken base as {} and continuing.
+	// In v0.3+, this should return ErrBaseMalformed instead of silently discarding
+	// the user's configuration.
 	tests := []struct {
-		name    string
-		base    []byte
-		overlay []byte
-		wantKey string
+		name string
+		base []byte
 	}{
 		{
-			name:    "base starting with letter",
-			base:    []byte(`allow: all`),
-			overlay: []byte(`{"mcpServers": {"context7": {"type": "remote"}}}`),
-			wantKey: "mcpServers",
+			name: "base starting with letter",
+			base: []byte(`allow: all`),
 		},
 		{
-			name:    "unclosed json object",
-			base:    []byte(`{"ok": true`),
-			overlay: []byte(`{"chat.tools.autoApprove": true}`),
-			wantKey: "chat.tools.autoApprove",
+			name: "unclosed json object",
+			base: []byte(`{"ok": true`),
 		},
 		{
-			name:    "arbitrary text",
-			base:    []byte(`a`),
-			overlay: []byte(`{"servers": {"engram": {"command": "engram"}}}`),
-			wantKey: "servers",
+			name: "arbitrary text",
+			base: []byte(`a`),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			merged, err := MergeJSONObjects(tt.base, tt.overlay)
-			if err != nil {
-				t.Fatalf("MergeJSONObjects() error = %v; want nil (malformed base should be treated as {})", err)
+			_, err := MergeJSONObjects(tt.base, []byte(`{"key": "value"}`))
+			if err == nil {
+				t.Fatal("MergeJSONObjects() with malformed base should return error, got nil")
 			}
-
-			var got map[string]any
-			if err := json.Unmarshal(merged, &got); err != nil {
-				t.Fatalf("merged result is not valid JSON: %v", err)
-			}
-
-			if _, ok := got[tt.wantKey]; !ok {
-				t.Fatalf("merged result missing key %q from overlay; got keys: %v", tt.wantKey, got)
+			if !errors.Is(err, ErrBaseMalformed) {
+				t.Errorf("MergeJSONObjects() error = %v; want ErrBaseMalformed", err)
 			}
 		})
 	}

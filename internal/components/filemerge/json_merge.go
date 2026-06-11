@@ -3,16 +3,23 @@ package filemerge
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
+var ErrBaseMalformed = errors.New("base JSON is malformed")
+
 func MergeJSONObjects(baseJSON []byte, overlayJSON []byte) ([]byte, error) {
-	base, err := unmarshalJSONObject(baseJSON)
-	if err != nil {
-		// Real user machines may have a malformed or non-JSON mcp.json (e.g. a file
-		// that starts with "a" or contains arbitrary text). The installer backup step
-		// already snapshots the existing file before apply, so proceeding with an
-		// empty base is safe and far preferable to aborting the whole install.
+	var base map[string]any
+	if len(baseJSON) > 0 {
+		if err := json.Unmarshal(baseJSON, &base); err != nil {
+			normalized := normalizeJSON(baseJSON)
+			if err2 := json.Unmarshal(normalized, &base); err2 != nil {
+				return nil, fmt.Errorf("%w: %v", ErrBaseMalformed, err2)
+			}
+		}
+	}
+	if base == nil {
 		base = map[string]any{}
 	}
 

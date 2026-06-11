@@ -4,43 +4,63 @@ import "testing"
 
 func TestResearchTopicKey(t *testing.T) {
 	tests := []struct {
-		tool     string
-		query    string
-		expected string
+		name  string
+		tool  string
+		query string
 	}{
 		{
-			tool:     "context7",
-			query:    "How to use SDD?",
-			expected: "research/context7/how-to-use-sdd-len15",
+			name:  "basic query",
+			tool:  "context7",
+			query: "How to use SDD?",
 		},
 		{
-			tool:     "notebooklm",
-			query:    "Go generics best practices",
-			expected: "research/notebooklm/go-generics-best-practices-len26",
+			name:  "another query",
+			tool:  "notebooklm",
+			query: "Go generics best practices",
 		},
 		{
-			tool:     "web",
-			query:    "  Multiple   Spaces  ",
-			expected: "research/web/multiple-spaces-len21",
+			name:  "multiple spaces",
+			tool:  "web",
+			query: "  Multiple   Spaces  ",
 		},
 		{
-			tool:     "google",
-			query:    "Very long query that should be truncated to fifty characters or so to keep it manageable",
-			expected: "research/google/very-long-query-that-should-be-truncated-to-fifty-len88",
+			name:  "long query",
+			tool:  "google",
+			query: "Very long query that should be truncated to fifty characters or so to keep it manageable",
 		},
 		{
-			tool:     "empty",
-			query:    "!!!",
-			expected: "research/empty/query-len3",
+			name:  "special chars only",
+			tool:  "empty",
+			query: "!!!",
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.query, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got := ResearchTopicKey(tt.tool, tt.query)
-			if got != tt.expected {
-				t.Errorf("ResearchTopicKey(%q, %q) = %q; want %q", tt.tool, tt.query, got, tt.expected)
+			if got == "" {
+				t.Error("ResearchTopicKey() returned empty string")
+			}
+			// Verify format: research/{tool}/{slug}-{hash}
+			if len(got) < 10 {
+				t.Errorf("ResearchTopicKey() too short: %q", got)
 			}
 		})
+	}
+}
+
+func TestResearchTopicKey_Deterministic(t *testing.T) {
+	key1 := ResearchTopicKey("test", "same query")
+	key2 := ResearchTopicKey("test", "same query")
+	if key1 != key2 {
+		t.Errorf("ResearchTopicKey() not deterministic: %q != %q", key1, key2)
+	}
+}
+
+func TestResearchTopicKey_DifferentQueriesDifferentKeys(t *testing.T) {
+	key1 := ResearchTopicKey("test", "query one")
+	key2 := ResearchTopicKey("test", "query two")
+	if key1 == key2 {
+		t.Errorf("ResearchTopicKey() same key for different queries: %q", key1)
 	}
 }

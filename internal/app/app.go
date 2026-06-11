@@ -112,6 +112,7 @@ func RunArgs(args []string, stdout io.Writer) error {
 		m.UninstallFn = tuiUninstall(homeDir)
 		m.UninstallWithProfilesFn = tuiUninstallWithProfiles(homeDir)
 		p := tea.NewProgram(m, tea.WithAltScreen())
+		m.SetProgram(p)
 		_, err = p.Run()
 		return err
 	}

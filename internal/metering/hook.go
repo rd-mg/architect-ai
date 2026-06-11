@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 )
 
 // Hook coordinates the shutdown-time banner print and optional Engram persistence.
@@ -80,6 +81,43 @@ func (h *Hook) Record(d UsageDelta) {
 	stats.Add(d)
 }
 
+func (h *Hook) PhaseStart(phase string) {
+	if h == nil {
+		return
+	}
+	h.mu.Lock()
+	stats := h.stats
+	h.mu.Unlock()
+	if stats != nil {
+		stats.RecordPhaseStart(phase)
+	}
+}
+
+func (h *Hook) PhaseEnd(phase string) {
+	if h == nil {
+		return
+	}
+	h.mu.Lock()
+	stats := h.stats
+	h.mu.Unlock()
+	if stats != nil {
+		stats.RecordPhaseEnd(phase)
+	}
+}
+
+func (h *Hook) PhaseBreakdown() map[string]int64 {
+	if h == nil {
+		return nil
+	}
+	h.mu.Lock()
+	stats := h.stats
+	h.mu.Unlock()
+	if stats == nil {
+		return nil
+	}
+	return stats.PhaseBreakdown()
+}
+
 // WithPersist attaches an Engram persistence callback. Call after Register.
 // If not called, shutdown only prints the banner; no Engram write happens.
 func (h *Hook) WithPersist(project string, fn PersistFunc) *Hook {
@@ -140,13 +178,34 @@ func (h *Hook) watchSignals() {
 	signal.Reset(syscall.SIGINT, syscall.SIGTERM)
 }
 
+// StatsSnapshot is a copy of session stats without the mutex.
+type StatsSnapshot struct {
+	AgentID      string
+	SessionStart time.Time
+	SessionID    string
+	PromptTokens     int64
+	CompletionTokens int64
+	CachedTokens     int64
+	CacheCreated     int64
+	RequestCount     int
+}
+
 // Stats returns the current stats snapshot (copy).
 // Intended for debugging / test introspection.
-func (h *Hook) Stats() SessionStats {
+func (h *Hook) Stats() StatsSnapshot {
 	if h == nil {
-		return SessionStats{}
+		return StatsSnapshot{}
 	}
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	return *h.stats
+	return StatsSnapshot{
+		AgentID:          h.stats.AgentID,
+		SessionStart:     h.stats.SessionStart,
+		SessionID:        h.stats.SessionID,
+		PromptTokens:     h.stats.PromptTokens,
+		CompletionTokens: h.stats.CompletionTokens,
+		CachedTokens:     h.stats.CachedTokens,
+		CacheCreated:     h.stats.CacheCreated,
+		RequestCount:     h.stats.RequestCount,
+	}
 }

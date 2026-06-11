@@ -1,6 +1,9 @@
 package gate
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // TestScore_Mode1 tests that simple tasks with low dimensions produce Mode 1.
 func TestScore_Mode1(t *testing.T) {
@@ -230,5 +233,90 @@ func TestScore_Mode3_Default(t *testing.T) {
 	// D3>=2, D1=1 (not >=3), D4=1 (not >=3) -> default: +++Forensic, +++Pragmatic
 	if len(postures) != 2 || postures[0] != "+++Forensic" || postures[1] != "+++Pragmatic" {
 		t.Errorf("expected [+++Forensic, +++Pragmatic], got %v", postures)
+	}
+}
+
+func TestPosturePriority_JointCritical_D3AndD4(t *testing.T) {
+	// D3=2, D4=3: joint critical — must return +++Forensic, not just +++Pragmatic
+	mode, postures := Score([5]int{0, 0, 2, 3, 0})
+	if mode != 3 {
+		t.Errorf("D3=2, D4=3: expected Mode 3, got %d", mode)
+	}
+	hasForensic := false
+	hasPragmatic := false
+	for _, p := range postures {
+		if p == "+++Forensic" {
+			hasForensic = true
+		}
+		if p == "+++Pragmatic" {
+			hasPragmatic = true
+		}
+	}
+	if !hasForensic {
+		t.Errorf("D3=2, D4=3: expected +++Forensic in postures, got %v", postures)
+	}
+	if !hasPragmatic {
+		t.Errorf("D3=2, D4=3: expected +++Pragmatic in postures, got %v", postures)
+	}
+}
+
+func TestPosturePriority_D4Only_NoPressure(t *testing.T) {
+	// D4=3, D3=0: context saturated only — must be +++Pragmatic only (no +++Forensic)
+	mode, postures := Score([5]int{0, 0, 0, 3, 0})
+	if mode != 3 {
+		t.Errorf("D4=3, D3=0: expected Mode 3, got %d", mode)
+	}
+	if len(postures) != 1 || postures[0] != "+++Pragmatic" {
+		t.Errorf("D4=3, D3=0: expected [+++Pragmatic], got %v", postures)
+	}
+}
+
+func TestPosturePriority_D3Only_NoContextSaturation(t *testing.T) {
+	// D3=2, D4=0: production incident, no context pressure — +++Forensic + +++Pragmatic
+	mode, postures := Score([5]int{0, 0, 2, 0, 0})
+	if mode != 3 {
+		t.Errorf("D3=2, D4=0: expected Mode 3, got %d", mode)
+	}
+	hasForensic := false
+	for _, p := range postures {
+		if p == "+++Forensic" {
+			hasForensic = true
+		}
+	}
+	if !hasForensic {
+		t.Errorf("D3=2, D4=0: expected +++Forensic, got %v", postures)
+	}
+}
+
+func TestValidateDecision_JointCritical_RequiresForensic(t *testing.T) {
+	h := &GateHeader{Mode: 3, D1: 0, D2: 0, D3: 2, D4: 3, Rationale: "production incident and context saturated"}
+	issues := ValidateDecision(h)
+	if len(issues) != 0 {
+		t.Errorf("D3=2,D4=3 Mode 3 with rationale: expected no issues, got %v", issues)
+	}
+}
+
+func TestValidateDecision_Mode2_EmptyRationale_Flagged(t *testing.T) {
+	h := &GateHeader{Mode: 2, D1: 2, D2: 1, D3: 0, D4: 1, Rationale: ""}
+	issues := ValidateDecision(h)
+	found := false
+	for _, iss := range issues {
+		if strings.Contains(iss, "rationale") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("Mode 2 with empty rationale should flag a rationale issue, got %v", issues)
+	}
+}
+
+func TestValidateDecision_Mode1_EmptyRationale_OK(t *testing.T) {
+	// Mode 1 does not require rationale
+	h := &GateHeader{Mode: 1, D1: 0, D2: 0, D3: 0, D4: 0, Rationale: ""}
+	issues := ValidateDecision(h)
+	for _, iss := range issues {
+		if strings.Contains(iss, "rationale") {
+			t.Errorf("Mode 1 should not require rationale, got issue: %s", iss)
+		}
 	}
 }

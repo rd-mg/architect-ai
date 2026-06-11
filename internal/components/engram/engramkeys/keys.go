@@ -1,6 +1,7 @@
 package engramkeys
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"regexp"
 	"strings"
@@ -9,8 +10,6 @@ import (
 var nonAlnum = regexp.MustCompile(`[^a-z0-9]+`)
 var collapseDash = regexp.MustCompile(`-+`)
 
-// ResearchTopicKey generates a stable, slugified topic key for research findings.
-// Format: research/{tool}/{slug}-len{N}
 func ResearchTopicKey(tool, query string) string {
 	cleaned := strings.ToLower(strings.TrimSpace(query))
 	cleaned = nonAlnum.ReplaceAllString(cleaned, "-")
@@ -22,5 +21,6 @@ func ResearchTopicKey(tool, query string) string {
 	if len(cleaned) > 50 {
 		cleaned = strings.Trim(cleaned[:50], "-")
 	}
-	return fmt.Sprintf("research/%s/%s-len%d", tool, cleaned, len(query))
+	hash := sha256.Sum256([]byte(query))
+	return fmt.Sprintf("research/%s/%s-%x", tool, cleaned, hash[:4])
 }

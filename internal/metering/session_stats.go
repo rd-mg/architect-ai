@@ -21,6 +21,20 @@ type UsageDelta struct {
 	Model            string
 }
 
+// PhaseRecord tracks token usage for a single SDD phase within the session.
+type PhaseRecord struct {
+	Phase            string
+	StartedAt        time.Time
+	CompletedAt      time.Time
+	PromptTokens     int64
+	CompletionTokens int64
+	CachedTokens     int64
+}
+
+// BudgetAlert is called when a phase exceeds its token budget.
+// Runs in a separate goroutine; must be goroutine-safe.
+type BudgetAlert func(phase string, used, limit int64)
+
 // SessionStats accumulates usage across a single CLI/IDE session.
 type SessionStats struct {
 	mu sync.Mutex
@@ -37,6 +51,12 @@ type SessionStats struct {
 
 	// Per-model breakdown for pricing calculations.
 	perModel map[string]*modelStats
+
+	// Per-phase breakdown for SDD cost observability (v0.3+).
+	perPhase     map[string]*PhaseRecord
+	currentPhase string
+	phaseLimit   int64       // 0 = no limit
+	onBudget     BudgetAlert // nil = no alert
 }
 
 type modelStats struct {
@@ -54,14 +74,88 @@ func NewSessionStats(agentID, sessionID string) *SessionStats {
 		SessionID:    sessionID,
 		SessionStart: time.Now(),
 		perModel:     make(map[string]*modelStats),
+		perPhase:     make(map[string]*PhaseRecord),
 	}
 }
 
+func (s *SessionStats) WithBudgetAlert(limitPerPhase int64, fn BudgetAlert) *SessionStats {
+	s.phaseLimit = limitPerPhase
+	s.onBudget = fn
+	return s
+}
+
+func (s *SessionStats) RecordPhaseStart(phase string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.perPhase == nil {
+		s.perPhase = make(map[string]*PhaseRecord)
+	}
+	s.currentPhase = phase
+	if _, exists := s.perPhase[phase]; !exists {
+		s.perPhase[phase] = &PhaseRecord{
+			Phase:     phase,
+			StartedAt: time.Now(),
+		}
+	}
+}
+
+func (s *SessionStats) RecordPhaseEnd(phase string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if pr, ok := s.perPhase[phase]; ok {
+		if pr.CompletedAt.IsZero() {
+			pr.CompletedAt = time.Now()
+		}
+	}
+	if s.currentPhase == phase {
+		s.currentPhase = ""
+	}
+}
+
+func (s *SessionStats) PhaseBreakdown() map[string]int64 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make(map[string]int64, len(s.perPhase))
+	for phase, pr := range s.perPhase {
+		out[phase] = pr.PromptTokens + pr.CompletionTokens
+	}
+	return out
+}
+
+func (s *SessionStats) EngramPhaseCostContent(project, change, sessionID string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	total := s.PromptTokens + s.CompletionTokens
+	cacheRate := 0.0
+	if s.PromptTokens > 0 {
+		cacheRate = 100.0 * float64(s.CachedTokens) / float64(s.PromptTokens)
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "project: %s\n", project)
+	fmt.Fprintf(&b, "change: %s\n", change)
+	fmt.Fprintf(&b, "session_id: %s\n", sessionID)
+	fmt.Fprintf(&b, "total_tokens: %d\n", total)
+	fmt.Fprintf(&b, "cache_hit_rate_pct: %.1f\n", cacheRate)
+	fmt.Fprintf(&b, "phases:\n")
+	for phase, pr := range s.perPhase {
+		phaseTotal := pr.PromptTokens + pr.CompletionTokens
+		dur := ""
+		if !pr.CompletedAt.IsZero() {
+			dur = pr.CompletedAt.Sub(pr.StartedAt).Round(time.Second).String()
+		}
+		fmt.Fprintf(&b, "  %s: {tokens: %d, cached: %d, duration: %q}\n",
+			phase, phaseTotal, pr.CachedTokens, dur)
+	}
+	return b.String()
+}
+
 // Add folds a single UsageDelta into the running totals.
+// Also attributes tokens to the current SDD phase (if any).
 // Safe for concurrent callers.
 func (s *SessionStats) Add(d UsageDelta) {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	s.PromptTokens += d.PromptTokens
 	s.CompletionTokens += d.CompletionTokens
@@ -83,6 +177,32 @@ func (s *SessionStats) Add(d UsageDelta) {
 	ms.CachedTokens += d.CachedTokens
 	ms.CacheCreated += d.CacheCreated
 	ms.Requests++
+
+	var phaseTotal int64
+	var shouldAlert bool
+	if s.currentPhase != "" {
+		pr, exists := s.perPhase[s.currentPhase]
+		if !exists {
+			pr = &PhaseRecord{Phase: s.currentPhase, StartedAt: time.Now()}
+			s.perPhase[s.currentPhase] = pr
+		}
+		pr.PromptTokens += d.PromptTokens
+		pr.CompletionTokens += d.CompletionTokens
+		pr.CachedTokens += d.CachedTokens
+		phaseTotal = pr.PromptTokens + pr.CompletionTokens
+		if s.phaseLimit > 0 && phaseTotal > s.phaseLimit && s.onBudget != nil {
+			shouldAlert = true
+		}
+	}
+	phase := s.currentPhase
+	limit := s.phaseLimit
+	alert := s.onBudget
+
+	s.mu.Unlock()
+
+	if shouldAlert {
+		go alert(phase, phaseTotal, limit)
+	}
 }
 
 // TotalTokens returns prompt + completion (cached and cache-created are part of prompt).

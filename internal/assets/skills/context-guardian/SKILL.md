@@ -38,12 +38,50 @@ Always operates under **+++Forensic**:
 
 Orchestrator MUST invoke when ANY condition holds:
 
-1. `char_count(context_history) >= 100_000` → invoke
+1. `char_count(context_history) >= active_threshold` → invoke
 2. Sub-agent `skill_resolution: none` in last 2 turns → invoke
 3. D4 >= 2 in current reasoning evaluation → invoke
 4. 3+ file reads in same context window without compaction → invoke
 5. User says "compact", "reset context", "what's my state" → invoke
 6. `attempt_count >= 2` for current phase → invoke (context may be corrupted)
+
+## Cooldown Rule (MANDATORY — prevents compaction loops)
+
+After ANY compaction event:
+1. SET `protected_fact: last_compaction_delegation={N}` where N = current delegation count.
+2. For the next 3 delegations after compaction: SKIP triggers 1, 2, 3, 4, and 6.
+   Only trigger 5 (explicit user request) fires during cooldown.
+3. CHECK before evaluating triggers: if `current_delegation - last_compaction_delegation < 3` → skip.
+
+Rationale: skill reload (foundation + compact rules + protocol) adds ~20KB per delegation
+after compaction. Without cooldown, the reloaded skills immediately re-trigger the guardian.
+
+## Dynamic Threshold (prevents immediate re-trigger during skill reload)
+
+`active_threshold` is NOT a fixed 100_000 chars. It adjusts:
+
+- **Base threshold**: 100_000 chars
+- **Post-compaction threshold** (applies for 5 delegations after compaction):
+  `active_threshold = 150_000 chars`
+  Accommodates mandatory skill/protocol reload without immediate re-trigger.
+- **Return to base**: after 5 delegations post-compaction, `active_threshold = 100_000`.
+
+Track via `protected_fact: post_compact_delegations_remaining={N}` (starts at 5, decrements each delegation).
+
+## Post-Compaction D4 Re-evaluation (MANDATORY)
+
+After `/compact` or `/compress` completes:
+1. Re-estimate D4 from char_count of rebuilt context (post-pack context, NOT pre-compact).
+2. If `new_D4 < pre_compact_D4`: EMIT `[MODE_RECALIBRATED: Mode{old}→Mode{new} | D4:{old}→{new}]`
+3. Update the injected mode header for the NEXT delegation to reflect the new D4.
+4. DO NOT continue in the old mode — context pressure was relieved by compaction.
+
+Example:
+```
+Pre-compact:  D4=3 → Mode 3 (+++Pragmatic)
+Post-compact: D4=0 → [MODE_RECALIBRATED: Mode3→Mode1 | D4:3→0]
+Next delegation: [MODE 1 | D1=2, D2=1, D3=0, D4=0] Normal task complexity
+```
 
 ## Compaction Strategy
 
@@ -244,19 +282,46 @@ protected_facts:
 
 ## Persistence
 
-After assembling Context Pack, persist to Engram:
+After assembling Context Pack, persist to Engram with versioned topic_key:
 
 ```
+# Increment compaction_count protected_fact before saving
+compaction_count = protected_facts.compaction_count + 1
+SET protected_fact: compaction_count={compaction_count}
+
+# Save versioned pack (preserves full history)
 mem_save(
-  title: "context-pack/{project}/{change-or-session-id}",
-  topic_key: "context-pack/{project}/{change-or-session-id}",
+  title: "context-pack/{project}/{session-id}/pack-{compaction_count}",
+  topic_key: "context-pack/{project}/{session-id}/pack-{compaction_count}",
   type: "architecture",
   project: "{project}",
   content: "{full markdown Context Pack}"
 )
+
+# Update the "current" pointer (always points to latest pack)
+mem_save(
+  title: "context-pack/{project}/{session-id}/current",
+  topic_key: "context-pack/{project}/{session-id}/current",
+  type: "architecture",
+  project: "{project}",
+  content: "→ pack-{compaction_count}"
+)
 ```
 
-Enables recovery after compaction: orchestrator retrieves via `mem_search` + `mem_get_observation`.
+### Retrieval Protocol
+
+On session resume or post-compaction reload:
+1. `mem_search("context-pack/{project}/{session-id}/current")` → get pointer entry
+2. `mem_get_observation(pointer_id)` → read "→ pack-N"
+3. `mem_search("context-pack/{project}/{session-id}/pack-N")` → get pack entry
+4. `mem_get_observation(pack_id)` → read full Context Pack
+
+### Pack Versioning Benefits
+
+- Full compaction history preserved: pack-1, pack-2, … pack-N
+- Debug: `architect-ai ctx-history {session-id}` lists all packs with timestamps
+- Regression: if pack-3 is corrupt, orchestrator can fall back to pack-2
+- DO NOT delete prior packs — Engram upserts by topic_key, prior versions remain accessible
 
 ## Size Budget
 
