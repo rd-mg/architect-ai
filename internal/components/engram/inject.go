@@ -2,6 +2,7 @@ package engram
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -300,7 +301,16 @@ func mergeJSONFile(path string, overlay []byte) (filemerge.WriteResult, error) {
 
 	merged, err := filemerge.MergeJSONObjects(baseJSON, overlay)
 	if err != nil {
-		return filemerge.WriteResult{}, err
+		// Recover from malformed JSON by treating it as an empty object.
+		// Real users may have broken mcp.json files (e.g. "allow: all").
+		if errors.Is(err, filemerge.ErrBaseMalformed) {
+			merged, err = filemerge.MergeJSONObjects(nil, overlay)
+			if err != nil {
+				return filemerge.WriteResult{}, err
+			}
+		} else {
+			return filemerge.WriteResult{}, err
+		}
 	}
 
 	return filemerge.WriteFileAtomic(path, merged, 0o644)

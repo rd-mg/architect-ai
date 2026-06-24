@@ -44,8 +44,8 @@ func TestDetectInstalled(t *testing.T) {
 	if cap.Version != "context-mode v1.0.0" {
 		t.Errorf("Version = %q, want %q", cap.Version, "context-mode v1.0.0")
 	}
-	if !cap.DoctorAvailable {
-		t.Error("Expected DoctorAvailable=true when installed")
+	if !cap.DoctorClean {
+		t.Error("Expected DoctorClean=true when installed")
 	}
 }
 

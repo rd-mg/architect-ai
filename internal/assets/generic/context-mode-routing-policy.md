@@ -19,4 +19,21 @@ Do not:
 - Modify dot-directory config during source refactoring.
 
 Stop when enough evidence exists.
+
+## ctx_batch_execute Pattern
+
+For multiple related searches in one phase step:
+  ctx_batch_execute(["cmd1", "cmd2", "cmd3"])
+  → Single MCP call, all outputs compressed, returned as one block
+
+Better than: sequential rg calls that each flood the context window.
+Threshold: use batch_execute when running ≥3 shell commands in the same step.
+Exception: Commands with dependencies (output of cmd1 feeds cmd2) → stay sequential.
+
+## ctx_fetch_and_index Pattern
+
+For large web pages or external docs needed more than once:
+  ctx_fetch_and_index(url)  → fetch, chunk, index into context-mode store
+  ctx_search(query)         → retrieve relevant chunks by keyword
+  NOT: Raw file/web content pasted into prompt
 <!-- architect-ai:context-mode-routing:end -->

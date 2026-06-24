@@ -85,10 +85,10 @@ func atomicWrite(targetPath string, data []byte, perm os.FileMode) error {
 	return os.Rename(tmpPath, targetPath)
 }
 
-// WriteAtomic persists state using atomic write (write-then-rename).
-// This is the same as Write but uses atomic file replacement to prevent
-// corruption from partial writes during crashes.
 func WriteAtomic(homeDir string, s InstallState) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	dir := filepath.Join(homeDir, stateDir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err

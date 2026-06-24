@@ -1,0 +1,5 @@
+{
+  "description": "Daily cleanup of openspec/changes/archive/ entries older than configured TTL.",
+  "builtin": "schedule",
+  "args": ["0 2 * * *", "architect-ai", "archive", "--prune", "--max-age", "30d"]
+}

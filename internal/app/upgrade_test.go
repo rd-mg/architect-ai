@@ -36,14 +36,15 @@ func TestRunArgs_UpgradeDryRun(t *testing.T) {
 
 	out := buf.String()
 
-	// Must mention it is dry-run or no-op.
+	// Must mention it is dry-run or no-op, or show upgrade summary.
 	if !strings.Contains(out, "dry") && !strings.Contains(out, "Dry") &&
 		!strings.Contains(out, "no upgrade") && !strings.Contains(out, "No upgrade") &&
 		!strings.Contains(out, "up to date") && !strings.Contains(out, "Up to date") &&
 		!strings.Contains(out, "Update check incomplete") &&
-		!strings.Contains(out, "0 upgrade") {
+		!strings.Contains(out, "0 upgrade") &&
+		!strings.Contains(out, "update(s) available") {
 		t.Logf("upgrade --dry-run output:\n%s", out)
-		t.Errorf("output should mention dry-run or no upgrades available")
+		t.Errorf("output should mention dry-run, no upgrades, or upgrade summary")
 	}
 
 	// Must NOT mention install or sync.

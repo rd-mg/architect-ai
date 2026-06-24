@@ -1,0 +1,47 @@
+# Binaries
+/architect-ai
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of go coverage
+*.out
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.tar
+cmd/architect-ai/main
+dist/
+
+# Agent tooling metadata (generated per-user, not product code)
+.atl/
+.agent/
+.agents/
+
+# OpenSpec
+openspec/changes/
+!openspec/changes/archive/
+
+# Python
+__pycache__/
+*.pyc
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
+/.atl

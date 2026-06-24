@@ -12,6 +12,12 @@ Before any tool call or response, use `sequential_thinking` (if available) to an
 2. **Strategy**: Determine optimal path.
 3. **Safety**: Identify architectural risks.
 
+> **Fallback (if sequential_thinking tool unavailable):**  
+> Write an explicit <thinking> block with:  
+> (a) problem restatement, (b) D1-D4 classification, (c) 3 alternative approaches,  
+> (d) selected approach + rationale.  
+> This satisfies the sequential-thinking contract without the MCP tool.
+
 ## Intent Classification
 Classify every request:
 - `SDD_INTENT`: Complex changes requiring SDD pipeline. Forward to L1 SDD Orchestrator.

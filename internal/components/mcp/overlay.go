@@ -13,6 +13,7 @@ const (
 	ServerEngram     ServerKind = "engram"
 	ServerNotebookLM ServerKind = "notebooklm-mcp"
 	ServerSequentialThinking ServerKind = "sequential-thinking"
+	ServerCodeGraph  ServerKind = "codegraph"
 )
 
 type Options struct{}
@@ -25,6 +26,8 @@ func OverlayFor(agent model.AgentID, server ServerKind, opts Options) ([]byte, e
 		return notebookLMOverlay(agent)
 	case ServerSequentialThinking:
 		return sequentialThinkingOverlay(agent)
+	case ServerCodeGraph:
+		return codegraphOverlay(agent)
 	default:
 		return nil, fmt.Errorf("unsupported MCP server: %s", server)
 	}
@@ -250,5 +253,57 @@ func notebookLMOverlay(agent model.AgentID) ([]byte, error) {
 }`), nil
 	default:
 		return nil, fmt.Errorf("unsupported agent for notebooklm: %s", agent)
+	}
+}
+
+func codegraphOverlay(agent model.AgentID) ([]byte, error) {
+	switch agent {
+	case model.AgentGeminiCLI:
+		return []byte(`{
+  "mcpServers": {
+    "codegraph": {
+      "command": "npx",
+      "args": ["-y", "@colbymchenry/codegraph", "serve", "--mcp"],
+      "timeout": 30000,
+      "trust": true
+    }
+  }
+}`), nil
+	case model.AgentOpenCode, model.AgentKilocode:
+		return []byte(`{
+  "mcp": {
+    "codegraph": {
+      "type": "local",
+      "command": ["npx", "-y", "@colbymchenry/codegraph", "serve", "--mcp"],
+      "enabled": true
+    }
+  }
+}`), nil
+	case model.AgentVSCodeCopilot, model.AgentCursor:
+		return []byte(`{
+  "servers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@colbymchenry/codegraph", "serve", "--mcp"]
+    }
+  }
+}`), nil
+	case model.AgentAntigravity, model.AgentWindsurf, model.AgentQwenCode, model.AgentKiroIDE:
+		return []byte(`{
+  "mcpServers": {
+    "codegraph": {
+      "command": "npx",
+      "args": ["-y", "@colbymchenry/codegraph", "serve", "--mcp"]
+    }
+  }
+}`), nil
+	case model.AgentClaudeCode:
+		return []byte(`{
+  "command": "npx",
+  "args": ["-y", "@colbymchenry/codegraph", "serve", "--mcp"]
+}`), nil
+	default:
+		return nil, fmt.Errorf("unsupported agent for codegraph: %s", agent)
 	}
 }

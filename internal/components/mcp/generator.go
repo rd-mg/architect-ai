@@ -51,6 +51,10 @@ func generateVSCode(engramBin string, opts GenerateOptions) map[string]interface
 			"type": "stdio", "command": "npx",
 			"args": []string{"-y", "@modelcontextprotocol/server-sequential-thinking"},
 		},
+		"codegraph": map[string]interface{}{
+			"type": "stdio", "command": "npx",
+			"args": []string{"-y", "@colbymchenry/codegraph", "serve", "--mcp"},
+		},
 	}
 	result := map[string]interface{}{"servers": servers}
 	if opts.IsOdooProject {
@@ -83,6 +87,10 @@ func generateAntigravity(engramBin string, opts GenerateOptions) map[string]inte
 			"command": "npx", "args": []string{"-y", "@modelcontextprotocol/server-sequential-thinking"},
 			"timeout": 30000, "trust": true,
 		},
+		"codegraph": map[string]interface{}{
+			"command": "npx", "args": []string{"-y", "@colbymchenry/codegraph", "serve", "--mcp"},
+			"timeout": 30000, "trust": true,
+		},
 	}
 	if opts.IsOdooProject {
 		servers["odoo"] = map[string]interface{}{
@@ -108,6 +116,10 @@ func generateGemini(engramBin string, opts GenerateOptions) map[string]interface
 				"command": "npx", "args": []string{"-y", "@modelcontextprotocol/server-sequential-thinking"},
 				"timeout": 30000, "trust": true,
 			},
+			"codegraph": map[string]interface{}{
+				"command": "npx", "args": []string{"-y", "@colbymchenry/codegraph", "serve", "--mcp"},
+				"timeout": 30000, "trust": true,
+			},
 		},
 		"model":    map[string]interface{}{"name": ""},
 		"security": map[string]interface{}{"auth": map[string]interface{}{"selectedType": "oauth-personal"}},
@@ -129,6 +141,7 @@ func generateOpenCode(engramBin string, opts GenerateOptions) map[string]interfa
 			"context-mode": map[string]interface{}{"type": "local", "command": []string{"npx", "-y", "@mksglu/context-mode"}, "enabled": &tr},
 			"engram":      map[string]interface{}{"type": "local", "command": []string{engramBin, "mcp", "--tools=agent"}},
 			"sequential-thinking": map[string]interface{}{"type": "local", "command": []string{"npx", "-y", "@modelcontextprotocol/server-sequential-thinking"}, "enabled": &tr},
+			"codegraph": map[string]interface{}{"type": "local", "command": []string{"npx", "-y", "@colbymchenry/codegraph", "serve", "--mcp"}, "enabled": &tr},
 		},
 	}
 }
@@ -140,6 +153,7 @@ func generateClaude(engramBin string, opts GenerateOptions) map[string]interface
 			"context7":           map[string]interface{}{"command": "npx", "args": []string{"-y", "@upstash/context7-mcp@latest"}, "type": "stdio"},
 			"sequential_thinking": map[string]interface{}{"command": "npx", "args": []string{"-y", "@modelcontextprotocol/server-sequential-thinking"}, "type": "stdio"},
 			"context_mode":       map[string]interface{}{"command": "npx", "args": []string{"-y", "@mksglu/context-mode"}, "type": "stdio"},
+			"codegraph":          map[string]interface{}{"command": "npx", "args": []string{"-y", "@colbymchenry/codegraph", "serve", "--mcp"}, "type": "stdio"},
 		},
 	}
 }

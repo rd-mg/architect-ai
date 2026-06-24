@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "command(git)",
+      "command(go test)",
+      "command(npx)",
+      "mcp(*)"
+    ],
+    "deny": [
+      "command(rm -rf /)"
+    ],
+    "ask": [
+      "command(npm install)",
+      "write_file(*)"
+    ]
+  },
+  "enableTerminalSandbox": false
+}

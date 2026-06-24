@@ -42,6 +42,22 @@ Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 4. **Logic Isolation**: Read only the specific blocks of code (functions/methods) identified in step 2.
 5. **Pattern Comparison**: Compare found implementation with established project patterns.
 
+**Batch Execute Pattern (MANDATORY for 3+ searches):**
+```
+ctx_batch_execute([
+  "rg '{change_topic}' --type {lang} -l",
+  "rg '^func|^type|^class' {primary_file}",
+  "rg '{change_topic}' --type {lang} -A 3 -B 1"
+])
+→ Single context-mode call, compressed output, no flooding
+```
+
+**Semantic Graph (if codegraph_context available):**
+```
+codegraph_context(query: "{change_topic}", maxNodes: 25, format: "markdown")
+→ Replace/supplement 3-5 ripgrep calls with semantic results
+```
+
 Do NOT `cat` entire files unless they are under 50 lines. Identify constraints. Do NOT modify code.
 
 ## Artifact Store: {mode}

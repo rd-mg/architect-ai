@@ -2,7 +2,7 @@
 
 > A multi-agent framework that turns any supported IDE or CLI (Claude Code, Cursor, Gemini CLI, Codex, Antigravity, Kiro, OpenCode, VSCode, and more) into a Spec-Driven Development (SDD) workspace. One orchestrator, many agents, shared persistent memory via Engram, and curated research routing (ripgrep → local → Context7 → internet-by-permission).
 
-**Status**: V3.3.0 — Parallel multi-agent architecture with pipeline parallelization, skill registry concurrency, orchestrator routing fork, context compression, and state hardening
+**Status**: V4.0.0 — MCP universal coverage (CodeGraph, sequential-thinking, context-mode), pipeline parallelization with errgroup, Dynamic Context Assembler, David Kim Context Engineering integration, version-agnostic MCP configs
 
 ---
 
@@ -42,6 +42,10 @@ Architect-AI installs a thin coordination layer on top of whatever coding agent 
 - Detects context-mode as an external companion runtime and routes around it safely.
 - Manages installed files through ownership manifests for safe sync/uninstall/purge.
 - Runs hooks and CLI subprocesses through bounded execution for runtime stability.
+- **V4: Universal MCP coverage** — CodeGraph, sequential-thinking, and context-mode configured for all 14 agents.
+- **V4: Pipeline parallelization** — errgroup-based parallel execution for independent steps.
+- **V4: Dynamic Context Assembly** — keyword-filtered skill injection based on phase and task.
+- **V4: David Kim Context Engineering** — Protocol Shells, Token Budget tracking, Self-Refinement quality gates.
 
 ---
 
@@ -443,27 +447,33 @@ Root hidden directories such as `.agent/`, `.agents/`, `.atl/`, `.claude/`, `.ge
 architect-ai/
 ├── cmd/architect-ai/               # CLI entry point
 ├── docs/                           # User-facing documentation
+├── fix_architect-ai/               # V4 upgrade plans (14 agent plans + common)
 ├── internal/
 │   ├── agentbuilder/               # Dynamic agent generation
 │   ├── agents/                     # Per-agent adapters (Claude, Gemini, etc.)
 │   ├── app/                        # Application entry and command routing
 │   ├── assets/                     # Prompts, skills, personas, overlays
+│   │   ├── antigravity-cli/        # Antigravity CLI assets (NEW in V4)
 │   │   ├── skills/                 # Cross-cutting skills (ripgrep, bash-expert, etc.)
 │   │   └── overlays/               # Specialist project overlays (Odoo, etc.)
 │   ├── backup/                     # Config snapshot and restore logic
 │   ├── catalog/                    # Registry of available agents and components
 │   ├── cli/                        # CLI command implementations
 │   ├── components/                 # Shared logic (GGA, SDD, hooks, etc.)
+│   │   ├── contextmode/            # Context-mode detection (enhanced in V4)
+│   │   ├── mcp/                    # MCP components: codegraph, sequential-thinking (NEW in V4)
+│   │   └── toolpolicy/             # Tool policy YAML generator (NEW in V4)
 │   ├── installcmd/                 # Installation pipeline stages
 │   ├── metering/                   # Session stats and token pricing
 │   ├── model/                      # Shared domain models and types
 │   ├── opencode/                   # OpenCode-specific multi-mode logic
-│   ├── pipeline/                   # Sequential execution orchestrator
+│   ├── pipeline/                   # Parallel execution orchestrator (errgroup in V4)
 │   ├── planner/                    # Install/Sync dependency resolver
 │   ├── process/                    # Bounded subprocess runner
+│   ├── protoshell/                 # Dynamic Context Assembler (NEW in V4)
 │   ├── scope/                      # Context boundary management
 │   ├── skills/                     # Skill resolution and loading logic
-│   ├── state/                      # Local state persistence (state.json)
+│   ├── state/                      # Thread-safe state persistence (mutex in V4)
 │   ├── system/                     # OS/Platform detection and validation
 │   ├── tui/                        # Bubbletea-based interactive UI
 │   ├── update/                     # Update check and self-update logic
@@ -479,6 +489,7 @@ architect-ai/
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| **V4.0.0** | 2026-06 | MCP universal coverage: CodeGraph, sequential-thinking, context-mode added to all 14 agents. Pipeline parallelization with errgroup. Dynamic Context Assembler (protoshell). David Kim Context Engineering: Protocol Shells, Token Budget, Self-Refinement, Few-Shot Examples. Context7 two-step pattern. Version-agnostic MCP configs. Thread-safe state access with mutex. Antigravity-CLI full asset set. Tool Policy YAML generator. |
 | **V3.3.0** | 2026-05 | Gentleman Angel suite: Nonce DAG for state sync, Empirical Feedback Loop (+++Empirical) in phase protocols, context-aware pipeline integration (context.Context hardening), differential context injection via skill-registry.md indexing. |
 | **V3.2.1** | 2026-05 | Orchestrator directive improvements: Global System Directives (Caveman + Context-Mode), Primary vs Fallback orchestration modes, SDD Pipeline Enforcement (workflow validation, TDD prerequisite lock, testing protocol strictures, archival sequence with commit + doc updates). |
 | **V3.2** | 2026-05 | Manifest-first purge, bounded subprocess runner, Caveman output-only clarification, Engram tool routing, context-mode external companion policy, dot-directory scope guard, optional NotebookLM policy. |
@@ -487,7 +498,7 @@ architect-ai/
 | V2.x | 2025-Q4 | Multi-agent orchestrator; Engram integration |
 | V1.x | 2025-Q3 | Initial SDD implementation |
 
-See `plans/v3.1-remediation-plan.md` for the full V3.1 change list.
+See `fix_architect-ai/` for the V4 upgrade plans and implementation details.
 
 ---
 

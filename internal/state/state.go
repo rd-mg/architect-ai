@@ -7,9 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/rd-mg/architect-ai/internal/model"
 )
+
+// mu protects concurrent access to the state file on disk.
+// All exported Read/Write callers go through this lock.
+var mu sync.RWMutex
 
 const stateDir = ".architect-ai"
 const stateFile = "state.json"
@@ -61,9 +66,10 @@ func hexSlug(s string) string {
 	return hex.EncodeToString(h[:])[:12]
 }
 
-// Read reads and unmarshals the state file from the given home directory.
-// Returns an error if the file does not exist or cannot be decoded.
 func Read(homeDir string) (InstallState, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+
 	data, err := os.ReadFile(Path(homeDir))
 	if err != nil {
 		return InstallState{}, err
@@ -75,9 +81,10 @@ func Read(homeDir string) (InstallState, error) {
 	return s, nil
 }
 
-// Write persists the full install state to disk under the given home directory.
-// It creates the .architect-ai directory if it does not already exist.
 func Write(homeDir string, s InstallState) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	dir := filepath.Join(homeDir, stateDir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
@@ -91,6 +98,9 @@ func Write(homeDir string, s InstallState) error {
 // DiscoverManifests returns a map of AgentID -> []string (absolute paths to manifest files)
 // by scanning the managed directory in the given home directory.
 func DiscoverManifests(homeDir string) (map[model.AgentID][]string, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+
 	managedDir := filepath.Join(homeDir, stateDir, "managed")
 	_, err := os.Stat(managedDir)
 	if err != nil {

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // Runner executes a list of steps for a given stage.
@@ -122,4 +124,86 @@ func (r Runner) emitProgress(event ProgressEvent) {
 		event.Nonce = r.Nonce
 		r.OnProgress(event)
 	}
+}
+
+// GroupMode controls whether steps in a StepGroup run sequentially or in parallel.
+type GroupMode int
+
+const (
+	Sequential GroupMode = iota
+	Parallel
+)
+
+// StepGroup bundles steps with an execution mode.
+type StepGroup struct {
+	Steps []Step
+	Mode  GroupMode
+}
+
+// RunGroup executes steps sequentially or in parallel depending on Mode.
+// Parallel mode uses errgroup to cancel remaining goroutines on first error.
+// Call this AFTER the B6 mutex fix — parallel runners write shared state.
+func (r Runner) RunGroup(ctx context.Context, stage Stage, g StepGroup) StageResult {
+	if g.Mode == Sequential {
+		return r.Run(ctx, stage, g.Steps)
+	}
+
+	if r.StepTimeout == 0 {
+		r.StepTimeout = 5 * time.Minute
+	}
+
+	result := StageResult{Stage: stage, Success: true, Steps: make([]StepResult, 0, len(g.Steps))}
+
+	eg, egCtx := errgroup.WithContext(ctx)
+
+	for _, step := range g.Steps {
+		step := step // capture loop variable
+		eg.Go(func() error {
+			r.emitProgress(ProgressEvent{StepID: step.ID(), Stage: stage, Status: StepStatusRunning})
+
+			started := time.Now().UTC()
+			var lastErr error
+			var status StepStatus = StepStatusFailed
+
+			done := make(chan error, 1)
+			go func() {
+				done <- step.Run(egCtx)
+			}()
+
+			select {
+			case err := <-done:
+				lastErr = err
+				if err == nil {
+					status = StepStatusSucceeded
+				}
+			case <-egCtx.Done():
+				lastErr = egCtx.Err()
+				status = StepStatusInterrupted
+			case <-time.After(r.StepTimeout):
+				lastErr = fmt.Errorf("step timed out after %v", r.StepTimeout)
+				status = StepStatusTerminated
+			}
+
+			finished := time.Now().UTC()
+			stepResult := StepResult{
+				StepID:     step.ID(),
+				StartedAt:  started,
+				FinishedAt: finished,
+				Status:     status,
+				Err:        lastErr,
+			}
+
+			result.Steps = append(result.Steps, stepResult)
+			r.emitProgress(ProgressEvent{StepID: step.ID(), Stage: stage, Status: status, Err: lastErr})
+
+			return lastErr
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		result.Success = false
+		result.Err = err
+	}
+
+	return result
 }
