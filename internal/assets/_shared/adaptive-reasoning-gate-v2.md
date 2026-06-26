@@ -3,7 +3,7 @@
 
 ### Your Mode is Pre-Computed
 
-The orchestrator has computed your D1-D4 from DAG state and task complexity.
+The orchestrator (L1a for general tasks; L1b for SDD tasks) has computed your D1-D4 from DAG state and task complexity.
 USE the injected mode below. DO NOT re-compute. DO NOT self-score.
 
 **Injected Mode Header** (first line of this agent's response MUST reproduce this):

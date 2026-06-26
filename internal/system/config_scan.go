@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 // ConfigState records the filesystem presence of an agent's global config directory.
@@ -88,4 +89,22 @@ func ScanConfigs(homeDir string) []ConfigState {
 	}
 
 	return states
+}
+
+// SessionState represents the cached tool-availability state forwarded from L0
+// to L1a/L1b orchestrators. It is persisted to Engram under the topic key
+// "session-state/{project}/tools" and validated by age before reuse.
+//
+// The schema mirrors the JSON shape saved by the orchestrator session-state
+// cache logic in the prompt layer (thinking-agent.md / general-orchestrator.md).
+type SessionState struct {
+	Tools     map[string]bool `json:"tools"`
+	Timestamp time.Time       `json:"timestamp"`
+	Project   string          `json:"project"`
+}
+
+// IsValid reports whether the session state is still within the maxAge window.
+// A zero Timestamp is always considered invalid.
+func (s SessionState) IsValid(maxAge time.Duration) bool {
+	return !s.Timestamp.IsZero() && time.Since(s.Timestamp) < maxAge
 }
