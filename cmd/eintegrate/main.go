@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -37,6 +38,36 @@ func main() {
 		errs = append(errs, "E-10: arch-hardening.md missing HARDENING_COMPLETE")
 	}
 
+	// Phase 3: Orchestrator redesign checks (E-17 through E-23)
+	// E-17: L0 must NOT contain sequential_thinking Intention Gate
+	if checkFile("internal/assets/generic/thinking-agent.md", "sequential_thinking") {
+		errs = append(errs, "E-17: thinking-agent.md still contains sequential_thinking Intention Gate — remove it")
+	}
+	// E-18: L1a must NOT contain Router Gate
+	if checkFile("internal/assets/generic/general-orchestrator.md", "ROUTER GATE") {
+		errs = append(errs, "E-18: general-orchestrator.md still contains ROUTER GATE — remove it (L0 owns routing)")
+	}
+	// E-19: L1b must have Step 0 D1-D4 SDD classification
+	if !checkFile("internal/assets/generic/sdd-orchestrator.md", "D1-D4 Classification (SDD-Specific)") {
+		errs = append(errs, "E-19: sdd-orchestrator.md missing Step 0 D1-D4 SDD Classification")
+	}
+	// E-20: L0 must have Intent Router section
+	if !checkFile("internal/assets/generic/thinking-agent.md", "Intent Router") {
+		errs = append(errs, "E-20: thinking-agent.md missing Intent Router section (L0 proxy gate)")
+	}
+	// E-21: L0 Architecture Constitution must be compact (< 200 words)
+	if constitutionWordCount("internal/assets/generic/thinking-agent.md") > 200 {
+		errs = append(errs, "E-21: L0 Architecture Constitution exceeds 200 words — compress it")
+	}
+	// E-22: L1b must contain Forwarded State check in Session-Setup
+	if !checkFile("internal/assets/generic/sdd-orchestrator.md", "session_state") {
+		errs = append(errs, "E-22: sdd-orchestrator.md missing session_state forwarding check")
+	}
+	// E-23: L1a must contain Session State Reader
+	if !checkFile("internal/assets/generic/general-orchestrator.md", "Session State Reader") {
+		errs = append(errs, "E-23: general-orchestrator.md missing Session State Reader section")
+	}
+
 	if len(errs) > 0 {
 		fmt.Fprintln(os.Stderr, "Phase E Integration checks failed:")
 		for _, e := range errs {
@@ -54,4 +85,23 @@ func checkFile(path, substr string) bool {
 		return false
 	}
 	return strings.Contains(string(data), substr)
+}
+
+func constitutionWordCount(path string) int {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return 0
+	}
+	content := string(data)
+	start := strings.Index(content, "## Architecture Constitution")
+	if start < 0 {
+		return 0
+	}
+	end := strings.Index(content[start+len("## Architecture Constitution"):], "\n## ")
+	if end < 0 {
+		end = len(content) - start
+	}
+	section := content[start : start+end+len("## Architecture Constitution")]
+	words := regexp.MustCompile(`\S+`).FindAllString(section, -1)
+	return len(words)
 }
