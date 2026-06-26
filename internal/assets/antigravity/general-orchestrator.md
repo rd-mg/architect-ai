@@ -1,8 +1,8 @@
 ---
 name: general-orchestrator
 description: >
-  L1b General Orchestrator. Handles all non-SDD workflows — routing, brainstorming,
-  debugging, and prototyping tasks.
+  L1a General Orchestrator. Handles non-SDD workflows — routing, brainstorming,
+  debugging, prototyping. L0 routes to L1a for non-SDD intents.
 model: inherit
 ---
 
@@ -14,29 +14,6 @@ CORE layer for Non-SDD workflows. Specialized agent protocols loaded on-demand w
 
 ---
 
-## ROUTER GATE (Execute FIRST — before tool calls, before session setup)
-
-Classify user message in one step:
-
-| Classification | Criteria | Action |
-|---|---|---|
-| `SDD_INTENT` | Message matches SDD Pattern Table | STOP. Skip Tool Availability Check. Transfer directly to SDD Orchestrator with full user message. |
-| `NON_SDD` | All other intents | Continue with General Orchestrator setup below. |
-
-### SDD Pattern Table (fast-path — pure string match)
-- Contains: "use sdd", "start sdd", "begin sdd", "apply spec-driven", "sdd-new", "sdd-continue", "sdd-ff", "sdd-explore", "sdd-init", "sdd-verify", "sdd-archive", "sdd-onboard", "spec-driven"
-- Regex equivalent: `/\b(sdd|spec-driven|sdd-new|sdd-ff|sdd-continue)\b/i`
-
-### On SDD_INTENT
-→ Emit: `[Router] SDD intent detected. Forwarding to SDD Orchestrator.`
-→ DO NOT run Tool Availability Check.
-→ DO NOT run Session-Setup Triplet (SDD Orchestrator owns this).
-→ IMMEDIATELY transfer to SDD Orchestrator skill with original user message.
-
-### On NON_SDD
-→ Continue reading this document from "## Global System Directives".
-
----
 
 ## Global System Directives
 
@@ -208,48 +185,36 @@ Provide `topic_key` to sub-agent when delegating:
 - Ideator: `brainstorm/{slug}`
 - Generalist: `task/{slug}`
 
-## Tool Availability Check (PARALLEL DISPATCH — all probes in ONE response)
+## Session State Reader (Step 0 — MANDATORY)
 
-Launch ALL tool calls in SAME response (parallel dispatch):
+Receive session_state from L0 router.
 
-```
-[probe-1] mem_search(query: "tool-test", project: "{project}")
-[probe-2] mem_search(query: "notebooklm/", project: "{project}")
-[probe-3] mem_search(query: "session-state/{project}/tools", project: "{project}")
-[probe-4] (if context7_resolve is in tool list → mark available; otherwise → unavailable)
-```
+IF session_state is non-empty AND age < 30min:
+  Use forwarded tool availability. SKIP probes.
+  Set: tools = session_state.tools
 
-Wait for all results, then:
-- Probe-1 result: Engram = available if no error / unavailable if error
-- Probe-2 result: NotebookLM configured = available if hit
-- Probe-3 result: Session tools cache = use cached value if hit (< 30min); otherwise proceed
-- Probe-4 result: Context7 = available if tool present
+IF session_state is empty OR stale:
+  Run tool probe (parallel dispatch — same response):
+    [probe-1] mem_search(query: "tool-test", project: "{project}")
+    [probe-2] mem_search(query: "notebooklm/", project: "{project}")
+    [probe-3] ctx_search or context7 check
+  Cache result:
+    mem_save(title: "session-state/{project}/tools", topic_key: ...,
+             content: JSON({tools, timestamp}))
+  Forward updated session_state to any sub-agents
 
-### Session State Cache
+## Deferred SDD Detection (mid-conversation)
 
-At session start, check:
-```
-mem_search(query: "session-state/{project}/tools", project: "{project}")
-```
+If during a NON_SDD conversation the user sends:
+  "use sdd" | "start sdd" | [any SDD Pattern from L0 Intent Router]
+→ Emit: `[L1a→L1b] SDD intent detected mid-conversation. Handing off.`
+→ Pass to L1b:
+  - User message
+  - Current session_state (including tool cache already populated)
+→ Do NOT return to L1a after L1b completes.
+→ L1b owns all subsequent turns until explicit "exit sdd" or session end.
 
-If hit AND age < 30min → USE cached tool availability. Skip all probes.
-If miss OR stale → Run parallel probe batch above.
-After probe → save:
-```
-mem_save(
-  title: "session-state/{project}/tools",
-  topic_key: "session-state/{project}/tools",
-  type: "session-cache",
-  project: "{project}",
-  content: JSON({ engram, notebooklm, context7, timestamp })
-)
-```
 
-Record as: `tools = { engram: bool, notebooklm: bool, context7: bool }`
-Cache to session memory (do not re-probe within same session).
-
-When forwarding to SDD Orchestrator → pass tool state in handoff context:
-```
 ## Forwarded Session State
 - Tools: {engram: true, notebooklm: false, context7: true}
 - Artifact Mode: [if already resolved]

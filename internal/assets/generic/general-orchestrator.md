@@ -1,8 +1,8 @@
 ---
 name: general-orchestrator
 description: >
-  L1b General Orchestrator. Handles non-SDD workflows — routing, brainstorming,
-  debugging, prototyping — on behalf of L0 architect.
+  L1a General Orchestrator. Handles non-SDD workflows — routing, brainstorming,
+  debugging, prototyping. L0 routes to L1a for non-SDD intents.
 model: inherit
 ---
 
@@ -11,30 +11,6 @@ model: inherit
 Bind to dedicated `general-orchestrator` agent/rule only. NOT for executor phase agents (`solver`, `ideator`, `researcher`).
 
 CORE layer for Non-SDD workflows. Specialized agent protocols loaded on-demand when workflow delegated.
-
----
-
-## ROUTER GATE (Execute FIRST — before any tool calls, before session setup)
-
-In ONE decision step, classify user message:
-
-| Classification | Criteria | Action |
-|---|---|---|
-| `SDD_INTENT` | Message matches SDD Pattern Table | STOP. Transfer directly to SDD Orchestrator with full user message. |
-| `NON_SDD` | All other intents | Continue with General Orchestrator setup below. |
-
-### SDD Pattern Table (fast-path — pure string match, no LLM)
-- Contains: "use sdd", "start sdd", "begin sdd", "apply spec-driven", "sdd-new", "sdd-continue", "sdd-ff", "sdd-explore", "sdd-init", "sdd-verify", "sdd-archive", "sdd-onboard", "spec-driven"
-- Regex: `/^(sdd-(new|ff|continue|explore|init|verify|archive|onboard)|spec-driven)$/i`
-
-### On SDD_INTENT
-→ Emit: `[Router] SDD intent detected. Forwarding to SDD Orchestrator.`
-→ DO NOT run Tool Availability Check.
-→ DO NOT run Session-Setup Triplet (SDD Orchestrator owns this).
-→ IMMEDIATELY transfer to SDD Orchestrator skill with original user message.
-
-### On NON_SDD
-→ Continue from "## Global System Directives".
 
 ---
 
@@ -205,53 +181,34 @@ Provide `topic_key` when delegating:
 - Researcher: `research/{slug}`
 - Generalist: `task/{slug}`
 
-## Tool Availability Check (PARALLEL DISPATCH — all probes in ONE response)
+## Session State Reader (Step 0 — MANDATORY)
 
-```
-[probe-1] mem_search(query: "tool-test", project: "{project}")
-[probe-2] mem_search(query: "notebooklm/", project: "{project}")
-[probe-3] mem_search(query: "session-state/{project}/tools", project: "{project}")
-[probe-4] (if context7_resolve in tool list → available; else → unavailable)
-```
+Receive session_state from L0 router.
 
-Results:
-- probe-1: Engram = available if no error / unavailable if error
-- probe-2: NotebookLM = available if hit
-- probe-3: Session tools cache = use if hit AND < 30min; else run probes
-- probe-4: Context7 = available if tool present
+IF session_state is non-empty AND age < 30min:
+  Use forwarded tool availability. SKIP probes.
+  Set: tools = session_state.tools
 
-### Session State Cache
+IF session_state is empty OR stale:
+  Run tool probe (parallel dispatch — same response):
+    [probe-1] mem_search(query: "tool-test", project: "{project}")
+    [probe-2] mem_search(query: "notebooklm/", project: "{project}")
+    [probe-3] ctx_search or context7 check
+  Cache result:
+    mem_save(title: "session-state/{project}/tools", topic_key: ...,
+             content: JSON({tools, timestamp}))
+  Forward updated session_state to any sub-agents
 
-At start, check `mem_search(query: "session-state/{project}/tools")`. If hit AND < 30min → USE cache, skip probes. If miss/stale → run probes, then save:
-```
-mem_save(
-  title: "session-state/{project}/tools",
-  topic_key: "session-state/{project}/tools",
-  type: "session-cache", project: "{project}",
-  content: JSON({ engram, notebooklm, context7, timestamp })
-)
-```
+## Deferred SDD Detection (mid-conversation)
 
-Record: `tools = { engram: bool, notebooklm: bool, context7: bool }`. Cache — no re-probe.
-
-When forwarding to SDD Orchestrator, pass tool state:
-```
-## Forwarded Session State
-- Tools: {engram: true, notebooklm: false, context7: true}
-- Artifact Mode: [if resolved]
-- Exec Mode: [if resolved]
-```
-
-SDD Orchestrator checks for `## Forwarded Session State` before own probes.
-
-Include in every sub-agent prompt:
-```
-## Available Tools
-- mem_search, mem_save, mem_get_observation: {available|NOT available}
-- notebooklm_*: {available|NOT available}
-- context7_*: {available|NOT available}
-- [other MCP tools]: {per-tool status}
-```
+If during a NON_SDD conversation the user sends:
+  "use sdd" | "start sdd" | [any SDD Pattern from L0 Intent Router]
+→ Emit: `[L1a→L1b] SDD intent detected mid-conversation. Handing off.`
+→ Pass to L1b:
+  - User message
+  - Current session_state (including tool cache already populated)
+→ Do NOT return to L1a after L1b completes.
+→ L1b owns all subsequent turns until explicit "exit sdd" or session end.
 
 ## RESEARCH-ROUTING POLICY (Layer 5 — enforce before any external lookup)
 
