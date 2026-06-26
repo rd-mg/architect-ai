@@ -269,11 +269,11 @@ func TestL1TacticalOrchestratorHeaderInjected(t *testing.T) {
 	}
 	content := string(data)
 
-	// Check for L1 Tactical Orchestrator header and supervision note
-	if !strings.Contains(content, "# Agent Teams Lite — L1 Tactical Orchestrator") {
-		t.Error("Agent prompt missing L1 Tactical Orchestrator header")
+	// Check for L1b SDD Orchestrator header and supervision note
+	if !strings.Contains(content, "# L1b SDD Orchestrator") {
+		t.Error("Agent prompt missing L1b SDD Orchestrator header")
 	}
-	if !strings.Contains(content, "You operate under the strategic guidance of the **L0 Thinking Agent (Strategic Sentinel)**") {
-		t.Error("Agent prompt missing supervision link to L0 Sentinel")
+	if !strings.Contains(content, "L0 Thin Proxy Router") {
+		t.Error("Agent prompt missing supervision link to L0 Thin Proxy Router")
 	}
 }

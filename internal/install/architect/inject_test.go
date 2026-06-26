@@ -104,14 +104,14 @@ func TestInjectArchitect(t *testing.T) {
 				t.Fatalf("expected output file %s to be created: %v", outPath, err)
 			}
 			
-			// L0-L1 Isolation Check: The generated L0 file MUST NOT contain L1 Tactical Orchestrator text
+			// L0-L1 Isolation Check: The generated L0 file MUST NOT contain L1b SDD Orchestrator text
 			contentBytes, err := os.ReadFile(outPath)
 			if err != nil {
 				t.Fatalf("failed to read generated file: %v", err)
 			}
 			content := string(contentBytes)
-			if strings.Contains(content, "L1 Tactical Orchestrator") {
-				t.Errorf("IDENTITY LEAK: Generated L0 file for %s contains 'L1 Tactical Orchestrator'!", platform)
+			if strings.Contains(content, "L1b SDD Orchestrator") {
+				t.Errorf("IDENTITY LEAK: Generated L0 file for %s contains 'L1b SDD Orchestrator'!", platform)
 			}
 		})
 	}
