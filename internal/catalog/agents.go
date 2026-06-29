@@ -21,6 +21,7 @@ var allAgents = []Agent{
 	{ID: model.AgentWindsurf, Name: "Windsurf", Tier: model.TierFull, ConfigPath: "~/.codeium/windsurf"},
 	{ID: model.AgentQwenCode, Name: "Qwen Code", Tier: model.TierFull, ConfigPath: "~/.qwen"},
 	{ID: model.AgentKiroIDE, Name: "Kiro IDE", Tier: model.TierFull, ConfigPath: "~/.kiro"},
+	{ID: model.AgentAntigravityCLI, Name: "Antigravity CLI (agy)", Tier: model.TierFull, ConfigPath: "~/.gemini/antigravity-cli"},
 }
 
 // mvpAgents are the original MVP agents (Claude Code, OpenCode).

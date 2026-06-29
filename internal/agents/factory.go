@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/rd-mg/architect-ai/internal/agents/antigravity"
+	antigravitycli "github.com/rd-mg/architect-ai/internal/agents/antigravity-cli"
 	"github.com/rd-mg/architect-ai/internal/agents/claude"
 	"github.com/rd-mg/architect-ai/internal/agents/codex"
 	cursoradapter "github.com/rd-mg/architect-ai/internal/agents/cursor"
@@ -35,6 +36,8 @@ func NewAdapter(agent model.AgentID) (Adapter, error) {
 		return codex.NewAdapter(), nil
 	case model.AgentAntigravity:
 		return antigravity.NewAdapter(), nil
+	case model.AgentAntigravityCLI:
+		return antigravitycli.NewAdapter(), nil
 	case model.AgentWindsurf:
 		return windsurf.NewAdapter(), nil
 	case model.AgentQwenCode:
@@ -58,6 +61,7 @@ func NewDefaultRegistry() (*Registry, error) {
 		model.AgentVSCodeCopilot,
 		model.AgentCodex,
 		model.AgentAntigravity,
+		model.AgentAntigravityCLI,
 		model.AgentWindsurf,
 		model.AgentQwenCode,
 		model.AgentKiroIDE,
