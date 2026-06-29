@@ -1,6 +1,7 @@
 package mcp
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -147,6 +148,118 @@ func InjectSequentialThinking(homeDir string, adapter agents.Adapter) (Injection
 	}
 }
 
+func InjectCodeGraph(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
+	if !adapter.SupportsMCP() {
+		return InjectionResult{}, nil
+	}
+
+	switch adapter.MCPStrategy() {
+	case model.StrategySeparateMCPFiles:
+		path := adapter.MCPConfigPath(homeDir, string(ServerCodeGraph))
+		overlay, err := OverlayFor(adapter.Agent(), ServerCodeGraph, Options{})
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		writeResult, err := filemerge.WriteFileAtomic(path, overlay, 0o644)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: writeResult.Changed, Files: []string{path}}, nil
+
+	case model.StrategyMergeIntoSettings:
+		settingsPath := adapter.SettingsPath(homeDir)
+		if settingsPath == "" {
+			return InjectionResult{}, nil
+		}
+		overlay, err := OverlayFor(adapter.Agent(), ServerCodeGraph, Options{})
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		settingsWrite, err := mergeJSONFile(settingsPath, overlay)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: settingsWrite.Changed, Files: []string{settingsPath}}, nil
+
+	case model.StrategyMCPConfigFile:
+		path := adapter.MCPConfigPath(homeDir, string(ServerCodeGraph))
+		if path == "" {
+			return InjectionResult{}, nil
+		}
+		overlay, err := OverlayFor(adapter.Agent(), ServerCodeGraph, Options{})
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		settingsWrite, err := mergeJSONFile(path, overlay)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: settingsWrite.Changed, Files: []string{path}}, nil
+
+	case model.StrategyTOMLFile:
+		return InjectionResult{}, nil
+
+	default:
+		return InjectionResult{}, fmt.Errorf("codegraph injector does not support MCP strategy %d for agent %q", adapter.MCPStrategy(), adapter.Agent())
+	}
+}
+
+func InjectContextMode(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
+	if !adapter.SupportsMCP() {
+		return InjectionResult{}, nil
+	}
+
+	switch adapter.MCPStrategy() {
+	case model.StrategySeparateMCPFiles:
+		path := adapter.MCPConfigPath(homeDir, string(ServerContextMode))
+		overlay, err := contextModeOverlay(adapter.Agent())
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		writeResult, err := filemerge.WriteFileAtomic(path, overlay, 0o644)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: writeResult.Changed, Files: []string{path}}, nil
+
+	case model.StrategyMergeIntoSettings:
+		settingsPath := adapter.SettingsPath(homeDir)
+		if settingsPath == "" {
+			return InjectionResult{}, nil
+		}
+		overlay, err := contextModeOverlay(adapter.Agent())
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		settingsWrite, err := mergeJSONFile(settingsPath, overlay)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: settingsWrite.Changed, Files: []string{settingsPath}}, nil
+
+	case model.StrategyMCPConfigFile:
+		path := adapter.MCPConfigPath(homeDir, string(ServerContextMode))
+		if path == "" {
+			return InjectionResult{}, nil
+		}
+		overlay, err := contextModeOverlay(adapter.Agent())
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		settingsWrite, err := mergeJSONFile(path, overlay)
+		if err != nil {
+			return InjectionResult{}, err
+		}
+		return InjectionResult{Changed: settingsWrite.Changed, Files: []string{path}}, nil
+
+	case model.StrategyTOMLFile:
+		return InjectionResult{}, nil
+
+	default:
+		return InjectionResult{}, fmt.Errorf("context-mode injector does not support MCP strategy %d for agent %q", adapter.MCPStrategy(), adapter.Agent())
+	}
+}
+
 // injectSeparateFile writes a standalone JSON file per MCP server (Claude Code pattern).
 func injectSeparateFile(homeDir string, adapter agents.Adapter) (InjectionResult, error) {
 	path := adapter.MCPConfigPath(homeDir, string(ServerContext7))
@@ -167,6 +280,27 @@ func injectMergeIntoSettings(homeDir string, adapter agents.Adapter) (InjectionR
 	settingsPath := adapter.SettingsPath(homeDir)
 	if settingsPath == "" {
 		return InjectionResult{}, nil
+	}
+
+	// For Gemini: when settings.json already exists, only merge the mcpServers section
+	// to avoid overwriting user settings (general, ui, model, etc.).
+	if adapter.Agent() == model.AgentGeminiCLI {
+		if _, err := os.Stat(settingsPath); err == nil {
+			engramBin, err := FindEngramBinary()
+			if err != nil {
+				engramBin = "engram"
+			}
+			overlay, err := json.Marshal(generateGeminiMCPOnly(engramBin, GenerateOptions{}))
+			if err != nil {
+				return InjectionResult{}, fmt.Errorf("marshal gemini MCP-only overlay: %w", err)
+			}
+			settingsWrite, err := mergeJSONFile(settingsPath, overlay)
+			if err != nil {
+				return InjectionResult{}, err
+			}
+			return InjectionResult{Changed: settingsWrite.Changed, Files: []string{settingsPath}}, nil
+		}
+		// File doesn't exist — fall through to normal overlay generation
 	}
 
 	overlay, err := OverlayFor(adapter.Agent(), ServerContext7, Options{})

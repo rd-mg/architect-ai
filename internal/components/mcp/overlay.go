@@ -14,6 +14,7 @@ const (
 	ServerNotebookLM ServerKind = "notebooklm-mcp"
 	ServerSequentialThinking ServerKind = "sequential-thinking"
 	ServerCodeGraph  ServerKind = "codegraph"
+	ServerContextMode ServerKind = "context-mode"
 )
 
 type Options struct{}
@@ -28,6 +29,8 @@ func OverlayFor(agent model.AgentID, server ServerKind, opts Options) ([]byte, e
 		return sequentialThinkingOverlay(agent)
 	case ServerCodeGraph:
 		return codegraphOverlay(agent)
+	case ServerContextMode:
+		return contextModeOverlay(agent)
 	default:
 		return nil, fmt.Errorf("unsupported MCP server: %s", server)
 	}
@@ -76,7 +79,7 @@ func sequentialThinkingOverlay(agent model.AgentID) ([]byte, error) {
     }
   }
 }`), nil
-	case model.AgentAntigravity, model.AgentWindsurf, model.AgentQwenCode, model.AgentKiroIDE:
+	case model.AgentAntigravity, model.AgentWindsurf, model.AgentQwenCode, model.AgentKiroIDE, model.AgentAntigravityCLI:
 		return []byte(`{
   "mcpServers": {
     "sequential-thinking": {
@@ -132,7 +135,7 @@ func context7Overlay(agent model.AgentID) ([]byte, error) {
     }
   }
 }`), nil
-	case model.AgentAntigravity:
+	case model.AgentAntigravity, model.AgentAntigravityCLI:
 		return []byte(`{
   "mcpServers": {
     "context7": {
@@ -210,7 +213,7 @@ func notebookLMOverlay(agent model.AgentID) ([]byte, error) {
     }
   }
 }`), nil
-	case model.AgentAntigravity:
+	case model.AgentAntigravity, model.AgentAntigravityCLI:
 		return []byte(`{
   "mcpServers": {
     "notebooklm-mcp": {
@@ -289,7 +292,7 @@ func codegraphOverlay(agent model.AgentID) ([]byte, error) {
     }
   }
 }`), nil
-	case model.AgentAntigravity, model.AgentWindsurf, model.AgentQwenCode, model.AgentKiroIDE:
+	case model.AgentAntigravity, model.AgentWindsurf, model.AgentQwenCode, model.AgentKiroIDE, model.AgentAntigravityCLI:
 		return []byte(`{
   "mcpServers": {
     "codegraph": {
@@ -305,5 +308,60 @@ func codegraphOverlay(agent model.AgentID) ([]byte, error) {
 }`), nil
 	default:
 		return nil, fmt.Errorf("unsupported agent for codegraph: %s", agent)
+	}
+}
+
+func contextModeOverlay(agent model.AgentID) ([]byte, error) {
+	switch agent {
+	case model.AgentGeminiCLI:
+		return []byte(`{
+  "mcpServers": {
+    "context-mode": {
+      "command": "npx",
+      "args": ["-y", "@mksglu/context-mode"],
+      "timeout": 15000
+    }
+  }
+}`), nil
+	case model.AgentOpenCode, model.AgentKilocode:
+		return []byte(`{
+  "mcp": {
+    "context-mode": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@mksglu/context-mode"
+      ],
+      "enabled": true
+    }
+  }
+}`), nil
+	case model.AgentVSCodeCopilot, model.AgentCursor:
+		return []byte(`{
+  "servers": {
+    "context-mode": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@mksglu/context-mode"]
+    }
+  }
+}`), nil
+	case model.AgentAntigravity, model.AgentWindsurf, model.AgentQwenCode, model.AgentKiroIDE, model.AgentAntigravityCLI:
+		return []byte(`{
+  "mcpServers": {
+    "context-mode": {
+      "command": "npx",
+      "args": ["-y", "@mksglu/context-mode"]
+    }
+  }
+}`), nil
+	case model.AgentClaudeCode:
+		return []byte(`{
+  "command": "npx",
+  "args": ["-y", "@mksglu/context-mode"]
+}`), nil
+	default:
+		return nil, fmt.Errorf("unsupported agent for context-mode: %s", agent)
 	}
 }

@@ -70,3 +70,60 @@ func TestWriteConfig_Atomic(t *testing.T) {
 	if err := json.Unmarshal(data, &result); err != nil { t.Fatal("invalid JSON") }
 	if _, err := os.Stat(target + ".tmp"); !os.IsNotExist(err) { t.Error("tmp should be removed") }
 }
+
+func TestGenerateClaudeKeyNames(t *testing.T) {
+	cfg, err := GenerateConfig("claude", GenerateOptions{})
+	if err != nil {
+		t.Fatalf("GenerateConfig(claude) error = %v", err)
+	}
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		t.Fatalf("Marshal error = %v", err)
+	}
+	text := string(data)
+
+	for _, key := range []string{"sequential-thinking", "context-mode", "notebooklm-mcp"} {
+		if !strings.Contains(text, `"`+key+`"`) {
+			t.Errorf("claude config missing key %q", key)
+		}
+	}
+	for _, key := range []string{"sequential_thinking", "context_mode"} {
+		if strings.Contains(text, `"`+key+`"`) {
+			t.Errorf("claude config should NOT contain key %q", key)
+		}
+	}
+}
+
+func TestAllGeneratorsHaveNotebookLM(t *testing.T) {
+	platforms := []string{"claude", "vscode", "antigravity", "gemini", "opencode"}
+	for _, platform := range platforms {
+		t.Run(platform, func(t *testing.T) {
+			cfg, err := GenerateConfig(platform, GenerateOptions{})
+			if err != nil {
+				t.Fatalf("GenerateConfig(%s) error = %v", platform, err)
+			}
+			data, err := json.Marshal(cfg)
+			if err != nil {
+				t.Fatalf("Marshal(%s) error = %v", platform, err)
+			}
+			if !strings.Contains(string(data), "notebooklm-mcp") {
+				t.Errorf("%s config missing notebooklm-mcp", platform)
+			}
+		})
+	}
+}
+
+func TestGenerateGemini_OnlyMcpServers(t *testing.T) {
+	cfg, err := GenerateConfig("gemini", GenerateOptions{})
+	if err != nil {
+		t.Fatalf("GenerateConfig(gemini) error = %v", err)
+	}
+	for _, key := range []string{"general", "ide", "model", "security", "ui"} {
+		if _, ok := cfg[key]; ok {
+			t.Errorf("gemini config should NOT contain top-level key %q", key)
+		}
+	}
+	if _, ok := cfg["mcpServers"]; !ok {
+		t.Error("gemini config must contain 'mcpServers' key")
+	}
+}

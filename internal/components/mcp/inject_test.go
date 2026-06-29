@@ -179,3 +179,73 @@ func TestInjectVSCodeWritesContext7ToMCPConfigFile(t *testing.T) {
 		t.Fatal("mcp.json should use 'servers' key, not 'mcpServers'")
 	}
 }
+
+func TestInjectCodeGraphSeparateFile(t *testing.T) {
+	home := t.TempDir()
+
+	result, err := InjectCodeGraph(home, claudeAdapter())
+	if err != nil {
+		t.Fatalf("InjectCodeGraph() error = %v", err)
+	}
+	if !result.Changed {
+		t.Fatal("InjectCodeGraph() changed = false; want true")
+	}
+
+	path := filepath.Join(home, ".claude", "mcp", "codegraph.json")
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile(codegraph.json) error = %v", err)
+	}
+
+	text := string(content)
+	if !strings.Contains(text, "@colbymchenry/codegraph") {
+		t.Fatal("codegraph.json missing @colbymchenry/codegraph")
+	}
+}
+
+func TestInjectContextModeAllAgents(t *testing.T) {
+	adapters := []struct {
+		name    string
+		adapter agents.Adapter
+	}{
+		{"opencode", opencodeAdapter()},
+		{"claude", claudeAdapter()},
+	}
+
+	for _, tc := range adapters {
+		t.Run(tc.name, func(t *testing.T) {
+			home := t.TempDir()
+
+			result, err := InjectContextMode(home, tc.adapter)
+			if err != nil {
+				t.Fatalf("InjectContextMode(%s) error = %v", tc.name, err)
+			}
+			if !result.Changed {
+				t.Fatalf("InjectContextMode(%s) changed = false; want true", tc.name)
+			}
+		})
+	}
+
+	t.Run("cursor", func(t *testing.T) {
+		home := t.TempDir()
+		result, err := InjectContextMode(home, cursorAdapter(t))
+		if err != nil {
+			t.Fatalf("InjectContextMode(cursor) error = %v", err)
+		}
+		if !result.Changed {
+			t.Fatal("InjectContextMode(cursor) changed = false; want true")
+		}
+	})
+
+	t.Run("vscode", func(t *testing.T) {
+		home := t.TempDir()
+		t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
+		result, err := InjectContextMode(home, vscode.NewAdapter())
+		if err != nil {
+			t.Fatalf("InjectContextMode(vscode) error = %v", err)
+		}
+		if !result.Changed {
+			t.Fatal("InjectContextMode(vscode) changed = false; want true")
+		}
+	})
+}
