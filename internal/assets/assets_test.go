@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"bytes"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -466,5 +467,24 @@ func TestCognitivePosturesElevenNotTenOrTwelve(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestRenderIncludes verifies that {{ include "path" }} directives are resolved
+// to their referenced asset content.
+func TestRenderIncludes(t *testing.T) {
+	content := []byte("preamble\n{{ include \"_shared/caveman-identity-block.md\" }}\npostamble")
+	result := RenderIncludes(content)
+	if bytes.Contains(result, []byte("{{ include")) {
+		t.Error("RenderIncludes left unreplaced {{ include }} directive")
+	}
+	if !bytes.Contains(result, []byte("Caveman")) {
+		t.Error("expected caveman-identity-block content in rendered output")
+	}
+	if !bytes.HasPrefix(result, []byte("preamble\n")) {
+		t.Error("preamble not preserved")
+	}
+	if !bytes.HasSuffix(result, []byte("\npostamble")) {
+		t.Error("postamble not preserved")
 	}
 }

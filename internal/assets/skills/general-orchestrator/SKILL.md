@@ -11,7 +11,7 @@ metadata:
 
 ## Purpose
 
-L1b General Orchestrator — handles non-SDD general tasks (brainstorm, solver, research). Coordinates sub-agents. Never executes inline.
+L1a General Orchestrator — handles non-SDD general tasks (brainstorm, solver, research). Coordinates sub-agents. Never executes inline.
 
 ## Skill Digestion Harness Protocol
 
