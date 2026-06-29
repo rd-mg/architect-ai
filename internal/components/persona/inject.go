@@ -323,28 +323,35 @@ func shouldStripManagedLegacyPersona(existing string) bool {
 	return strings.Contains(existing, "<!-- architect-ai:persona -->")
 }
 
+// readRenderedPersona reads an embedded persona asset and resolves any
+// {{ include "path" }} directives in it.
+func readRenderedPersona(path string) string {
+	raw := assets.MustRead(path)
+	return string(assets.RenderIncludes([]byte(raw)))
+}
+
 func personaContent(agent model.AgentID, persona model.PersonaID) string {
 	switch persona {
 	case model.PersonaNeutral:
 		// Neutral persona: same teacher, same philosophy, no regional language.
-		return assets.MustRead("generic/persona-neutral.md")
+		return readRenderedPersona("generic/persona-neutral.md")
 	case model.PersonaCustom:
 		return ""
 	default:
 		// Architect persona — try agent-specific asset, then generic fallback.
 		switch agent {
 		case model.AgentClaudeCode:
-			return assets.MustRead("claude/persona-architect.md")
+			return readRenderedPersona("claude/persona-architect.md")
 		case model.AgentOpenCode, model.AgentKilocode:
-			return assets.MustRead("opencode/persona-architect.md")
+			return readRenderedPersona("opencode/persona-architect.md")
 		case model.AgentKiroIDE:
 			// Kiro uses a steering-file based persona. The asset is identical to
 			// generic today but kept separate so it can diverge independently.
-			return assets.MustRead("kiro/persona-architect.md")
+			return readRenderedPersona("kiro/persona-architect.md")
 		default:
 			// Generic persona includes Architect personality + skills table + SDD orchestrator.
 			// Used by Gemini CLI, Cursor, VS Code Copilot, and any future agents.
-			return assets.MustRead("generic/persona-architect.md")
+			return readRenderedPersona("generic/persona-architect.md")
 		}
 	}
 }
