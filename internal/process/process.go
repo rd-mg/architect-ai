@@ -104,8 +104,13 @@ func runInternal(ctx context.Context, cmdName string, args []string, opts Option
 			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
 		}
 		waitErr = errors.New("process timed out")
-		// Wait for goroutine to exit
-		<-done
+		// Wait for the cmd.Wait() goroutine with a bounded grace period.
+		// This prevents indefinite hang if the child process is in
+		// uninterruptible sleep (D state) where even SIGKILL won't wake it.
+		select {
+		case <-done:
+		case <-time.After(opts.KillGrace):
+		}
 	case err := <-done:
 		waitErr = err
 	}

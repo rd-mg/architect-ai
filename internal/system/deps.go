@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/rd-mg/architect-ai/internal/process"
 )
@@ -129,6 +130,27 @@ func detectDeps(ctx context.Context, deps []Dependency) DependencyReport {
 	return report
 }
 
+// lookPathWithTimeout wraps exec.LookPath with a timeout.
+// exec.LookPath can block indefinitely if PATH contains stale network mounts
+// (NFS, SSHFS, FUSE), so we guard it with a bounded wait.
+func lookPathWithTimeout(file string, timeout time.Duration) (string, error) {
+	type result struct {
+		path string
+		err  error
+	}
+	ch := make(chan result, 1)
+	go func() {
+		path, err := exec.LookPath(file)
+		ch <- result{path, err}
+	}()
+	select {
+	case r := <-ch:
+		return r.path, r.err
+	case <-time.After(timeout):
+		return "", fmt.Errorf("lookup of %q timed out after %v", file, timeout)
+	}
+}
+
 // detectSingleDep probes a single dependency using exec.LookPath + version command.
 func detectSingleDep(ctx context.Context, dep Dependency) Dependency {
 	if len(dep.DetectCmd) == 0 {
@@ -136,8 +158,9 @@ func detectSingleDep(ctx context.Context, dep Dependency) Dependency {
 	}
 
 	// First check if binary exists on PATH.
+	// Use a bounded timeout to avoid hanging on stale PATH entries.
 	binary := dep.DetectCmd[0]
-	if _, err := exec.LookPath(binary); err != nil {
+	if _, err := lookPathWithTimeout(binary, 3*time.Second); err != nil {
 		return dep
 	}
 
