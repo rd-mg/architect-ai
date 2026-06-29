@@ -523,6 +523,18 @@ func (s componentSyncStep) Run(ctx context.Context) error {
 				return fmt.Errorf("sync sequential-thinking for %q: %w", adapter.Agent(), err)
 			}
 			s.countChanged(boolToInt(mcpRes.Changed))
+
+			cgRes, err := mcp.InjectCodeGraph(s.homeDir, adapter)
+			if err != nil {
+				return fmt.Errorf("sync codegraph for %q: %w", adapter.Agent(), err)
+			}
+			s.countChanged(boolToInt(cgRes.Changed))
+
+			cmRes, err := mcp.InjectContextMode(s.homeDir, adapter)
+			if err != nil {
+				return fmt.Errorf("sync context-mode for %q: %w", adapter.Agent(), err)
+			}
+			s.countChanged(boolToInt(cmRes.Changed))
 		}
 		return nil
 

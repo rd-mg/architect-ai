@@ -582,6 +582,12 @@ func (s componentApplyStep) Run(ctx context.Context) error {
 			if _, err := mcp.InjectSequentialThinking(s.homeDir, adapter); err != nil {
 				return fmt.Errorf("inject sequential-thinking for %q: %w", adapter.Agent(), err)
 			}
+			if _, err := mcp.InjectCodeGraph(s.homeDir, adapter); err != nil {
+				return fmt.Errorf("inject codegraph for %q: %w", adapter.Agent(), err)
+			}
+			if _, err := mcp.InjectContextMode(s.homeDir, adapter); err != nil {
+				return fmt.Errorf("inject context-mode for %q: %w", adapter.Agent(), err)
+			}
 		}
 		return nil
 	case model.ComponentSkills:

@@ -1929,6 +1929,7 @@ type PromptContext struct {
 var (
 	contentOfRegex = regexp.MustCompile(`\{content of ([^}]+)\}`)
 	ifOverlayRegex = regexp.MustCompile(`(?s)\{if (\w+) overlay active, add: ([^}]+)\}`)
+	includeRegex   = regexp.MustCompile(`\{\{ include "([^"]+)" \}\}`)
 )
 
 // resolveAssetPath attempts to locate a relative path within the active overlay's
@@ -2017,6 +2018,33 @@ func resolvePromptTemplate(content string, ctx PromptContext) (string, error) {
 
 		// If overlay not active or file not found, remove the placeholder
 		return ""
+	})
+
+	// 3. Resolve {{ include "<path>" }}
+	content = includeRegex.ReplaceAllStringFunc(content, func(match string) string {
+		submatches := includeRegex.FindStringSubmatch(match)
+		if len(submatches) < 2 {
+			return match
+		}
+		relPath := submatches[1]
+
+		var resolvedContent string
+		if assetPath := resolveAssetPath(relPath, ctx); assetPath != "" {
+			resolvedContent, _ = readFileOrEmpty(assetPath)
+		}
+
+		if resolvedContent == "" {
+			embedPath := "skills/_shared/" + relPath
+			if data, err := assets.Read(embedPath); err == nil {
+				resolvedContent = data
+			}
+		}
+
+		if resolvedContent == "" {
+			return match
+		}
+
+		return strings.TrimSpace(resolvedContent)
 	})
 
 	return content, nil

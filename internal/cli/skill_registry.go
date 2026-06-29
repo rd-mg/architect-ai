@@ -67,6 +67,56 @@ func buildQuickIndex(skillsByKind map[string][]skillEntry) string {
 	return b.String()
 }
 
+// buildKeywordIndex builds a JSON keyword index block embedded in an HTML comment.
+// The Dynamic Context Assembler reads this to filter skills by phase/task keywords
+// without parsing the full markdown registry.
+func buildKeywordIndex(allSkills []skillEntry) string {
+	var b strings.Builder
+	b.WriteString("<!-- SKILL-REGISTRY-INDEX-V4\n")
+	b.WriteString("Format: skill_id: [keyword1, keyword2, ...]\n")
+	b.WriteString("Used by: Dynamic Context Assembler for keyword-filtered injection\n")
+
+	index := make(map[string][]string)
+	for _, s := range allSkills {
+		keywords := extractKeywords(s.Trigger)
+		index[s.Name] = keywords
+	}
+
+	indexJSON, _ := json.MarshalIndent(index, "", "  ")
+	b.Write(indexJSON)
+	b.WriteString("\nSKILL-REGISTRY-INDEX-END -->")
+	return b.String()
+}
+
+// extractKeywords splits a trigger string into individual keywords.
+func extractKeywords(trigger string) []string {
+	if trigger == "" {
+		return nil
+	}
+	parts := strings.FieldsFunc(trigger, func(r rune) bool {
+		return r == ',' || r == ';' || r == '/' || r == '|'
+	})
+	var keywords []string
+	seen := make(map[string]bool)
+	for _, p := range parts {
+		p = strings.TrimSpace(strings.ToLower(p))
+		if p == "" || seen[p] {
+			continue
+		}
+		// Split whitespace-separated words within each part
+		words := strings.Fields(p)
+		for _, w := range words {
+			w = strings.Trim(w, "\"'")
+			if w == "" || seen[w] || len(w) < 2 {
+				continue
+			}
+			seen[w] = true
+			keywords = append(keywords, w)
+		}
+	}
+	return keywords
+}
+
 func RunSkillRegistry(args []string, stdout io.Writer) error {
 	projectRoot, err := os.Getwd()
 	if err != nil {
@@ -209,6 +259,9 @@ func WriteLocalSkillRegistry(projectRoot string, force bool) error {
 	if content == "" {
 		content = registryVersionMarker + "\n\n# Skill Registry\n\n**Delegator use only.** Any agent that launches sub-agents reads this registry to resolve compact rules, then injects them directly into sub-agent prompts. Sub-agents do NOT read this registry or individual SKILL.md files.\n"
 	}
+
+	// Keyword Index — machine-readable JSON block for Dynamic Context Assembler
+	content = filemerge.InjectMarkdownSection(content, "registry:keyword-index", buildKeywordIndex(allSkills))
 
 	// Quick Index — machine-readable section for agent resolution
 	content = filemerge.InjectMarkdownSection(content, "registry:index", buildQuickIndex(skillsByKind))

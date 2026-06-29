@@ -214,6 +214,29 @@ func parseVersionParts(version string) [3]int {
 	return result
 }
 
+// CheckUV verifies that uv/uvx is available for Odoo MCP.
+// Returns true and the version string if found, false otherwise.
+func CheckUV(ctx context.Context) (available bool, version string) {
+	path, err := exec.LookPath("uvx")
+	if err == nil {
+		out, _ := process.Run(ctx, path, []string{"--version"}, process.OptionsFor(process.FastCheck))
+		if out.Error == nil {
+			return true, strings.TrimSpace(string(out.Stdout))
+		}
+		return true, "uvx"
+	}
+	// Try uv (which includes uvx)
+	path, err = exec.LookPath("uv")
+	if err == nil {
+		out, _ := process.Run(ctx, path, []string{"--version"}, process.OptionsFor(process.FastCheck))
+		if out.Error == nil {
+			return true, "uv " + strings.TrimSpace(string(out.Stdout))
+		}
+		return true, "uv (version unknown)"
+	}
+	return false, ""
+}
+
 // RenderDependencyReport formats a DependencyReport for CLI output.
 func RenderDependencyReport(report DependencyReport) string {
 	var b strings.Builder
