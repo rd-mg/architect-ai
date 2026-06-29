@@ -139,15 +139,15 @@ Keep `concurrency: 1` for CPU-bound (test, build, lint) or commands sharing stat
 
 ### Pattern table
 
-| User phrase (EN + ES) | Resolved command | Needs name? |
+| User phrase | Resolved command | Needs name? |
 |-----------------------|------------------|-------------|
-| "use sdd", "let's do sdd", "start sdd", "begin sdd", "apply spec-driven" (ES: "usa sdd", "vamos con sdd") | `/sdd-new` | YES |
-| "continue", "next phase", "keep going" (in SDD context) (ES: "sigue", "continua") | `/sdd-continue` | If no active change |
-| "fast forward", "ff" (ES: "rápido", "ff hasta tasks") | `/sdd-ff` | YES |
-| "onboard me", "walk me through", "new to this" (ES: "guíame") | `/sdd-onboard` | NO |
-| "explore X", "research X" (ES: "investiga X") | `/sdd-explore X` | NO |
-| "verify", "check compliance", "audit" (in change context) (ES: "valida") | `/sdd-verify` | If no active change |
-| "archive", "close it out" (ES: "cierra el cambio") | `/sdd-archive` | If no active change |
+| "use sdd", "let's do sdd", "start sdd", "begin sdd", "apply spec-driven" | `/sdd-new` | YES |
+| "continue", "next phase", "keep going" (in SDD context) | `/sdd-continue` | If no active change |
+| "fast forward", "ff" | `/sdd-ff` | YES |
+| "onboard me", "walk me through", "new to this" | `/sdd-onboard` | NO |
+| "explore X", "research X" | `/sdd-explore X` | NO |
+| "verify", "check compliance", "audit" (in change context) | `/sdd-verify` | If no active change |
+| "archive", "close it out" | `/sdd-archive` | If no active change |
 
 ### On match
 
@@ -432,6 +432,17 @@ Use when: understand project's own structure or logic.
 → Pattern found: use it.
 → 0 results: proceed to step 3.
 
+**STEP 2b — CodeGraph (Semantic Relationships)**
+Use when: need call chains, callers, impact radius, or cross-file relationships.
+Only available when `codegraph_context` is in verified tool list.
+```
+codegraph_context(query: "{topic}", maxNodes: 25, format: "markdown")
+codegraph_callers(nodeId: "{node}")    // who calls this?
+codegraph_impact(nodeId: "{node}")     // what breaks?
+```
+→ Result supplements or replaces multi-file ripgrep chaining.
+→ Miss or unavailable: proceed to step 3.
+
 **STEP 3 — Context7 (Framework/Library Docs)**
 Use when: documentation for third-party library or API needed.
 → Documentation found: use it.
@@ -560,38 +571,13 @@ For each sub-agent launch:
 2. Match additional skills by **code context** (file extensions) AND **task context** (actions)
 3. Copy compact rule blocks into `## Project Standards (auto-resolved)`
 
-<!-- adaptive-reasoning-gate:START -->
-## Adaptive Reasoning (MANDATORY)
+## Adaptive Reasoning Mode (MANDATORY)
 
-Before executing assigned phase protocol, MUST classify reasoning depth for this task.
+Self-classify before delegating. Emit as first line:
+`[MODE N | D1=X, D2=X, D3=X, D4=X] {one-line rationale}`
 
-**Response Format**: State chosen mode as first line of response (or within first 5 non-blank lines if preamble needed).
-
-**Format**: `[MODE N | D1=X, D2=X, D3=X, D4=X] {Rationale}`
-
-### 4 Observable Dimensions (0-3)
-
-| Dimension | 0 (Low) | 1 (Med) | 2 (High) | 3 (Critical) |
-|-----------|---------|---------|----------|--------------|
-| **D1: Complexity** | Atomic/Local | Bounded Module | Systemic/Cross-mod | Architectural/Paradigm |
-| **D2: Uncertainty** | Clear Specs | Partial Specs | Conflicting Docs | Terra Incógnita |
-| **D3: Error Pressure** | Clean Run | Recent Bug | Repeated Failure | Production Down |
-| **D4: Context Pressure** | < 10KB | 10-50KB | 50-100KB | > 100KB (Guardian Active) |
-
-### Routing Matrix
-
-| Condition | Chosen Mode | Posture |
-|-----------|-------------|---------|
-| D1+D2 <= 2 AND D3+D4 <= 2 | **Mode 1: Strategic** | +++Pragmatic |
-| D1+D2 >= 3 OR D3 >= 1 | **Mode 2: Tactical** | +++Critical |
-| D3 >= 2 OR D4 >= 3 | **Mode 3: Diagnostic** | +++Adversarial + +++Systemic |
-| D4 >= 3 (Saturated) | **Mode 3-CTX** | +++Pragmatic |
-| D3 = 1 (Initial Error) | **Mode 2-ERR** | +++Forensic |
-
-### Transition Rules
-- **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
-- **Diagnostic -> Tactical**: Allowed only after D3=0.
-<!-- adaptive-reasoning-gate:END -->
+Full gate: sub-agents receive `_shared/adaptive-reasoning-gate-v2.md` which contains
+the complete routing matrix, posture assignment specification, and circuit breaker rules.
 
 ### Self-Classification (MANDATORY)
 

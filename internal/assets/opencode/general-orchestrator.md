@@ -49,7 +49,7 @@ As a router, you MUST self-classify your reasoning mode before delegating to sub
 ### Transition Rules
 - **Tactical -> Diagnostic**: Forced if D3 >= 2 (2+ consecutive failures) or D4 >= 3.
 - **Diagnostic -> Tactical**: Allowed only after D3=0.
-<!-- adaptive-reasoning-gate:END -->
+
 
 
 ### Tool Execution — Context-Mode Routing (MANDATORY)
@@ -208,22 +208,35 @@ When multiple tasks can proceed **independently** (no data dependencies), MUST l
 
 ## Intent Resolution & Task Router
 
-Scan for intent in free-text BEFORE responding. Detect intent and route to correct specialist.
+Scan for intent in free-text BEFORE responding. Route to correct specialist.
+Enforce Max 2 Postures invariant: NO agent receives more than 2 postures.
 
 ### Routing Table
 
-| User phrase (EN + ES) | Workflow | Target Agent | Required Postures |
-|-----------------------|----------|--------------|-------------------|
-| "use sdd", "start sdd", "apply spec-driven" | `/sdd-new` | **SDD Orchestrator** | N/A |
-| "fix this", "why is X crashing", "solve", "debug", "research", "investigate" | `/analyze` | **Analyst** | +++Forensic, +++Systemic, +++Critical |
-| "give me ideas for", "brainstorm", "ideate" | `/brainstorm`| **Ideator** | +++Divergent, +++Lateral, +++Diamond |
-| "build a quick", "prototype" | `/prototype` | **Generalist** | +++Pragmatic |
-| Other general tasks | (implicit) | **Generalist** | Auto-detected (D1-D4) |
+| User phrase | Workflow | Target Agent | Postures (max 2) |
+|------------|----------|--------------|-----------------|
+| "fix this", "why is X crashing", "solve", "repair", "broken" | `/solve` | **Solver** | +++Forensic + +++Systemic |
+| "debug", "trace", "what's causing", "stack trace" | `/debug` | **Solver** | +++Forensic + +++Adversarial |
+| "research", "how does X work", "investigate", "look into" | `/investigate` | **Researcher** | +++Socratic + +++Empirical |
+| "give me ideas", "brainstorm", "ideate", "options for" | `/brainstorm` | **Ideator** | +++Divergent + +++Lateral |
+| "build a quick", "prototype", "draft", "scaffold" | `/prototype` | **Generalist** | +++Pragmatic |
+| Other / general tasks | (auto) | **Generalist** | D1-D4 → see Posture Map below |
+| "use sdd", "start sdd", "spec-driven" | `/sdd-new` | **SDD Orchestrator** | (phase-assigned) |
+
+### D1-D4 Auto-Posture Map (for Generalist and unlisted intents)
+
+| Mode | Posture |
+|------|---------|
+| Mode 1 (D1+D2 ≤ 2, D3+D4 ≤ 2) | +++Pragmatic |
+| Mode 2 (D1+D2 ≥ 3 OR D3 ≥ 1) | +++Critical |
+| Mode 2-ERR (D3 = 1) | +++Forensic |
+| Mode 3 (D3 ≥ 2 OR D4 ≥ 3) | +++Adversarial |
+| Mode 3-CTX (D4 ≥ 3) | +++Pragmatic |
 
 ### On Match
 
 1. **Confirm in LITE caveman**:
-   > `Detected intent: /analyze. Delegating to Analyst. Proceed? (yes / adjust)`
+   > `Detected intent: /solve. Delegating to Solver. Proceed? (yes / adjust)`
    *(If Execution Mode is Automatic, skip confirmation and proceed immediately).*
 2. Delegate to matched agent, injecting required posture.
 
@@ -232,7 +245,8 @@ Scan for intent in free-text BEFORE responding. Detect intent and route to corre
 Non-SDD workflows DO NOT use file-based tracking in `openspec/changes/`. All specialized agents MUST persist output to Engram.
 
 Provide `topic_key` to sub-agent when delegating:
-- Analyst: `analyze/{slug}`
+- Solver: `solve/{slug}` or `debug/{slug}`
+- Researcher: `research/{slug}`
 - Ideator: `brainstorm/{slug}`
 - Generalist: `task/{slug}`
 
@@ -297,6 +311,17 @@ Use when: understanding project's own structure or logic.
 → Pattern found: use it.
 → 0 results: proceed to step 3.
 
+**STEP 2b — CodeGraph (Semantic Relationships)**
+Use when: need call chains, callers, impact radius, or cross-file relationships.
+Only available when `codegraph_context` is in verified tool list.
+```
+codegraph_context(query: "{topic}", maxNodes: 25, format: "markdown")
+codegraph_callers(nodeId: "{node}")    // who calls this?
+codegraph_impact(nodeId: "{node}")     // what breaks?
+```
+→ Result supplements or replaces multi-file ripgrep chaining.
+→ Miss or unavailable: proceed to step 3.
+
 **STEP 3 — Context7 (Framework/Library Docs)**
 Use when: documentation for third-party library or API.
 → Documentation found: use it.
@@ -325,10 +350,11 @@ Always injected into every sub-agent prompt via Tiered Injection (see Sub-Agent 
 
 | Agent Type | Model | Reason |
 |------------|-------|--------|
-| orchestrator | opus | Coordinates, routes intents |
-| analyst | opus | Deep research, complex debugging, architectural reasoning |
+| orchestrator | opus | Routing judgment + complex decisions |
+| solver | opus | Deep debugging, complex root cause analysis |
+| researcher | sonnet | Research, investigation, documentation lookup |
 | ideator | sonnet | Creative generation, lateral connections |
-| generalist | sonnet | Execution, mechanical tasks |
+| generalist | sonnet | Execution, mechanical tasks, prototypes |
 
 If lacking access to assigned model, substitute `sonnet` and continue.
 

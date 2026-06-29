@@ -27,6 +27,46 @@ Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 ## Step 0: Deep Code Exploration (Sequential Thinking)
 - Call `sequential_thinking` to map the target modules and identify dependencies BEFORE running any search tools.
 
+## Step 0b: Semantic Graph Exploration (CodeGraph — Priority over ripgrep)
+
+IF `codegraph_context` is in the verified tool list:
+
+1. **Semantic Context Pack**
+   ```
+   codegraph_context(
+     query: "{change_topic}",
+     maxNodes: 25,
+     format: "markdown"
+   )
+   ```
+   → Returns related functions, types, files, call chains.
+   → Use this output as the primary code map. Proceed to ADR Pre-check.
+   → Only run Steps 1-4 of Section B (ripgrep) if codegraph returns < 5 nodes.
+
+2. **Call Chain Trace** (when entrypoint identified from context pack)
+   ```
+   codegraph_trace(entry: "{identified_entrypoint}")
+   ```
+   → Full call chain from trigger to leaf.
+
+3. **Blast Radius** (for change impact analysis)
+   ```
+   codegraph_impact(nodeId: "{primary_node}", depth: 3)
+   ```
+   → What breaks if this node changes. Always run this.
+
+4. **Inbound References** (LspFindReferences equivalent)
+   ```
+   codegraph_callers(nodeId: "{primary_node}")
+   ```
+   → All call sites. Required for impact surface completeness.
+
+IF `codegraph_context` is NOT available:
+→ Skip to Section B (ripgrep 5-step protocol). No change to existing flow.
+
+**DO NOT** run both codegraph AND full ripgrep sweep for the same query.
+CodeGraph output is authoritative when available.
+
 ## ADR Pre-check (MANDATORY)
 **BEFORE** performing any code search, check for existing Architecture Decision Records:
 - `mem_search(query: "arch/_global/decision", project: "{project}")`
@@ -39,7 +79,7 @@ Task: Investigate the topic "{topic}". Read the codebase. Compare approaches.
 4. **Logic Isolation**: Read only the specific blocks of code (functions/methods) identified in step 2.
 5. **Pattern Comparison**: Compare found implementation with established project patterns.
 
-**Batch Execute Pattern (MANDATORY for 3+ searches):**
+**Batch Execute Pattern (MANDATORY for 3+ searches AND codegraph unavailable):**
 ```
 ctx_batch_execute([
   "rg '{change_topic}' --type {lang} -l",

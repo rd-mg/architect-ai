@@ -21,6 +21,57 @@ no speculative additions.
 ## Available Tools
 {verified tool list}
 
+## Pre-Apply Completeness Gate (MANDATORY — HALT if ANY check fails)
+
+Run BEFORE any file modification. Load and validate all prior artifacts.
+
+### Load artifacts
+```
+mem_search("sdd/{change-name}/spec")    → mem_get_observation(id) → SPEC
+mem_search("sdd/{change-name}/design")  → mem_get_observation(id) → DESIGN
+mem_search("sdd/{change-name}/tasks")   → mem_get_observation(id) → TASKS
+```
+
+### Spec Completeness (fail if ANY is true)
+- [ ] Any capability section contains: "TODO", "TBD", "PLACEHOLDER", "N/A" without justification
+- [ ] Any capability missing: Purpose, Preconditions, Behavior, Postconditions, Error Handling, Invariants, Test Hooks
+- [ ] External I/O capability exists with no FMEA table
+- [ ] FMEA severity ≥ 3 exists with no Sad-path BDD scenario
+- [ ] Any success criterion is unmeasurable ("should work", "as expected")
+
+### Design Completeness (fail if ANY is true)
+- [ ] Architecture diagram absent
+- [ ] Any module boundary section says "to be designed" or is empty
+- [ ] Interface contracts section absent or has stubs
+- [ ] ADR table is empty (0 entries)
+- [ ] Open Questions section is non-empty (must be resolved before apply)
+- [ ] YAGNI Gate table absent
+
+### Tasks Completeness (fail if ANY is true)
+- [ ] Any task lacks an acceptance criterion
+- [ ] Any task describes a whole feature (not atomic: must be < 30 min work)
+- [ ] Any HIGH-risk task has no Risk-reason
+- [ ] Task count ≥ 5 but no Execution Graph (Mermaid) present
+- [ ] Cross-phase reference check: any task references a capability not in SPEC
+
+### Cross-Phase Reference Check
+```
+FOR EACH task in TASKS:
+  scan task acceptance criterion for spec capability name
+  IF no matching capability found in SPEC → FAIL
+  emit: "Task {N.N} references capability not in spec: {criterion}"
+```
+
+### On ANY failure:
+- Set status: blocked
+- List ALL failed checks (not just first)
+- Route: spec failures → sdd-spec; design failures → sdd-design; task failures → sdd-tasks
+- DO NOT proceed with any file modification
+
+### On ALL checks pass:
+- Emit: "Pre-apply gate: PASSED. {N} tasks ready for implementation."
+- Proceed with batch execution
+
 {if strict_tdd true:}
 ## STRICT TDD MODE IS ACTIVE
 Test runner: {test-command}

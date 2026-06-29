@@ -59,7 +59,101 @@ and design. Determine if change meets acceptance criteria.
 - [ ] No TODO / FIXME / XXX in changed code
 - [ ] Tests exist for each capability
 - [ ] Test runner passes (or matches baseline failures)
-- [ ] **WCAG Compliance Check**: Verify aria-labels, contrast ratios, and keyboard accessibility.
+- [ ] **WCAG Check** (ONLY if change includes UI components):
+      Verify aria-labels, contrast ratios, keyboard navigation.
+      Skip if: backend-only, API-only, CLI-only, or data migration change.
+
+## Judge Instantiation (MANDATORY — spawn BOTH in same orchestrator response)
+
+The orchestrator MUST emit TWO parallel Task tool calls for verification.
+Never use a single agent for adversarial review.
+
+```
+[Response must contain BOTH of these in the same turn:]
+
+Task(
+  agent="judge-primary",
+  model="sonnet",
+  description="PRIMARY JUDGE for {change-name}",
+  prompt="""
++++Adversarial
+Find defects in the implementation. Assume NOTHING is correct until proven.
+
+## Your role: Primary Judge
+You review the implementation for CORRECTNESS.
+Focus: Does the implementation match the spec? Are test assertions meaningful?
+Construct: counterexamples, hostile inputs, data edge cases.
+
+## Evidence Required
+Load: sdd/{change-name}/spec, sdd/{change-name}/design, sdd/{change-name}/tasks
+Load: apply-progress for all batches
+Run: test suite
+
+## Validation Checklist
+- [ ] All spec capabilities implemented
+- [ ] All success criteria measurable and met
+- [ ] No TODO/FIXME/XXX in changed code
+- [ ] Tests pass (or match documented baseline failures)
+- [ ] No test weakening
+
+## Verdict
+APPROVED | CONDITIONALLY_APPROVED | NEEDS_CHANGES | UNRESOLVED
+
+## Return Envelope (JSON)
+{"judge": "primary", "verdict": "...", "findings": [...], "critical_count": N}
+"""
+)
+
+Task(
+  agent="judge-secondary",
+  model="sonnet",
+  description="SECONDARY JUDGE for {change-name}",
+  prompt="""
++++Forensic
+Trace failure modes and edge cases. Evidence chains required for every finding.
+
+## Your role: Secondary Judge
+You review the implementation for ROBUSTNESS and FAILURE HANDLING.
+Focus: What breaks in production? Race conditions, error paths, resource leaks.
+Construct: failure sequences, concurrent access patterns, upgrade hazards.
+
+## Evidence Required
+Load: sdd/{change-name}/spec (FMEA table), sdd/{change-name}/design (error propagation section)
+Load: apply-progress — check error handling blocks
+
+## Validation Checklist
+- [ ] FMEA failure modes handled in implementation
+- [ ] Sad-path BDD scenarios pass (if present)
+- [ ] Error propagation matches design
+- [ ] No silent failures (unchecked errors)
+- [ ] Rollback plan still valid after implementation
+
+## Verdict
+APPROVED | CONDITIONALLY_APPROVED | NEEDS_CHANGES | UNRESOLVED
+
+## Return Envelope (JSON)
+{"judge": "secondary", "verdict": "...", "findings": [...], "critical_count": N}
+"""
+)
+```
+
+## Verdict Synthesis (orchestrator — after BOTH judges complete)
+
+```
+IF primary.verdict == APPROVED AND secondary.verdict == APPROVED:
+  → Final verdict: APPROVED
+IF either judge == NEEDS_CHANGES:
+  → Final verdict: NEEDS_CHANGES (route to sdd-apply with combined findings)
+IF both == CONDITIONALLY_APPROVED:
+  → Final verdict: CONDITIONALLY_APPROVED (present to user)
+IF judges disagree (one APPROVED, one CONDITIONALLY_APPROVED):
+  → Final verdict: CONDITIONALLY_APPROVED (conservative)
+IF either judge == UNRESOLVED:
+  → Final verdict: UNRESOLVED (escalate to user)
+
+Save combined findings:
+mem_save(topic_key: "sdd/{change-name}/verify-report", content: {combined_report})
+```
 
 ## Artifact Store: {mode}
 

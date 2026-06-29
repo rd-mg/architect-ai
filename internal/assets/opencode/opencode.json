@@ -74,7 +74,7 @@
       }
     },
     "general-orchestrator": {
-      "description": "L1b General Orchestrator — non-SDD complex tasks",
+      "description": "L1a General Orchestrator — non-SDD complex tasks",
       "mode": "primary",
       "model": "anthropic:claude-sonnet-4-5",
       "prompt": "{file:.atl/agents/general-orchestrator.md}",

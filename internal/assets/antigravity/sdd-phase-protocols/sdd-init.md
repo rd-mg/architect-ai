@@ -52,6 +52,37 @@ Return a `pre-flight-report` in the artifact content. If critical failures found
 5. Strict TDD capability: check config and test runners
 6. Active overlays: check for `.atl/overlays/` directory
 
+### Step 6b: Overlay Registration
+
+IF Odoo project detected in Steps 1-6 (pyproject.toml contains "odoo" OR
+any `__manifest__.py` found in addons/ directory):
+
+1. Determine Odoo version from:
+   - `pyproject.toml` `[tool.odoo]` section, OR
+   - `__manifest__.py` `"version"` field prefix (e.g., "17.0.x.y.z" → v17), OR
+   - ODOO_VERSION environment variable
+
+2. Create overlay manifest:
+   ```
+   mkdir -p .atl/overlays/odoo-{version}
+   write .atl/overlays/odoo-{version}/manifest.json:
+   {
+     "overlay": "odoo-development-skill",
+     "version": "{detected_version}",
+     "active": true,
+     "addons_path": "{detected_addons_path}",
+     "detected_at": "{ISO_8601_timestamp}"
+   }
+   ```
+
+3. Record IS_ODOO = true in sdd-init artifact (under `active_overlays` key)
+
+4. Notify user:
+   "Odoo {version} detected. Overlay activated. Phase protocols will include Odoo-specific rules."
+
+IF NOT Odoo project:
+   Skip this step entirely.
+
 ### Step 7: Test Baseline Persistence
 Record the current test state to establish a baseline for verification:
 - `mem_save(topic_key: "sdd/{project}/test-baseline")` with the test output summary.
