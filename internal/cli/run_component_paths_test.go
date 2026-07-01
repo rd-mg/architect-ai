@@ -75,7 +75,9 @@ func TestComponentPathsSDDIncludesSkillsAndSharedConventions(t *testing.T) {
 
 	paths := componentPaths(home, model.Selection{}, adapters, model.ComponentSDD)
 
-	// Verify all four shared convention files are reported.
+	// The antigravity-cli adapter uses .gemini/antigravity-cli/skills/ (not .gemini/skills/
+	// which is used by the antigravity IDE adapter). Verify all shared convention files
+	// are reported under the correct prefix.
 	for _, sharedFile := range []string{
 		"persistence-contract.md",
 		"engram-convention.md",
@@ -83,13 +85,13 @@ func TestComponentPathsSDDIncludesSkillsAndSharedConventions(t *testing.T) {
 		"sdd-phase-common.md",
 		"skill-resolver.md",
 	} {
-		shared := filepath.Join(home, ".gemini", "skills", "_shared", sharedFile)
+		shared := filepath.Join(home, ".gemini", "antigravity-cli", "skills", "_shared", sharedFile)
 		if !containsPath(paths, shared) {
 			t.Fatalf("componentPaths(sdd) missing shared convention path %q\npaths=%v", shared, paths)
 		}
 	}
 
-	skill := filepath.Join(home, ".gemini", "skills", "sdd-verify", "SKILL.md")
+	skill := filepath.Join(home, ".gemini", "antigravity-cli", "skills", "sdd-verify", "SKILL.md")
 	if !containsPath(paths, skill) {
 		t.Fatalf("componentPaths(sdd) missing SDD skill path %q\npaths=%v", skill, paths)
 	}

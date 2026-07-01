@@ -71,7 +71,7 @@ func TestScanConfigs_AgentFieldMatchesModelAgentID(t *testing.T) {
 	// These are the AgentID string values the TUI switch statements check.
 	knownAgents := map[string]bool{
 		"claude-code":    false,
-		"opencode":       false:     false,
+		"opencode":       false,
 		"cursor":         false,
 		"vscode-copilot": false,
 		"codex":          false,

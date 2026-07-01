@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/rd-mg/architect-ai/internal/agents"
+	antigravitycli "github.com/rd-mg/architect-ai/internal/agents/antigravity-cli"
 	"github.com/rd-mg/architect-ai/internal/backup"
 	"github.com/rd-mg/architect-ai/internal/components/engram"
 	"github.com/rd-mg/architect-ai/internal/components/gga"
@@ -587,6 +588,19 @@ func (s componentApplyStep) Run(ctx context.Context) error {
 			}
 			if _, err := mcp.InjectContextMode(s.homeDir, adapter); err != nil {
 				return fmt.Errorf("inject context-mode for %q: %w", adapter.Agent(), err)
+			}
+
+			// For antigravity-cli, also run the full plugin install to write
+			// hooks.json, plugin.json, settings.json, and sidecars — these are
+			// not covered by the MCP injection flow above.
+			if adapter.Agent() == model.AgentAntigravityCLI {
+				engramBin, _ := cmdLookPath("engram")
+				if engramBin == "" {
+					engramBin = "engram"
+				}
+				if err := antigravitycli.Install(s.homeDir, engramBin, false); err != nil {
+					return fmt.Errorf("install antigravity-cli plugin for %q: %w", adapter.Agent(), err)
+				}
 			}
 		}
 		return nil
