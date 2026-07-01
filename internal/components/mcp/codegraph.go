@@ -65,8 +65,8 @@ func VSCodeCodeGraphOverlayJSON() []byte {
 }
 
 func CodeGraphMCPCommand() (string, []string) {
-	if path, err := exec.LookPath("codegraph"); err == nil {
-		return path, []string{"serve", "--mcp"}
+	if _, err := exec.LookPath("codegraph"); err == nil {
+		return "codegraph", []string{"serve", "--mcp"}
 	}
 	return "npx", []string{"-y", CodeGraphNPXPackage, "serve", "--mcp"}
 }

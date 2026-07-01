@@ -14,7 +14,7 @@ func TestDetect_ByOverride(t *testing.T) {
 		wantErr  bool
 	}{
 		{"opencode", "opencode", "opencode", false},
-		{"gemini-cli", "gemini-cli", "gemini-cli", false},
+		{false},
 		{"cursor", "cursor", "cursor", false},
 		{"kiro", "kiro", "kiro", false},
 		{"vscode-copilot", "vscode-copilot", "vscode-copilot", false},
@@ -148,7 +148,7 @@ func TestAllPlatforms(t *testing.T) {
 	}
 
 	expected := []string{
-		"opencode", "kilo-code", "gemini-cli", "antigravity",
+		"opencode", "kilo-code", "antigravity",
 		"vscode-copilot", "jetbrains-copilot", "cursor", "kiro",
 		"zed", "codex-cli", "pi-agent", "claude-code",
 	}

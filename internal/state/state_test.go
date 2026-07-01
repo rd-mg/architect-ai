@@ -91,7 +91,7 @@ func TestWriteOverwrite(t *testing.T) {
 		t.Fatalf("Write() first error = %v", err)
 	}
 
-	if err := Write(home, InstallState{InstalledAgents: []string{"opencode", "gemini-cli"}}); err != nil {
+	if err := Write(home, InstallState{InstalledAgents: []string{"opencode"}}); err != nil {
 		t.Fatalf("Write() second error = %v", err)
 	}
 
@@ -100,7 +100,7 @@ func TestWriteOverwrite(t *testing.T) {
 		t.Fatalf("Read() error = %v", err)
 	}
 
-	want := []string{"opencode", "gemini-cli"}
+	want := []string{"opencode"}
 	if !reflect.DeepEqual(s.InstalledAgents, want) {
 		t.Errorf("InstalledAgents after overwrite = %v, want %v", s.InstalledAgents, want)
 	}

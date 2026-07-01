@@ -37,10 +37,6 @@ func hookConfigFor(agent model.AgentID, homeDir string) (dir, file string, conte
 			"context-mode.json",
 			cursorContextModeHookJSON
 
-	case model.AgentGeminiCLI:
-		return filepath.Join(homeDir, ".gemini", "hooks"),
-			"context-mode.json",
-			geminiContextModeHookJSON
 
 	case model.AgentAntigravityCLI:
 		// CLI uses plugin-level hooks.json (written by installer.go)
@@ -75,20 +71,3 @@ var cursorContextModeHookJSON = []byte(`{
 }
 `)
 
-var geminiContextModeHookJSON = []byte(`{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "run_command",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "context-mode hook gemini pretooluse",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  }
-}
-`)

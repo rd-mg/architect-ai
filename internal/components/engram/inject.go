@@ -451,7 +451,7 @@ func executableFromCommandValue(command any) (string, bool) {
 
 func isStandardAgent(id model.AgentID) bool {
 	switch id {
-	case model.AgentOpenCode, model.AgentQwenCode, model.AgentCodex, model.AgentGeminiCLI, model.AgentAntigravity, model.AgentClaudeCode:
+	case model.AgentOpenCode, model.AgentQwenCode, model.AgentCodex, model.AgentAntigravity, model.AgentClaudeCode:
 		return true
 	default:
 		return false

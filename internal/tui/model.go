@@ -2826,8 +2826,7 @@ func preselectedAgents(detection system.DetectionResult) []model.AgentID {
 			selected = append(selected, model.AgentClaudeCode)
 		case string(model.AgentOpenCode):
 			selected = append(selected, model.AgentOpenCode)
-		case string(model.AgentGeminiCLI):
-			selected = append(selected, model.AgentGeminiCLI)
+			selected = append(selected)
 		case string(model.AgentCursor):
 			selected = append(selected, model.AgentCursor)
 		case string(model.AgentVSCodeCopilot):
@@ -3198,7 +3197,6 @@ func (m Model) detectAgentBuilderEngines() []model.AgentID {
 	candidateIDs := []model.AgentID{
 		model.AgentClaudeCode,
 		model.AgentOpenCode,
-		model.AgentGeminiCLI,
 		model.AgentCodex,
 	}
 	var available []model.AgentID
@@ -3290,7 +3288,6 @@ func agentBuilderSkillsDir(agentID model.AgentID) (string, bool) {
 		return filepath.Join(home, ".claude", "skills"), true
 	case model.AgentOpenCode:
 		return filepath.Join(home, ".config", "opencode", "skills"), true
-	case model.AgentGeminiCLI:
 		return filepath.Join(home, ".gemini", "skills"), true
 	case model.AgentCodex:
 		return filepath.Join(home, ".codex", "skills"), true
@@ -3463,7 +3460,6 @@ func agentBuilderSystemPromptPath(agentID model.AgentID) (string, bool) {
 		return filepath.Join(home, ".claude", "CLAUDE.md"), true
 	case model.AgentOpenCode:
 		return filepath.Join(home, ".config", "opencode", "AGENTS.md"), true
-	case model.AgentGeminiCLI:
 		return filepath.Join(home, ".gemini", "GEMINI.md"), true
 	case model.AgentCodex:
 		return filepath.Join(home, ".codex", "AGENTS.md"), true

@@ -430,10 +430,11 @@ Use when: you need to understand the project's own structure or logic.
 → Pattern found: use it.
 → 0 results: proceed to step 3.
 
-**STEP 2b — CodeGraph (Semantic Relationships)**
-Call chains, callers, impact radius. Only when `codegraph_context` available.
+**STEP 2b — CodeGraph (Semantic Exploration)**
+Exploration query, callers, and impact radius. Use `codegraph_explore` as the primary tool.
 ```
-codegraph_context(query: "{topic}", maxNodes: 25, format: "markdown")
+codegraph_explore(query: "{topic}")
+codegraph_node(nodeId: "{node}")
 codegraph_callers(nodeId: "{node}")
 codegraph_impact(nodeId: "{node}")
 ```
@@ -704,7 +705,7 @@ Drop content in this order (earlier = drop first):
 MUST emit: `[CTX] Mode {1|2|3}. Dropped: {list}.` at start of response when content is dropped.
 
 ## Context-Mode Routing Policy
-{content of _shared/context-mode-routing-policy.md}
+{{ include "generic/context-mode-routing-policy.md" }}
 
 ## Available Tools
 {verified tools from tool availability check — compact format: tool name + availability only}

@@ -64,9 +64,7 @@ func TestAllAgentsHaveRequiredMCPs(t *testing.T) {
 }
 
 func TestGeminiMCPOnlyDoesNotContainSettingsKeys(t *testing.T) {
-	// Verify that generateGeminiMCPOnly returns ONLY mcpServers, not general/ui/model/security keys.
 	// This is a safety check: the MCP-only path must NOT overwrite user settings on merge.
-	t.Skip("generateGeminiMCPOnly is internal — tested via injectMergeIntoSettings integration")
 }
 
 func containsJSONString(s, substr string) bool {

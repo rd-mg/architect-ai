@@ -874,9 +874,6 @@ func componentPaths(homeDir string, selection model.Selection, adapters []agents
 		if adapter.SupportsSlashCommands() {
 			if cmdDir := adapter.CommandsDir(homeDir); cmdDir != "" {
 				ext := ".md"
-				if adapter.Agent() == model.AgentGeminiCLI {
-					ext = ".toml"
-				}
 				for _, command := range sdd.OpenCodeCommands() {
 					paths = append(paths, filepath.Join(cmdDir, command.Name+ext))
 				}
@@ -1020,7 +1017,7 @@ func runPostApplyVerification(homeDir string, selection model.Selection, resolve
 	if hasComponent(resolved.OrderedComponents, model.ComponentNotebookLM) {
 		checks = append(checks, notebookLMHealthChecks()...)
 	}
-	checks = append(checks, antigravityCollisionCheck(resolved.Agents)...)
+
 	checks = append(checks, antigravityInstallCheck(homeDir, resolved.Agents)...)
 
 	return verify.BuildReport(verify.RunChecks(context.Background(), checks))
@@ -1087,15 +1084,7 @@ func engramHealthChecks(homeDir string, agents []model.AgentID) []verify.Check {
 	return checks
 }
 
-// antigravityCollisionCheck returns a soft verify check that warns the user
-// when both Antigravity and Gemini CLI are selected. Both agents write to
-// ~/.gemini/GEMINI.md — content is merged (not overwritten) but the user
-// should be aware.
-func antigravityCollisionCheck(agents []model.AgentID) []verify.Check {
-	// Antigravity uses ~/.gemini/GEMINI.md and Gemini CLI uses ~/.gemini/system.md.
-	// They no longer collide.
-	return nil
-}
+
 
 // antigravityInstallCheck returns a soft verify check that ensures the
 // Antigravity IDE directory exists when the agent is selected.

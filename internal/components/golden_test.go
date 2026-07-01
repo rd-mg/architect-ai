@@ -13,7 +13,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/agents/claude"
 	codexagent "github.com/rd-mg/architect-ai/internal/agents/codex"
 	"github.com/rd-mg/architect-ai/internal/agents/cursor"
-	"github.com/rd-mg/architect-ai/internal/agents/gemini"
+
 	"github.com/rd-mg/architect-ai/internal/agents/kiro"
 	"github.com/rd-mg/architect-ai/internal/agents/opencode"
 	"github.com/rd-mg/architect-ai/internal/agents/vscode"
@@ -32,7 +32,7 @@ var update = flag.Bool("update", false, "update golden files")
 func claudeAdapter() agents.Adapter      { return claude.NewAdapter() }
 func opencodeAdapter() agents.Adapter    { return opencode.NewAdapter() }
 func cursorAdapter() agents.Adapter      { return cursor.NewAdapter() }
-func geminiAdapter() agents.Adapter      { return gemini.NewAdapter() }
+
 func vscodeAdapter() agents.Adapter      { return vscode.NewAdapter() }
 func codexAdapter() agents.Adapter       { return codexagent.NewAdapter() }
 func antigravityAdapter() agents.Adapter { return antigravity.NewAdapter() }
@@ -200,38 +200,6 @@ func TestGoldenSDD_Cursor(t *testing.T) {
 	}
 }
 
-func TestGoldenSDD_Gemini(t *testing.T) {
-	home := t.TempDir()
-
-	result, err := sdd.Inject(home, geminiAdapter(), "")
-	if err != nil {
-		t.Fatalf("sdd.Inject(gemini) error = %v", err)
-	}
-	if !result.Changed {
-		t.Fatalf("sdd.Inject(gemini) changed = false")
-	}
-
-	// Gemini writes SDD orchestrator to ~/.gemini/GEMINI.md.
-	geminiMD := readTestFile(t, filepath.Join(home, ".gemini", "GEMINI.md"))
-	assertGolden(t, "sdd-gemini-geminimd.golden", geminiMD)
-
-	// Golden-check a representative SDD skill file.
-	skillInit := readTestFile(t, filepath.Join(home, ".gemini", "skills", "sdd-init", "SKILL.md"))
-	assertGolden(t, "sdd-gemini-skill-sdd-init.golden", skillInit)
-
-	// Verify ALL expected SDD skill files exist.
-	expectedSkills := []string{
-		"sdd-init", "sdd-apply", "sdd-archive", "sdd-explore",
-		"sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks", "sdd-verify",
-	}
-	skillsDir := filepath.Join(home, ".gemini", "skills")
-	for _, name := range expectedSkills {
-		path := filepath.Join(skillsDir, name, "SKILL.md")
-		if _, err := os.Stat(path); err != nil {
-			t.Errorf("expected SDD skill file %q not found: %v", name, err)
-		}
-	}
-}
 
 func TestGoldenSDD_VSCode(t *testing.T) {
 	home := t.TempDir()

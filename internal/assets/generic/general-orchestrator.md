@@ -206,10 +206,11 @@ Strict priority order. Escalate only on miss.
 **STEP 2 — Local ripgrep (Project Evidence)**
 Understand project structure/logic. → Found: use it. → 0 results: step 3.
 
-**STEP 2b — CodeGraph (Semantic Relationships)**
-Call chains, callers, impact radius. Only when `codegraph_context` available.
+**STEP 2b — CodeGraph (Semantic Exploration)**
+Exploration query, callers, and impact radius. Use `codegraph_explore` as the primary tool.
 ```
-codegraph_context(query: "{topic}", maxNodes: 25, format: "markdown")
+codegraph_explore(query: "{topic}")
+codegraph_node(nodeId: "{node}")
 codegraph_callers(nodeId: "{node}")
 codegraph_impact(nodeId: "{node}")
 ```

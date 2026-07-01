@@ -25,11 +25,7 @@ func TestProviderForAgents(t *testing.T) {
 			agents: []model.AgentID{model.AgentOpenCode},
 			want:   "opencode",
 		},
-		{
-			name:   "gemini-cli maps to gemini",
-			agents: []model.AgentID{model.AgentGeminiCLI},
-			want:   "gemini",
-		},
+
 		{
 			name:   "both claude and opencode defaults to claude",
 			agents: []model.AgentID{model.AgentClaudeCode, model.AgentOpenCode},
@@ -37,7 +33,7 @@ func TestProviderForAgents(t *testing.T) {
 		},
 		{
 			name:   "opencode and gemini defaults to opencode",
-			agents: []model.AgentID{model.AgentOpenCode, model.AgentGeminiCLI},
+			agents: []model.AgentID{model.AgentOpenCode},
 			want:   "opencode",
 		},
 		{

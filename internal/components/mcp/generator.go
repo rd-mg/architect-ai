@@ -14,7 +14,6 @@ type GenerateOptions struct {
 	OdooURL         string
 	OdooDB          string
 	OdooUser        string
-	OdooYolo        bool
 	PostgresURL     string
 	GeminiInstalled bool
 }
@@ -42,8 +41,7 @@ func GenerateConfig(platform string, opts GenerateOptions) (map[string]interface
 		return generateVSCode(engramBin, opts), nil
 	case "antigravity":
 		return generateAntigravity(engramBin, opts), nil
-	case "gemini":
-		return generateGemini(engramBin, opts), nil
+
 	case "opencode":
 		return generateOpenCode(engramBin, opts), nil
 	case "claude":
@@ -84,7 +82,8 @@ func generateVSCode(engramBin string, opts GenerateOptions) map[string]interface
 			"type": "stdio", "command": "uvx", "args": []string{"mcp-server-odoo"},
 			"env": map[string]string{
 				"ODOO_DB": opts.OdooDB, "ODOO_PASSWORD": "${input:odoo-password}",
-				"ODOO_URL": opts.OdooURL, "ODOO_USER": opts.OdooUser, "ODOO_YOLO": boolStr(opts.OdooYolo),
+				"ODOO_URL": opts.OdooURL, "ODOO_USER": opts.OdooUser,
+				"ODOO_YOLO": "true", "ODOO_MCP_ENABLE_METHOD_CALLS": "true",
 			},
 		}
 		if opts.PostgresURL != "" {
@@ -122,48 +121,14 @@ func generateAntigravity(engramBin string, opts GenerateOptions) map[string]inte
 			"command": "uvx", "args": []string{"mcp-server-odoo"},
 			"env": map[string]string{
 				"ODOO_DB": opts.OdooDB, "ODOO_PASSWORD": "${ODOO_PASSWORD}",
-				"ODOO_URL": opts.OdooURL, "ODOO_USER": opts.OdooUser, "ODOO_YOLO": boolStr(opts.OdooYolo),
+				"ODOO_URL": opts.OdooURL, "ODOO_USER": opts.OdooUser,
+				"ODOO_YOLO": "true", "ODOO_MCP_ENABLE_METHOD_CALLS": "true",
 			},
 		}
 	}
 	return map[string]interface{}{"mcpServers": servers}
 }
 
-func generateGemini(engramBin string, opts GenerateOptions) map[string]interface{} {
-	return map[string]interface{}{
-		"mcpServers": generateGeminiMCPServers(engramBin, opts),
-	}
-}
-
-// generateGeminiMCPServers returns the shared MCP servers map for Gemini CLI.
-// Extracted so it can be reused by generateGemini and generateGeminiMCPOnly.
-func generateGeminiMCPServers(engramBin string, opts GenerateOptions) map[string]interface{} {
-	return map[string]interface{}{
-		"context7":    map[string]interface{}{"httpUrl": "https://mcp.context7.com/mcp", "timeout": 30000, "trust": false},
-		"context-mode": map[string]interface{}{"command": "npx", "args": []string{"-y", "@mksglu/context-mode"}, "timeout": 15000},
-		"engram":      map[string]interface{}{"command": engramBin, "args": []string{"mcp", "--tools=agent"}},
-		"sequential-thinking": map[string]interface{}{
-			"command": "npx", "args": []string{"-y", "@modelcontextprotocol/server-sequential-thinking"},
-			"timeout": 30000, "trust": true,
-		},
-		"codegraph": map[string]interface{}{
-			"command": "npx", "args": []string{"-y", "@colbymchenry/codegraph", "serve", "--mcp"},
-			"timeout": 30000, "trust": true,
-		},
-		"notebooklm-mcp": map[string]interface{}{
-			"command": "notebooklm-mcp", "args": []string{}, "timeout": 30000, "trust": false,
-		},
-	}
-}
-
-// generateGeminiMCPOnly returns ONLY the mcpServers section for MERGE operations.
-// Used by injectMergeIntoSettings when settings.json already exists,
-// to avoid overwriting user settings (general, ui, model, etc.).
-func generateGeminiMCPOnly(engramBin string, opts GenerateOptions) map[string]interface{} {
-	return map[string]interface{}{
-		"mcpServers": generateGeminiMCPServers(engramBin, opts),
-	}
-}
 
 func generateOpenCode(engramBin string, opts GenerateOptions) map[string]interface{} {
 	tr := true

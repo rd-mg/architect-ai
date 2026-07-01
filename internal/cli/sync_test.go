@@ -1495,7 +1495,7 @@ func TestDiscoverAgentsFallsBackToFSDiscoveryWhenStateEmpty(t *testing.T) {
 func TestDiscoverAgentsStateMultipleAgents(t *testing.T) {
 	home := t.TempDir()
 
-	agents := []string{"claude-code", "opencode", "gemini-cli"}
+	agents := []string{"claude-code", "opencode", "antigravity-cli"}
 	if err := state.Write(home, state.InstallState{InstalledAgents: agents}); err != nil {
 		t.Fatalf("state.Write() error = %v", err)
 	}
@@ -1505,7 +1505,7 @@ func TestDiscoverAgentsStateMultipleAgents(t *testing.T) {
 	want := []model.AgentID{
 		model.AgentClaudeCode,
 		model.AgentOpenCode,
-		model.AgentGeminiCLI,
+		model.AgentAntigravityCLI,
 	}
 	if !reflect.DeepEqual(discovered, want) {
 		t.Errorf("DiscoverAgents() multi-state = %v, want %v", discovered, want)

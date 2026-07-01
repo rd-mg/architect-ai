@@ -685,8 +685,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 				ops = append(ops, rewriteJSONFile(path, jsonPath{"permissions"}))
 			case model.AgentOpenCode:
 				ops = append(ops, rewriteJSONFile(path, jsonPath{"permission"}))
-			case model.AgentGeminiCLI:
-				ops = append(ops, rewriteJSONFile(path, jsonPath{"general", "defaultApprovalMode"}))
+
 			case model.AgentVSCodeCopilot:
 				ops = append(ops, rewriteJSONFile(path, jsonPath{"chat.tools.autoApprove"}))
 			}

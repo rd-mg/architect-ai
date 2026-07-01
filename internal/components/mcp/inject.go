@@ -1,7 +1,6 @@
 package mcp
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -282,26 +281,7 @@ func injectMergeIntoSettings(homeDir string, adapter agents.Adapter) (InjectionR
 		return InjectionResult{}, nil
 	}
 
-	// For Gemini: when settings.json already exists, only merge the mcpServers section
-	// to avoid overwriting user settings (general, ui, model, etc.).
-	if adapter.Agent() == model.AgentGeminiCLI {
-		if _, err := os.Stat(settingsPath); err == nil {
-			engramBin, err := FindEngramBinary()
-			if err != nil {
-				engramBin = "engram"
-			}
-			overlay, err := json.Marshal(generateGeminiMCPOnly(engramBin, GenerateOptions{}))
-			if err != nil {
-				return InjectionResult{}, fmt.Errorf("marshal gemini MCP-only overlay: %w", err)
-			}
-			settingsWrite, err := mergeJSONFile(settingsPath, overlay)
-			if err != nil {
-				return InjectionResult{}, err
-			}
-			return InjectionResult{Changed: settingsWrite.Changed, Files: []string{settingsPath}}, nil
-		}
-		// File doesn't exist — fall through to normal overlay generation
-	}
+
 
 	overlay, err := OverlayFor(adapter.Agent(), ServerContext7, Options{})
 	if err != nil {

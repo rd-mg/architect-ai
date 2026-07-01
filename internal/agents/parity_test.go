@@ -27,7 +27,6 @@ func TestSupportedAgentsHaveCatalogAndRegistryParity(t *testing.T) {
 	critical := []model.AgentID{
 		model.AgentClaudeCode,
 		model.AgentOpenCode,
-		model.AgentGeminiCLI,
 		model.AgentCursor,
 		model.AgentKiroIDE,
 	}

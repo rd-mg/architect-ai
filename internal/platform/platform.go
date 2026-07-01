@@ -51,17 +51,6 @@ var platforms = map[string]Platform{
 			{Path: "kilo.json", Content: kiloJSON, Merge: true},
 		},
 	},
-	"gemini-cli": {
-		Name:              "gemini-cli",
-		DisplayName:       "Gemini CLI",
-		HookLevel:         HookLevelFull,
-		RequiresRestart:   true,
-		RoutingFileRequired: true,
-		RoutingFile:       "GEMINI.md",
-		ConfigFiles: []ConfigFile{
-			{Path: "~/.gemini/settings.json", Content: geminiCLISettings, Merge: true, IsGlobal: true},
-		},
-	},
 	"antigravity": {
 		Name:                "antigravity",
 		DisplayName:         "Antigravity",

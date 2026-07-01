@@ -278,14 +278,6 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 				var writeContent []byte
 
 				switch adapter.Agent() {
-				case model.AgentGeminiCLI:
-					// Transform Markdown to TOML for Gemini CLI
-					path = filepath.Join(commandsDir, strings.TrimSuffix(entry.Name(), ".md")+".toml")
-					tomlContent, err := transformMarkdownToGeminiTOML(strings.TrimSuffix(entry.Name(), ".md"), content)
-					if err != nil {
-						return InjectionResult{}, fmt.Errorf("transform gemini command %s: %w", entry.Name(), err)
-					}
-					writeContent = []byte(tomlContent)
 
 				case model.AgentClaudeCode:
 					// Markdown is native for Claude Code
@@ -1092,31 +1084,6 @@ func migrateLegacyOpenCodeAgentsKey(baseJSON []byte) ([]byte, error) {
 
 var mdDescriptionRegex = regexp.MustCompile(`(?i)description:\s*["']?([^"'\n\r]+)["']?`)
 
-func transformMarkdownToGeminiTOML(name, mdContent string) (string, error) {
-	description := "SDD Phase Command"
-	prompt := mdContent
-
-	// Try to extract description from frontmatter
-	if match := mdDescriptionRegex.FindStringSubmatch(mdContent); len(match) > 1 {
-		description = strings.TrimSpace(match[1])
-	}
-
-	// Strip frontmatter from prompt if present
-	if strings.HasPrefix(mdContent, "---") {
-		if end := strings.Index(mdContent[3:], "---"); end != -1 {
-			prompt = strings.TrimSpace(mdContent[end+6:])
-		}
-	}
-
-	var b strings.Builder
-	// Root-level fields required for Gemini CLI v1 command format
-	b.WriteString(fmt.Sprintf("description = %q\n", description))
-	b.WriteString("prompt = \"\"\"\n")
-	b.WriteString(prompt)
-	b.WriteString("\n\"\"\"\n")
-
-	return b.String(), nil
-}
 
 func ensureClaudePluginManifest(pluginDir string, force bool, manifest *state.ManagedManifest) (InjectionResult, error) {
 	manifestDir := filepath.Join(pluginDir, ".claude-plugin")
@@ -1171,8 +1138,7 @@ func hasSDDOrchestrator(content string) bool {
 // content based on the agent. Agent-specific assets take priority; generic is fallback.
 func sddOrchestratorAsset(agent model.AgentID) string {
 	switch agent {
-	case model.AgentGeminiCLI:
-		return "gemini/sdd-orchestrator.md"
+
 	case model.AgentCodex:
 		return "codex/sdd-orchestrator.md"
 	case model.AgentAntigravity:
@@ -1190,8 +1156,7 @@ func sddOrchestratorAsset(agent model.AgentID) string {
 // content based on the agent. Agent-specific assets take priority; generic is fallback.
 func generalOrchestratorAsset(agent model.AgentID) string {
 	switch agent {
-	case model.AgentGeminiCLI:
-		return "gemini/general-orchestrator.md"
+
 	case model.AgentCodex:
 		return "codex/general-orchestrator.md"
 	case model.AgentAntigravity:

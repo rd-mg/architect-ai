@@ -186,8 +186,6 @@ func defaultAgentsFromDetection(detection system.DetectionResult) []model.AgentI
 			agents = append(agents, model.AgentOpenCode)
 		case string(model.AgentKilocode):
 			agents = append(agents, model.AgentKilocode)
-		case string(model.AgentGeminiCLI):
-			agents = append(agents, model.AgentGeminiCLI)
 		case string(model.AgentCursor):
 			agents = append(agents, model.AgentCursor)
 		case string(model.AgentVSCodeCopilot):

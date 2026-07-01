@@ -32,25 +32,21 @@ Task: Investigate topic "{topic}". Read codebase. Compare approaches.
 
 ## Step 0b: Semantic Graph Exploration (CodeGraph — Priority over ripgrep)
 
-IF `codegraph_context` is in the verified tool list:
+IF `codegraph_explore` is in the verified tool list:
 
-1. **Semantic Context Pack**
+1. **Semantic Exploration & Call Paths (Primary)**
    ```
-   codegraph_context(
-     query: "{change_topic}",
-     maxNodes: 25,
-     format: "markdown"
-   )
+   codegraph_explore(query: "{change_topic}")
    ```
-   → Returns related functions, types, files, call chains.
+   → Returns related symbols' verbatim source, call paths, and blast radius.
    → Use this output as the primary code map. Proceed to ADR Pre-check.
    → Only run Steps 1-4 of Section B (ripgrep) if codegraph returns < 5 nodes.
 
-2. **Call Chain Trace** (when entrypoint identified from context pack)
+2. **In-Depth Node Details**
    ```
-   codegraph_trace(entry: "{identified_entrypoint}")
+   codegraph_node(nodeId: "{primary_node}")
    ```
-   → Full call chain from trigger to leaf.
+   → Verbatim source of the symbol and immediate callers.
 
 3. **Blast Radius** (for change impact analysis)
    ```
@@ -64,7 +60,7 @@ IF `codegraph_context` is in the verified tool list:
    ```
    → All call sites. Required for impact surface completeness.
 
-IF `codegraph_context` is NOT available:
+IF `codegraph_explore` is NOT available:
 → Skip to Section B (ripgrep 5-step protocol). No change to existing flow.
 
 **DO NOT** run both codegraph AND full ripgrep sweep for the same query.
@@ -92,9 +88,9 @@ ctx_batch_execute([
 → Single context-mode call, compressed output, no flooding
 ```
 
-**Semantic Graph (if codegraph_context available):**
+**Semantic Graph (if codegraph_explore available):**
 ```
-codegraph_context(query: "{change_topic}", maxNodes: 25, format: "markdown")
+codegraph_explore(query: "{change_topic}")
 → Replace/supplement 3-5 ripgrep calls with semantic results
 ```
 

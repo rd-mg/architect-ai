@@ -634,7 +634,7 @@ Drop in order (earlier = first):
 MUST emit: `[CTX] Mode {1|2|3}. Dropped: {list}.` when content dropped.
 
 ## Context-Mode Routing Policy
-{content of _shared/context-mode-routing-policy.md}
+{{ include "generic/context-mode-routing-policy.md" }}
 
 ## Available Tools
 {verified tools — compact: tool name + availability}

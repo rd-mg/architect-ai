@@ -69,7 +69,7 @@ Triggers (deterministic string match — no LLM inference):
 ```
 Slash commands: /sdd-new, /sdd-continue, /sdd-ff, /sdd-init, /sdd-explore,
                 /sdd-verify, /sdd-archive, /sdd-onboard, /sdd-hotfix
-Natural language (regex): \b(use sdd|start sdd|sdd mode|spec-driven|iniciar sdd|haceme un sdd)\b
+Natural language (regex): \b(use sdd|start sdd|begin sdd|sdd mode|spec-driven)\b
 ```
 
 **GENERAL TASK → Mode B (delegate to general-orchestrator)**

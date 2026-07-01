@@ -51,8 +51,7 @@ func ProviderForAgents(agentIDs []model.AgentID) string {
 		return "claude"
 	case has[model.AgentOpenCode]:
 		return "opencode"
-	case has[model.AgentGeminiCLI]:
-		return "gemini"
+
 	case has[model.AgentAntigravity]:
 		// Antigravity is built on Gemini infrastructure.
 		return "gemini"

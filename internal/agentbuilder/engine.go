@@ -27,8 +27,7 @@ func NewEngine(agentID model.AgentID) GenerationEngine {
 		return &ClaudeEngine{}
 	case model.AgentOpenCode:
 		return &OpenCodeEngine{}
-	case model.AgentGeminiCLI:
-		return &GeminiEngine{}
+
 	case model.AgentCodex:
 		return &CodexEngine{}
 	default:
@@ -72,23 +71,6 @@ func (e *OpenCodeEngine) Generate(ctx context.Context, prompt string) (string, e
 	return string(res.Stdout), nil
 }
 
-// GeminiEngine drives Gemini CLI via `gemini -p "{prompt}"`.
-type GeminiEngine struct{}
-
-func (e *GeminiEngine) Agent() model.AgentID { return model.AgentGeminiCLI }
-
-func (e *GeminiEngine) Available() bool {
-	_, err := exec.LookPath("gemini")
-	return err == nil
-}
-
-func (e *GeminiEngine) Generate(ctx context.Context, prompt string) (string, error) {
-	res, err := process.Run(ctx, "gemini", []string{"-p", prompt}, process.OptionsFor(process.AgentGenerate))
-	if err != nil {
-		return "", fmt.Errorf("gemini generate: %w\nstderr: %s", err, string(res.Stderr))
-	}
-	return string(res.Stdout), nil
-}
 
 // CodexEngine drives Codex via `codex exec "{prompt}"`.
 type CodexEngine struct{}

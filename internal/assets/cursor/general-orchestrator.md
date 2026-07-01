@@ -246,13 +246,13 @@ Use when: you need to understand the project's own structure or logic.
 → Pattern found: use it.
 → 0 results: proceed to step 3.
 
-**STEP 2b — CodeGraph (Semantic Relationships)**
-Use when: need call chains, callers, impact radius, or cross-file relationships.
-Only available when `codegraph_context` is in verified tool list.
+**STEP 2b — CodeGraph (Semantic Exploration)**
+Exploration query, callers, and impact radius. Use `codegraph_explore` as the primary tool.
 ```
-codegraph_context(query: "{topic}", maxNodes: 25, format: "markdown")
-codegraph_callers(nodeId: "{node}")    // who calls this?
-codegraph_impact(nodeId: "{node}")     // what breaks?
+codegraph_explore(query: "{topic}")
+codegraph_node(nodeId: "{node}")
+codegraph_callers(nodeId: "{node}")
+codegraph_impact(nodeId: "{node}")
 ```
 → Result supplements or replaces multi-file ripgrep chaining.
 → Miss or unavailable: proceed to step 3.

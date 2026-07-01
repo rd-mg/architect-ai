@@ -91,7 +91,6 @@ func TestDefaultRegistryIncludesAllAgents(t *testing.T) {
 	for _, agent := range []model.AgentID{
 		model.AgentClaudeCode,
 		model.AgentOpenCode,
-		model.AgentGeminiCLI,
 		model.AgentCursor,
 		model.AgentVSCodeCopilot,
 		model.AgentCodex,

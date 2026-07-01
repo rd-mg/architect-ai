@@ -12,7 +12,7 @@ func TestComponentPathsSDDIncludesSystemPromptForAllSupportedAgents(t *testing.T
 	adapters := resolveAdapters([]model.AgentID{
 		model.AgentClaudeCode,
 		model.AgentOpenCode,
-		model.AgentGeminiCLI,
+		model.AgentAntigravityCLI,
 		model.AgentCursor,
 		model.AgentVSCodeCopilot,
 		model.AgentAntigravity,
@@ -71,7 +71,7 @@ func TestComponentPathsSDDSingleIncludesOpenCodePlugin(t *testing.T) {
 
 func TestComponentPathsSDDIncludesSkillsAndSharedConventions(t *testing.T) {
 	home := t.TempDir()
-	adapters := resolveAdapters([]model.AgentID{model.AgentGeminiCLI})
+	adapters := resolveAdapters([]model.AgentID{model.AgentAntigravityCLI})
 
 	paths := componentPaths(home, model.Selection{}, adapters, model.ComponentSDD)
 

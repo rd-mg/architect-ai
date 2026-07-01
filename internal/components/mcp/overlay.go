@@ -38,20 +38,7 @@ func OverlayFor(agent model.AgentID, server ServerKind, opts Options) ([]byte, e
 
 func sequentialThinkingOverlay(agent model.AgentID) ([]byte, error) {
 	switch agent {
-	case model.AgentGeminiCLI:
-		return []byte(`{
-  "mcpServers": {
-    "sequential-thinking": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ],
-      "timeout": 30000,
-      "trust": true
-    }
-  }
-}`), nil
+
 	case model.AgentOpenCode, model.AgentKilocode:
 		return []byte(`{
   "mcp": {
@@ -106,16 +93,7 @@ func sequentialThinkingOverlay(agent model.AgentID) ([]byte, error) {
 
 func context7Overlay(agent model.AgentID) ([]byte, error) {
 	switch agent {
-	case model.AgentGeminiCLI:
-		return []byte(`{
-  "mcpServers": {
-    "context7": {
-      "httpUrl": "https://mcp.context7.com/mcp",
-      "timeout": 30000,
-      "trust": false
-    }
-  }
-}`), nil
+
 	case model.AgentOpenCode, model.AgentKilocode:
 		return []byte(`{
   "mcp": {
@@ -182,17 +160,7 @@ func context7Overlay(agent model.AgentID) ([]byte, error) {
 
 func notebookLMOverlay(agent model.AgentID) ([]byte, error) {
 	switch agent {
-	case model.AgentGeminiCLI:
-		return []byte(`{
-  "mcpServers": {
-    "notebooklm-mcp": {
-      "command": "notebooklm-mcp",
-      "args": [],
-      "timeout": 30000,
-      "trust": false
-    }
-  }
-}`), nil
+
 	case model.AgentOpenCode, model.AgentKilocode:
 		return []byte(`{
   "mcp": {
@@ -261,17 +229,7 @@ func notebookLMOverlay(agent model.AgentID) ([]byte, error) {
 
 func codegraphOverlay(agent model.AgentID) ([]byte, error) {
 	switch agent {
-	case model.AgentGeminiCLI:
-		return []byte(`{
-  "mcpServers": {
-    "codegraph": {
-      "command": "npx",
-      "args": ["-y", "@colbymchenry/codegraph", "serve", "--mcp"],
-      "timeout": 30000,
-      "trust": true
-    }
-  }
-}`), nil
+
 	case model.AgentOpenCode, model.AgentKilocode:
 		return []byte(`{
   "mcp": {
@@ -313,16 +271,7 @@ func codegraphOverlay(agent model.AgentID) ([]byte, error) {
 
 func contextModeOverlay(agent model.AgentID) ([]byte, error) {
 	switch agent {
-	case model.AgentGeminiCLI:
-		return []byte(`{
-  "mcpServers": {
-    "context-mode": {
-      "command": "npx",
-      "args": ["-y", "@mksglu/context-mode"],
-      "timeout": 15000
-    }
-  }
-}`), nil
+
 	case model.AgentOpenCode, model.AgentKilocode:
 		return []byte(`{
   "mcp": {

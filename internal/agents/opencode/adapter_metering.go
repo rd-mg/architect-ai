@@ -8,7 +8,7 @@ import (
 
 	"github.com/rd-mg/architect-ai/internal/agents/claude"
 	"github.com/rd-mg/architect-ai/internal/agents/codex"
-	"github.com/rd-mg/architect-ai/internal/agents/gemini"
+
 	"github.com/rd-mg/architect-ai/internal/metering"
 )
 
@@ -17,8 +17,7 @@ func ExtractUsage(raw []byte) (metering.UsageDelta, error) {
 	switch {
 	case bytes.Contains(raw, []byte(`"cache_read_input_tokens"`)):
 		return claude.ExtractUsage(raw)
-	case bytes.Contains(raw, []byte(`"usageMetadata"`)):
-		return gemini.ExtractUsage(raw)
+
 	case bytes.Contains(raw, []byte(`"prompt_tokens_details"`)):
 		return codex.ExtractUsage(raw)
 	}

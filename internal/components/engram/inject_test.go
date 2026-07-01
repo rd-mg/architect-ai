@@ -11,7 +11,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/agents"
 	"github.com/rd-mg/architect-ai/internal/agents/claude"
 	"github.com/rd-mg/architect-ai/internal/agents/codex"
-	"github.com/rd-mg/architect-ai/internal/agents/gemini"
+
 	"github.com/rd-mg/architect-ai/internal/agents/opencode"
 	"github.com/rd-mg/architect-ai/internal/agents/qwen"
 	"github.com/rd-mg/architect-ai/internal/agents/vscode"

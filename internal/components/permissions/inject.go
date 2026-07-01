@@ -65,13 +65,7 @@ var openCodeOverlayJSON = []byte(`{
 }
 `)
 
-// geminiCLIOverlayJSON sets Gemini CLI to "auto_edit" mode (auto-approve edit tools).
-var geminiCLIOverlayJSON = []byte(`{
-  "general": {
-    "defaultApprovalMode": "auto_edit"
-  }
-}
-`)
+
 
 // qwenCodeOverlayJSON sets Qwen Code to "auto_edit" mode (auto-approve edits, manual approval for shell commands).
 var qwenCodeOverlayJSON = []byte(`{
@@ -100,8 +94,7 @@ func agentOverlay(id model.AgentID) []byte {
 		return claudeCodeOverlayJSON
 	case model.AgentOpenCode, model.AgentKilocode:
 		return openCodeOverlayJSON
-	case model.AgentGeminiCLI:
-		return geminiCLIOverlayJSON
+
 	case model.AgentQwenCode:
 		return qwenCodeOverlayJSON
 	case model.AgentAntigravity:

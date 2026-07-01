@@ -8,7 +8,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/agents/claude"
 	"github.com/rd-mg/architect-ai/internal/agents/codex"
 	cursoradapter "github.com/rd-mg/architect-ai/internal/agents/cursor"
-	"github.com/rd-mg/architect-ai/internal/agents/gemini"
+
 	"github.com/rd-mg/architect-ai/internal/agents/kilocode"
 	"github.com/rd-mg/architect-ai/internal/agents/kiro"
 	"github.com/rd-mg/architect-ai/internal/agents/opencode"
@@ -26,8 +26,6 @@ func NewAdapter(agent model.AgentID) (Adapter, error) {
 		return opencode.NewAdapter(), nil
 	case model.AgentKilocode:
 		return kilocode.NewAdapter(), nil
-	case model.AgentGeminiCLI:
-		return gemini.NewAdapter(), nil
 	case model.AgentCursor:
 		return cursoradapter.NewAdapter(), nil
 	case model.AgentVSCodeCopilot:
@@ -56,7 +54,6 @@ func NewDefaultRegistry() (*Registry, error) {
 		model.AgentClaudeCode,
 		model.AgentOpenCode,
 		model.AgentKilocode,
-		model.AgentGeminiCLI,
 		model.AgentCursor,
 		model.AgentVSCodeCopilot,
 		model.AgentCodex,

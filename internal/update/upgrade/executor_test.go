@@ -477,7 +477,7 @@ func TestExecute_ConfigNotMutatedDuringUpgrade(t *testing.T) {
 	configFiles := map[string]string{
 		".claude/CLAUDE.md":            "# Claude config\nThis is my config.\n",
 		".config/opencode/config.json": `{"theme":"kanagawa"}`,
-		".gemini/GEMINI.md":            "# Gemini config\nMy rules.\n",
+		".cursor/rules":            "# Cursor rules\nMy rules.\n",
 	}
 
 	for relPath, content := range configFiles {
@@ -556,7 +556,7 @@ func TestConfigPathsForBackup_CoversAgentDirectories(t *testing.T) {
 		".claude/extra_rule.md":          "# extra rule",
 		".config/opencode/config.json":   `{"model":"claude"}`,
 		".config/opencode/settings.json": `{"theme":"dark"}`,
-		".gemini/GEMINI.md":              "# Gemini",
+		".cursor/settings.json":          "{}",
 		".cursor/rules":                  "# Cursor rules",
 	}
 
@@ -973,16 +973,16 @@ func TestConfigPathsForBackup_ExcludesRuntimeDirs(t *testing.T) {
 
 	claudeExcludes := []string{"projects", "sessions", "plugins", "cache", "backups"}
 
-	// --- Gemini: config file (keep) + runtime dirs (exclude) ---
-	geminiConfig := filepath.Join(homeDir, ".gemini", "GEMINI.md")
-	if err := os.MkdirAll(filepath.Dir(geminiConfig), 0o755); err != nil {
+	// --- Cursor: config file (keep) + runtime dirs (exclude) ---
+	cursorConfig := filepath.Join(homeDir, ".cursor", "rules")
+	if err := os.MkdirAll(filepath.Dir(cursorConfig), 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(geminiConfig, []byte("# Gemini"), 0o644); err != nil {
+	if err := os.WriteFile(cursorConfig, []byte("# Cursor"), 0o644); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 
-	geminiExcludes := []string{"browser_recordings", "brain", "conversations"}
+	cursorExcludes := []string{"extensions", "workspaceStorage"}
 
 	// --- OpenCode: config file (keep) + node_modules (exclude) ---
 	openCodeConfig := filepath.Join(homeDir, ".config", "opencode", "config.json")
@@ -1002,7 +1002,7 @@ func TestConfigPathsForBackup_ExcludesRuntimeDirs(t *testing.T) {
 	}
 	agents := []agentExclude{
 		{filepath.Join(homeDir, ".claude"), claudeExcludes},
-		{filepath.Join(homeDir, ".gemini"), geminiExcludes},
+		{filepath.Join(homeDir, ".cursor"), cursorExcludes},
 		{filepath.Join(homeDir, ".config", "opencode"), openCodeExcludes},
 	}
 
@@ -1027,7 +1027,7 @@ func TestConfigPathsForBackup_ExcludesRuntimeDirs(t *testing.T) {
 	}
 
 	// Config files must be present.
-	for _, cfg := range []string{claudeConfig, geminiConfig, openCodeConfig} {
+	for _, cfg := range []string{claudeConfig, cursorConfig, openCodeConfig} {
 		if _, ok := pathSet[cfg]; !ok {
 			t.Errorf("configPathsForBackup missing config file %q", cfg)
 		}

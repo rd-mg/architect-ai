@@ -12,7 +12,7 @@ import (
 	"github.com/rd-mg/architect-ai/internal/agents/claude"
 	"github.com/rd-mg/architect-ai/internal/agents/codex"
 	"github.com/rd-mg/architect-ai/internal/agents/cursor"
-	"github.com/rd-mg/architect-ai/internal/agents/gemini"
+
 	"github.com/rd-mg/architect-ai/internal/agents/opencode"
 	"github.com/rd-mg/architect-ai/internal/agents/vscode"
 	"github.com/rd-mg/architect-ai/internal/model"
@@ -167,12 +167,6 @@ func TestInjectGeminiCLIUsesAutoEditMode(t *testing.T) {
 	if !ok || mode != "auto_edit" {
 		t.Fatalf("expected defaultApprovalMode=auto_edit, got %q", mode)
 	}
-
-	// Ensure no Claude Code keys leaked
-	if _, exists := settings["permissions"]; exists {
-		t.Fatal("gemini settings should not contain 'permissions' key")
-	}
-}
 
 func TestInjectVSCodeCopilotUsesAutoApprove(t *testing.T) {
 	home := t.TempDir()

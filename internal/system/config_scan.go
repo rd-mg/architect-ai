@@ -41,7 +41,7 @@ func knownAgentConfigDirs(homeDir string) []ConfigState {
 		{Agent: "claude-code", Path: filepath.Join(homeDir, ".claude"), BinaryName: "claude"},
 		{Agent: "opencode", Path: filepath.Join(homeDir, ".config", "opencode"), BinaryName: "opencode"},
 		{Agent: "kilocode", Path: filepath.Join(homeDir, ".config", "kilo"), BinaryName: "kilo"},
-		{Agent: "gemini-cli", Path: filepath.Join(homeDir, ".gemini"), BinaryName: "gemini"},
+
 		{Agent: "cursor", Path: filepath.Join(homeDir, ".cursor")},
 		{Agent: "vscode-copilot", Path: vscodeCopilotGlobalConfigDir(homeDir)},
 		{Agent: "codex", Path: filepath.Join(homeDir, ".codex"), BinaryName: "codex"},

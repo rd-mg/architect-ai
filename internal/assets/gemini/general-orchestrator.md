@@ -235,10 +235,11 @@ Use when: you need to understand the project's own structure or logic.
 → Pattern found: use it.
 → 0 results: proceed to step 3.
 
-**STEP 2b — CodeGraph (Semantic Relationships)**
-Call chains, callers, impact radius. Only when `codegraph_context` available.
+**STEP 2b — CodeGraph (Semantic Exploration)**
+Exploration query, callers, and impact radius. Use `codegraph_explore` as the primary tool.
 ```
-codegraph_context(query: "{topic}", maxNodes: 25, format: "markdown")
+codegraph_explore(query: "{topic}")
+codegraph_node(nodeId: "{node}")
 codegraph_callers(nodeId: "{node}")
 codegraph_impact(nodeId: "{node}")
 ```
